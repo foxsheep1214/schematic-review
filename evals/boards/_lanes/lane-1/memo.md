@@ -75,3 +75,9 @@
 - Si53322是外部输入fanout，不套晶体CL/起振；LT6604-5的2/4/10/12已给官方脚表仍被ANALOG前提漏掉。J1 DC输出经49R9到外部需细分掉电注入，不能拿PRO-D04泛问当SIG-C08全覆盖。
 - 源旧CSV205件与当前235件有129值冲突，read_bom不保留Value须独立CSV对读；原生全235件显式dnp no可据此声明图面装配，不能把旧BOM当采购保证。source/db572节点零差异、孔M1–8不是IC。
 - LTC3601等官方web文字可留text_extract，pdftotext有时错误把txt当PDF导致NO_TEXT；保留摘录原文及清洗映射、不改名PDF。schema15未判项写pending与逐功能范围，不用资料不足0/局部PASS表示审完。
+
+- rapidanalysis--xerxes：58件/209网/516端点，strict仅U5.2/.4空名，XML/db零差异；12电路/34框架/600项，83局部判/517逐ID待核，60归因=2真+37误+1准则+3资料+17人工，4漏问（1候选已恢复+3人工补问），FAIL/NO_GO。
+- CDDFN10-3324P四路TVS因多网/名称漏PRO-E02而出TRIP/NOTRIP；D6回PoE局部VIN-不是系统GND。feed-through NC6/7/9/10允许外部同网，别当DNU。
+- AP3441 p9 Cff给10–470pF，本板C9=4.7nF越应用窗但不证明实测振荡；Cout40.1uF不因典型2x22uF就判缺容。J8 UART三针误标JTAG；R13下拉与CM5留空指南不同仍需例外依据。
+- CM5 pin56/58内置1.8k与板2.2k并联约990Ω，3.465V/0.4V低态约3.11mA仍须外设IOL；U4/J5/J4 DNP不可自动装回。JLC匹配工作表保留Unconfirmed语义，别当批准替代料。
+- 3V3轨须重复写入schema2 i2c_topology.rails以免重建漂移；原生schema15对部分功能/未定合同无needs_human，保留逐ID旁账和FAIL，资料不足0不等于审完；零脚Logo/INH绑电源不承担LED电流。

@@ -1,0 +1,1883 @@
+{
+  "board": "rapidanalysis--xerxes",
+  "source": {
+    "repo": "rapidanalysis/xerxes",
+    "commit": "43abf5730d092358bc6d10e9faa7233818b5412e",
+    "schematic": "Xerxes/Xerxes.kicad_sch",
+    "license": "Apache-2.0"
+  },
+  "types": [
+    "AV",
+    "CLOCK",
+    "ETHERNET",
+    "HSSERIAL",
+    "I2C",
+    "POE_PD",
+    "POWER_CONVERTER",
+    "POWER_PROTECTION",
+    "STARTUP",
+    "STORAGE",
+    "UART",
+    "USB"
+  ],
+  "run": {
+    "db_sha256": "a354714dc5fe221c37141b80f24e90499351aff12fc707cf1017ae012e4cfc72",
+    "review_db_sha256": "3a70c78424aa8bc5717c6235c93c72e585ab163a0b18373099ad332ad0f928f4",
+    "plan_items": 600,
+    "findings_total": 60,
+    "results_judged": 83,
+    "pending_checks": 517,
+    "functions": 34,
+    "gate": "FAIL",
+    "sr_commit": "db0acd267e281c97e9777144109d5d05aadf6197",
+    "native_lint_rows": 33,
+    "native_confirmed_defects": 2,
+    "review_cache": "/Users/skyfend/.cache/sr-boards/rapidanalysis--xerxes/review",
+    "initial_plan_without_manual_gaps": 575,
+    "manual_gap_items": 3,
+    "manual_classification_expansion": 22,
+    "plan_after_manual_classification_without_gap_items": 597,
+    "native_gate_valid": false,
+    "native_release": "NO_GO",
+    "native_gate_errors": 475,
+    "native_results_summary": {
+      "checks": 83,
+      "results": {
+        "NA": 35,
+        "PASS": 45,
+        "FAIL": 3
+      },
+      "confirmed_defects": 2,
+      "by_severity": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 2,
+        "P3": 0
+      },
+      "improvements": 0
+    },
+    "pack_status": "not_attempted_invalid_gate",
+    "top50_examples_checked": 50,
+    "source_pin_nodes": 516,
+    "xml_db_node_differences": 0,
+    "kicad_cli_version": "10.0.7",
+    "official_pdf_documents_verified": 7,
+    "native_finding_map": {
+      "SR-C9": "F34",
+      "SR-J8": "F35"
+    },
+    "quality_candidates_reviewed": 10
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D4"
+      ],
+      "nets": [
+        "/TR0_TAP"
+      ],
+      "sr_text": "/TR0_TAP <- D4.2 (MB6S)",
+      "verdict": "needs_human",
+      "evidence": "db.json /TR0_TAP <- D4.2 (MB6S)；原生第1页U4(dnp yes)使TR0–3_TAP、CT和LED支路留下单端，J4(dnp yes)另使启动跳帽不可用。单节点事实成立；是否应装U4/删整组、是否本配置承诺Ethernet/PoE需装配合同。不能把DNP自动恢复成贴装，也不能仅据单端判功能损坏。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F02",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D4"
+      ],
+      "nets": [
+        "/TR1_TAP"
+      ],
+      "sr_text": "/TR1_TAP <- D4.1 (MB6S)",
+      "verdict": "needs_human",
+      "evidence": "db.json /TR1_TAP <- D4.1 (MB6S)；原生第1页U4(dnp yes)使TR0–3_TAP、CT和LED支路留下单端，J4(dnp yes)另使启动跳帽不可用。单节点事实成立；是否应装U4/删整组、是否本配置承诺Ethernet/PoE需装配合同。不能把DNP自动恢复成贴装，也不能仅据单端判功能损坏。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F03",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D5"
+      ],
+      "nets": [
+        "/TR2_TAP"
+      ],
+      "sr_text": "/TR2_TAP <- D5.2 (MB6S)",
+      "verdict": "needs_human",
+      "evidence": "db.json /TR2_TAP <- D5.2 (MB6S)；原生第1页U4(dnp yes)使TR0–3_TAP、CT和LED支路留下单端，J4(dnp yes)另使启动跳帽不可用。单节点事实成立；是否应装U4/删整组、是否本配置承诺Ethernet/PoE需装配合同。不能把DNP自动恢复成贴装，也不能仅据单端判功能损坏。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F04",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D5"
+      ],
+      "nets": [
+        "/TR3_TAP"
+      ],
+      "sr_text": "/TR3_TAP <- D5.1 (MB6S)",
+      "verdict": "needs_human",
+      "evidence": "db.json /TR3_TAP <- D5.1 (MB6S)；原生第1页U4(dnp yes)使TR0–3_TAP、CT和LED支路留下单端，J4(dnp yes)另使启动跳帽不可用。单节点事实成立；是否应装U4/删整组、是否本配置承诺Ethernet/PoE需装配合同。不能把DNP自动恢复成贴装，也不能仅据单端判功能损坏。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F05",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn1"
+      ],
+      "nets": [
+        "/nRPIBOOT"
+      ],
+      "sr_text": "/nRPIBOOT <- Conn1.93 (ComputeModule5 GPIO rail)",
+      "verdict": "false_alarm",
+      "evidence": "db Conn1.93=/nRPIBOOT；J4不贴。官方cm5-datasheet.pdf PDFp21（印刷p20）pin93允许不用时悬空，模块内有10k上拉至3V3。故本体启动脚非电气浮空；该配置无法通过J4进入USB恢复模式须另核功能需求。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:unused_input_permission; scripts/lint.py floating-net scan",
+        "what": "将官方模块内部10k上拉和允许悬空条件作为已证处置；连接器单节点仍列拓扑观察，不当作无偏置的逻辑输入。USB救援可达性保留独立SIG-D06/RST-D01。",
+        "basis": "db Conn1.93=/nRPIBOOT；J4不贴。官方cm5-datasheet.pdf PDFp21（印刷p20）pin93允许不用时悬空，模块内有10k上拉至3V3。故本体启动脚非电气浮空；该配置无法通过J4进入USB恢复模式须另核功能需求。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F06",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "C4"
+      ],
+      "nets": [
+        "Net-(C4-Pad1)"
+      ],
+      "sr_text": "Net-(C4-Pad1) <- C4.1 (100n)",
+      "verdict": "needs_human",
+      "evidence": "db.json Net-(C4-Pad1) <- C4.1 (100n)；原生第1页U4(dnp yes)使TR0–3_TAP、CT和LED支路留下单端，J4(dnp yes)另使启动跳帽不可用。单节点事实成立；是否应装U4/删整组、是否本配置承诺Ethernet/PoE需装配合同。不能把DNP自动恢复成贴装，也不能仅据单端判功能损坏。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F07",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "R6"
+      ],
+      "nets": [
+        "Net-(U4-LEDG_K)"
+      ],
+      "sr_text": "Net-(U4-LEDG_K) <- R6.1 (470R)",
+      "verdict": "needs_human",
+      "evidence": "db.json Net-(U4-LEDG_K) <- R6.1 (470R)；原生第1页U4(dnp yes)使TR0–3_TAP、CT和LED支路留下单端，J4(dnp yes)另使启动跳帽不可用。单节点事实成立；是否应装U4/删整组、是否本配置承诺Ethernet/PoE需装配合同。不能把DNP自动恢复成贴装，也不能仅据单端判功能损坏。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F08",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "R7"
+      ],
+      "nets": [
+        "Net-(U4-LEDY_K)"
+      ],
+      "sr_text": "Net-(U4-LEDY_K) <- R7.1 (470R)",
+      "verdict": "needs_human",
+      "evidence": "db.json Net-(U4-LEDY_K) <- R7.1 (470R)；原生第1页U4(dnp yes)使TR0–3_TAP、CT和LED支路留下单端，J4(dnp yes)另使启动跳帽不可用。单节点事实成立；是否应装U4/删整组、是否本配置承诺Ethernet/PoE需装配合同。不能把DNP自动恢复成贴装，也不能仅据单端判功能损坏。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F09",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J7"
+      ],
+      "nets": [
+        "/CM5_5V"
+      ],
+      "sr_text": "/CM5_5V: 板上无来源，经 ['J7.1'] 由外部供电；输入保护按 PRO 规则另核",
+      "verdict": "needs_human",
+      "evidence": "db /CM5_5V: 板上无来源，经 ['J7.1'] 由外部供电；输入保护按 PRO 规则另核；J5.1=USB_5V、J5.2=CM5_5V、J5.3=PoE_5V且J5 DNP。三个接点未内部短接；原图未给跳帽表，不能假定J5闭合，J7原图是风扇输出。/USB_5V仅直接挂C2=10u、R1=2.2k和CC的Rd；USB/PoE/外供/跳帽路径须原设计者确认。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F10",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J2"
+      ],
+      "nets": [
+        "/USB_5V"
+      ],
+      "sr_text": "/USB_5V: 板上无来源，经 ['J2.A4'] 由外部供电；输入保护按 PRO 规则另核",
+      "verdict": "needs_human",
+      "evidence": "db /USB_5V: 板上无来源，经 ['J2.A4'] 由外部供电；输入保护按 PRO 规则另核；J5.1=USB_5V、J5.2=CM5_5V、J5.3=PoE_5V且J5 DNP。三个接点未内部短接；原图未给跳帽表，不能假定J5闭合，J7原图是风扇输出。/USB_5V仅直接挂C2=10u、R1=2.2k和CC的Rd；USB/PoE/外供/跳帽路径须原设计者确认。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F11",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [],
+      "nets": [
+        "/nRPIBOOT"
+      ],
+      "sr_text": "/nRPIBOOT: ['Conn1.93']",
+      "verdict": "false_alarm",
+      "evidence": "db Conn1.93=/nRPIBOOT；J4不贴。官方cm5-datasheet.pdf PDFp21（印刷p20）pin93允许不用时悬空，模块内有10k上拉至3V3。故本体启动脚非电气浮空；该配置无法通过J4进入USB恢复模式须另核功能需求。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:unused_input_permission; scripts/lint.py floating-net scan",
+        "what": "将官方模块内部10k上拉和允许悬空条件作为已证处置；连接器单节点仍列拓扑观察，不当作无偏置的逻辑输入。USB救援可达性保留独立SIG-D06/RST-D01。",
+        "basis": "db Conn1.93=/nRPIBOOT；J4不贴。官方cm5-datasheet.pdf PDFp21（印刷p20）pin93允许不用时悬空，模块内有10k上拉至3V3。故本体启动脚非电气浮空；该配置无法通过J4进入USB恢复模式须另核功能需求。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F12",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "R9"
+      ],
+      "nets": [
+        "/PCIe_PWR_EN",
+        "GND"
+      ],
+      "sr_text": "/PCIe_PWR_EN: R9 下拉->GND(0.0V)",
+      "verdict": "needs_human",
+      "evidence": "db U3.7=/PCIe_PWR_EN，R9=100k下拉到GND；AP3441 PDFpp2,4–5 EN高启动，最高允许VIN+0.3V，正常3.3V对4.75–5.25V成立。CM5关断时3V3仍存在而5V可撤除，EN保持/掉电先后和外卡状态未锁，需完整边界；默认下拉本身不是缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F13",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "R2"
+      ],
+      "nets": [
+        "/CM5_3V3",
+        "/SD_PWR",
+        "/SD_PWR_ON"
+      ],
+      "sr_text": "/SD_PWR_ON: R2 上拉->/CM5_3V3(3.3V)",
+      "verdict": "false_alarm",
+      "evidence": "db U1.4 EN←/SD_PWR_ON，R2=12k上拉CM5_3V3，VIN=U1.5同3V3。RT9742 DS9742-10 PDFpp1–3 GJ5的G款为高有效、1A档，EN允许正常0–6V（p5）；CM5 PDFp20 pin75输出高开卡电源并内置4.53k上拉。本正常供电拓扑拉高有明确功能；不以此关闭掉电全状态/卡热插拔。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_up.py:_Scan.coupled_loads; scripts/circuit_candidates.py",
+        "what": "把已核G/H使能极性、官方pin75内拉和同源电压纳入声明后定向消疑；仍单列掉电容忍与启动时序，不把所有EN上拉视为缺陷。",
+        "basis": "db U1.4 EN←/SD_PWR_ON，R2=12k上拉CM5_3V3，VIN=U1.5同3V3。RT9742 DS9742-10 PDFpp1–3 GJ5的G款为高有效、1A档，EN允许正常0–6V（p5）；CM5 PDFp20 pin75输出高开卡电源并内置4.53k上拉。本正常供电拓扑拉高有明确功能；不以此关闭掉电全状态/卡热插拔。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F14",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn1"
+      ],
+      "nets": [
+        "unconnected-(Conn1-Ethernet_SYNC_OUT(3.3v)-Pad18)"
+      ],
+      "sr_text": "Conn1.18 -> unconnected-(Conn1-Ethernet_SYNC_OUT(3.3v)-Pad18): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db Conn1.18是载板连接器接点，库pintype=input不等于无偏置IC输入。官方CM5 PDFp18 pin18为Ethernet同步输出，源符号却标input；不使用该输出可NC。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db Conn1.18是载板连接器接点，库pintype=input不等于无偏置IC输入。官方CM5 PDFp18 pin18为Ethernet同步输出，源符号却标input；不使用该输出可NC。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F15",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn1"
+      ],
+      "nets": [
+        "/nRPIBOOT"
+      ],
+      "sr_text": "Conn1.93 -> /nRPIBOOT: 输入脚所在网只有该节点",
+      "verdict": "false_alarm",
+      "evidence": "db Conn1.93=/nRPIBOOT；J4不贴。官方cm5-datasheet.pdf PDFp21（印刷p20）pin93允许不用时悬空，模块内有10k上拉至3V3。故本体启动脚非电气浮空；该配置无法通过J4进入USB恢复模式须另核功能需求。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:unused_input_permission; scripts/lint.py floating-net scan",
+        "what": "将官方模块内部10k上拉和允许悬空条件作为已证处置；连接器单节点仍列拓扑观察，不当作无偏置的逻辑输入。USB救援可达性保留独立SIG-D06/RST-D01。",
+        "basis": "db Conn1.93=/nRPIBOOT；J4不贴。官方cm5-datasheet.pdf PDFp21（印刷p20）pin93允许不用时悬空，模块内有10k上拉至3V3。故本体启动脚非电气浮空；该配置无法通过J4进入USB恢复模式须另核功能需求。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F16",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn1"
+      ],
+      "nets": [
+        "unconnected-(Conn1-PMIC_ENABLE-Pad99)"
+      ],
+      "sr_text": "Conn1.99 -> unconnected-(Conn1-PMIC_ENABLE-Pad99): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db Conn1.99是载板连接器接点，库pintype=input不等于无偏置IC输入。官方CM5 PDFp21 pin99有100k内部上拉至5V，可不外接以默认运行；不应索外置上拉。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db Conn1.99是载板连接器接点，库pintype=input不等于无偏置IC输入。官方CM5 PDFp21 pin99有100k内部上拉至5V，可不外接以默认运行；不应索外置上拉。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F17",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn2"
+      ],
+      "nets": [
+        "unconnected-(Conn2-USB_OTG_ID-Pad1)"
+      ],
+      "sr_text": "Conn2.1 -> unconnected-(Conn2-USB_OTG_ID-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db Conn2.1是载板连接器接点，库pintype=input不等于无偏置IC输入。官方CM5 PDFp21 pin101（Conn2局部pin1）USB_OTG_ID有内部上拉；开路不选Host，与本口被动Rd Sink拓扑一致。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db Conn2.1是载板连接器接点，库pintype=input不等于无偏置IC输入。官方CM5 PDFp21 pin101（Conn2局部pin1）USB_OTG_ID有内部上拉；开路不选Host，与本口被动Rd Sink拓扑一致。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F18",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn2"
+      ],
+      "nets": [
+        "unconnected-(Conn2-USB3-0-RX_N-Pad28)"
+      ],
+      "sr_text": "Conn2.28 -> unconnected-(Conn2-USB3-0-RX_N-Pad28): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db Conn2.28是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db Conn2.28是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F19",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn2"
+      ],
+      "nets": [
+        "unconnected-(Conn2-USB3-0-RX_P-Pad30)"
+      ],
+      "sr_text": "Conn2.30 -> unconnected-(Conn2-USB3-0-RX_P-Pad30): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db Conn2.30是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db Conn2.30是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F20",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn2"
+      ],
+      "nets": [
+        "unconnected-(Conn2-USB3-0-D_P-Pad34)"
+      ],
+      "sr_text": "Conn2.34 -> unconnected-(Conn2-USB3-0-D_P-Pad34): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db Conn2.34是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db Conn2.34是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F21",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn2"
+      ],
+      "nets": [
+        "unconnected-(Conn2-USB3-0-D_N-Pad36)"
+      ],
+      "sr_text": "Conn2.36 -> unconnected-(Conn2-USB3-0-D_N-Pad36): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db Conn2.36是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db Conn2.36是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F22",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn2"
+      ],
+      "nets": [
+        "unconnected-(Conn2-USB3-0-TX_N-Pad40)"
+      ],
+      "sr_text": "Conn2.40 -> unconnected-(Conn2-USB3-0-TX_N-Pad40): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db Conn2.40是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db Conn2.40是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F23",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn2"
+      ],
+      "nets": [
+        "unconnected-(Conn2-USB3-0-TX_P-Pad42)"
+      ],
+      "sr_text": "Conn2.42 -> unconnected-(Conn2-USB3-0-TX_P-Pad42): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db Conn2.42是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db Conn2.42是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F24",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn2"
+      ],
+      "nets": [
+        "unconnected-(Conn2-HDMI1_HOTPLUG-Pad43)"
+      ],
+      "sr_text": "Conn2.43 -> unconnected-(Conn2-HDMI1_HOTPLUG-Pad43): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db Conn2.43是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db Conn2.43是载板连接器接点，库pintype=input不等于无偏置IC输入。本图只外引USB2与HDMI0，USB3的两端收发对和HDMI1 HOTPLUG成组NC；机械接点不要求独立偏置，选定CM4/CM5变体和软件禁用仍须平台核查。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F25",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "J3"
+      ],
+      "nets": [
+        "unconnected-(J3-PERn3-Pad11)"
+      ],
+      "sr_text": "J3.11 -> unconnected-(J3-PERn3-Pad11): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db J3.11是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db J3.11是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F26",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "J3"
+      ],
+      "nets": [
+        "unconnected-(J3-PERp3-Pad13)"
+      ],
+      "sr_text": "J3.13 -> unconnected-(J3-PERp3-Pad13): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db J3.13是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db J3.13是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F27",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "J3"
+      ],
+      "nets": [
+        "unconnected-(J3-PERn2-Pad23)"
+      ],
+      "sr_text": "J3.23 -> unconnected-(J3-PERn2-Pad23): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db J3.23是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db J3.23是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F28",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "J3"
+      ],
+      "nets": [
+        "unconnected-(J3-PERp2-Pad25)"
+      ],
+      "sr_text": "J3.25 -> unconnected-(J3-PERp2-Pad25): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db J3.25是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db J3.25是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F29",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "J3"
+      ],
+      "nets": [
+        "unconnected-(J3-PERn1-Pad35)"
+      ],
+      "sr_text": "J3.35 -> unconnected-(J3-PERn1-Pad35): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db J3.35是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db J3.35是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F30",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "J3"
+      ],
+      "nets": [
+        "unconnected-(J3-PERp1-Pad37)"
+      ],
+      "sr_text": "J3.37 -> unconnected-(J3-PERp1-Pad37): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db J3.37是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db J3.37是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F31",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "J3"
+      ],
+      "nets": [
+        "unconnected-(J3-DEVSLP-Pad38)"
+      ],
+      "sr_text": "J3.38 -> unconnected-(J3-DEVSLP-Pad38): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图第1页及db J3.38是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:declared-input scan; scripts/part_words.py:unused_input_permission",
+        "what": "先以物理连接器角色与官方模块信号方向分流。输出/未接机械触点不套IC输入浮空；有内偏置且允许NC的脚用可追溯声明排除，功能可用性另审，不全局忽略NC。",
+        "basis": "原图第1页及db J3.38是载板连接器接点，库pintype=input不等于无偏置IC输入。网表仅一条PCIe lane0：Conn2.16/.18→J3.41/.43；Conn2.22/.24→J3.47/.49，其余lane1–3未使用；J3.38 DEVSLP为SATA场景，本图无SATA信号。可排除“连接器输入接点必须加拉阻”这条误用，外卡资格仍待核。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F32",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U6"
+      ],
+      "nets": [
+        "unconnected-(U6-ADJ-Pad7)"
+      ],
+      "sr_text": "U6.7 -> unconnected-(U6-ADJ-Pad7): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "knowledge_gap",
+      "evidence": "db U6.7=ADJ且原生NC，U6=DP5405；LCSC下载对象是JavaScript错误页而非器件手册，官网同路径现为DP5400并非准确DP5405。缺准确版本ADJ悬空/缺省输出条款，不能借别家PoE或相近型号判此脚可NC。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F33",
+      "sr_rule": "RST-A03",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "/M2_3v3"
+      ],
+      "sr_text": "U2（状态 source-DNP）：使能脚 U2.1 直连输入网 /M2_3v3，未见 UVLO 分压或 RC 延时；输入缓慢爬升或跌落时的开启点由器件内部门限决定",
+      "verdict": "false_alarm",
+      "evidence": "U2是ASEK有源振荡器而非电源启动控制器；db U2.1(INH/EN)与U2.4(Vdd)均接/M2_3v3，U2.2回GND。ASEK RevB PDFp3真值表允许pin1高/开路时振荡；p1启动时间24–28ms。直连Vdd是合法常开，时钟有效相对PERST仍另核。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_up.py:_Scan.coupled_loads",
+        "what": "按已核oscillator角色及INH真值表识别tie-high；不要把常开时钟强制套电源UVLO/延时警告；保留CLK-D01启动有效性。",
+        "basis": "U2是ASEK有源振荡器而非电源启动控制器；db U2.1(INH/EN)与U2.4(Vdd)均接/M2_3v3，U2.2回GND。ASEK RevB PDFp3真值表允许pin1高/开路时振荡；p1启动时间24–28ms。直连Vdd是合法常开，时钟有效相对PERST仍另核。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F34",
+      "sr_rule": "PWR-C15",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U3",
+        "C9",
+        "R8",
+        "R10"
+      ],
+      "nets": [
+        "/FB",
+        "/M2_3v3"
+      ],
+      "sr_text": "C9=4.7nF超出AP3441前馈电容10–470pF给定范围",
+      "verdict": "true_defect",
+      "evidence": "原生db C9.1=/M2_3v3、C9.2=/FB，与R8=10k并联；R10=2.2k到GND。AP3441 DS39754 Rev3-2 PDFp9 Setting the Output Voltage/Fig1给10–470pF。设计标称4700pF=厂家给定上端470pF的10倍；已对PDF原页核单位。未确认配单的±10%不作为实装公差保证。已证厂家应用范围偏离，不声称已实测振荡。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-BUCK-CFF-HIGH",
+        "mutation": "保持R8/R10/网络不变，把符合10–470pF窗口的C9改为4.7nF（上下限4230–5170pF）；绑定准确AP3441 p9条件，原板为已存在偏离的负例，不作为合格基线。",
+        "target_rule": "PWR-C15"
+      }
+    },
+    {
+      "id": "F35",
+      "sr_rule": "DOC-V02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "J8",
+        "Conn1"
+      ],
+      "nets": [
+        "/UART0_RX",
+        "/UART0_TX"
+      ],
+      "sr_text": "J8只有UART RX/TX/GND，却标为JTAG",
+      "verdict": "true_defect",
+      "evidence": "原生第1页J8框标题为JTAG、器件说明JTAG connector；db J8.1=UART0_RX→Conn1.51，J8.2=GND，J8.3=UART0_TX→Conn1.55。固定源README Features写UART debug header。三脚无TCK/TMS/TDI/TDO；已证图面命名与实际接口冲突，不指控UART电气连接错误。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-DOC-UART-JTAG",
+        "mutation": "仅把已有UART RX/TX/GND接口的标题/Description改成JTAG并保留网表；需要原生图面/注释fixture，db-only不能检测全部标题。",
+        "target_rule": "DOC-V02"
+      }
+    },
+    {
+      "id": "F36",
+      "sr_rule": "DEV-D05",
+      "criteria": [
+        "G04-010"
+      ],
+      "severity": "P2",
+      "refs": [
+        "Conn1",
+        "R13"
+      ],
+      "nets": [
+        "/SD_VDD_Override"
+      ],
+      "sr_text": "R13把SD_VDD_OVERRIDE经1k接地，与CM5当前指南的留空接法不同",
+      "verdict": "needs_human",
+      "evidence": "CM5 Release3 PDFp20 pin73规定需1.8V信号时接3V3，否则留空；本图R13=1k下拉。低态可能仍维持3.3V模式，但当前手册未保证这种接法的内部网络与电流；缺原版CM4/CM5变体合同和该例外的厂家依据。已记录精确偏离，未把未证失效写true_defect。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F37",
+      "sr_rule": "DEV-D02",
+      "criteria": [
+        "G02-026"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U5"
+      ],
+      "nets": [
+        "/nPI_LED_PWR",
+        "Net-(R11-Pad2)"
+      ],
+      "sr_text": "strict因U5.2/U5.4无逻辑脚名拒绝，但原生缓冲器图形和物理脚号明确",
+      "verdict": "false_alarm",
+      "evidence": "fetch.log strict只列U5.2/U5.4；XML与db 516个ref.pin→net逐条0差异。原生第1页U5为标准缓冲/开漏输出图形、脚号2/4、VCC5/GND3可辨；Diodes DS32274 PDFpp1–2定义2=A/4=Y。本源未确认的JLC Wuxi替代料资格另审，缺字不证明源符号接错。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/parse_kicad.py strict pin-name check; scripts/board_intent.py:pin_sets",
+        "what": "对已有完整官方针表和明确原生逻辑符号的空名A/Y保留角色缺口而非整板归网失败；NC1未画须按官方NC处置，不能用XML自洽证明电气身份。",
+        "basis": "fetch.log strict只列U5.2/U5.4；XML与db 516个ref.pin→net逐条0差异。原生第1页U5为标准缓冲/开漏输出图形、脚号2/4、VCC5/GND3可辨；Diodes DS32274 PDFpp1–2定义2=A/4=Y。本源未确认的JLC Wuxi替代料资格另审，缺字不证明源符号接错。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F38",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "/SD_PWR"
+      ],
+      "sr_text": "RT9742的N-MOSFET描述被当分立MOSFET，负载开关角色无法核验",
+      "verdict": "false_alarm",
+      "evidence": "datasheet-audit U1=QUOTE_LACKS_TYPE/KIND_CONFLICT mosfet，候选未生成POWER_PROTECTION-U1。RT9742 p1标题High-Side Power Switches with Flag，正文N-MOSFET high-side Power Switch IC；p2 GJ5订货与p3功能框图为完整限流开关。5脚含VIN/OUT/EN/FLG/GND，非外接G/D/S分立管。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/device_kinds.py; scripts/catalog.py:DEVICE_ROLES; scripts/datasheet_kinds.py",
+        "what": "优先识别high-side power switch完整角色词，再处理内部N-MOSFET描述；为Power Switches with Flag/High-Side Power Switch IC加load_switch语义并以本器件回归，别全局抹掉MOSFET。",
+        "basis": "datasheet-audit U1=QUOTE_LACKS_TYPE/KIND_CONFLICT mosfet，候选未生成POWER_PROTECTION-U1。RT9742 p1标题High-Side Power Switches with Flag，正文N-MOSFET high-side Power Switch IC；p2 GJ5订货与p3功能框图为完整限流开关。5脚含VIN/OUT/EN/FLG/GND，非外接G/D/S分立管。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F39",
+      "sr_rule": "DEV-C01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Module1",
+        "Sym1",
+        "Sym2"
+      ],
+      "nets": [],
+      "sr_text": "零脚模块外形和商标被展开器件应力与身份资格",
+      "verdict": "false_alarm",
+      "evidence": "原图Module1为无脚模块外形，Sym1/Sym2为Logo；XML/db这些ref无任何物理端点。计划DEV-C01.BOARD仅含三者；尝试device_kinds.other仍被分类settlement限制拒绝。应保留文档追溯，但无电应力对象。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/plan_board.py device expansion",
+        "what": "按原生零电气脚/graphic-only事实识别文档对象，排除电气应力/器件类别补证；不能仅按Module或Sym前缀全局排除有脚器件。",
+        "basis": "原图Module1为无脚模块外形，Sym1/Sym2为Logo；XML/db这些ref无任何物理端点。计划DEV-C01.BOARD仅含三者；尝试device_kinds.other仍被分类settlement限制拒绝。应保留文档追溯，但无电应力对象。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F40",
+      "sr_rule": "PWR-T03",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn1"
+      ],
+      "nets": [
+        "/SD_VDD_Override"
+      ],
+      "sr_text": "Conn1.73被当去耦供电脚：SD电平选择控制输入，非供电脚（CM5 PDFp20）",
+      "verdict": "false_alarm",
+      "evidence": "计划DECAP-99cb6587c691b277ccae直接供电脚含Conn1.73。官方脚义为SD电平选择控制输入，非供电脚（CM5 PDFp20）；原生该节点与地之间没有供电返回对，非IC VDD。真实控制/掉电/strap资格另审。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/decoupling.py:Inventory.groups/Inventory.role",
+        "what": "供电脚识别消费已核完整脚名/角色，SD_VDD_OVERRIDE、VBUS_EN和nDisable不按VDD/VBUS片段识别；含控制后缀但确为电源的例外用官方脚表确认。",
+        "basis": "计划DECAP-99cb6587c691b277ccae直接供电脚含Conn1.73。官方脚义为SD电平选择控制输入，非供电脚（CM5 PDFp20）；原生该节点与地之间没有供电返回对，非IC VDD。真实控制/掉电/strap资格另审。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F41",
+      "sr_rule": "PWR-T03",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn1"
+      ],
+      "nets": [
+        "unconnected-(Conn1-WiFi_nDisable-Pad89)"
+      ],
+      "sr_text": "Conn1.89被当去耦供电脚：Wi-Fi disable逻辑输入，内部1.8k上拉（CM5 PDFp20）",
+      "verdict": "false_alarm",
+      "evidence": "计划DECAP-1c55a5c83ad0fd8c1bb6直接供电脚含Conn1.89。官方脚义为Wi-Fi disable逻辑输入，内部1.8k上拉（CM5 PDFp20）；原生该节点与地之间没有供电返回对，非IC VDD。真实控制/掉电/strap资格另审。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/decoupling.py:Inventory.groups/Inventory.role",
+        "what": "供电脚识别消费已核完整脚名/角色，SD_VDD_OVERRIDE、VBUS_EN和nDisable不按VDD/VBUS片段识别；含控制后缀但确为电源的例外用官方脚表确认。",
+        "basis": "计划DECAP-1c55a5c83ad0fd8c1bb6直接供电脚含Conn1.89。官方脚义为Wi-Fi disable逻辑输入，内部1.8k上拉（CM5 PDFp20）；原生该节点与地之间没有供电返回对，非IC VDD。真实控制/掉电/strap资格另审。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F42",
+      "sr_rule": "PWR-T03",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn1"
+      ],
+      "nets": [
+        "unconnected-(Conn1-BT_nDisable-Pad91)"
+      ],
+      "sr_text": "Conn1.91被当去耦供电脚：BT disable逻辑输入，内部1.8k上拉（CM5 PDFp20）",
+      "verdict": "false_alarm",
+      "evidence": "计划DECAP-7a44203cc292aa4777e3直接供电脚含Conn1.91。官方脚义为BT disable逻辑输入，内部1.8k上拉（CM5 PDFp20）；原生该节点与地之间没有供电返回对，非IC VDD。真实控制/掉电/strap资格另审。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/decoupling.py:Inventory.groups/Inventory.role",
+        "what": "供电脚识别消费已核完整脚名/角色，SD_VDD_OVERRIDE、VBUS_EN和nDisable不按VDD/VBUS片段识别；含控制后缀但确为电源的例外用官方脚表确认。",
+        "basis": "计划DECAP-7a44203cc292aa4777e3直接供电脚含Conn1.91。官方脚义为BT disable逻辑输入，内部1.8k上拉（CM5 PDFp20）；原生该节点与地之间没有供电返回对，非IC VDD。真实控制/掉电/strap资格另审。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F43",
+      "sr_rule": "PWR-T03",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn2"
+      ],
+      "nets": [
+        "unconnected-(Conn2-VBUS_EN-Pad11)"
+      ],
+      "sr_text": "Conn2.11被当去耦供电脚：CM5全局pin111 VBUS_EN逻辑输出（CM5 PDFp21）",
+      "verdict": "false_alarm",
+      "evidence": "计划DECAP-e5d8061984d2c05ca831直接供电脚含Conn2.11。官方脚义为CM5全局pin111 VBUS_EN逻辑输出（CM5 PDFp21）；原生该节点与地之间没有供电返回对，非IC VDD。真实控制/掉电/strap资格另审。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/decoupling.py:Inventory.groups/Inventory.role",
+        "what": "供电脚识别消费已核完整脚名/角色，SD_VDD_OVERRIDE、VBUS_EN和nDisable不按VDD/VBUS片段识别；含控制后缀但确为电源的例外用官方脚表确认。",
+        "basis": "计划DECAP-e5d8061984d2c05ca831直接供电脚含Conn2.11。官方脚义为CM5全局pin111 VBUS_EN逻辑输出（CM5 PDFp21）；原生该节点与地之间没有供电返回对，非IC VDD。真实控制/掉电/strap资格另审。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F44",
+      "sr_rule": "PWR-D02",
+      "criteria": [
+        "G03-003"
+      ],
+      "severity": "P2",
+      "refs": [
+        "Conn1"
+      ],
+      "nets": [
+        "unconnected-(Conn1-+1.8v_(Output)-Pad88)",
+        "unconnected-(Conn1-+1.8v_(Output)-Pad90)"
+      ],
+      "sr_text": "未使用的模块1.8V输出被要求外部输入去耦",
+      "verdict": "false_alarm",
+      "evidence": "Conn1.88/.90均NC；CM5 PDFp20标为1.8V±5%模块输出，非载板裸IC电源输入，内部稳压和电容在模块。未外引负载不据零外部电容判失效；VBAT.76为可选备份电池输入须分开处理。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/decoupling.py:Inventory.groups/Inventory.role",
+        "what": "区分模块输出端/外部供电输入/备份输入；已核未用模块输出不要求输入旁路；输出允许外接容量与扩展负载另外审。",
+        "basis": "Conn1.88/.90均NC；CM5 PDFp20标为1.8V±5%模块输出，非载板裸IC电源输入，内部稳压和电容在模块。未外引负载不据零外部电容判失效；VBAT.76为可选备份电池输入须分开处理。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F45",
+      "sr_rule": "PWR-T03",
+      "criteria": [
+        "G04-040"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U6"
+      ],
+      "nets": [
+        "Net-(D4--)"
+      ],
+      "sr_text": "U6 VIN-被单独识别为缺返回脚的供电组",
+      "verdict": "false_alarm",
+      "evidence": "db U6.1=VIN+、U6.2=VIN-；其输出U6.6=VDC+，5/8=VDC-，不是同一供电地域。计划仅把VIN-作为supply、return=[]，会错误要求负端对系统GND去耦。准确DP5405手册仍缺，本条只排除负端对GND的错误组，不能据源命名证明隔离额定。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/decoupling.py:Inventory.groups; scripts/checkers/domains.py",
+        "what": "对成对VIN+/VIN-/VDC+/VDC-按功能端对建局部返回域，缺官方表时显式候选，不把所有“-”供电端当正向电源；禁止为消缺口把VIN-短到输出GND。",
+        "basis": "db U6.1=VIN+、U6.2=VIN-；其输出U6.6=VDC+，5/8=VDC-，不是同一供电地域。计划仅把VIN-作为supply、return=[]，会错误要求负端对系统GND去耦。准确DP5405手册仍缺，本条只排除负端对GND的错误组，不能据源命名证明隔离额定。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F46",
+      "sr_rule": "PRO-C04",
+      "criteria": [
+        "G05-019"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U2",
+        "J3"
+      ],
+      "nets": [
+        "Net-(J3-SUSCLK)"
+      ],
+      "sr_text": "SUSCLK时钟线被派成配电支路保护",
+      "verdict": "false_alarm",
+      "evidence": "计划PRO-C04.J3-68.J3-68；db U2.3(Output)→J3.68(SUSCLK)，仅此时钟线，无电源分支。ASEK PDFp3 pin3为CMOS输出，p1 32.768kHz。不应索熔断/配电协调；应查CLK-D01幅度/负载/有效时间。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:Deriver.power_node; InterfacePlanning.plan_interfaces",
+        "what": "正电源端识别优先排除经官方脚表确认的CMOS时钟输出，SUSCLK不由IC供电回溯当轨；以U2 pin3→J3.68回归只留时钟/信号资格。",
+        "basis": "计划PRO-C04.J3-68.J3-68；db U2.3(Output)→J3.68(SUSCLK)，仅此时钟线，无电源分支。ASEK PDFp3 pin3为CMOS输出，p1 32.768kHz。不应索熔断/配电协调；应查CLK-D01幅度/负载/有效时间。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F47",
+      "sr_rule": "PRO-C02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032"
+      ],
+      "severity": "P2",
+      "refs": [
+        "D6",
+        "U7",
+        "U8"
+      ],
+      "nets": [
+        "Net-(D4-+)",
+        "Net-(D4--)",
+        "GND"
+      ],
+      "sr_text": "跨线防护TVS被派为TRIP/NOTRIP门限比较器",
+      "verdict": "false_alarm",
+      "evidence": "原生PRO-C02.TRIP/NOTRIP.D6/U7/U8六项；U7/U8官方TVS阵列四I/O对3/8地，D6为PoE整流后正负轨的跨线TVS，没有FAULT/OVLO比较脚或开关节点。U7/U8又因多网及CDDFN名称未命中两端CLAMP_RE，被漏掉PRO-E02。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/protective_clamps.py:protected_net; scripts/plan_circuits.py:plan_threshold_checks",
+        "what": "支持已核tvs角色、每通道多网阵列和独立局部返回域，逐被保护网生成PRO-E02；真实跨开关/绕组能量钳位仍保留PRO-C02。",
+        "basis": "原生PRO-C02.TRIP/NOTRIP.D6/U7/U8六项；U7/U8官方TVS阵列四I/O对3/8地，D6为PoE整流后正负轨的跨线TVS，没有FAULT/OVLO比较脚或开关节点。U7/U8又因多网及CDDFN名称未命中两端CLAMP_RE，被漏掉PRO-E02。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F48",
+      "sr_rule": "DEV-D05",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U7",
+        "U8"
+      ],
+      "nets": [
+        "/TRD0_P",
+        "/TRD1_P",
+        "/TRD2_P",
+        "/TRD3_P"
+      ],
+      "sr_text": "TVS的feed-through NC接点被当DNU禁止接网",
+      "verdict": "false_alarm",
+      "evidence": "CDDFN10-3324P PDFp2的6/7/9/10为NC（无内部连接）但明确用于Feed-Through Layout，p4给走线实例。db U7/U8这些脚分别与对应I/O在同一网，符合该布局用途；NC不等于DNU。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/board_intent.py:pin_disposition; scripts/plan_board.py pin disposition",
+        "what": "保持NC内部无连接语义，同时允许有厂家明确feed-through依据的外部同网焊盘；DNU/禁止连接仍不可放行，不能一律把所有NC接网判错。",
+        "basis": "CDDFN10-3324P PDFp2的6/7/9/10为NC（无内部连接）但明确用于Feed-Through Layout，p4给走线实例。db U7/U8这些脚分别与对应I/O在同一网，符合该布局用途；NC不等于DNU。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F49",
+      "sr_rule": "PWR-D01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "C1",
+        "C2",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "C10",
+        "C11",
+        "C12",
+        "C13"
+      ],
+      "nets": [
+        "/SD_PWR",
+        "/USB_5V",
+        "/CM5_5V",
+        "/M2_3v3"
+      ],
+      "sr_text": "已贴两端电容全因component-kind缺口不进入fitted_capacitors",
+      "verdict": "false_alarm",
+      "evidence": "17个去耦组fitted_capacitors均空；source db C1/C2/C6/C7/C10–13=10u，C5/C8=100n且nc=false，物理端点直接跨轨/GND。类型技术/采购保证影响Ceff和温度资格，但不能把“电容技术尚未核验”等同未贴或不存在。普通阻容不逐颗索专属手册。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/decoupling.py:Inventory.state_inventory; scripts/checkers/decoupling.py:local_connection_gaps",
+        "what": "将贴装/几何存在、可解析标称值与技术/有效值资格分栏；实际直接并联电容应进入连接清单，资格未知只阻对应Ceff结论，不清空fitted库存。",
+        "basis": "17个去耦组fitted_capacitors均空；source db C1/C2/C6/C7/C10–13=10u，C5/C8=100n且nc=false，物理端点直接跨轨/GND。类型技术/采购保证影响Ceff和温度资格，但不能把“电容技术尚未核验”等同未贴或不存在。普通阻容不逐颗索专属手册。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F50",
+      "sr_rule": "DEV-D01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U5",
+        "L1",
+        "J2",
+        "J3",
+        "C1"
+      ],
+      "nets": [],
+      "sr_text": "JLC配单含未确认替代料，不能直接用于准确器件资格",
+      "verdict": "needs_human",
+      "evidence": "固定commit中的OOXML配单35行、51个不同ref；例如U5原图Diodes，配单Wuxi I-core；L1原图Bourns SRP5030CC而配单SMNR4020-2.2UH；J2/J3也被替代。Match有Unconfirmed/Select by System，不是批准清单。read_bom已跑，原图MPN保持，替代字段明确unconfirmed。需原设计者确认实际采购/封装兼容分支，不把匹配候选当既成实物错误。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F51",
+      "sr_rule": "SIG-C01",
+      "criteria": [
+        "G04-017",
+        "G04-018"
+      ],
+      "severity": "P2",
+      "refs": [
+        "Conn1",
+        "R4",
+        "R5",
+        "J6",
+        "J10"
+      ],
+      "nets": [
+        "/SDA1",
+        "/SCL1"
+      ],
+      "sr_text": "I2C需计入CM5内拉后重核灌电流与上升时间",
+      "verdict": "needs_human",
+      "evidence": "CM5 PDFp19 pin56/58各内置1.8k上拉至GPIO_VREF；该图Conn1.78接CM5_3V3，R4/R5各2.2k1%。标称Req=2.2k||1.8k=990Ω；以3.465V、VOL0.4V和板上Rmin2178Ω（暂不含内拉公差）约3.110mA。400kHz假设tr300ns则Cb上限约357.6pF；外设IOL、内拉公差、速度/线容未给，不能指控实际违规或PASS。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F52",
+      "sr_rule": "PWR-C04",
+      "criteria": [
+        "G03-003",
+        "G03-004",
+        "G03-021"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U3",
+        "C10",
+        "C11",
+        "C12",
+        "C13",
+        "U2"
+      ],
+      "nets": [
+        "/M2_3v3"
+      ],
+      "sr_text": "40.1µF标称不等于U3有效输出电容与动态负载资格",
+      "verdict": "needs_human",
+      "evidence": "直接对地C10–13各10u加C5 0.1u=40.1uF；C9 4.7n跨反馈不计对地Cout。AP3441 p10给2×22uF陶瓷作为多数应用选择，并未给可随意当硬下限的44uF稳定边界。图中GRM21BR71A106与未确认配单Samsung 25V分支Ceff不同；卡型号/负载/偏压温度未给。先改C9再核Ceff/ESR、启动tSS和卡负载，不能把40.1<44直接判FAIL。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F53",
+      "sr_rule": "CLK-D01",
+      "criteria": [
+        "G03-028"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U2",
+        "U3",
+        "J3"
+      ],
+      "nets": [
+        "/M2_3v3",
+        "Net-(J3-SUSCLK)",
+        "/PCIe_nRST"
+      ],
+      "sr_text": "SUSCLK随M2电源关断，启动28ms相对PERST资格未定",
+      "verdict": "needs_human",
+      "evidence": "ASEK p1启动24–28ms、p3 pin4Vdd由M2_3v3供给，pin3→J3.68；U3 EN由CM5 PCIe_PWR_EN控制，PERST从Conn2.9直达J3.50。卡SUSCLK待机需求、PERST释放时间及32kHz频率/负载窗口未定，不要求无源晶体CL电容。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F54",
+      "sr_rule": "PRO-C04",
+      "criteria": [
+        "G05-019",
+        "G05-022",
+        "G05-025"
+      ],
+      "severity": "P2",
+      "refs": [
+        "Conn1",
+        "J6",
+        "J7",
+        "J9",
+        "J10",
+        "U1",
+        "J3"
+      ],
+      "nets": [
+        "/CM5_3V3",
+        "/CM5_5V",
+        "/SD_PWR",
+        "/M2_3v3"
+      ],
+      "sr_text": "对外支路和600mA模块输出预算尚未闭合",
+      "verdict": "needs_human",
+      "evidence": "CM5 PDFp20 3V3每脚300mA、两脚合计600mA；该轨供U1/SD卡、U5/LED、J6、J9、J10。U1自身为1A档限流并不提高模块源能力；M2另由U3的5V→3V3供给，不能误计入CM5_3V3静态负载。需卡/扩展负载并发上界、源保护与连接器额定合同；缺保护器件不直接证明必须新增每个保险。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F55",
+      "sr_rule": "DEV-D01",
+      "criteria": [
+        "G03-003",
+        "G04-040",
+        "G05-030",
+        "G05-031",
+        "G05-032"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U6",
+        "D6"
+      ],
+      "nets": [
+        "/PoE_5V",
+        "Net-(D4-+)",
+        "Net-(D4--)"
+      ],
+      "sr_text": "DP5405准确模块版本和TVS原厂完整条款未取得",
+      "verdict": "knowledge_gap",
+      "evidence": "DP5405 LCSC下载为JS错误页，官网同路径内容是DP5400，未冒充准确型号；D6 Littelfuse链接本次传输失败，未用JLC/Ruilon替代料额定证明原图Littelfuse分支。U6 ADJ/AT-Det/输出外容/隔离和D6波形钳位仍逐参数补证。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F56",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U5"
+      ],
+      "nets": [],
+      "sr_text": "器件角色词表没有普通开漏逻辑缓冲器",
+      "verdict": "knowledge_gap",
+      "evidence": "U5官方资料已取得，audit VERIFIED但kind=ic；DEVICE_KIND_GENERIC不产生角色电路。74LVC1G07是普通逻辑缓冲器，不是level-shifter或transceiver，不能为造候选改角色。当前借实际Conn1 GPIO/状态灯邻域归属到SD-CARD，仅是持有关系，不声称SD功能等于LED功能。",
+      "proposed_fix": {
+        "owner": "typical_circuit",
+        "where": "scripts/catalog.py:DEVICE_ROLES",
+        "what": "新增普通逻辑缓冲/门角色和合适功能框架，保留VCC/IO/默认态与Ioff检查；不把buffer硬塞电平转换器。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F57",
+      "sr_rule": "REQ-D03",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [],
+      "nets": [],
+      "sr_text": "无受控产品需求、装配合同和完整状态窗；逐ID未判必须显式保留",
+      "verdict": "needs_human",
+      "evidence": "用途依据固定README和文件名推断，industrial_telecom为任务指定。各电路的idle/active等状态是工具默认，非已确认全产品状态。schema15原生无needs_human/需求未定枚举；本轮pending_checks和function-review逐ID保留全部分母，原生门禁FAIL，不能以资料不足0或局部已核PASS冒充整板完成。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F58",
+      "sr_rule": "SIG-T02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "Conn1",
+        "R4",
+        "R5"
+      ],
+      "nets": [
+        "/CM5_3V3",
+        "/SDA1",
+        "/SCL1"
+      ],
+      "sr_text": "原样生成的I2C计划在门禁重建时丢失顶层power_rails上下文",
+      "verdict": "false_alarm",
+      "evidence": "本轮首次原生validate对未修改的lint计划报I2C topology inventory/binding is stale or modified并新造CM5_3V3总线区域；i2c_topology.build把顶层power_rails合进扫描cfg，但inventory.context未保存该段。显式把同一轨声明写入schema2 i2c_topology.rails后原生重建一致，不改变db连接。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/i2c_topology.py:build_i2c_topology; scripts/board_intent.py:context",
+        "what": "inventory.context应完整保存影响图重建的power_rails，避免要求审查员重复声明同一轨。回归须以未改db/intent/plan的lint→validate验证digest与对象一致。",
+        "basis": "本轮首次原生validate对未修改的lint计划报I2C topology inventory/binding is stale or modified并新造CM5_3V3总线区域；i2c_topology.build把顶层power_rails合进扫描cfg，但inventory.context未保存该段。显式把同一轨声明写入schema2 i2c_topology.rails后原生重建一致，不改变db连接。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F59",
+      "sr_rule": "DEV-C05",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U2",
+        "D1"
+      ],
+      "nets": [
+        "/M2_3v3"
+      ],
+      "sr_text": "U2.1时钟INH被派成LED灌拉电流输出",
+      "verdict": "false_alarm",
+      "evidence": "计划DEV-C05.PIN-LED.U2-1；U2.1 INH是高阻逻辑输入且与4Vdd同在M2_3v3。D1从该供电轨经R3至卡活动输出J3.10，不经U2 INH导电。ASEK PDFp3 pin1=INH/pin3=Output，不能把同网LED全部电流归到pin1。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:plan_single_fault_rows signal_pins/PIN-LED",
+        "what": "LED脚电流仅从实际驱动/返回路径追踪，排除绑在电源轨上的INH等逻辑输入；IO角色未知时留候选，不断言它承担LED电流。",
+        "basis": "计划DEV-C05.PIN-LED.U2-1；U2.1 INH是高阻逻辑输入且与4Vdd同在M2_3v3。D1从该供电轨经R3至卡活动输出J3.10，不经U2 INH导电。ASEK PDFp3 pin1=INH/pin3=Output，不能把同网LED全部电流归到pin1。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F60",
+      "sr_rule": "PWR-C15",
+      "criteria": [
+        "G03-005"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U3",
+        "C9"
+      ],
+      "nets": [
+        "/FB",
+        "/M2_3v3"
+      ],
+      "sr_text": "内补偿准则未覆盖厂家给定的外部Cff选值窗",
+      "verdict": "criterion_issue",
+      "evidence": "G03-005标题和sr_check仅涵盖手册给出LC与穿越频率关系式的情形；G03-006/007/008/009写的是外补偿。AP3441是内补偿且p9以10–470pF窗口规定外部前馈电容，未给本条件LC/穿越频率式。不能把G03-005套成已存在的Cff准则；本板C9偏离依据厂家p9及PWR-C15独立成立。",
+      "proposed_fix": {
+        "owner": "criterion",
+        "where": "G03-005或新增内补偿外部反馈网络准则",
+        "what": "保留现有LC公式适用条件，补充内补偿芯片对Cff/FB网络的厂家适用窗口核查；明确推荐例值/范围和保证边界，缺环路数据不自动断言不稳定。"
+      },
+      "seed": null
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G03-003",
+      "sr_rule": "PWR-C04",
+      "refs": [
+        "U6",
+        "C3"
+      ],
+      "nets": [
+        "/PoE_5V",
+        "GND"
+      ],
+      "why_expected": "稳定输出资格漏问，非已证缺容",
+      "evidence": "575项原生计划仅U3三条PWR-C04；U6.6 VDC+→C3.1且U6.5/.8 VDC-→C3.2。C3=16SVPK220M，不能拿普通去耦替代输出稳定性。准确DP5405手册仍缺。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py converter output prerequisite; scripts/circuit_candidates.py",
+        "what": "经确认的PoE/DC-DC模块同时生成输出稳压功能并识别VDC+/VDC-；所有模块按准确厂家边界核Ceff/ESR，缺文档留依赖而非漏问。"
+      },
+      "seed": {
+        "kind": "D-POE-COUT-PLAN",
+        "mutation": "保留原图U6 VDC+/VDC-和C3的物理输出对，删除C3或改DNP；在已确认PoE稳压输出角色的fixture中断言按此输出生成PWR-C04。当前缺DP5405允许窗，种子只验证计划覆盖，不宣称删C3必然电气FAIL。",
+        "target_rule": "PWR-C04",
+        "assertion_layer": "plan_coverage"
+      },
+      "layer": "plan_coverage",
+      "gap_id": "POE-COUT",
+      "hardware_defect_confirmed": false
+    },
+    {
+      "id": "M02",
+      "criterion": "G04-040",
+      "sr_rule": "PRO-D02",
+      "refs": [
+        "U6",
+        "D4",
+        "D5"
+      ],
+      "nets": [
+        "Net-(D4--)",
+        "GND"
+      ],
+      "why_expected": "地域隔离连接漏问；模块身份仍待核",
+      "evidence": "原生无PRO-D02，只有POE_PD的PRO-C03资格项；输入负端U6.2与输出负端5/8为两网。DP5400家族官网的1500Vrms不能当准确DP5405保证，只足以提出独立边界问题。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py; scripts/checkers/domains.py",
+        "what": "对具有VIN+/VIN-/VDC+/VDC-的模块列输入输出地域候选，独立核型号与隔离；不靠GND1/GND2拼写发现。"
+      },
+      "seed": {
+        "kind": "D-ISO-MODULE-BRIDGE",
+        "mutation": "在带厂家确认隔离的合成DP5405模型中，插入已贴0Ω连接VIN-局部返回Net-(D4--)和输出GND，更新nets/pin2net；原板目前未桥接且型号未证，不作为硬件合格种子。",
+        "target_rule": "PRO-D02"
+      },
+      "layer": "plan_coverage",
+      "gap_id": "POE-ISOLATION",
+      "hardware_defect_confirmed": false
+    },
+    {
+      "id": "M03",
+      "criterion": "G05-025",
+      "sr_rule": "PRO-C05",
+      "refs": [
+        "U1",
+        "J1"
+      ],
+      "nets": [
+        "/SD_PWR"
+      ],
+      "why_expected": "初始漏认U1负载开关导致保护/故障协调未展开；人工补POWER_PROTECTION后已恢复",
+      "evidence": "初始575项/11电路计划中只有EXT-J1 PRO-C04泛问、没有U1 PRO-C05；审计把RT9742 p1的内部N-MOSFET当分立MOSFET，load_switch角色失败。补SD-PWR独立POWER_PROTECTION电路后原生597项计划已生成PRO-C05.SD-PWR.U1；最终删除重复人工GAP。不是正确分类后仍漏问，也未证实际动作超时。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/datasheet_kinds.py quote/title matching; scripts/catalog.py:DEVICE_ROLES",
+        "what": "识别High-Side Power Switch IC/Power Switches with Flag并将内部N-MOSFET与分立MOSFET区分；U1应自动生成POWER_PROTECTION并随之恢复PRO-C05。以原厂标题和无外部FUSE/MOV的片段回归。"
+      },
+      "seed": {
+        "kind": "D-INTEGRATED-OCP-COORD-PLAN",
+        "mutation": "抽取U1 RT9742G VIN/OUT/EN/FLG→J1的片段，并绑定真实p1含N-MOSFET high-side Power Switch IC的厂家标题；不加外部FUSE/MOV关键词，断言先得到load_switch/POWER_PROTECTION再生成PRO-C05。它测试候选和计划恢复，动作超时电气种子需另锁源/负载耐受。",
+        "target_rule": "PRO-C05",
+        "assertion_layer": "plan_coverage"
+      },
+      "layer": "candidate_identification",
+      "gap_id": "SD-FAULT-TIME",
+      "hardware_defect_confirmed": false,
+      "resolution": "manually_restored"
+    },
+    {
+      "id": "M04",
+      "criterion": "G05-030",
+      "sr_rule": "PRO-E02",
+      "refs": [
+        "D6",
+        "U7",
+        "U8"
+      ],
+      "nets": [
+        "Net-(D4-+)",
+        "Net-(D4--)",
+        "/TRD0_P",
+        "/TRD1_P",
+        "/TRD2_P",
+        "/TRD3_P"
+      ],
+      "why_expected": "钳位窗口自动层和计划层均漏问",
+      "evidence": "原生0个PRO-E02、六个PRO-C02门限项；U7/U8为官方四路TVS但有多网，D6回局部VIN-而非名为GND。漏掉G05-030/031/032的正常窗、波形VC/最低耐受与能量资格；未确认原板TVS错选。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/protective_clamps.py:protected_net; scripts/lint.py clamp scan",
+        "what": "消费已核tvs角色并逐阵列通道+局部返回域建PRO-E02，不以恰好两网或CLAMP_RE器件名称为门槛。"
+      },
+      "seed": {
+        "kind": "D-TVS-VRWM-LOW",
+        "mutation": "保持U7.3/.8=GND，将U7.1从TRD0_P移接4.75–5.25V的CM5_5V；绑定准确Bourns p1 VWM=3.3V，则正常最高5.25V超过VRWM。更新nets/pin2net并保留其余通道，测试多网阵列目标PRO-E02。",
+        "target_rule": "PRO-E02"
+      },
+      "layer": "plan_coverage",
+      "gap_id": "TVS-CLAMP",
+      "hardware_defect_confirmed": false
+    }
+  ],
+  "summary": {
+    "true_defect": 2,
+    "false_alarm": 37,
+    "criterion_issue": 1,
+    "knowledge_gap": 3,
+    "needs_human": 17,
+    "misses": 4
+  },
+  "counting_note": "findings含33条原生扫描FINDING/CANDIDATE/INFO逐条处置及独立审查/工具根因；不是已确认硬件缺陷数。misses为计划覆盖漏问，不是原板已证硬件漏检。",
+  "evidence_boundary": "所有用途/工作态推断已标明；source-DNP为原生装配。无受控输入窗/环境/卡/外设合同。JLC配单非批准BOM，独立采购分支不混用。官方PDF全部留cache，不复制第三方电路到仓库。",
+  "top50_audit": [
+    {
+      "example": 1,
+      "criterion": "G01-018",
+      "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+      "status": "not_applicable",
+      "evidence": "本图无−48V回线或市电；PoE为桥后正电压，不套ETSI−48V或AC跌落条款。"
+    },
+    {
+      "example": 2,
+      "criterion": "G01-019",
+      "title": "−48 V 输入的工作电压范围与耐受范围",
+      "status": "not_applicable",
+      "evidence": "本图无−48V回线或市电；PoE为桥后正电压，不套ETSI−48V或AC跌落条款。"
+    },
+    {
+      "example": 3,
+      "criterion": "G01-020",
+      "title": "−48 V 输入 0.1 s 中断后自恢复",
+      "status": "not_applicable",
+      "evidence": "本图无−48V回线或市电；PoE为桥后正电压，不套ETSI−48V或AC跌落条款。"
+    },
+    {
+      "example": 4,
+      "criterion": "G01-021",
+      "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+      "status": "not_applicable",
+      "evidence": "本图无−48V回线或市电；PoE为桥后正电压，不套ETSI−48V或AC跌落条款。"
+    },
+    {
+      "example": 5,
+      "criterion": "G01-022",
+      "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+      "status": "not_applicable",
+      "evidence": "本图无−48V回线或市电；PoE为桥后正电压，不套ETSI−48V或AC跌落条款。"
+    },
+    {
+      "example": 6,
+      "criterion": "G01-023",
+      "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+      "status": "not_applicable",
+      "evidence": "本图无−48V回线或市电；PoE为桥后正电压，不套ETSI−48V或AC跌落条款。"
+    },
+    {
+      "example": 7,
+      "criterion": "G01-024",
+      "title": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+      "status": "not_applicable",
+      "evidence": "本图无−48V回线或市电；PoE为桥后正电压，不套ETSI−48V或AC跌落条款。"
+    },
+    {
+      "example": 8,
+      "criterion": "G01-025",
+      "title": "交流输入较长暂降与中断后自恢复（判据 C）",
+      "status": "not_applicable",
+      "evidence": "本图无−48V回线或市电；PoE为桥后正电压，不套ETSI−48V或AC跌落条款。"
+    },
+    {
+      "example": 9,
+      "criterion": "G01-026",
+      "title": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+      "status": "needs_human",
+      "evidence": "USB CC各5.1k Rd，CM5 CC94/96 NC；J5 DNP；未锁输入源电压/电流公告/断开检测及选配状态，SIG-C05/D07已问。"
+    },
+    {
+      "example": 10,
+      "criterion": "G01-027",
+      "title": "USB 可用电流按实际协商档取",
+      "status": "needs_human",
+      "evidence": "USB CC各5.1k Rd，CM5 CC94/96 NC；J5 DNP；未锁输入源电压/电流公告/断开检测及选配状态，SIG-C05/D07已问。"
+    },
+    {
+      "example": 11,
+      "criterion": "G01-029",
+      "title": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+      "status": "nominal_topology_checked",
+      "evidence": "J2 VBUS直接C2=10uF；J5 DNP，无已定义短接到CM5_5V/PoE_5V，C3 220uF不计直接入口。10u标称非全偏压容量上限，选配合同后另核。"
+    },
+    {
+      "example": 12,
+      "criterion": "G01-030",
+      "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+      "status": "needs_human",
+      "evidence": "USB CC各5.1k Rd，CM5 CC94/96 NC；J5 DNP；未锁输入源电压/电流公告/断开检测及选配状态，SIG-C05/D07已问。"
+    },
+    {
+      "example": 13,
+      "criterion": "G01-031",
+      "title": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+      "status": "not_applicable",
+      "evidence": "当前J2两独立Rd=5.1k，未给Source/DRP功能；不套Source未连接供电要求。"
+    },
+    {
+      "example": 14,
+      "criterion": "G03-003",
+      "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+      "status": "plan_miss_and_pending",
+      "evidence": "U3已有PWR-C04，Cout直接40.1uF标称，C9跨FB不计；U6 VDC+输出稳定性漏问M01。缺Ceff/ESR与准确模块条款，不能用44u典型例硬判。"
+    },
+    {
+      "example": 15,
+      "criterion": "G03-004",
+      "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+      "status": "plan_miss_and_pending",
+      "evidence": "U3已有PWR-C04，Cout直接40.1uF标称，C9跨FB不计；U6 VDC+输出稳定性漏问M01。缺Ceff/ESR与准确模块条款，不能用44u典型例硬判。"
+    },
+    {
+      "example": 16,
+      "criterion": "G03-016",
+      "title": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+      "status": "not_applicable_to_external_soa",
+      "evidence": "本板无独立通路MOSFET；U1/U3内置管按具体IC保护/热和厂家应用资格核，不能凭空索分立SOA或套另一厂家MOS曲线。"
+    },
+    {
+      "example": 17,
+      "criterion": "G03-018",
+      "title": "变换器 UVLO 开启点低于输入窗下限",
+      "status": "conditional_numeric_check",
+      "evidence": "AP3441 p5 UVLO上升max2.5V，若端点满足CM5 4.75V下限则低于输入；J5/USB源和热插拔压降未锁，故不作整输入链PASS。"
+    },
+    {
+      "example": 18,
+      "criterion": "G03-019",
+      "title": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+      "status": "needs_human",
+      "evidence": "AP3441 p5 UVLO滞回0.2V为typ，源阻/满载输入电流未知；已有PWR-C06，不拿typ滞回判保证。"
+    },
+    {
+      "example": 19,
+      "criterion": "G03-021",
+      "title": "软启动充电电流加启动期负载低于器件限流下限",
+      "status": "needs_human",
+      "evidence": "U3 tSS min0.7ms，名义Cout40.1uF；若Cmax44.1uF及表条件Vmax3.433V，充电分量约0.216A，尚须叠加卡启动电流/纹波，对限流下限重算。"
+    },
+    {
+      "example": 20,
+      "criterion": "G03-025",
+      "title": "复位门限高于各负载最低工作电压，掉电先复位",
+      "status": "needs_human",
+      "evidence": "CM5片内PMIC、SD_PWR_ON、PCIe_PWR_EN/3V3/PERST/32k时钟需要完整时序；PWR-T04/C24/RST-T03已问，未因无外监控判缺陷。"
+    },
+    {
+      "example": 21,
+      "criterion": "G03-028",
+      "title": "上电时序在极值时间下满足约束",
+      "status": "needs_human",
+      "evidence": "CM5片内PMIC、SD_PWR_ON、PCIe_PWR_EN/3V3/PERST/32k时钟需要完整时序；PWR-T04/C24/RST-T03已问，未因无外监控判缺陷。"
+    },
+    {
+      "example": 22,
+      "criterion": "G03-032",
+      "title": "稳压器反向电流在手册允许内或已阻断",
+      "status": "needs_human",
+      "evidence": "U1 RT9742有reverse blocking，U3为同步buck且M2电容储能；外设先上电/5V撤除轨迹仍缺。已有PWR-C05，不以器件标题闭合全部路径。"
+    },
+    {
+      "example": 23,
+      "criterion": "G03-037",
+      "title": "电解与钽电容不承受反压",
+      "status": "needs_human",
+      "evidence": "C3正端U6.6 PoE_5V、负端输出GND，16SVPK220M为16V220uF；未串联。5V标称不证明过冲/反向供电/纹波和温度全范围，需准确DP5405边界。"
+    },
+    {
+      "example": 24,
+      "criterion": "G03-038",
+      "title": "电解与钽电容的直流加纹波峰值在降额内",
+      "status": "needs_human",
+      "evidence": "C3正端U6.6 PoE_5V、负端输出GND，16SVPK220M为16V220uF；未串联。5V标称不证明过冲/反向供电/纹波和温度全范围，需准确DP5405边界。"
+    },
+    {
+      "example": 25,
+      "criterion": "G03-040",
+      "title": "串联使用的电解电容有均压措施",
+      "status": "not_applicable",
+      "evidence": "仅C3为极化聚合物电容，无串联电解分压网络。"
+    },
+    {
+      "example": 26,
+      "criterion": "G04-005",
+      "title": "输入信号不超接收端绝对最大值",
+      "status": "covered_pending",
+      "evidence": "原生69条SIG-C08逐接口/网络，UART/I2C/M2/HDMI/MIPI的具体断电Ioff和返回路径未锁，不把已有覆盖说成漏报。"
+    },
+    {
+      "example": 27,
+      "criterion": "G04-007",
+      "title": "未上电接口承受正常或故障信号不损坏",
+      "status": "covered_pending",
+      "evidence": "原生69条SIG-C08逐接口/网络，UART/I2C/M2/HDMI/MIPI的具体断电Ioff和返回路径未锁，不把已有覆盖说成漏报。"
+    },
+    {
+      "example": 28,
+      "criterion": "G04-009",
+      "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+      "status": "covered_pending",
+      "evidence": "原生69条SIG-C08逐接口/网络，UART/I2C/M2/HDMI/MIPI的具体断电Ioff和返回路径未锁，不把已有覆盖说成漏报。"
+    },
+    {
+      "example": 29,
+      "criterion": "G04-010",
+      "title": "上电和复位期间关键输出有确定状态",
+      "status": "covered_partial",
+      "evidence": "U3 EN有100k下拉且RST-T04 power-on/restart两项；U1 SD默认有CM5内拉4.53k与R2 12k、RST-E01已问。完整模块复位/断电状态尚未锁。"
+    },
+    {
+      "example": 30,
+      "criterion": "G04-017",
+      "title": "I²C 上拉电阻不超上升时间决定的上限",
+      "status": "covered_pending",
+      "evidence": "R4/R5 2.2k各并CM5内部1.8k，名义990Ω；最坏3.465V与0.4V低态（内拉公差未计）约3.110mA。缺模式/总Cb/最弱IOL；已有六条SIG-C01，不把泛项自动未报警记整轮漏审。"
+    },
+    {
+      "example": 31,
+      "criterion": "G04-018",
+      "title": "I²C 上拉电阻不低于灌电流决定的下限",
+      "status": "covered_pending",
+      "evidence": "R4/R5 2.2k各并CM5内部1.8k，名义990Ω；最坏3.465V与0.4V低态（内拉公差未计）约3.110mA。缺模式/总Cb/最弱IOL；已有六条SIG-C01，不把泛项自动未报警记整轮漏审。"
+    },
+    {
+      "example": 32,
+      "criterion": "G04-032",
+      "title": "CAN 总线两端端接，总阻约 60 Ω",
+      "status": "not_applicable",
+      "evidence": "本板无CAN物理总线；不把以太网/PCIe套60Ω端接。"
+    },
+    {
+      "example": 33,
+      "criterion": "G04-040",
+      "title": "隔离接口两侧的供电和地不被无意短接",
+      "status": "plan_miss",
+      "evidence": "M02：U6 VIN-局部返回和VDC-输出GND两网；原生无PRO-D02，模块准确隔离身份待核；并未发现原板短接。"
+    },
+    {
+      "example": 34,
+      "criterion": "G04-041",
+      "title": "运放两个输入在最坏工况下不超共模范围",
+      "status": "not_applicable",
+      "evidence": "本板无独立运放/ADC模拟输入链；CM5内部模拟部件不凭载板connector名强行实例化。"
+    },
+    {
+      "example": 35,
+      "criterion": "G04-054",
+      "title": "ADC 输入不超满量程和绝对最大值",
+      "status": "not_applicable",
+      "evidence": "本板无独立运放/ADC模拟输入链；CM5内部模拟部件不凭载板connector名强行实例化。"
+    },
+    {
+      "example": 36,
+      "criterion": "G04-078",
+      "title": "晶振负载电容与晶振规定 CL 相符",
+      "status": "not_applicable",
+      "evidence": "U2=ASEK有源32.768kHz四脚Vdd/GND/INH/Out，未使用无源XI/XO晶体；CLK-D01有展开，不能套CL/负阻起振/共享晶体。"
+    },
+    {
+      "example": 37,
+      "criterion": "G04-079",
+      "title": "振荡器增益裕量足够起振",
+      "status": "not_applicable",
+      "evidence": "U2=ASEK有源32.768kHz四脚Vdd/GND/INH/Out，未使用无源XI/XO晶体；CLK-D01有展开，不能套CL/负阻起振/共享晶体。"
+    },
+    {
+      "example": 38,
+      "criterion": "G04-082",
+      "title": "一颗晶振只驱动一个器件",
+      "status": "not_applicable",
+      "evidence": "U2=ASEK有源32.768kHz四脚Vdd/GND/INH/Out，未使用无源XI/XO晶体；CLK-D01有展开，不能套CL/负阻起振/共享晶体。"
+    },
+    {
+      "example": 39,
+      "criterion": "G05-019",
+      "title": "每条配电支路在源侧有保护",
+      "status": "covered_pending",
+      "evidence": "原生26条PRO-C04逐外部供电接点已问；J3.68 SUSCLK是假配电分支已归因。上游保护及负载合同未知，无已证省保险硬错。"
+    },
+    {
+      "example": 40,
+      "criterion": "G05-022",
+      "title": "过流动作点上限下通路器件与连接器不超额定",
+      "status": "covered_pending",
+      "evidence": "八个外部connector DEV-C04已问；CM5 3V3合计600mA、U1名义1A限流不等于模块可供1A。实际并发/保护上界和JST/Hirose温度资格未锁。"
+    },
+    {
+      "example": 41,
+      "criterion": "G05-025",
+      "title": "故障电流下的动作时间短于被保护对象的耐受时间",
+      "status": "plan_miss",
+      "evidence": "M03：U1/J1的PRO-C04不能替代故障动作时间对耐受的PRO-C05专问；厂家限流典型/热关断存在不证明源和线束安全。"
+    },
+    {
+      "example": 42,
+      "criterion": "G05-030",
+      "title": "TVS 工作电压不低于被钳节点最高工作电压",
+      "status": "plan_miss",
+      "evidence": "M04：D6局部返回、U7/U8多网TVS阵列漏PRO-E02而误生成六个TRIP/NOTRIP；已取Bourns VRWM/VC页，未锁MDI最低耐受/源波形，不指控原板钳位超限。"
+    },
+    {
+      "example": 43,
+      "criterion": "G05-031",
+      "title": "TVS 钳位电压不超被保护器件绝对最大值",
+      "status": "plan_miss",
+      "evidence": "M04：D6局部返回、U7/U8多网TVS阵列漏PRO-E02而误生成六个TRIP/NOTRIP；已取Bourns VRWM/VC页，未锁MDI最低耐受/源波形，不指控原板钳位超限。"
+    },
+    {
+      "example": 44,
+      "criterion": "G05-032",
+      "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+      "status": "plan_miss",
+      "evidence": "M04：D6局部返回、U7/U8多网TVS阵列漏PRO-E02而误生成六个TRIP/NOTRIP；已取Bourns VRWM/VC页，未锁MDI最低耐受/源波形，不指控原板钳位超限。"
+    },
+    {
+      "example": 45,
+      "criterion": "G05-040",
+      "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+      "status": "not_applicable_to_external_soa",
+      "evidence": "本板无独立通路MOSFET；U1/U3内置管按具体IC保护/热和厂家应用资格核，不能凭空索分立SOA或套另一厂家MOS曲线。"
+    },
+    {
+      "example": 46,
+      "criterion": "G05-041",
+      "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+      "status": "not_applicable_to_external_soa",
+      "evidence": "本板无独立通路MOSFET；U1/U3内置管按具体IC保护/热和厂家应用资格核，不能凭空索分立SOA或套另一厂家MOS曲线。"
+    },
+    {
+      "example": 47,
+      "criterion": "G05-048",
+      "title": "熔断器分断能力不小于预期短路电流",
+      "status": "not_present_upstream_pending",
+      "evidence": "图内无熔断器；不能虚构其分断能力。源保护按PRO-C01/04和上游合同核，不因本体无F即认定必须用F。"
+    },
+    {
+      "example": 48,
+      "criterion": "G05-054",
+      "title": "每个对外电源接口的反接有明确处置",
+      "status": "covered_pending",
+      "evidence": "八路PRO-D04外部接口误接/带电已问，USB Sink/PoE双桥极性及未定义J5选配需分别核，不把标准插头机械极性当反接免疫。"
+    },
+    {
+      "example": 49,
+      "criterion": "G05-057",
+      "title": "反接阻断之前没有单向 TVS 造成源短路",
+      "status": "topology_checked_pending_qualification",
+      "evidence": "D6跨在D4/D5整流后VIN+/VIN-，不是输入反接阻断前TVS；原生桥+-脚序还须准确物理厂家图映射，不能仅符号A/K推断实装。"
+    },
+    {
+      "example": 50,
+      "criterion": "G05-087",
+      "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+      "status": "not_applicable",
+      "evidence": "本图无外置MOSFET反接电路；双桥输入整流和U1集成开关按实际机制核。"
+    }
+  ],
+  "evidence_records": {
+    "provenance": "/Users/skyfend/.cache/sr-boards/rapidanalysis--xerxes/review/provenance.json",
+    "calculations": "/Users/skyfend/.cache/sr-boards/rapidanalysis--xerxes/review/independent-calculations.json",
+    "per_check_pending": "/Users/skyfend/.cache/sr-boards/rapidanalysis--xerxes/review/review-results.json",
+    "per_function_scope": "/Users/skyfend/.cache/sr-boards/rapidanalysis--xerxes/review/function-review.json",
+    "gate_disposition": "/Users/skyfend/.cache/sr-boards/rapidanalysis--xerxes/review/gate-error-disposition.json",
+    "quality_disposition": "/Users/skyfend/.cache/sr-boards/rapidanalysis--xerxes/review/quality-disposition.json",
+    "original_plan_before_manual_gaps": "/Users/skyfend/.cache/sr-boards/rapidanalysis--xerxes/review/review-plan-before-gaps.json",
+    "native_plan_after_manual_classification": "/Users/skyfend/.cache/sr-boards/rapidanalysis--xerxes/review/review-plan-native-after-classification.json"
+  }
+}
