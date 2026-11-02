@@ -768,6 +768,9 @@ def render_guidelines(plan):
 def render_input_notes(plan):
     out = []
     for diagnostic in (plan or {}).get('diagnostics') or []:
+        if isinstance(diagnostic, dict) and diagnostic.get('code') == 'UNFITTED_PARTS':
+            out += ['未贴装器件 %d 个，已排除。' % len(diagnostic.get('refs') or []), '']
+            continue
         if not isinstance(diagnostic, dict) or diagnostic.get('code') not in INPUT_NOTES:
             continue
         values = diagnostic.get('values') if isinstance(diagnostic.get('values'), dict) else {}

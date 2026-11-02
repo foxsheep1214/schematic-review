@@ -1,0 +1,42 @@
+{
+ "note": "Metadata only. Source XML remains in the user board cache; no third-party netlist is committed.",
+ "boards": [
+  {
+   "id": "antmicro--jetson-agx-thor-baseboard",
+   "source": {
+    "repo": "antmicro/jetson-agx-thor-baseboard",
+    "commit": "d966e9ca4049ae58b77bbc25bd75b074588b6484",
+    "schematic": "jetson-agx-thor-baseboard.kicad_sch",
+    "license": "Apache-2.0"
+   }
+  },
+  {
+   "id": "antmicro--stm32h7-hdmi-board",
+   "source": {
+    "repo": "antmicro/stm32h7-hdmi-board",
+    "commit": "bc07c51c77eebd053504ec112637fbef24138bd6",
+    "schematic": "stm32h7-hdmi-board.kicad_sch",
+    "license": "Apache-2.0"
+   }
+  },
+  {
+   "id": "antmicro--rdimm-ddr4-tester",
+   "source": {
+    "repo": "antmicro/rdimm-ddr4-tester",
+    "commit": "e7c85ebc9eb35645a6c467b0362270a5792d2726",
+    "schematic": "data-center-rdimm-ddr4-tester.kicad_sch",
+    "license": "Apache-2.0"
+   }
+  },
+  {
+   "id": "antmicro--kria-k26-devboard",
+   "source": {
+    "repo": "antmicro/kria-k26-devboard",
+    "commit": "9ead4dfc5b29fa9308206ccdfe013dd8f6d93b67",
+    "schematic": "kria-k26-devboard.kicad_sch",
+    "license": "Apache-2.0",
+    "schematic_sha256": "70b4690e0c5f1185aa167575dc56b5bee5e537b62a65ba937ebd6fb47d831dcc"
+   }
+  }
+ ]
+}

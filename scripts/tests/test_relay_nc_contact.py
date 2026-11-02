@@ -61,6 +61,11 @@ class RelayNcContactTest(unittest.TestCase):
     def test_unfitted_relay_does_not_exempt(self):
         d = relay_board()
         d['parts']['K1']['nc'] = True
+        self.assertEqual(nc_findings(d), [])  # only a single fitted connector pad remains
+        d['parts']['U1'] = {'part': 'IC', 'value': 'IC', 'nc': False}
+        d['nets']['NC'].append('U1.7')
+        d['pin2net']['U1.7'] = 'NC'
+        d['pinname']['U1.7'] = 'NC'
         self.assertEqual([f['kind'] for f in nc_findings(d)], ['FINDING'])
 
     def test_nc_and_no_short_do_not_exempt(self):

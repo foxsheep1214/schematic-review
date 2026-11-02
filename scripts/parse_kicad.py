@@ -17,7 +17,7 @@ KiCad 网表 (kicadxml) -> 与 parse_netlist.py 相同的结构化索引
    `no_connect_nodes`——它是"图上声明不接"，不是"器件不贴"。
 2. **真正悬空的引脚**：没有 NC 标记却落在 `unconnected-(...)` 网里的引脚保持为
    真实单节点网，NET-A01 照常扫出，不被伪网络掩盖。
-3. **DNP 不贴**：`<property name="dnp"/>` 或 VALUE 带 NC 标记才写 `parts[ref].nc`。
+3. **DNP 不贴**：`dnp` 属性、`DNP`/`不贴` 字段的肯定标记或 VALUE 带 NC 才写 `parts[ref].nc`。
    `exclude_from_bom` 只是 BOM 卫生标记，不作装配证据。
 
 引脚功能名取 `pinfunction`（KiCad 的引脚名），缺失时回落到库符号的引脚名；
@@ -36,6 +36,7 @@ import xml.etree.ElementTree as ET
 
 from parse_netlist import is_not_populated, self_check
 from page_inventory import native_inventory, NATIVE
+from solve_dividers import parse_resistor
 
 # KiCad 电气类型 -> 既有 PINUSE 词汇；未知类型保留原文，不静默当作 UNSPEC
 PINUSE = {
@@ -133,7 +134,11 @@ def _component(comp, libparts, pages):
                   for item in comp.findall('./property')}
     mpn = next((value for name, value in sorted(fields.items())
                 if MPN_FIELD.match(name) and value), '')
-    value = _text(comp.findtext('value'))
+    original_value = _text(comp.findtext('value'))
+    val_field = next((name for name in fields if name.casefold() == 'val' and fields[name]), None)
+    value = fields[val_field] if val_field else original_value
+    value_source = val_field or 'value'
+    parsed = parse_resistor(value) if re.match(r'^R\d', comp.get('ref', ''), re.I) else None
     footprint = _text(comp.findtext('footprint'))
     sheetpath = comp.find('sheetpath')
     path = sheetpath.get('names') if sheetpath is not None else None
@@ -146,8 +151,19 @@ def _component(comp, libparts, pages):
         # Do not borrow the cached libpart's link when this declaration is empty.
         'datasheet': _text(comp.findtext('datasheet')),
         # dnp 是装配声明；exclude_from_bom 只是 BOM 卫生，不作装配证据。
-        'nc': 'dnp' in properties or is_not_populated(lib, value),
+        'nc': (any(name.casefold() in ('dnp', '不贴') and str(mark).strip().casefold() not in ('0', 'false', 'no', 'n')
+                   for name, mark in properties.items())
+               or any(name.casefold() in ('dnp', '不贴') and str(mark).strip().casefold() in
+                      ('1', 'true', 'yes', 'y', 'x', 'dnp', '不贴') for name, mark in fields.items())
+               or is_not_populated(lib, value)),
     }
+    # Ordinary literal-only symbols retain their existing db representation.
+    # New native facts participate in the fingerprint only when actually present.
+    if fields or (parsed and parsed.get('method') == 'packaged-RKM'):
+        part.update(original_value=original_value, fields=fields,
+                    value_provenance={'field': value_source, 'raw': value,
+                                      'method': parsed.get('method', 'literal-RKM') if parsed else 'unknown',
+                                      'ohm': parsed['kohm'] * 1000 if parsed else None})
     return part, pages.get(path), lib, normalization
 
 

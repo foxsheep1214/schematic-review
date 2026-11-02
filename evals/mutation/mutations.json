@@ -5444,5 +5444,488 @@
   "file": "scripts/render_report.py",
   "old": "sum(len(r) for r in handoff_groups(plan, handoffs).values())",
   "new": "len(handoffs)"
+ },
+ {
+  "id": "M843",
+  "name": "SIG-A05 VBUS bulk never reported",
+  "file": "scripts/board_scans.py",
+  "old": "if total > USB_SINK_BULK_MAX_F:",
+  "new": "if False:"
+ },
+ {
+  "id": "M844",
+  "name": "SIG-A05 limit off by a factor of ten",
+  "file": "scripts/board_scans.py",
+  "old": "USB_SINK_BULK_MAX_F = 100e-6",
+  "new": "USB_SINK_BULK_MAX_F = 1000e-6"
+ },
+ {
+  "id": "M845",
+  "name": "SIG-A05 flags any net called VBUS without USB evidence",
+  "file": "scripts/board_scans.py",
+  "old": "    if not _has_usb_port(lint):\n        return\n",
+  "new": ""
+ },
+ {
+  "id": "M846",
+  "name": "SIG-A05 sums nets behind a limiter",
+  "file": "scripts/board_scans.py",
+  "old": "(VBUS|VUSB)\\d*$', re.I)",
+  "new": "(VBUS|VUSB)\\w*$', re.I)"
+ },
+ {
+  "id": "M847",
+  "name": "SIG-A05 only looks at the first capacitor",
+  "file": "scripts/board_scans.py",
+  "old": "total = sum(farads for _, farads in caps)",
+  "new": "total = sum(farads for _, farads in caps[:1])"
+ },
+ {
+  "id": "M848",
+  "name": "PWR-A07 missing LDO output capacitor never reported",
+  "file": "scripts/board_scans.py",
+  "old": "            if not any(_caps_to_ground(lint, reached)\n",
+  "new": "            if False and not any(_caps_to_ground(lint, reached)\n"
+ },
+ {
+  "id": "M849",
+  "name": "PWR-A07 judges every IC with an output pin",
+  "file": "scripts/board_scans.py",
+  "old": "lint.graph.kind(ref) != IC or not LDO_IDENTITY_RE.search(identity):",
+  "new": "lint.graph.kind(ref) != IC:"
+ },
+ {
+  "id": "M850",
+  "name": "PWR-A07 ignores capacitors behind a ferrite",
+  "file": "scripts/board_scans.py",
+  "old": "for reached in lint.graph.series_path(net, {FERRITE, INDUCTOR}, max_hops=2)):",
+  "new": "for reached in [net]):"
+ },
+ {
+  "id": "M851",
+  "name": "PWR-A07 fires on a lone output pin",
+  "file": "scripts/board_scans.py",
+  "old": "                    or len(lint.nets.get(net, [])) < 2):\n                continue\n            if not any(_caps",
+  "new": "                    ):\n                continue\n            if not any(_caps"
+ },
+ {
+  "id": "M852",
+  "name": "a capacitor to any net counts as output capacitance",
+  "file": "scripts/board_scans.py",
+  "old": "for ref, other in lint.graph.neighbors(net, {CAPACITOR}) if is_ground(other)]",
+  "new": "for ref, other in lint.graph.neighbors(net, {CAPACITOR})]"
+ },
+ {
+  "id": "M853",
+  "name": "SIG-A04 too-weak pull-up never reported",
+  "file": "scripts/board_scans.py",
+  "old": "        if rp > I2C_RP_MAX_OHM:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M854",
+  "name": "SIG-A04 too-strong pull-up never reported",
+  "file": "scripts/board_scans.py",
+  "old": "        elif rp < low:",
+  "new": "        elif False:"
+ },
+ {
+  "id": "M855",
+  "name": "SIG-A04 takes one resistor instead of the parallel value",
+  "file": "scripts/board_scans.py",
+  "old": "1 / sum(1 / value for value in ohms)",
+  "new": "ohms[0]"
+ },
+ {
+  "id": "M856",
+  "name": "SIG-A04 upper bound uses 100 pF",
+  "file": "scripts/board_scans.py",
+  "old": "I2C_RP_MAX_OHM = 1e-6 / (0.8473 * 10e-12)",
+  "new": "I2C_RP_MAX_OHM = 1e-6 / (0.8473 * 100e-12)"
+ },
+ {
+  "id": "M857",
+  "name": "SIG-A04 lower bound uses 3 mA",
+  "file": "scripts/board_scans.py",
+  "old": "I2C_IOL_MAX_A = 20e-3",
+  "new": "I2C_IOL_MAX_A = 3e-3"
+ },
+ {
+  "id": "M858",
+  "name": "SIG-A04 unknown rail treated as 5 V",
+  "file": "scripts/board_scans.py",
+  "old": "I2C_DEFAULT_PULLUP_V = 1.8 ",
+  "new": "I2C_DEFAULT_PULLUP_V = 5.0 "
+ },
+ {
+  "id": "M859",
+  "name": "a pull-up behind a jumper is not a pull-up",
+  "file": "scripts/board_scans.py",
+  "old": "        if lint.graph.kind(ref) in (SWITCH, JUMPER):\n            for other in lint.graph.nets_of(ref):\n                if other != net and _named_rail(other):",
+  "new": "        if False:\n            for other in lint.graph.nets_of(ref):\n                if other != net and _named_rail(other):"
+ },
+ {
+  "id": "M860",
+  "name": "I2C segment crosses a low resistor into a +rail",
+  "file": "scripts/board_scans.py",
+  "old": "and not _pull_rail(lint, other) and other not in lint.pseudo):",
+  "new": "and not is_rail(other) and other not in lint.pseudo):"
+ },
+ {
+  "id": "M861",
+  "name": "SIG-A04 judges an unreadable pull-up value as absent",
+  "file": "scripts/board_scans.py",
+  "old": "if not pulls or not all(parsed.values()):",
+  "new": "parsed = {ref: value for ref, value in parsed.items() if value}\n        if not parsed:"
+ },
+ {
+  "id": "M862",
+  "name": "10Meg resistor value no longer parses",
+  "file": "scripts/solve_dividers.py",
+  "old": "    if unit == 'M':\n        remainder = re.sub(r'^EG', '', remainder)   # SPICE-style 10Meg\n",
+  "new": ""
+ },
+ {
+  "id": "M863",
+  "name": "SIG-A06 same-net CAN short not seen",
+  "file": "scripts/board_scans.py",
+  "old": "        if high == low:\n            shorted",
+  "new": "        if False:\n            shorted"
+ },
+ {
+  "id": "M864",
+  "name": "SIG-A06 zero-ohm link across the bus not seen",
+  "file": "scripts/board_scans.py",
+  "old": "            if not links:\n                continue\n            shorted",
+  "new": "            if True:\n                continue\n            shorted"
+ },
+ {
+  "id": "M865",
+  "name": "SIG-A06 treats a 120R termination as a short",
+  "file": "scripts/board_scans.py",
+  "old": "CAN_SHORT_KOHM = 0.001",
+  "new": "CAN_SHORT_KOHM = 1.0"
+ },
+ {
+  "id": "M866",
+  "name": "SIG-A06 reports an unfitted transceiver",
+  "file": "scripts/board_scans.py",
+  "old": "        if part.get('nc') or lint.graph.kind(ref) != IC:\n            continue\n        nodes = {CAN_PIN_RE",
+  "new": "        if lint.graph.kind(ref) != IC:\n            continue\n        nodes = {CAN_PIN_RE"
+ },
+ {
+  "id": "M867",
+  "name": "PRO-A05 same-net grounds not seen",
+  "file": "scripts/board_scans.py",
+  "old": "        if set(one) & set(other):\n",
+  "new": "        if False:\n"
+ },
+ {
+  "id": "M868",
+  "name": "PRO-A05 conductive bridge not seen",
+  "file": "scripts/board_scans.py",
+  "old": "            if not links:\n                continue\n            bridged",
+  "new": "            if True:\n                continue\n            bridged"
+ },
+ {
+  "id": "M869",
+  "name": "PRO-A05 counts a bleed resistor as a bridge",
+  "file": "scripts/board_scans.py",
+  "old": "or (parse_resistor(lint.parts[link].get('value')) or {'kohm': 1})['kohm'] <= CAN_SHORT_KOHM]\n            if not links:\n                continue\n            bridged",
+  "new": "or True]\n            if not links:\n                continue\n            bridged"
+ },
+ {
+  "id": "M870",
+  "name": "PRO-A05 judges any multi-ground IC",
+  "file": "scripts/board_scans.py",
+  "old": "                or not (lint.graph.role_kind(ref) == 'isolator' or ISOLATOR_IDENTITY_RE.search(identity))):",
+  "new": "                ):"
+ },
+ {
+  "id": "M871",
+  "name": "PRO-A05 ignores a datasheet-verified isolator role",
+  "file": "scripts/board_scans.py",
+  "old": "not (lint.graph.role_kind(ref) == 'isolator' or ISOLATOR_IDENTITY_RE.search(identity))",
+  "new": "not ISOLATOR_IDENTITY_RE.search(identity)"
+ },
+ {
+  "id": "M872",
+  "name": "PRO-A05 ferrite is not a bridge",
+  "file": "scripts/board_scans.py",
+  "old": "lint.graph.between(a, b, {RESISTOR, FERRITE, INDUCTOR})",
+  "new": "lint.graph.between(a, b, {RESISTOR})"
+ },
+ {
+  "id": "M873",
+  "name": "CLK-A01 oversized crystal load never reported",
+  "file": "scripts/board_scans.py",
+  "old": "        if load > CRYSTAL_LOAD_MAX_F:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M874",
+  "name": "CLK-A01 adds the two sides instead of series",
+  "file": "scripts/board_scans.py",
+  "old": "load = one * other / (one + other)",
+  "new": "load = one + other"
+ },
+ {
+  "id": "M875",
+  "name": "CLK-A01 limit moved to 10 pF",
+  "file": "scripts/board_scans.py",
+  "old": "CRYSTAL_LOAD_MAX_F = 100e-12",
+  "new": "CRYSTAL_LOAD_MAX_F = 10e-12"
+ },
+ {
+  "id": "M876",
+  "name": "an active oscillator counts as a passive crystal",
+  "file": "scripts/board_scans.py",
+  "old": "if len(nets) == 2 and not any(_named_rail(net) for net in nets):",
+  "new": "if len(nets) == 2:"
+ },
+ {
+  "id": "M877",
+  "name": "CLK-A01 judges a crystal with load on one side only",
+  "file": "scripts/board_scans.py",
+  "old": "        if not all(sides) or not all(farads for side in sides for _, farads in side):",
+  "new": "        sides = [side or [('', 1e-3)] for side in sides]\n        if not all(farads for side in sides for _, farads in side):"
+ },
+ {
+  "id": "M878",
+  "name": "CLK-A02 shared crystal never reported",
+  "file": "scripts/board_scans.py",
+  "old": "        if len(on_both) >= 2:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M879",
+  "name": "CLK-A02 one oscillator counts as shared",
+  "file": "scripts/board_scans.py",
+  "old": "        if len(on_both) >= 2:",
+  "new": "        if len(on_both) >= 1:"
+ },
+ {
+  "id": "M880",
+  "name": "CLK-A02 one end is enough",
+  "file": "scripts/board_scans.py",
+  "old": "            if set(nets) <= reached:",
+  "new": "            if set(nets) & reached:"
+ },
+ {
+  "id": "M881",
+  "name": "CLK-A02 any pin counts as an oscillator pin",
+  "file": "scripts/board_scans.py",
+  "old": "                       if OSCILLATOR_PIN_RE.search(str(lint.pinname.get(node, '')).strip())}",
+  "new": "                       }"
+ },
+ {
+  "id": "M882",
+  "name": "CLK-A02 counts an unfitted IC",
+  "file": "scripts/board_scans.py",
+  "old": "            if lint.parts[ic].get('nc') or lint.graph.kind(ic) != IC:",
+  "new": "            if lint.graph.kind(ic) != IC:"
+ },
+ {
+  "id": "M883",
+  "name": "KiCad Val loses priority over library Value",
+  "file": "scripts/parse_kicad.py",
+  "old": "value = fields[val_field] if val_field else original_value",
+  "new": "value = original_value"
+ },
+ {
+  "id": "M884",
+  "name": "packaged resistor name is unreadable again",
+  "file": "scripts/solve_dividers.py",
+  "old": "    if packaged:\n",
+  "new": "    if False:\n"
+ },
+ {
+  "id": "M885",
+  "name": "milliohm shunts interrupt supply provenance again",
+  "file": "scripts/checkers/powertree.py",
+  "old": "or (resistor and 0 <= resistor['kohm'] <= 0.001)",
+  "new": "or (resistor and resistor['kohm'] == 0)"
+ },
+ {
+  "id": "M886",
+  "name": "unfitted nodes take part in electrical scans",
+  "file": "scripts/lint.py",
+  "old": "if self.graph.is_fitted(node.partition('.')[0])])",
+  "new": "if True])"
+ },
+ {
+  "id": "M887",
+  "name": "DNP fields are no longer assembly evidence",
+  "file": "scripts/parse_kicad.py",
+  "old": "or any(name.casefold() in ('dnp', '不贴') and str(mark).strip().casefold() in",
+  "new": "or any(False and str(mark).strip().casefold() in"
+ },
+ {
+  "id": "M888",
+  "name": "unfitted resistors reappear in protected pin paths",
+  "file": "scripts/lint.py",
+  "old": "elif self.graph.is_fitted(ref) and self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2",
+  "new": "elif self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2"
+ },
+ {
+  "id": "M889",
+  "name": "interface default states are empty again",
+  "file": "scripts/catalog.py",
+  "old": "**{name: ('idle', 'active') for name in",
+  "new": "**{name: () for name in"
+ },
+ {
+  "id": "M890",
+  "name": "passive crystal rows are hidden by functional ownership again",
+  "file": "scripts/plan_circuits.py",
+  "old": "['passive-crystal:' + ref])",
+  "new": "['passive-crystal:' + ref]) if False else None"
+ },
+ {
+  "id": "M891",
+  "name": "numbered matrix contacts form a transistor again",
+  "file": "scripts/part_words.py",
+  "old": "if len(pins) > 8 or any(re.fullmatch(r'[BCEGDS]0\\d+', normalize(name)) for name, pin in pins):",
+  "new": "if False:"
+ },
+ {
+  "id": "M892",
+  "name": "ideal diode controller words make a discrete diode again",
+  "file": "scripts/part_words.py",
+  "old": "if ic_ref and pin_count is not None and pin_count >= 4 and {'GATE', 'SENSE', 'IN'} <= controller_pins:",
+  "new": "if False:"
+ },
+ {
+  "id": "M893",
+  "name": "pulls are counted backwards on supply rails",
+  "file": "scripts/lint.py",
+  "old": "if ng.is_rail(net) or net in declared_supply_nets(self.graph, self.intent):",
+  "new": "if False:"
+ },
+ {
+  "id": "M894",
+  "name": "enable source discovery ignores zero ohm peers",
+  "file": "scripts/checkers/power_up.py",
+  "old": "peers = graph.low_resistance_peers(enable_net)",
+  "new": "peers = {enable_net: []}"
+ },
+ {
+  "id": "M895",
+  "name": "internal input bias policy is ignored",
+  "file": "scripts/board_scans.py",
+  "old": "if declared_nc and permission:",
+  "new": "if False:"
+ },
+ {
+  "id": "M896",
+  "name": "multi digit bus indexes become misspellings again",
+  "file": "scripts/lint.py",
+  "old": "            or re.sub(r'\\d+', '#', la) == re.sub(r'\\d+', '#', lb))",
+  "new": "            or False)"
+ },
+ {
+  "id": "M897",
+  "name": "small supply bias is no driver for a transistor",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "        if supply:\n            found.append(",
+  "new": "        if False:\n            found.append("
+ },
+ {
+  "id": "M898",
+  "name": "wired open drain flag policy is ignored",
+  "file": "scripts/lint.py",
+  "old": "drain_only = len(drivers) > 1 and all(self._wired_open_drain(node) for node in outputs)",
+  "new": "drain_only = False"
+ },
+ {
+  "id": "M899",
+  "name": "SiC437 VOUT sense is a power source again",
+  "file": "scripts/checkers/powertree.py",
+  "old": "and pin == '18')  # SiC437 pin18 VOUT senses the output; SW delivers energy",
+  "new": "and False)  # SiC437 pin18 VOUT senses the output; SW delivers energy"
+ },
+ {
+  "id": "M900",
+  "name": "unknown resistor supply paths are called opens again",
+  "file": "scripts/lint.py",
+  "old": "            if unknown and source:",
+  "new": "            if False:"
+ },
+ {
+  "id": "M901",
+  "name": "a connector wins over the internal supply",
+  "file": "scripts/checkers/powertree.py",
+  "old": "                    off_board = off_board or {'source': node, 'path': list(reversed(path)),",
+  "new": "                    return {'source': node, 'path': list(reversed(path)),"
+ },
+ {
+  "id": "M902",
+  "name": "hyphenated KiCad net ties interrupt supply again",
+  "file": "scripts/checkers/powertree.py",
+  "old": "(?:^|:)Net[-_ ]?Tie(?:_|$)",
+  "new": "(?:^|:)NetTie(?:_|$)"
+ },
+ {
+  "id": "M903",
+  "name": "output sense feedback looks like an inductor input supply again",
+  "file": "scripts/checkers/powertree.py",
+  "old": "if not re.search(r'(?:SNS|SENSE)(?:$|[_0-9])', str(graph.pinname.get(node, '')), re.I)",
+  "new": "if True"
+ },
+ {
+  "id": "M904",
+  "name": "adjudicated TVS pairs have no corrected baseline",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "baseline=base, intent=rail_intent(rails[0], voltage,",
+  "new": "baseline=None, intent=rail_intent(rails[0], voltage,"
+ },
+ {
+  "id": "M905",
+  "name": "the original faulty board hides paired seed detection",
+  "file": "evals/seeded_bench/run.py",
+  "old": "paired_seen = {(f['rule'], f['detail']) for f in paired}",
+  "new": "paired_seen = seen"
+ },
+ {
+  "id": "M906",
+  "name": "a controlled seed forgets unrelated supply identity declarations",
+  "file": "evals/seeded_bench/run.py",
+  "old": "for net in rail_candidates(db, bound):",
+  "new": "for net in ():"
+ },
+ {
+  "id": "M907",
+  "name": "seed runtime errors pass silently",
+  "file": "evals/seeded_bench/run.py",
+  "old": "return 1 if any('error' in row for row in records) or any('error' in row for row in baselines.values()) else 0",
+  "new": "return 0"
+ },
+ {
+  "id": "M908",
+  "name": "KiCad inline subscripts hide functional pin names",
+  "file": "scripts/part_words.py",
+  "old": "add(re.sub(r'_\\{([A-Za-z0-9]+)\\}', r'\\1', candidate))",
+  "new": "pass"
+ },
+ {
+  "id": "M909",
+  "name": "unused input policies use styled raw names again",
+  "file": "scripts/board_scans.py",
+  "old": "pin_names = pin_aliases(lint.pinname.get(node), node.partition('.')[2])",
+  "new": "pin_names = (str(lint.pinname.get(node, '')).upper(),)"
+ },
+ {
+  "id": "M910",
+  "name": "fixed MPSSE buffering becomes an open drain bus by name",
+  "file": "scripts/board_scans.py",
+  "old": "if not resistors and ftdi and buffer and set(ics) == set(ftdi + buffer) and not declared_bus:",
+  "new": "if False:"
+ },
+ {
+  "id": "M911",
+  "name": "PoE VSS must be shorted to the main return again",
+  "file": "scripts/lint.py",
+  "old": "if not ng.is_ground(n) and not pd_return:",
+  "new": "if not ng.is_ground(n):"
  }
 ]

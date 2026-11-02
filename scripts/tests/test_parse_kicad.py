@@ -192,6 +192,7 @@ class NotConnectedTest(unittest.TestCase):
         db = parse(board())
         self.assertIn('unconnected-(R2-Pad1)', db['nets'])
         self.assertNotIn('unconnected-(R2-Pad1)', db['pseudo_nets'])
+        db['parts']['R2']['nc'] = False  # this test concerns a fitted, truly dangling pin
         hits = [f for f in Lint(db).run() if f['rule'] == 'NET-A01']
         self.assertEqual([f['detail'].split(' <- ')[0] for f in hits],
                          ['unconnected-(R2-Pad1)'])

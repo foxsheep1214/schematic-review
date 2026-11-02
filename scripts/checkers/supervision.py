@@ -665,6 +665,10 @@ class _Scan:
             if (kind == pw.IC and _pin_direction(self.graph, node) in ('input', 'bidirectional')
                     and (named_reset or model_reset)):
                 found.append({'node': node, 'role': 'reset-input'})
+            elif kind == pw.IC and pw.name_matches(re.compile(r'^/?(OE|EN|ENABLE|INH|SHDN)$', re.I), self.graph.pinname.get(node), pin):
+                found.append({'node': node, 'role': 'control-input'})
+            elif kind in (pw.MOSFET, pw.BJT) and self.graph.role(node) == 'gate':
+                found.append({'node': node, 'role': 'control-stage'})
             elif kind == pw.IC:
                 found.append({'node': node, 'role': 'other-pin'})
             elif kind == pw.CONNECTOR:
@@ -910,7 +914,11 @@ class SupervisionChecker(Checker):
                         continue
                     detail = (head + '：复位/看门狗输出 ' + output['node'] + ' 所在网 '
                               + output['net'] + ' 未接到任何复位输入')
-                    if output['destinations']:
+                    if any(x['role'] in ('control-input', 'control-stage') for x in output['destinations']):
+                        lint.add('RST-A06', self.cold_rules['RST-A06'],
+                                 head + '：复位输出经控制端/开关级作用，核控制目的、逐级极性与时序；路径 '
+                                 + '、'.join(x['node'] for x in output['destinations']), item['ref'], kind='INFO')
+                    elif output['destinations']:
                         lint.add('RST-A06', self.cold_rules['RST-A06'],
                                  detail + '（仅接到 '
                                  + '、'.join(x['node'] for x in output['destinations'])

@@ -1,0 +1,175 @@
+{
+ "rule": "PRO-A05",
+ "runner": "cold",
+ "note": "isolator GND2 on the same net as GND1 vs its own ground",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_A"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ],
+     [
+      "3",
+      "3",
+      "VCC_B"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_A"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "ADuM1201",
+    "pins": [
+     [
+      "1",
+      "VDD1",
+      "VCC_A"
+     ],
+     [
+      "2",
+      "GND1",
+      "GND"
+     ],
+     [
+      "3",
+      "VDD2",
+      "VCC_B"
+     ],
+     [
+      "4",
+      "GND2",
+      "GND"
+     ],
+     [
+      "5",
+      "VIA",
+      "IN"
+     ],
+     [
+      "6",
+      "VOA",
+      "OUT"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_A"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ],
+     [
+      "3",
+      "3",
+      "VCC_B"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_A"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "ADuM1201",
+    "pins": [
+     [
+      "1",
+      "VDD1",
+      "VCC_A"
+     ],
+     [
+      "2",
+      "GND1",
+      "GND"
+     ],
+     [
+      "3",
+      "VDD2",
+      "VCC_B"
+     ],
+     [
+      "4",
+      "GND2",
+      "GND_B"
+     ],
+     [
+      "5",
+      "VIA",
+      "IN"
+     ],
+     [
+      "6",
+      "VOA",
+      "OUT"
+     ]
+    ]
+   },
+   {
+    "ref": "C2",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_B"
+     ],
+     [
+      "2",
+      "2",
+      "GND_B"
+     ]
+    ]
+   }
+  ]
+ }
+}

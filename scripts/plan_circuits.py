@@ -14,7 +14,7 @@ import row_owner
 from audit_datasheets import datasheet_entry_for_ref
 from checkers import powertree
 from checkers.netgraph import RAIL_RE, NetGraph, is_analog_sense_pair, is_ground
-from part_words import (BJT, BRIDGE_RECTIFIER, CAPACITOR, COMMON_MODE_CHOKE, CONNECTOR, COUPLED_INDUCTOR, DIODE, FUSE, IC,
+from part_words import (BJT, BRIDGE_RECTIFIER, CAPACITOR, COMMON_MODE_CHOKE, CONNECTOR, COUPLED_INDUCTOR, CRYSTAL, DIODE, FUSE, IC,
                         INDUCTOR, MOSFET, OPTO,
                         PASSIVE_LINKS, RESISTOR, SWITCH, TESTPOINT, TRANSFORMER, TVS, UNKNOWN, ZENER, ELECTROLYTIC_RE,
                         LED_RE, NTC, NTC_RE, POLARIZED_SYMBOL_RE, TANTALUM_RE, VARISTOR, VARISTOR_RE, name_matches,
@@ -419,6 +419,10 @@ class CircuitPlanning:
         names = dict(self.db.get('declared_pinname') or {}, **(self.db.get('pinname') or {}))
         for circuit in circuits:
             refs = circuit['refs']
+            if tuple(catalog.CANDIDATE_STATES.get(kind.name, ())) == ('idle', 'active'):
+                self.diagnostics.append({'code': 'DEFAULT_CIRCUIT_STATES', 'circuit': circuit['id'],
+                                         'states': ['idle', 'active'],
+                                         'detail': '默认状态，未经需求确认；按需求核对状态覆盖，不作需求依据'})
             gaps = [f'datasheet:{ref}' for ref in refs
                     if not (datasheet_entry_for_ref(self.datasheet_audit, ref) or {}).get('status') == 'AVAILABLE']
             gaps += [f'unknown ref:{ref}' for ref in refs if ref not in self.db.get('parts', {})]
@@ -658,6 +662,19 @@ class CircuitPlanning:
                 # a protective clamp's working voltage and temperature grade are its PRO-E02 row (2026-10-26)
                 self._ready_check('DEV-C05', {'ref': ref}, gaps + self._materials_gap(['requirements']), trigger)
 
+        # Every fitted passive crystal has its own load/start-up review, regardless of USB/CLOCK ownership.
+        for ref in sorted(db.get('parts', {})):
+            if not connector_graph.is_fitted(ref) or connector_graph.kind(ref) != CRYSTAL:
+                continue
+            if any((db.get('native_pintype') or {}).get(ref + '.' + pin) == 'power_in'
+                   or re.fullmatch(r'VDD|VCC|VCCO', str(connector_graph.pinname.get(ref + '.' + pin, '')), re.I)
+                   for pin in connector_graph.pins_of(ref)):
+                continue  # an active oscillator has a supply; no passive load network is required
+            if any(c['rule'] == 'CLK-C01' and ref in
+                   ([c.get('object', {}).get('ref')] + c.get('object', {}).get('refs', [])) for c in self.checks):
+                continue
+            self._ready_check('CLK-C01', {'ref': ref, 'refs': [ref], 'nets': connector_graph.nets_of(ref)},
+                              self._materials_gap(['datasheets', 'requirements']), ['passive-crystal:' + ref])
         self.plan_threshold_checks(connector_graph)
 
     def _bom_fields(self, ref):

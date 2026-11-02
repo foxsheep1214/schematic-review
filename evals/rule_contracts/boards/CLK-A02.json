@@ -1,0 +1,240 @@
+{
+ "rule": "CLK-A02",
+ "runner": "cold",
+ "note": "both ends on two oscillators vs a second IC fed only by a clock input",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "XIN",
+      "XI"
+     ],
+     [
+      "4",
+      "XOUT",
+      "XO"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "XIN",
+      "XI"
+     ],
+     [
+      "4",
+      "XOUT",
+      "XO"
+     ]
+    ]
+   },
+   {
+    "ref": "Y1",
+    "value": "16MHz",
+    "pins": [
+     [
+      "1",
+      "1",
+      "XI"
+     ],
+     [
+      "2",
+      "2",
+      "XO"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "18pF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "XI"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "C2",
+    "value": "18pF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "XO"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "XIN",
+      "XI"
+     ],
+     [
+      "4",
+      "XOUT",
+      "XO"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "CLKIN",
+      "XO"
+     ]
+    ]
+   },
+   {
+    "ref": "Y1",
+    "value": "16MHz",
+    "pins": [
+     [
+      "1",
+      "1",
+      "XI"
+     ],
+     [
+      "2",
+      "2",
+      "XO"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "18pF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "XI"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "C2",
+    "value": "18pF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "XO"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

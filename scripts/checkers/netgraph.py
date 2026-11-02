@@ -281,6 +281,23 @@ class NetGraph:
             out.append((ref, other))
         return sorted(out)
 
+    def low_resistance_peers(self, net):
+        """Fitted <=1 ohm links/net ties for source discovery; not a voltage-drop signoff."""
+        from solve_dividers import parse_resistor
+        found, queue = {net: []}, [net]
+        while queue:
+            current = queue.pop(0)
+            for ref, other in self.neighbors(current):
+                part = self.parts.get(ref, {})
+                value = parse_resistor(part.get('value')) if self.kind(ref) == 'resistor' else None
+                tie = re.search(r'(?:^|:)Net[-_ ]?Tie(?:_|$)', str(part.get('prim', '')), re.I)
+                if other in found or not (tie or (value and 0 <= value['kohm'] <= .001)):
+                    continue
+                found[other] = found[current] + [ref]
+                if not is_ground(other):
+                    queue.append(other)
+        return found
+
     def series_path(self, net, kinds=PASSIVE_LINKS, max_hops=3, fitted_only=True):
         """沿串联无源件扩展出的等电位候选网络集合（含起点）。"""
         seen, frontier = {net}, [(net, 0)]
