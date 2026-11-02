@@ -55,7 +55,7 @@ KINDS = OrderedDict([
                                                         'SM712'),),
                        ('tvs', 'esdprotection', 'transientvoltagesuppress', 'transientsuppress'), two_terminal=True, protective=True,
                        datasheet=True)),
-    ('zener', DeviceKind('齐纳', (), (r'ZENER|稳压二极管|' + family('BZX', r'BZT5\d', 'MMSZ', r'1N47\d'),), ('zener',),
+    ('zener', DeviceKind('稳压管', (), (r'ZENER|稳压二极管|' + family('BZX', r'BZT5\d', 'MMSZ', r'1N47\d'),), ('zener',),
                          two_terminal=True, datasheet=True)),
     # KiCad symbol-library category of the symbol actually placed, then the part words; 2N7000/2N7002 are MOSFETs.
     ('bjt', DeviceKind('双极晶体管', (), (r'TRANSISTOR_BJT:', r'\bNPN\b|\bPNP\b|三极管|' +
@@ -79,7 +79,7 @@ KINDS = OrderedDict([
     # OSC only as a whole word: footprint names like Bosch_LGA-8 contain the letters.
     ('crystal', DeviceKind('晶体', (r'^Y\d', r'^X\d'), (r'CRYSTAL|XTAL|\bOSC(?:ILLATOR)?\b|晶振|晶体',))),
     ('transformer', DeviceKind('变压器', (r'^T\d',), (r'TRANSFORMER|变压器',), ('transformer',), datasheet=True)),
-    ('fuse', DeviceKind('保险', (r'^F\d',), (r'FUSE|PTC|保险',), ('fuse', 'pptc'), two_terminal=True, passive_link=True,
+    ('fuse', DeviceKind('保险丝', (r'^F\d',), (r'FUSE|PTC|保险',), ('fuse', 'pptc'), two_terminal=True, passive_link=True,
                         protective=True, datasheet=True)),  # PTC or FUSE by its words
     ('battery', DeviceKind('电池', (r'^BT\d',), (r'(?:^|[\s:_])BATTERY\b|电池',), wearout='BATTERY', declarable=False)),
     # KiCad places test pads as Connector:TestPoint*; the library entry, not the namespace, decides that this is a

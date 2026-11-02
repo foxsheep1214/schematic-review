@@ -728,7 +728,7 @@ OBJECTIVE_RULES = {
 }
 
 
-# 共用规范依据（2026-10-31，用户：请开始执行这个方案）：SR 规则 → 它核对的共用规范规则（G0x-nnn，references/guideline-rules.md）。
+# 共用规范依据（2026-10-31，用户：请开始执行这个方案）：SR 规则 → 它核对的共用规范规则（G0x-nnn，references/shared/guideline-rules.md）。
 # 计划里出现一条 SR 规则，就覆盖了它映射的规范规则。规范编号 G03-005 与上面的审查要点 G1–G7、
 # 定界推法 G1–G6 格式不同，不要混写。
 def baseline_asks(rule_id, intent):
@@ -1428,7 +1428,7 @@ BOUND_METHODS = OrderedDict((m.code, m) for m in (
     BoundMethod('G9', '只有典型值：同类参数 min/max 比例、同系列保证范围或典型 ± typical_band（G02 工程取值）', '估算'),
     BoundMethod('G10', '厂家参考电路同接法：接法相同、本板负载不重于参考电路，引图号', '可判通过'),
     BoundMethod('G11', '厂家应用笔记的公式：按笔记给的公式和系数算，引笔记号与页', '估算'),
-    BoundMethod('SOA', '按持续时间选 25 °C 曲线，按开始壳温降额，按降额规范工程取值 soa_segment_share 分段留余量', '保证最坏值'),
+    BoundMethod('SOA', '按持续时间选 25 °C 曲线，按开始壳温降额，按规则库工程取值 soa_segment_share 分段留余量', '保证最坏值'),
     BoundMethod('FORCED_BETA', '饱和开关按强制 β：IB ≥ IC /（hFE_min / forced_beta_k）（G02 工程取值）', '保证最坏值'),
 ))
 # 2026-10-27（用户：第二阶段按建议做）：推法是余量和开放项公开界限共用的唯一叫法（结果格式 15 停用 basis.derivation、

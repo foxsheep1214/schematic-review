@@ -77,7 +77,7 @@ class CatalogTest(unittest.TestCase):
 
     def test_every_rule_token_in_code_and_docs_is_registered(self):
         paths = sorted(SCRIPTS.glob('*.py')) + sorted((SCRIPTS / 'checkers').glob('*.py'))
-        paths += sorted((ROOT / 'references').glob('*.md')) + [ROOT / 'SKILL.md', ROOT / 'README.md']
+        paths += sorted((ROOT / 'references').rglob('*.md')) + [ROOT / 'SKILL.md', ROOT / 'README.md']
         for path in paths:
             with self.subTest(path.name):
                 unknown = set(RULE_TOKEN.findall(path.read_text(encoding='utf-8'))) - set(catalog.BY_ID)

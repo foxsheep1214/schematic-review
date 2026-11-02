@@ -9,13 +9,60 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 共用应力核对进共用层：scripts/stress_check.py (2026-11-02)
+
+应力核对的算数原来两边各写一份：SR `derating.py` 的 `derated_limit`/`margin_errors`/`implied_ratio` 与 ASG `audit_design_closure.py` 的 `derated_limit`/`implied_rule`，
+量纲词表和接口类型词（`DIMENSION_WORDS`、`TYPE_WORDS`）也各抄一份。现在 `scripts/stress_check.py` 一份：某级降额限值（`derated_limit`）、
+一条应力对额定与降额值的判法（`verdict` → OVER_RATING / STRESS_RISK / OK，与 `stress-spec.md` 的三段一一对应）、没点名规则时按器件类别与量纲挑规则（`fit_rules`）。
+两技能同字节，列入 `guideline_rules.SHARED_FILES` 进共用层指纹（共用层 f23af6b4c450）；`derating.py` 只读记录、只管措辞，`LEVELS`/`RECOMPUTED` 取自它。
+`shared-layer.md` 代码一行、谁读表、怎么改第 2 步与 `architecture.md` 步骤 ② 库一列登记了它。
+ASG 同日把 17 个电路模式的做法映射到规范规则（`电路类型：`、`落实规则` 两行，`circuit_patterns.py`），与本技能 `catalog.BASIS` 对称；SR 侧无改动。
+
+- Event: user:2026-11-02 (我不确认方案了，你先找你推荐的方式把1/2/4做完之后做3，一直到都做完)
+- Causes: judgment 1
+- Changed: scripts/stress_check.py, scripts/derating.py, scripts/guideline_rules.py, references/shared/shared-layer.md, references/shared/guideline-rules.md, references/architecture.md, evals/mutation/mutations.json, docs/improvement-ledger.md
+- Gates: pytest 2406; ASG pytest 1033; mutation --changed: 39 mutations on the changed files, 38 killed, M830 errored (its pattern was the old `implied_ratio` line) and was re-pointed at the new line, then killed on rerun; the contract-tier column is report-only
+
+## 共用层第二轮：词表与常规件最弱档进共用层，规则库 1.4.1 (2026-11-02)
+
+用户要求把零散的规则归入新架构（“按照你推荐的方式，现在就开始执行”；随后“我不确认方案了…一直到都做完”）。
+词表原来倒挂：规则库的 `vocabulary` 从旧 bundle 抄 SR 的 `catalog.CIRCUIT_TYPES`、`device_kinds.KINDS`，ASG 的测试伸手到 SR 的 checkout 读 `device_kinds.py`。
+现在 `references/shared/vocabulary.json` 是名字与标题的唯一出处：`guideline_rules.build` 从它取词表（不再有 `--base`），`bundle_errors` 拒收与它不一致的汇编，
+`test_guideline_rules` 反过来核对 catalog 与 device_kinds 的名字和标题；`zener`/`fuse` 的标题统一为“稳压管”“保险丝”（原 SR“齐纳”“保险”），`review-vocabulary.md` 随之重生成。
+常规件最弱档原来三份手抄（SR `passive_stress`、ASG `audit_design_closure` 与 `component_requirements`，ASG 用 `ast` 解析 SR 源码比对）：
+现在 `references/shared/commodity-floors.json` 一份（片式电阻 8 个封装的 70 ℃ 功率与耐压、MLCC 可订购档 5 行、触点 7 行，带依据与核对日期），
+`passive_stress` 的 `RESISTOR_FLOORS`、`MLCC_ORDERABLE` 从它构造，`commodity-floors.md` 三张表由新测试 `test_commodity_floors.py` 核对与文件逐项相等；
+`WEAKEST_SHARE`、`ASSUMED_PACKAGE` 两个判断值迁入规则库 G02 工程取值 `weakest_share`、`assumed_resistor_package`，规则库 1.4.1。
+原计划的第 4 项（定界表剩余估算倍数）查无数值，不做。步骤 ② 的阅读量记录 157 920 → 158 290：`commodity-floors.md` 三张表各加一句指向共用文件。
+
+- Event: user:2026-11-02 (按照你推荐的方式，现在就开始执行; 我不确认方案了，你先按你推荐的方式把1/2/4做完之后做3，一直到都做完)
+- Causes: judgment 1
+- Changed: references/shared/vocabulary.json, references/shared/commodity-floors.json, references/shared/guideline-rules.json, references/shared/guideline-rules.md, references/shared/shared-layer.md, references/commodity-floors.md, references/review-vocabulary.md, references/architecture.md, scripts/guideline_rules.py, scripts/device_kinds.py, scripts/checkers/passive_stress.py, scripts/tests/test_guideline_rules.py, scripts/tests/test_derating_rules.py, scripts/tests/test_commodity_floors.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 2406, mutation --changed: 跑在共用应力核对代码之后，记在下一条
+
+## 共用层目录制：references/shared/、工程取值唯一出处、一个指纹 (2026-11-02)
+
+用户要求重新调整与 ASG 的共用层，让结构清晰简单、映射明确；方案（目录制、3 项工程取值迁进规则库）经用户批准。
+此前共用层是两次决定叠出来的：规则库三份文件和降额表、应力规范散在 `references/` 与 `scripts/`，两套版本、两条对齐测试、
+工程取值在规则库（41 项）和降额表（3 项）两个家，六份文档各说一遍“与 ASG 共用”。
+现在 `guideline-rules.json/.md`、`derating-rules.json/.md`、`stress-spec.md` 搬进 `references/shared/`，新增 `shared-layer.md` 作为共用层唯一说明页；
+降额表剩下的 `unset_level`、`thermal_calc_trigger`（G01）与 `soa_segment_share`（G03）迁入规则库 1.4.0，`bound_formulas`、`passive_stress` 改读 `guideline_rules.engineering_value`，`derating.engineering_value` 删除；
+`guideline_rules.shared_digest()` 给整个共用层一个指纹，计划 `guidelines` 段多写 `shared_sha256`，门禁核对它与已装共用层一致，
+报告“共用规范规则覆盖”首行印“共用层 <指纹>，规则库 <版本>，降额 v<版本>”；`test_guideline_rules` 一条整目录对齐测试取代原来规则库、降额各一条。
+`test_reading_path` 的 `REFERENCES` 改为递归、链接正则允许 `shared/`，步骤 ②③ 的阅读量记录 +10/+40（链接路径多了 `shared/`）；三份由 catalog 生成的文档重生成。
+
+- Event: user:2026-11-02 (帮我重新调整一下这部分共用层的架构，让结构清晰简单，映射明确; 目录制; 迁进规则库)
+- Causes: judgment 1
+- Changed: SKILL.md, references/shared/shared-layer.md, references/shared/guideline-rules.json, references/shared/guideline-rules.md, references/shared/derating-rules.json, references/shared/derating-rules.md, references/shared/stress-spec.md, references/architecture.md, references/bounding-table.md, references/check-catalog.md, references/review-vocabulary.md, references/intent-format.md, references/margin-verdicts.md, references/results-format.md, references/review-charter.md, scripts/guideline_rules.py, scripts/derating.py, scripts/bound_formulas.py, scripts/catalog.py, scripts/checkers/passive_stress.py, scripts/plan_review.py, scripts/validate_review.py, scripts/render_report.py, scripts/tests/test_guideline_rules.py, scripts/tests/test_guideline_plan.py, scripts/tests/test_derating_rules.py, scripts/tests/test_stress_spec.py, scripts/tests/test_reading_path.py, scripts/tests/test_catalog.py, scripts/tests/test_independent_review.py, scripts/tests/test_one_planning_entry.py, evals/mutation/mutations.json, docs/improvement-ledger.md
+- Gates: pytest 2402, mutation --changed: 14 mutations on the changed files, all killed in the first run (the verification run was disturbed by an ASG-side sync in progress; rerun recorded in the stress_check entry)
+
 ## Rule library 1.3.0: the last four draft rules turn active (2026-11-02)
 
 The user asked for G04-003, G04-011, G04-079 and G05-026 to go active. G02 keeps the method for interface levels and synchronous timing and G04 judges them; G04-079 keeps its two tiers, with a datasheet criterion first and the 5× of ST AN2867 as the engineering default; G05-026 compares eFuse and upstream fuse from their datasheets and records missing data, because no vendor method exists. No check changes. G04-011 stays unexpanded on a board with only CLOCK or HSSERIAL circuits.
 
 - Event: user:2026-11-02 (请推进到active)
 - Causes: rule_missing 1
-- Changed: docs/improvement-ledger.md, references/architecture.md, references/guideline-rules.json
+- Changed: docs/improvement-ledger.md, references/architecture.md, references/shared/guideline-rules.json
 - Gates: pytest 2402 passed; ASG 1023 passed; KiCad replay on contract `guideline-rules-v2` with no mismatch; `mutation/run.py --changed` 2/2 killed
 
 ## Rule library 1.2.0 (G04, G05 active): 23 new checks, full BASIS, I²C rows follow the baseline (2026-11-01)
@@ -29,7 +76,7 @@ The user approved the mapping table (“按表实施”) for the 197 rules of G0
 
 - Event: user:2026-11-01 (按表实施)
 - Causes: rule_missing 1, rule_not_enforced 1
-- Changed: docs/improvement-ledger.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/guideline-rules-v2, evals/kicad_replay_bench/run.py, references/architecture.md, references/check-catalog.md, references/guideline-rules.json, references/review-vocabulary.md, scripts/catalog.py, scripts/checkers/i2c.py, scripts/plan_circuits.py, scripts/tests/test_i2c_topology.py, scripts/tests/test_plan_review.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json
+- Changed: docs/improvement-ledger.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/guideline-rules-v2, evals/kicad_replay_bench/run.py, references/architecture.md, references/check-catalog.md, references/shared/guideline-rules.json, references/review-vocabulary.md, scripts/catalog.py, scripts/checkers/i2c.py, scripts/plan_circuits.py, scripts/tests/test_i2c_topology.py, scripts/tests/test_plan_review.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json
 - Gates: pytest 2402 passed; ASG 1023 passed; KiCad replay on contract `guideline-rules-v2` with no mismatch; `mutation/run.py --changed` 98/99 killed, the survivor M354 was stale after CIRCUIT_TYPE_MISFIT moved to the baseline-asked count and is repointed and rerun alone
 
 ## Rule library 1.0.0 (G01–G03) installed: interface circuit types, 17 new checks, full BASIS, estimate factors moved to G02 (2026-11-01)
@@ -44,13 +91,13 @@ The user decided the four integration questions (“按照修改后，在运行�
 
 - Event: user:2026-11-01 (开工；按表写)
 - Causes: rule_missing 1, rule_not_enforced 2
-- Changed: SKILL.md, docs/improvement-ledger.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/guideline-rules-v1, evals/kicad_replay_bench/run.py, references/architecture.md, references/bounding-table.md, references/check-catalog.md, references/derating-rules.json, references/derating-rules.md, references/guideline-rules.json, references/guideline-rules.md, references/review-vocabulary.md, references/wca-formulas.md, scripts/bound_formulas.py, scripts/catalog.py, scripts/checkers/power_up.py, scripts/guideline_rules.py, scripts/plan_board.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/render_report.py, scripts/tests/conftest.py, scripts/tests/fixtures/golden_reports/estimate.md, scripts/tests/test_catalog.py, scripts/tests/test_derating_rules.py, scripts/tests/test_derive_rows.py, scripts/tests/test_guideline_plan.py, scripts/tests/test_guideline_rules.py, scripts/tests/test_plan_review.py, scripts/tests/test_power_up.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json
+- Changed: SKILL.md, docs/improvement-ledger.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/guideline-rules-v1, evals/kicad_replay_bench/run.py, references/architecture.md, references/bounding-table.md, references/check-catalog.md, references/shared/derating-rules.json, references/shared/derating-rules.md, references/shared/guideline-rules.json, references/shared/guideline-rules.md, references/review-vocabulary.md, references/wca-formulas.md, scripts/bound_formulas.py, scripts/catalog.py, scripts/checkers/power_up.py, scripts/guideline_rules.py, scripts/plan_board.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/render_report.py, scripts/tests/conftest.py, scripts/tests/fixtures/golden_reports/estimate.md, scripts/tests/test_catalog.py, scripts/tests/test_derating_rules.py, scripts/tests/test_derive_rows.py, scripts/tests/test_guideline_plan.py, scripts/tests/test_guideline_rules.py, scripts/tests/test_plan_review.py, scripts/tests/test_power_up.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json
 - Gates: pytest 2402 passed with both skills pointed at the worktrees (on the installed ASG the 2 cross-skill byte checks fail until merge); KiCad replay 195/195; `mutation/run.py --changed` 199/199 killed, after repointing M478, M479, M812, M813 to the moved values and M417, stale since the typical band became a name
 
 ## Shared guideline rule library G01–G09 joins the plan, the gate and the report (2026-10-31)
 
 The user had the ASG/SR integration plan carried out (“请开始执行这个方案，慢慢来，一步一步来修改。遇到问题的时候先按照你的建议来执行。”).
-- The nine shared hardware guidelines compile into `references/guideline-rules.json`, described in `references/guideline-rules.md` and
+- The nine shared hardware guidelines compile into `references/shared/guideline-rules.json`, described in `references/shared/guideline-rules.md` and
   checked, built and selected by `scripts/guideline_rules.py`. The three files are byte-identical in ASG (as the derating spec is), and
   each repository's tests compare them with the other's. The library is empty until the guidelines are written (version 0.0.0).
 - Two layers: a guideline rule (`G0x-nnn`) is the criterion with its source; `catalog.BASIS` maps SR rules to the guideline rules they
@@ -67,7 +114,7 @@ The user had the ASG/SR integration plan carried out (“请开始执行这个�
   plan only has the circuit types named by candidates, so ASG (which declared POWER_CONVERTER for the charger) found one more rule.
 - Event: user:2026-10-31 (请开始执行这个方案)
 - Causes: rule_missing 1
-- Changed: SKILL.md, references/guideline-rules.md, references/guideline-rules.json, references/architecture.md, references/intent-format.md, references/review-charter.md, scripts/guideline_rules.py, scripts/catalog.py, scripts/plan_review.py, scripts/validate_review.py, scripts/render_report.py, scripts/tests/test_guideline_rules.py, scripts/tests/test_guideline_plan.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Changed: SKILL.md, references/shared/guideline-rules.md, references/shared/guideline-rules.json, references/architecture.md, references/intent-format.md, references/review-charter.md, scripts/guideline_rules.py, scripts/catalog.py, scripts/plan_review.py, scripts/validate_review.py, scripts/render_report.py, scripts/tests/test_guideline_rules.py, scripts/tests/test_guideline_plan.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
 - Gates: pytest 2395 passed, 1 skipped (the ASG byte comparison, until ASG installs the library); mutation --changed 130 on 14 files, 129 killed, M417 errors on an anchor already stale on main (left as found)
 
 ## R8 report: one row per requirement, each risk once (2026-10-28)
@@ -120,7 +167,7 @@ and one program error; the user took every recommendation (user: 按推荐都做
 
 - Event: user:2026-10-28 (按推荐都做)
 - Causes: rule_not_enforced 3 (A1, A3, C); judgment 3 (A2, B, D); program_error 1 (passive_stress context)
-- Changed: scripts/checkers/passive_stress.py, scripts/circuit_candidates.py, scripts/catalog.py, scripts/plan_circuits.py, scripts/render_report.py, scripts/derating.py, scripts/review_functions.py, scripts/validate_review.py, scripts/review_quality.py, scripts/tests/test_inventory_context_revalidation.py, scripts/tests/test_circuit_candidates.py, scripts/tests/test_single_fault_rows.py, scripts/tests/test_subject_requires.py, scripts/tests/test_report_rendering_51.py, scripts/tests/test_stress_spec.py, scripts/tests/test_review_functions.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json, references/check-catalog.md, references/review-vocabulary.md, references/stress-spec.md, references/verdicts-and-release.md, docs/improvement-ledger.md
+- Changed: scripts/checkers/passive_stress.py, scripts/circuit_candidates.py, scripts/catalog.py, scripts/plan_circuits.py, scripts/render_report.py, scripts/derating.py, scripts/review_functions.py, scripts/validate_review.py, scripts/review_quality.py, scripts/tests/test_inventory_context_revalidation.py, scripts/tests/test_circuit_candidates.py, scripts/tests/test_single_fault_rows.py, scripts/tests/test_subject_requires.py, scripts/tests/test_report_rendering_51.py, scripts/tests/test_stress_spec.py, scripts/tests/test_review_functions.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json, references/check-catalog.md, references/review-vocabulary.md, references/shared/stress-spec.md, references/verdicts-and-release.md, docs/improvement-ledger.md
 - Gates: pytest 2370; mutation --changed 369 on 21 files, all killed after re-anchoring M251 (its line gained `derating`); new M824–M832 killed
 
 ## One margin per quantity; R10 rewritten (2026-10-28)
@@ -139,7 +186,7 @@ aging) already fits R10/R12 and was not changed.
 
 - Event: user:2026-10-28 (你理解是对的，按照你的建议来定。ASG和SR的都改)
 - Causes: judgment 1
-- Changed: references/derating-rules.md, scripts/catalog.py, references/commodity-floors.md, scripts/tests/test_wearout_rows.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Changed: references/shared/derating-rules.md, scripts/catalog.py, references/commodity-floors.md, scripts/tests/test_wearout_rows.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
 - Gates: pytest 2359 (SR), ASG derating tests 25 passed (13 ASG geometry failures predate the change); mutation --changed 31 on 5 files, all killed
 
 ## Lifetime: one place per question, no lifetime risks (2026-10-28)
@@ -378,7 +425,7 @@ p24 5.10.2.1, 5.10.2.5 and table 30; T/CPSS 1006 p11 table 8 and p15–16 6.5.3;
 
 - Event: user:2026-10-27 (Codex 对降额规则的六条建议，“请看一下这些建议是否合理，如果合理的就进行改进”)
 - Causes: knowledge_missing 4 (relay drive and parallel contacts, oscillator rows, surge waveform method, NB/T differences), rule_not_enforced 1 (rule subtype), knowledge_wrong 1 (negative ratings)
-- Changed: references/derating-rules.json, references/derating-rules.md, scripts/derating.py, scripts/tests/test_derating_rules.py, scripts/tests/test_stress_spec.py, docs/improvement-ledger.md
+- Changed: references/shared/derating-rules.json, references/shared/derating-rules.md, scripts/derating.py, scripts/tests/test_derating_rules.py, scripts/tests/test_stress_spec.py, docs/improvement-ledger.md
 - Gates: pytest 2332 with ASG at ff3fcb7; mutation --changed 107 run, 107 killed
 
 ## Report in three layers; results format 14 says each finding text once (2026-10-27)
@@ -420,7 +467,7 @@ requirements as in ASG; within the rating but over the derated value is the exis
 stress spec shared with ASG (no conditional verdict, no work item, no user sign-off); coverage follows the margins the
 reviewer writes, not every part and parameter.
 
-- `references/stress-spec.md` (new, shared with ASG byte for byte) and R6 of `derating-rules.md` pointing to it.
+- `references/shared/stress-spec.md` (new, shared with ASG byte for byte) and R6 of `derating-rules.md` pointing to it.
 - `intent.derating{level, source: req:<id> | clarification:<answered id>}`, checked by `derating.intent_errors`; the
   planner copies it into `plan.derating`.
 - A margin may name `basis.derating_rule`; the gate (`review_functions.derating_errors`) checks the rule exists and fits
@@ -434,7 +481,7 @@ intent-format.md and results-format.md).
 
 - Event: user:2026-10-27 (第 7 项：等级“照 ASG”；“将共用规范R6和ASG统一到现在的‘应力’规范下来，制定单独的应力规范”；“ASG里面现在每颗器件都有降额规则，这个过于严苛了。请将其统一到余量审核规则上来”)
 - Causes: rule_not_enforced 1 (the derating spec was not read by any check), knowledge_missing 1 (no project level in the intent)
-- Changed: scripts/derating.py, scripts/plan_review.py, scripts/review_functions.py, scripts/review_quality.py, scripts/catalog.py, scripts/tests/test_stress_spec.py, scripts/tests/test_derating_rules.py, scripts/tests/test_reading_path.py, references/stress-spec.md, references/derating-rules.md, references/commodity-floors.md, references/results-format.md, references/intent-format.md, references/check-catalog.md, references/architecture.md, SKILL.md, docs/improvement-ledger.md
+- Changed: scripts/derating.py, scripts/plan_review.py, scripts/review_functions.py, scripts/review_quality.py, scripts/catalog.py, scripts/tests/test_stress_spec.py, scripts/tests/test_derating_rules.py, scripts/tests/test_reading_path.py, references/shared/stress-spec.md, references/shared/derating-rules.md, references/commodity-floors.md, references/results-format.md, references/intent-format.md, references/check-catalog.md, references/architecture.md, SKILL.md, docs/improvement-ledger.md
 - Gates: pytest 2329 with ASG at e553158 holding the same derating-rules.md and stress-spec.md (ASG dc874c8 judges stress by the same spec); mutation --changed 251 run, 251 killed
 
 ## R8 report's SR shortcomings: change list items 1–3, 6, 8–12 (2026-10-27)
@@ -487,15 +534,15 @@ taken with the user: sources in the order 1013 → GJB → 1006; 1006 has one le
 three; a GJB range takes its conservative end; GJB table 29's working-current factor is not stacked on 1013's winding
 temperature and saturation limits; a single factor holds for the worst combination of steady and transient stress,
 while a separately rated surge or pulse is compared with that rating by the table's ratio.
-`references/derating-rules.json` (223 rules: device type, parameter, condition, measure, the three values, PDF page)
-and `references/derating-rules.md` (where the level comes from, the rules, one table per kind) are byte-identical to
+`references/shared/derating-rules.json` (223 rules: device type, parameter, condition, measure, the three values, PDF page)
+and `references/shared/derating-rules.md` (where the level comes from, the rules, one table per kind) are byte-identical to
 ASG's. The tests check kinds against `device_kinds.KINDS`, defined measures and conditions, cited pages within the
 source, values easing from I to III, one value for an ungraded source, every rule listed in the document, and the
 same bytes in both repositories. Wiring the level into DEV-C01, the commodity floors and rule A1 is a later step.
 
 - Event: user:2026-10-27 (Confirm the three-grade derating spec with your recommendations on all six pending points ... write the spec into ASG and SR with alignment tests and a ledger entry, and run all tests. Don't commit yet.)
 - Causes: knowledge_missing 1 (no derating levels to take the project's rule from)
-- Changed: references/derating-rules.json, references/derating-rules.md, SKILL.md, scripts/tests/test_derating_rules.py, docs/improvement-ledger.md
+- Changed: references/shared/derating-rules.json, references/shared/derating-rules.md, SKILL.md, scripts/tests/test_derating_rules.py, docs/improvement-ledger.md
 - Gates: pytest 2307, mutation --changed: 0 mutations on 4 changed files
 
 ## A part's kind: what it does, settled by its datasheet, not by its refdes (2026-10-27)
@@ -3672,7 +3719,7 @@ MOS 高温 SOA 的段系数（恒功率段 100%、热不稳定段 80%，2026-10-
 
 - Event: user:2026-10-29 (SOA段系数和常规件预判门限，需要并入到这个降额规范里面去。常规件预判门限是否合理？如果不合理的话就删掉；按方案改)
 - Causes: knowledge_wrong 1, rule_not_enforced 1
-- Changed: references/derating-rules.md, references/derating-rules.json, references/bounding-table.md, references/check-catalog.md, references/commodity-floors.md, references/margin-verdicts.md, scripts/derating.py, scripts/bound_formulas.py, scripts/catalog.py, scripts/checkers/passive_stress.py, scripts/tests/test_passive_stress.py, scripts/tests/test_derating_rules.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json, docs/improvement-ledger.md
+- Changed: references/shared/derating-rules.md, references/shared/derating-rules.json, references/bounding-table.md, references/check-catalog.md, references/commodity-floors.md, references/margin-verdicts.md, scripts/derating.py, scripts/bound_formulas.py, scripts/catalog.py, scripts/checkers/passive_stress.py, scripts/tests/test_passive_stress.py, scripts/tests/test_derating_rules.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json, docs/improvement-ledger.md
 - Gates: pytest 2378, mutation --changed: 79 mutations on 15 changed files, all killed (M475 re-anchored from `bound_formulas.py` to the JSON value)
 
 ## 微应力触点门限并入降额规范 (2026-10-29)
@@ -3699,5 +3746,5 @@ CAP-SURGE-V 格删去“如额定 ×1.5–2.5”的举例，只写试验电压�
 
 - Event: user:2026-10-29 (这些也都处理)
 - Causes: rule_not_enforced 1
-- Changed: references/derating-rules.md, references/derating-rules.json, references/bounding-table.md, references/check-catalog.md, references/wca-formulas.md, scripts/bound_formulas.py, scripts/catalog.py, scripts/tests/test_catalog.py, scripts/tests/test_derating_rules.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json, docs/improvement-ledger.md
+- Changed: references/shared/derating-rules.md, references/shared/derating-rules.json, references/bounding-table.md, references/check-catalog.md, references/wca-formulas.md, scripts/bound_formulas.py, scripts/catalog.py, scripts/tests/test_catalog.py, scripts/tests/test_derating_rules.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json, docs/improvement-ledger.md
 - Gates: pytest 2379, mutation --changed: 45 mutations on 13 changed files, all killed (unit tier)

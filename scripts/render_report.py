@@ -742,14 +742,14 @@ def guideline_cards(plan):
 
 
 def render_guidelines(plan):
-    """共用规范规则覆盖（references/guideline-rules.md）：本板适用的规范规则、出处、由哪些检查核对、在哪个阶段关闭。"""
+    """共用规范规则覆盖（references/shared/guideline-rules.md）：本板适用的规范规则、出处、由哪些检查核对、在哪个阶段关闭。"""
     section, applicable = guideline_cards(plan)
     if not applicable:
         return []
     out = ['## 共用规范规则覆盖', '',
-           '规则库 %s，产品基线 %s。适用的规范规则 %d 条；检查项这次没有展开的 %d 条是本板没有它的对象或电路还没声明；'
+           '%s，产品基线 %s。适用的规范规则 %d 条；检查项这次没有展开的 %d 条是本板没有它的对象或电路还没声明；'
            '没有对应检查项的 %d 条列在“对 SR 的反馈”，是 SR 待补的规则，不是设计缺陷。'
-           % (section['library_version'], section['baseline'], len(applicable), len(section.get('not_triggered') or {}),
+           % (guideline_rules.shared_label(), section['baseline'], len(applicable), len(section.get('not_triggered') or {}),
               len(section.get('uncovered') or [])), '',
            '| 规范规则 | 内容 | 出处 | 本次由哪些检查核对 | 关闭阶段 |', '|---|---|---|---|---|']
     if not section.get('external_interfaces'):   # 2026-11-01 (user decision 1): the interface rules never rest on a net name alone

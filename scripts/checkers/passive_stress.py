@@ -11,6 +11,7 @@
 import re
 
 import derating
+import guideline_rules
 from decoupling import parse_capacitance
 from solve_dividers import parse_resistor, parse_resistor_noted
 
@@ -19,30 +20,23 @@ from . import netgraph as ng
 import part_words as pw
 from .base import Checker
 
-# commodity-floors「片式电阻」表：封装 -> (70 ℃ 最弱档功率 W, 最弱档最高工作电压 V)
-RESISTOR_FLOORS = {
-    '0201': (0.05, 15.0), '0402': (1 / 16, 25.0), '0603': (1 / 16, 50.0), '0805': (0.1, 100.0),
-    '1206': (0.125, 150.0), '1210': (0.25, 200.0), '2010': (0.5, 200.0), '2512': (1.0, 200.0),
-}
+# 常规件最弱档从共用层读（references/shared/commodity-floors.json，2026-11-02；commodity-floors.md 的表与它逐项对应）：
+# 封装 -> (70 ℃ 最弱档功率 W, 最弱档最高工作电压 V)
+_FLOORS = guideline_rules.commodity_floors()
+RESISTOR_FLOORS = {p: (v['power_w_70c'], v['voltage_v']) for p, v in _FLOORS['chip_resistor']['packages'].items()}
 # 预判边界取降额规范的本级贴片电阻取值：功率 ≤ 最弱档 × RES-SMD-P、电压 ≤ 最弱档 × RES-SMD-V 判 PASS
 # （2026-10-29，用户：常规件 50% 预判门限不在降额规范里，删掉，按项目降额等级取；等级未定按规范工程取值 unset_level）。
 # 功耗要考虑时 BOM 必须写明额定功率（2026-10-27，用户：设计时考虑功耗，除阻值和精度外还要写上功率等级，作为给以后的约束；
 # ASG 照此设计，SR 审核）：BOM 没写功率、最坏功耗又超过按已写字段能买到的最弱件（封装最弱档的一半，RG1005 0.032 W 反例）
 # 的降额值时，预判给 procurement_min_power_w = 应力 ÷ 本级 RES-SMD-P 取值（用户：BOM 最低额定按项目降额等级取值），
 # 门禁要求这一行写 bom_constraint 或判 FAIL（power_rating_errors）。
-WEAKEST_SHARE = 0.5
+WEAKEST_SHARE = guideline_rules.engineering_value('weakest_share')   # G02 engineering value (from here, 2026-11-02)
 SMD_POWER_RULE, SMD_VOLTAGE_RULE = 'RES-SMD-P', 'RES-SMD-V'
 WATTS_RE = re.compile(r'(\d+(?:\.\d+)?)\s*(m?)W(?![A-Za-z])')
 DEFAULT_TOL = 0.05
 # commodity-floors「陶瓷电容」可订购档：(封装, 最大容值 F, 耐压 V, 依据料号)。
 # 同封装同耐压下更小容值视为同样可订购。
-MLCC_ORDERABLE = (
-    ('0402', 100e-9, 50.0, 'Murata GRM155R71H104KE14'),
-    ('0402', 1e-6, 25.0, 'Murata GRM155R61E105KA12'),
-    ('0402', 10e-6, 10.0, 'Murata GRM155R61A106ME11'),
-    ('0603', 10e-6, 25.0, 'Murata GRM188R61E106MA73'),
-    ('0805', 22e-6, 25.0, 'Murata GRM21BR61E226ME44'),
-)
+MLCC_ORDERABLE = tuple((r['package'], r['max_f'], r['voltage_v'], r['part']) for r in _FLOORS['mlcc_orderable']['rows'])
 OVERRIDE_CODES = {
     'NON_COMMODITY_USE': '脉冲/浪涌、精密检流、安规/隔离或功能依赖额定以外的参数',
     'STRESS_ABOVE_BOUND': '有证据表明实际应力超出预判上界（外部/故障/瞬态电压或未建模的源）',
@@ -523,7 +517,7 @@ def _proposal(entry):
         basis = _floor_basis(entry, power_w, voltage_v)
         if basis:
             calc['floor_basis'] = basis
-        level = entry.get('derating_level') or derating.engineering_value('unset_level')
+        level = entry.get('derating_level') or guideline_rules.engineering_value('unset_level')
         unset = '' if entry.get('derating_level') else '（降额等级未定，按 %s 级）' % level
         share = derating.rules()[SMD_POWER_RULE]['values'][level]
         v_share = derating.rules()[SMD_VOLTAGE_RULE]['values'][level]

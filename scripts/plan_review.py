@@ -309,7 +309,7 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
 
 
 def guideline_section(checks, db, kind_intent, intent, library):
-    """共用规范规则的适用与覆盖（references/guideline-rules.md）：电路类型取计划检查项上的，器件类别取网表已贴器件的，
+    """共用规范规则的适用与覆盖（references/shared/guideline-rules.md）：电路类型取计划检查项上的，器件类别取网表已贴器件的，
     基线取 intent.guideline_baseline（不写取默认）；计划里出现的 SR 规则按 catalog.BASIS 覆盖它映射的规范规则；
     映射的 SR 规则这次没有展开的记 not_triggered（本板没有它的对象，或电路还没声明），根本没有映射的才是 uncovered。"""
     graph = NetGraph(board_intent.graph_db(db, kind_intent))
@@ -329,6 +329,7 @@ def guideline_section(checks, db, kind_intent, intent, library):
         for target in targets:
             mapped.setdefault(target, []).append(rule)
     return {'library_version': found['library_version'], 'content_sha256': found['content_sha256'],
+            'shared_sha256': guideline_rules.shared_digest(),
             'baseline': baseline, 'circuit_types': circuits, 'device_kinds': kinds,
             'external_interfaces': sorted(set(circuits) & set(catalog.EXTERNAL_INTERFACE_TYPES)),
             'applicable': found['applicable'], 'covered': found['covered'],

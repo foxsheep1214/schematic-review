@@ -1,6 +1,6 @@
 """The shared guideline rule library (G01–G09): the installed bundle is valid, its vocabulary is SR's circuit types
 and device kinds, rules are selected by baseline and triggers, coverage sorts applicable rules, and ASG holds the
-same three files (user 2026-10-31: 请开始执行这个方案).
+same shared layer, byte for byte (user 2026-10-31: 请开始执行这个方案; 2026-11-02: 目录制).
 """
 import copy
 import json
@@ -17,7 +17,7 @@ import device_kinds
 import guideline_rules as g
 
 ASG = Path.home() / '.agents' / 'skills' / 'autonomous-schematic-generation'
-SHARED = ('references/guideline-rules.json', 'references/guideline-rules.md', 'scripts/guideline_rules.py')
+SHARED = g.SHARED_FILES
 
 
 def rule(rid='G04-001', **changes):
@@ -41,11 +41,19 @@ class GuidelineRulesTests(unittest.TestCase):
     def test_installed_bundle_is_valid(self):
         self.assertEqual(g.bundle_errors(g.load()), [])
 
-    def test_vocabulary_is_srs_circuit_types_and_device_kinds(self):
-        vocabulary = g.load()['vocabulary']
-        self.assertEqual(vocabulary['circuit_types'], [c.name for c in catalog.CIRCUIT_TYPES])
-        self.assertEqual(vocabulary['device_kinds'], [k for k in device_kinds.KINDS if k != 'unknown'])
-        self.assertEqual(g.load()['default_baseline'], 'industrial_telecom')
+    def test_srs_circuit_types_and_device_kinds_are_the_shared_vocabulary(self):
+        # 2026-11-02 (user: 词表进共用层): vocabulary.json is the one place the names and titles live; the catalog and
+        # the device-kind registry are checked against it, and the bundle carries a copy build() takes from it
+        shared = json.loads(g.VOCABULARY_PATH.read_text(encoding='utf-8'))
+        self.assertEqual([(x['name'], x['title']) for x in shared['circuit_types']], [(c.name, c.title) for c in catalog.CIRCUIT_TYPES])
+        self.assertEqual([(x['name'], x['title']) for x in shared['device_kinds']],
+                         [(k, v.title) for k, v in device_kinds.KINDS.items() if k != 'unknown'])
+        self.assertEqual(shared['default_baseline'], 'industrial_telecom')
+        self.assertEqual(g.load()['vocabulary'], g.vocabulary()['vocabulary'])
+        self.assertEqual(g.load()['default_baseline'], g.vocabulary()['default_baseline'])
+        stale = copy.deepcopy(g.load())
+        stale['vocabulary']['circuit_types'] = stale['vocabulary']['circuit_types'][1:]
+        self.assertTrue(any('vocabulary.json' in e for e in g.bundle_errors(stale)))
 
     def test_select_by_baseline_and_triggers(self):
         lib = bundle(rule('G04-001'),
@@ -102,7 +110,7 @@ class GuidelineRulesTests(unittest.TestCase):
             spec.mkdir()
             (spec / 'G04_规则登记.json').write_text(json.dumps(
                 {'spec': 'G04', 'version': '0.1', 'rules': [rule('G04-002'), rule('G04-001')]}), encoding='utf-8')
-            built = g.build(tmp, g.load(), '0.1.0')
+            built = g.build(tmp, '0.1.0')
         self.assertEqual(g.bundle_errors(built), [])
         self.assertEqual([r['id'] for r in built['rules']], ['G04-001', 'G04-002'])
         self.assertEqual(built['specs'], {'G04': '0.1'})
@@ -115,7 +123,7 @@ class GuidelineRulesTests(unittest.TestCase):
                                         ('G03', {'g03_budget_margin': dict(value, value=0)}, [])):
                 (Path(tmp) / ('%s_规则登记.json' % spec)).write_text(json.dumps(
                     {'spec': spec, 'version': '1.1', 'rules': rules, 'engineering_values': values}), encoding='utf-8')
-            built = g.build(tmp, g.load(), '1.0.0')
+            built = g.build(tmp, '1.0.0')
             self.assertEqual(g.bundle_errors(built), [])
             self.assertEqual(built['engineering_values']['typical_band']['spec'], 'G02')
             self.assertEqual(g.engineering_value('g03_budget_margin', built), 0)
@@ -132,7 +140,7 @@ class GuidelineRulesTests(unittest.TestCase):
                 {'spec': 'G03', 'version': '1.1', 'rules': [], 'engineering_values': {'typical_band': value}}),
                 encoding='utf-8')
             with self.assertRaises(ValueError):
-                g.build(tmp, g.load(), '1.0.0')
+                g.build(tmp, '1.0.0')
 
     def test_every_active_rule_has_an_sr_check_that_can_reach_it(self):
         # user 2026-11-01: 一次做全 — no rule waits for a check. A rule triggered by circuit types is held by a check of
@@ -163,10 +171,20 @@ class GuidelineRulesTests(unittest.TestCase):
         self.assertTrue(set(SHARED) <= set(files), sorted(set(SHARED) - set(files)))
         self.assertNotIn('guideline-rules.json', skill_identity.NON_RULE_REFS)
 
-    @unittest.skipUnless((ASG / SHARED[0]).is_file(), 'autonomous-schematic-generation without the rule library')
-    def test_asg_holds_the_same_files(self):
+    def test_the_shared_directory_holds_exactly_the_shared_files(self):
+        # 2026-11-02 (user: 目录制): references/shared/ is the shared layer; a file there is shared or does not belong
+        listed = {Path(n).name for n in SHARED if n.startswith('references/shared/')}
+        self.assertEqual(sorted(p.name for p in g.SHARED_DIR.iterdir() if p.name != '__pycache__'), sorted(listed))
+        self.assertIn('scripts/guideline_rules.py', SHARED)
+        self.assertEqual(len(g.shared_digest()), 64)
+        self.assertEqual(g.shared_versions()['library_version'], g.load()['library_version'])
+        self.assertRegex(g.shared_label(), r'^共用层 [0-9a-f]{12}，规则库 \S+，降额 v\d+$')
+
+    @unittest.skipUnless((ASG / SHARED[1]).is_file(), 'autonomous-schematic-generation without the rule library')
+    def test_asg_holds_the_same_shared_layer(self):
         for name in SHARED:
             self.assertEqual((ASG / name).read_bytes(), (ROOT / name).read_bytes(), name)
+        self.assertEqual(g.shared_digest(ASG), g.shared_digest())
 
 
 if __name__ == '__main__':

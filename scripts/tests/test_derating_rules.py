@@ -1,6 +1,6 @@
 """The derating spec (I/II/III levels from T/CPSS 1013, GJB/Z 35 and T/CPSS 1006) is one file shared with
-autonomous-schematic-generation: every rule names a device kind, a measure, a condition and a cited page, the levels
-run from most to least derating, and both repositories hold the same bytes (user 2026-10-27).
+autonomous-schematic-generation (references/shared, compared byte for byte by test_guideline_rules): every rule names
+a device kind, a measure, a condition and a cited page, and the levels run from most to least derating (user 2026-10-27).
 """
 import json
 import re
@@ -15,8 +15,7 @@ import device_kinds
 import guideline_rules
 
 REFS = ROOT / 'references'
-SPEC = json.loads((REFS / 'derating-rules.json').read_text(encoding='utf-8'))
-ASG = Path.home() / '.agents' / 'skills' / 'autonomous-schematic-generation' / 'references'
+SPEC = json.loads((REFS / 'shared' / 'derating-rules.json').read_text(encoding='utf-8'))
 LEVELS = ('I', 'II', 'III')
 RISING = {'ratio', 'pulse_ratio', 'tj_percent', 'max_c', 'max_rise_k', 'max_v'}
 FALLING = {'margin_c', 'min_hours', 'min_years'}
@@ -54,20 +53,22 @@ class DeratingSpecTests(unittest.TestCase):
                 self.assertEqual(len(set(map(str, v))), 1, rule['id'])
 
     def test_the_document_lists_every_rule(self):
-        text = (REFS / 'derating-rules.md').read_text(encoding='utf-8')
+        text = (REFS / 'shared' / 'derating-rules.md').read_text(encoding='utf-8')
         listed = re.findall(r'^\| ([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+) \|', text, flags=re.M)
         self.assertEqual(sorted(listed), sorted(r['id'] for r in SPEC['rules']))
 
-    def test_the_soa_segments_and_the_unset_level_come_from_the_spec(self):
-        # 2026-10-29 (user: SOA 段系数并入降额规范；常规件 50% 预判门限删掉): the scripts hold no copy of these values
+    def test_the_soa_segments_and_the_unset_level_come_from_the_rule_library(self):
+        # 2026-10-29 (user: SOA 段系数并入降额规范；常规件 50% 预判门限删掉): the scripts hold no copy of these values;
+        # 2026-11-02 (user: 迁进规则库): every engineering value lives in the rule library, the derating table holds none
         import bound_formulas
-        values = SPEC['engineering_values']
+        self.assertNotIn('engineering_values', SPEC)
+        values = guideline_rules.load()['engineering_values']
         self.assertEqual(bound_formulas.SOA_SEGMENTS, values['soa_segment_share']['value'])
+        self.assertEqual(values['soa_segment_share']['spec'], 'G03')
+        self.assertEqual(values['unset_level']['spec'], 'G01')
         # 2026-11-01 (user: 进规则库，本轮迁移): the G9 typical band and the forced-β k moved to G02 in the rule library
         self.assertEqual((bound_formulas.TYPICAL_BAND, bound_formulas.FORCED_BETA_K),
                          (guideline_rules.engineering_value('typical_band'), guideline_rules.engineering_value('forced_beta_k')))
-        self.assertNotIn('typical_band', values)
-        self.assertNotIn('forced_beta_k', values)
         self.assertEqual(values['unset_level']['value'], 'I')
         source = (ROOT / 'scripts' / 'checkers' / 'passive_stress.py').read_text(encoding='utf-8')
         self.assertNotRegex(source, r'POWER_LIMIT|VOLTAGE_LIMIT|UNSET_POWER_SHARE')
@@ -77,15 +78,12 @@ class DeratingSpecTests(unittest.TestCase):
         # (Omron B3U 50 mA / 12 VDC) times the smaller of CONN and SW at each level
         rules = {r['id']: r['values'] for r in SPEC['rules']}
         text = (REFS / 'commodity-floors.md').read_text(encoding='utf-8')
+        switch = next(r for r in guideline_rules.commodity_floors()['contacts']['rows'] if 'B3U' in r['category'])   # shared floor, 2026-11-02
         for level in LEVELS:
-            amps = 50 * min(rules['CONN-I'][level], rules['SW-R'][level])
-            volts = 12 * min(rules['CONN-V'][level], rules['SW-V'][level])
+            amps = switch['current_a'] * 1000 * min(rules['CONN-I'][level], rules['SW-R'][level])
+            volts = switch['voltage_v'] * min(rules['CONN-V'][level], rules['SW-V'][level])
             self.assertIn('%s 级 %g mA、%g V' % (level, round(amps, 3), round(volts, 3)), text)
 
-    @unittest.skipUnless((ASG / 'derating-rules.json').is_file(), 'autonomous-schematic-generation not installed')
-    def test_asg_holds_the_same_files(self):
-        for name in ('derating-rules.json', 'derating-rules.md', 'stress-spec.md'):
-            self.assertEqual((ASG / name).read_bytes(), (REFS / name).read_bytes(), name)
 
 
 if __name__ == '__main__':

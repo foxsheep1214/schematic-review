@@ -3019,7 +3019,7 @@
  {
   "id": "M475",
   "name": "the thermal-instability segment keeps the full derated curve",
-  "file": "references/derating-rules.json",
+  "file": "references/shared/derating-rules.json",
   "old": "\"THERMAL_INSTABILITY\": 0.8",
   "new": "\"THERMAL_INSTABILITY\": 1.0"
  },
@@ -3040,14 +3040,14 @@
  {
   "id": "M478",
   "name": "a saturated BJT is driven at hFE min",
-  "file": "references/guideline-rules.json",
+  "file": "references/shared/guideline-rules.json",
   "old": "\"forced_beta_k\": {\n      \"value\": 2,",
   "new": "\"forced_beta_k\": {\n      \"value\": 1,"
  },
  {
   "id": "M479",
   "name": "a typical value is taken ±20 %",
-  "file": "references/guideline-rules.json",
+  "file": "references/shared/guideline-rules.json",
   "old": "\"typical_band\": {\n      \"value\": 0.3,",
   "new": "\"typical_band\": {\n      \"value\": 0.2,"
  },
@@ -5358,7 +5358,7 @@
   "id": "M830",
   "name": "a zero margin on a rating naming no rule is no stress risk",
   "file": "scripts/derating.py",
-  "old": "    return (fits[0], stress, derated) if stress > derated else None\n",
+  "old": "    return (fits[0], stress, judged[1]) if judged and judged[0] == stress_check.STRESS_RISK else None\n",
   "new": "    return None\n"
  },
  {

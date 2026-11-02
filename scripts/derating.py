@@ -3,9 +3,9 @@
 
 The level (I/II/III) is part of the requirements: `intent.derating{level, source}`, where source is `req:<requirement
 id>` or `clarification:<answered clarification id>`; the planner copies it into the plan. A margin that names
-`basis.derating_rule` is checked against the rule's value at that level (references/derating-rules.json, shared with
+`basis.derating_rule` is checked against the rule's value at that level (references/shared/derating-rules.json, shared with
 ASG): over the rating it fails as any margin does; within the rating but over the derated value it passes with the
-stress risk (`basis.risk.types` holds STRESS), listed in the risk list and not blocking (references/stress-spec.md,
+stress risk (`basis.risk.types` holds STRESS), listed in the risk list and not blocking (references/shared/stress-spec.md,
 user 2026-10-27: 将共用规范R6和ASG统一到现在的“应力”规范下来). Only margins the reviewer writes are checked; a stress
 margin of a part whose kind has rules but names none is a hint (user: 统一到余量审核规则上来).
 """
@@ -14,11 +14,12 @@ from pathlib import Path
 import re
 
 from electrical_contract import text
+import stress_check
 
-RULES_PATH = Path(__file__).resolve().parent.parent / 'references' / 'derating-rules.json'
-LEVELS = ('I', 'II', 'III')
+RULES_PATH = Path(__file__).resolve().parent.parent / 'references' / 'shared' / 'derating-rules.json'
+LEVELS = stress_check.LEVELS
 SOURCE_RE = re.compile(r'^(req|clarification):(\S+)$')
-RECOMPUTED = ('ratio', 'pulse_ratio')   # stress / rating ≤ value: the gate redoes these from the margin and its limit
+RECOMPUTED = stress_check.RECOMPUTED   # stress / rating ≤ value: the gate redoes these from the margin and its limit
 STRESS_ASPECTS = ('器件应力与降额',)      # the aspect a part's stress margin is written under (DEV-C01)
 _RULES = None
 # Whether a named rule fits the margin (SR-FIX-05, 2026-10-28, user: 按推荐修改): only what the record states is checked —
@@ -42,10 +43,6 @@ def rules():
         _RULES = {r['id']: r for r in json.loads(RULES_PATH.read_text(encoding='utf-8'))['rules']}
     return _RULES
 
-
-def engineering_value(name):
-    """A value the spec's 工程取值 table holds where the standards give none (unset_level, soa_segment_share)."""
-    return json.loads(RULES_PATH.read_text(encoding='utf-8'))['engineering_values'][name]['value']
 
 
 def kinds_with_rules():
@@ -85,7 +82,7 @@ def margin_errors(label, margin, conditions, level, kinds_of, identity_of=None):
         return []
     rule = rules().get(rid)
     if rule is None:
-        return ['%s: basis.derating_rule %s is not in references/derating-rules.json' % (label, rid)]
+        return ['%s: basis.derating_rule %s is not in references/shared/derating-rules.json' % (label, rid)]
     limit = conditions.get(basis.get('limit')) or {}
     kinds = kinds_of(limit.get('refs') or [])
     errors = []
@@ -107,13 +104,16 @@ def margin_errors(label, margin, conditions, level, kinds_of, identity_of=None):
         return errors + ['%s: a %s derating rule compares the stress with the limit\'s max (or a negative min, by '
                          'magnitude); the limit gives it in the margin\'s unit' % (label, rule['measure'])]
     stress = rating - margin['value']
-    derated = rating * rule['values'][level]
+    judged = stress_check.verdict(stress, rating, rule, level)   # the shared judgement (stress-spec.md)
+    if judged is None:
+        return errors + ['%s: the margin value and the limit must be finite numbers' % label]
+    found, derated = judged
     stressed = 'STRESS' in ((basis.get('risk') or {}).get('types') or [])
-    if stress > derated and margin['value'] >= 0 and not stressed:
+    if found == stress_check.STRESS_RISK and not stressed:
         errors.append('%s: stress %g %s is within the rating %g but over the level %s derated value %g (%s %s); '
                       'write basis.risk{types: [STRESS], corner, improvement} (stress spec)'
                       % (label, stress, margin['unit'], rating, level, derated, rid, rule['parameter']))
-    elif stress <= derated and stressed:
+    elif found == stress_check.OK and stressed:
         errors.append('%s: stress %g %s is within the level %s derated value %g (%s); no stress risk'
                       % (label, stress, margin['unit'], level, derated, rid))
     return errors
@@ -171,10 +171,7 @@ def fit_hints(margin, conditions, identity_of):
     return hints
 
 
-DIMENSION_WORDS = {'current': ('电流',), 'voltage': ('电压',), 'power': ('功率', '功耗')}
 # rules of one kind told apart by the part's identity; the "其他…" rule takes a part none of them names
-TYPE_WORDS = {'USB 母座': re.compile(r'USB', re.I),
-              '器具耦合器': re.compile(r'耦合器|IEC ?60320|appliance coupler|\bC(?:5|6|7|8|13|14|15|16)\b', re.I)}
 
 
 def implied_ratio(margin, conditions, level, kinds_of, dimension, identity_of=None):
@@ -191,19 +188,13 @@ def implied_ratio(margin, conditions, level, kinds_of, dimension, identity_of=No
     if not (isinstance(rating, (int, float)) and rating > 0 and isinstance(margin.get('value'), (int, float))
             and margin['value'] >= 0 and dimension and str(bound.get('unit') or '').strip() == unit):
         return None
-    kinds = set(kinds_of(limit.get('refs') or []))
-    words = DIMENSION_WORDS.get(dimension, ())
-    fits = [r for r in rules().values() if r['measure'] == 'ratio' and r['condition'] in ('worst', 'steady')
-            and kinds & set(r['kinds']) and any(w in r['parameter'] for w in words)]
-    if len(fits) > 1:
-        identity = identity_of(limit.get('refs') or []) if identity_of else ''
-        named = [r for r in fits if TYPE_WORDS.get(r['type']) and TYPE_WORDS[r['type']].search(identity)]
-        fits = named or [r for r in fits if r['type'].startswith('其他') and not any(
-            TYPE_WORDS.get(o['type']) and TYPE_WORDS[o['type']].search(identity) for o in fits)]
+    fits = stress_check.fit_rules(rules().values(), kinds_of(limit.get('refs') or []), dimension,
+                                  identity_of(limit.get('refs') or []) if identity_of else '')
     if len(fits) != 1:
         return None
-    stress, derated = rating - margin['value'], rating * fits[0]['values'][level]
-    return (fits[0], stress, derated) if stress > derated else None
+    stress = rating - margin['value']
+    judged = stress_check.verdict(stress, rating, fits[0], level)
+    return (fits[0], stress, judged[1]) if judged and judged[0] == stress_check.STRESS_RISK else None
 
 
 def rule_hint(margin, conditions, kinds_of):

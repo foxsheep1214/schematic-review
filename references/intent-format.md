@@ -96,7 +96,7 @@
   `configurable` 已取消，写了即拒收。计划另有 `GATE_BIAS_ZENER` 诊断：
   接在源跟随器栅极与地之间的齐纳是偏置基准、正常就导通，不派 PRO-C02 两侧窗口，由器件检查项和电路判定核。
 - `derating`：项目降额等级 `{level: I/II/III, source: req:<需求编号> 或 clarification:<已答复的澄清编号>}`，需求没写时按需求澄清问用户；
-  计划照抄，点名降额规则的应力余量按它核（[器件应力规范](stress-spec.md)）。
+  计划照抄，点名降额规则的应力余量按它核（[器件应力规范](shared/stress-spec.md)）。
 - `guideline_baseline`：产品基线，默认工业/通信板卡不写；需求写明航天、军用时写 `aerospace`/`military`。
 - `mission_profile`：所有寿命检查项共用的一份任务剖面
   `{requirement, phases[{name, share, load, ambient_c, citation[, requirement]}], events[{event, count, citation[, refs, requirement]}]}`。

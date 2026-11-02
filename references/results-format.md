@@ -111,7 +111,7 @@
 | `verdict_history[]` | 改过结论时写 `{from, to, basis: [条件或 claim id], note}`，basis 不能为空 |
 | `evidence` | 可定位的证据 |
 
-- **降额**（2026-10-27）：器件应力对额定的余量，[降额规范](derating-rules.md) 对这类器件、这个参数有规则的，`basis.derating_rule` 写规则编号，门禁按 `intent.derating` 的等级核（[器件应力规范](stress-spec.md)）；超降额未超额定写 `risk{types: [STRESS], …}`。
+- **降额**（2026-10-27）：器件应力对额定的余量，[降额规范](shared/derating-rules.md) 对这类器件、这个参数有规则的，`basis.derating_rule` 写规则编号，门禁按 `intent.derating` 的等级核（[器件应力规范](shared/stress-spec.md)）；超降额未超额定写 `risk{types: [STRESS], …}`。
 
 **设计没定不是开放项**（2026-10-26，用户：按甲乙分开改：甲判不合格并给改法，乙判合格并附设计约束）。
 判断要用到设计者还没定的值时，先看这个值归谁定：

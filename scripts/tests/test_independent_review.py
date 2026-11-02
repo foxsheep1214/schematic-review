@@ -25,7 +25,7 @@ TOKENS = REMOVED + ('selection-review', 'document-summaries', '派生摘要', '�
 
 def sr_files():
     yield ROOT / 'SKILL.md'
-    yield from sorted((ROOT / 'references').glob('*.md'))
+    yield from sorted((ROOT / 'references').rglob('*.md'))
     yield from sorted((ROOT / 'scripts').glob('*.py'))
     yield from sorted((ROOT / 'scripts' / 'checkers').glob('*.py'))
 

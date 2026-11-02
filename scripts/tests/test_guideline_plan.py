@@ -1,5 +1,5 @@
 """The plan lists the shared guideline rules this board triggers and which planned SR rules cover them
-(references/guideline-rules.md; user 2026-10-31: 请开始执行这个方案). An empty rule library leaves the plan as it was.
+(references/shared/guideline-rules.md; user 2026-10-31: 请开始执行这个方案). An empty rule library leaves the plan as it was.
 """
 import sys
 import unittest
@@ -18,6 +18,7 @@ from test_validate_review import fixture
 from validate_review import fingerprint, validate_review
 
 STALE = 'plan guidelines were built on another shared rule library'
+STALE_LAYER = 'plan guidelines were built on another shared layer'
 
 
 class GuidelinePlanTests(unittest.TestCase):
@@ -75,6 +76,7 @@ class GuidelineGateAndReportTests(unittest.TestCase):
     def setUp(self):
         self.library = GuidelinePlanTests.library(None)
         self.section = {'library_version': '0.0.0', 'content_sha256': self.library['content_sha256'],
+                        'shared_sha256': guideline_rules.shared_digest(),
                         'baseline': 'industrial_telecom', 'circuit_types': [], 'device_kinds': ['capacitor'],
                         'applicable': ['G01-001', 'G02-001'], 'covered': {'G01-001': ['DOC-Q01']},
                         'uncovered': ['G02-001'], 'downstream': ['G02-001']}
@@ -92,6 +94,10 @@ class GuidelineGateAndReportTests(unittest.TestCase):
         self.assertEqual(self.gate(self.section)['guideline_coverage'], self.section)
         self.assertTrue(any(STALE in e for e in self.gate(None)['errors']))
         self.assertTrue(any(STALE in e for e in self.gate(dict(self.section, content_sha256='0' * 64))['errors']))
+        # 2026-11-02 (user: 目录制): the whole shared layer is bound, not only the rule library
+        self.assertFalse(any(STALE_LAYER in e for e in self.gate(self.section)['errors']))
+        self.assertTrue(any(STALE_LAYER in e for e in self.gate(dict(self.section, shared_sha256='0' * 64))['errors']))
+        self.assertTrue(any(STALE_LAYER in e for e in self.gate({k: v for k, v in self.section.items() if k != 'shared_sha256'})['errors']))
 
     def test_an_empty_library_asks_nothing_of_the_plan(self):
         plan, report, db = fixture()
@@ -103,6 +109,7 @@ class GuidelineGateAndReportTests(unittest.TestCase):
         with mock.patch.object(guideline_rules, 'load', lambda *args: self.library):
             lines = render_report.render_guidelines({'guidelines': self.section})
         text = '\n'.join(lines)
+        self.assertIn(guideline_rules.shared_label() + '，产品基线 industrial_telecom。', text)   # one label binds library and derating
         self.assertIn('| G01-001 | RS-485 共模范围 | TI SLLA272 C §2 第3页 | DOC-Q01 | 原理图 |', text)
         self.assertIn('| G02-001 | RS-485 共模范围 | TI SLLA272 C §2 第3页 | 未覆盖 | 样机 |', text)
         self.assertEqual(render_report.render_guidelines({}), [])

@@ -11,7 +11,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
-REFERENCES = sorted((ROOT / 'references').glob('*.md'))
+REFERENCES = sorted((ROOT / 'references').rglob('*.md'))   # shared/ included (2026-11-02)
+
+
+def rel(path):
+    """A reference's path as SKILL.md links it: 'intent-format.md', 'shared/stress-spec.md'."""
+    return str(path.relative_to(ROOT / 'references'))
 SKILL = (ROOT / 'SKILL.md').read_text(encoding='utf-8')
 READERS = ('审查员与 SR 维护者', 'SR 维护者', '审查员')
 READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审查员)(?:（[^）\n]*）)?。$', re.M)
@@ -30,7 +35,7 @@ READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审
 # ① +0.1 KB 2026-10-28: the start-pin precondition names DIS/UVLO and the rescue-channel precondition is its own.
 # ④ +0.5 KB 2026-10-28: standby power goes to the product test, and the bound-recorded-as-unboundable hint.
 # ① +1.3 KB 2026-11-01: the vocabulary names the 23 checks of rule library 1.2.0 (G04, G05 active).
-STEP_MAX_BYTES = {'①': 170_750, '②': 157_910, '③': 224_900, '④': 124_000, '⑤': 37_800}
+STEP_MAX_BYTES = {'①': 170_750, '②': 158_290, '③': 224_940, '④': 124_000, '⑤': 37_800}   # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths)
 
 
 def section(text, title):
@@ -52,7 +57,7 @@ def skill_table():
         cells = [c.strip() for c in line.strip().strip('|').split('|')]
         if len(cells) != 3 or cells[0] in ('读者',) or set(cells[0]) <= set('-'):
             continue
-        for name in re.findall(r'\(references/([a-z0-9-]+\.md)\)', cells[2]):
+        for name in re.findall(r'\(references/((?:shared/)?[a-z0-9-]+\.md)\)', cells[2]):
             out[name] = cells[0]
     return out
 
@@ -63,31 +68,31 @@ def step_links():
     for part in re.split(r'\n(?=### )', section(SKILL, '## 执行流程'))[1:]:
         mark = part[4:5]
         if mark in STEP_MAX_BYTES:
-            out[mark] = sorted(set(re.findall(r'references/([a-z0-9-]+\.md)', part)))
+            out[mark] = sorted(set(re.findall(r'references/((?:shared/)?[a-z0-9-]+\.md)', part)))
     return out
 
 
 class ReadingPathTests(unittest.TestCase):
     def test_every_reference_names_its_readers(self):
-        missing = [p.name for p in REFERENCES if reader_of(p) is None]
+        missing = [rel(p) for p in REFERENCES if reader_of(p) is None]
         self.assertEqual(missing, [], 'add "> 读者：审查员 / SR 维护者 / 审查员与 SR 维护者。" under the title')
 
     def test_the_skill_table_lists_every_reference_once_with_the_same_reader(self):
         table = skill_table()
-        self.assertEqual(sorted(table), [p.name for p in REFERENCES])
+        self.assertEqual(sorted(table), [rel(p) for p in REFERENCES])
         for p in REFERENCES:
-            self.assertEqual(table[p.name], reader_of(p), p.name)
+            self.assertEqual(table[rel(p)], reader_of(p), rel(p))
 
     def test_the_execution_flow_links_no_maintainer_only_reference(self):
-        maintainer_only = {p.name for p in REFERENCES if reader_of(p) == 'SR 维护者'}
+        maintainer_only = {rel(p) for p in REFERENCES if reader_of(p) == 'SR 维护者'}
         self.assertTrue(maintainer_only)
-        linked = set(re.findall(r'references/([a-z0-9-]+\.md)', section(SKILL, '## 执行流程')))
+        linked = set(re.findall(r'references/((?:shared/)?[a-z0-9-]+\.md)', section(SKILL, '## 执行流程')))
         self.assertEqual(sorted(linked & maintainer_only), [])
 
     def test_every_step_links_something_and_the_links_resolve(self):
         links = step_links()
         self.assertEqual(sorted(links), sorted(STEP_MAX_BYTES))
-        names = {p.name for p in REFERENCES}
+        names = {rel(p) for p in REFERENCES}
         for mark, docs in links.items():
             self.assertTrue(docs, mark)
             self.assertEqual(sorted(set(docs) - names), [], mark)

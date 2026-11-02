@@ -23,7 +23,7 @@ class OneEntryTests(unittest.TestCase):
 
     def test_no_document_runs_plan_review_as_a_command(self):
         skill = SCRIPTS.parent
-        texts = [skill / 'SKILL.md'] + sorted((skill / 'references').glob('*.md'))
+        texts = [skill / 'SKILL.md'] + sorted((skill / 'references').rglob('*.md'))
         runs = [str(p.relative_to(skill)) for p in texts if 'python3 scripts/plan_review.py' in p.read_text(encoding='utf-8')
                 or 'plan_review.py db.json' in p.read_text(encoding='utf-8')]
         self.assertEqual(runs, [])
