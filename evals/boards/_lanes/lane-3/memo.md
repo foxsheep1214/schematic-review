@@ -11,3 +11,9 @@
 - R2=1k是CS保护串阻，OCP来自MOS导通压降；先取电芯/源阻抗/I(t)/温度，勿把4.35V动作点或6A器件标签当系统保证。
 - 同电池焊盘/JST不是独立双源；CS不是数字接口；POWER_PROTECTION大类会误派eFuse却漏PRO-C05，battery_protector角色/资格应一起补。
 - 分号BOM先无损转CSV；补C1类别/条款后重建清单并重审95项，旧lint摘要不能当当前绑定。schema15不承载needs_human/评估知识缺口时保留FAIL；纯拓扑与共享缺口的9条条款承载错误也要如实列出。
+
+- 2026-11-02 greatscottgadgets--hackrf-pro：1632项／161归因（0真缺陷、11误报、0准则、36知识缺口、114待确认）／4覆盖漏报；37 PASS含10覆盖汇总，1561项待判，门禁FAIL。
+- 排他所有权会吞晶体和输入MOS：拒绝错误POWER_CONVERTER后仍须补X2/X3 CLK-C01、Q4/Q5 PWR-T05/DRV-C02；FPGA CRESET/CDONE须进START_PIN资格。
+- I2S*_SDA不是I2C；整组LED通道/Q7B三脚NC不能当悬空输入。Si5351C p23/p25明确XA外部注入时XB留空，合法候选关闭不计误报。
+- 型号标题先于应用词：SN74LVC1G86的TVs不是TVS；资料分组按Value而非完整MPN时须保留后缀映射。网页摘录不等于本地完整PDF，同族XC6206不可擅换厂家。
+- 先核D13符号/0Ω料号冲突和MAX5865的VDD≤3.3V、OVDD≤VDD供电边界；3.333V名义值不能替代实际压降/模式界。schema15不容needs_human时保留FAIL，不假造厂家依赖。
