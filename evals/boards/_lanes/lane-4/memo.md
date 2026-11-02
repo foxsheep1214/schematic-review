@@ -39,3 +39,9 @@
 - Diodes Incorporated是厂商名；用准确标题kind_reason反证，不能改diode角色。U4固定33的ADJ/NC、MAX2120 ADDR允许悬空、HyperRAM B5/C5=RFU须核准确型号。
 - EP/OGND/运放负端GND不应独立要求GND去耦；U9.17 VBUS经20k是检测脚。J4/J6支路缺PRO-C04、U15缺ANA-C01定位，已给覆盖种子。
 - ECP5核心包络1.118579..1.178034V不保证1.155V推荐上限，图有意约1.15V超频；预算越界≠已证实物过压。LCSC错误PDF不记AVAILABLE，full-pinout/装配缺口不能用manual_verification绕过。
+
+- solderedelectronics--load-cell-ampfilier-hx711-board-hardware-design：83项（76+7补查），26 PASS/7 NA/50未闭；26观察=4误报/3知识/19待人工，0真/0准则，6覆盖漏项；FAIL、valid=true、renderer退出2，交执行记录。
+- 已核adc_dac不保证ANALOG_PIN通过：INNA-/INPA+/INNB-/INPB+别名令ANA-C01/C03缺实例；角色与物理通道应双重核，不能随“无ADC脚”跳过。
+- HX711 BASE→PNP→AVDD/VFB属于复合稳压；C1/C2隔R5=10Ω不能当直接Cout，p6参考10u直AVDD。4.298780V仅标称；VBG保证窗缺失，未据3.3V假设指控原板。
+- XI=GND时p2允许XO NC，三条输入悬空候选可排除；PWR-A01把桥激励K1.5反认外供源是INFO错误。PD_SCK高>60µs关桥激励，须另查外部主机默认态。
+- 去耦components须显式确认C5/C6；分号BOM的Designation映射Value并保留原摘要；未知对端/受控输入不伪装厂家数据，普通阻容采购约束与真正稳定性资料缺口分开。
