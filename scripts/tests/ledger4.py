@@ -20,7 +20,11 @@ def slug(value):
     return re.sub(r'[^A-Za-z0-9_.-]+', '-', str(value)).strip('-') or 'X'
 
 
-def aspect_of(cid):
+def aspect_of(cid, plan=None):
+    if plan:
+        _, planned = frame_of(plan, cid)
+        if planned:
+            return planned
     try:
         return catalog.title(str(cid).split('.')[0])
     except Exception:  # unknown synthetic rule
@@ -121,7 +125,7 @@ def gap(report, cids, key, kind='REVIEW_INCOMPLETE', fid=None, plan=None, what=N
     fn = function(report, fid, cids, plan, item.get('title'))
     edges = {}
     for cid in cids:
-        aspect = aspect_of(cid)
+        aspect = aspect_of(cid, plan)
         edge = edges.setdefault(aspect, {'aspect': aspect, 'via': {'condition': 'c1'},
                                          'rationale': 'Synthetic: %s leaves %s undecided' % (key, aspect)})
         state = _state(plan, report, cid)
@@ -148,7 +152,7 @@ def gap(report, cids, key, kind='REVIEW_INCOMPLETE', fid=None, plan=None, what=N
     out.update(item)
     fn['open'].append({k: v for k, v in out.items() if v is not None})
     for row in _rows(report, cids):
-        row.update(review_result='INSUFFICIENT', function_id=fid, open_ref=fid + '/' + key, aspect=aspect_of(row['id']))
+        row.update(review_result='INSUFFICIENT', function_id=fid, open_ref=fid + '/' + key, aspect=aspect_of(row['id'], plan))
         row.pop('evidence_confidence', None)   # an open row is C
     _verdict(fn)
     return fn['open'][-1]
@@ -172,12 +176,12 @@ def defect(report, cids, key, finding_id=None, fid=None, plan=None, what='Synthe
     decides = []
     for cid in cids:
         state = _state(plan, report, cid)
-        decides.append({'aspect': aspect_of(cid), **({'states': [state]} if state else {})})
+        decides.append({'aspect': aspect_of(cid, plan), **({'states': [state]} if state else {})})
     out = {'key': key, 'what': what, 'decides': decides, 'conditions': ['c2'], 'finding_id': finding_id}
     out.update(item)
     fn['fails'].append({k: v for k, v in out.items() if v is not None})
     for row in _rows(report, cids):
-        row.update(review_result='FAIL', function_id=fid, fail_ref=fid + '/' + key, aspect=aspect_of(row['id']))
+        row.update(review_result='FAIL', function_id=fid, fail_ref=fid + '/' + key, aspect=aspect_of(row['id'], plan))
         if finding_id:
             row['finding_id'] = finding_id
     _verdict(fn)

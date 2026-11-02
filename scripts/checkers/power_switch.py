@@ -119,6 +119,8 @@ class _Scan:
         if supply:
             found.append({'node': supply['source'], 'via': 'supply:' + ','.join(supply['path']), 'source': 'supply-bias'})
         for ref, other in self.graph.neighbors(gate_net, pw.PASSIVE_LINKS):
+            if other in self.grounds:
+                continue  # a gate-to-ground pull-down is not an external gate source
             found.extend(self._driver_pins(other, 'series:' + ref))
         unique = {item['node'] + '|' + item['via']: item for item in found}
         return [unique[key] for key in sorted(unique)]

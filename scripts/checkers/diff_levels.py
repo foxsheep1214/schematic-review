@@ -57,6 +57,17 @@ class _Scan:
                 if not candidates:
                     continue
                 partner = candidates[0]
+                # Exact rail names/declared supplies are power, not differential data.
+                if ((re.fullmatch(r'(?:.*/)?V[+-]', net, re.I) and any(
+                            set(self.graph.named_pins(r, re.compile(r'^V[+-]$', re.I)).values()) >= {net, partner}
+                            for r in self.graph.refs_on(net)))
+                        or (self.tree.rail_basis(net) in (powertree.DECLARED, powertree.DRIVER)
+                            and self.tree.rail_basis(partner) in (powertree.DECLARED, powertree.DRIVER))):
+                    break
+                if any(str(self.graph.parts[r].get('part', '')).upper() == 'HY931147C' and
+                       self.graph.pins_of(r).get('P$9') == net and self.graph.pins_of(r).get('P$10') == partner
+                       for r in self.graph.refs_on(net)):
+                    break  # HanRun HY931147C Rev.A/1 p1: rectified PoE power; RD/TD pairs remain data
                 # 同一器件同时出现在两条腿上才算一对；交流耦合的两侧各自成对。
                 if not set(self._devices(net)) & set(self._devices(partner)):
                     continue
@@ -73,7 +84,7 @@ class _Scan:
     def _leg(self, net, other_leg):
         graph = self.graph
         series = [(ref, other) for ref, other in graph.neighbors(net, {pw.CAPACITOR})
-                  if other not in self.grounds]
+                  if other not in self.grounds and other != other_leg]
         terminations = [{'ref': ref, 'to': other}
                         for ref, other in graph.neighbors(net, {pw.RESISTOR})]
         dc_path = sorted({other for ref, other in graph.neighbors(net, DC_PATH_KINDS)

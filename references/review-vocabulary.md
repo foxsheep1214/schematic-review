@@ -45,6 +45,9 @@
 | 功能电路 | 电路检查项 | 前提 | 不成立时 |
 |---|---|---|---|
 | POWER_CONVERTER | PWR-C04 | SWITCH_PIN | 电路里没有受控开关：电路和与它相接的 IC 都没有驱动/开关脚（GATE、DRV、OUT、SW、LX）或稳压输出脚 |
+| USB | SIG-D04 | USB_CC | 电路里没有 Type-C 连接器或 CC/PD 控制角色 |
+| CLOCK | CLK-C01 | PASSIVE_CRYSTAL | 电路里没有无源晶体，有源时钟另核 CLK-D01 |
+| CLOCK | CLK-D03 | RTC_BACKUP | 电路里没有 RTC、备份电源或电池充电机制 |
 | POWER_CONVERTER | PWR-C15 | FEEDBACK_PIN | 电路里没有反馈环：电路和与它相接的 IC 都没有反馈/补偿脚（FB、VFB、COMP、VCTRL、ITH、ADJ）或稳压输出脚，也没有分压或光耦把输出送到 IC |
 | POWER_CONVERTER | PWR-C06 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |
 | POWER_PROTECTION | PWR-C06 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |

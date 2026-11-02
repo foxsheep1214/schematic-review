@@ -56,6 +56,8 @@ class _Scan:
         """输入网上游的串联滤波元件；多于两端的共模扼流需另行声明。"""
         found, gaps = [], []
         for ref, other in self.graph.neighbors(net, SERIES_KINDS):
+            if powertree.PowerTree(self.graph).is_switch_node(other):
+                continue  # upstream buck storage inductor, not an input EMI filter
             found.append({'ref': ref, 'kind': self.graph.kind(ref), 'upstream_net': other})
         for ref in self.graph.refs_on(net):
             if self.graph.kind(ref) in SERIES_KINDS and not self.graph.terminals(ref):

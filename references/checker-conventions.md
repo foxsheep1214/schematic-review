@@ -57,7 +57,7 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 - 原文确实在该页上；
 - 原文本身写明了所声明的类型，例如 NPN/bipolar、MOSFET/N-channel、TVS/ESD protection（各类线索是 `device_kinds.KINDS` 的 cues）；
 - 原文没有同时指向别的类型，例如把 “ESD Protection Diode” 声明为普通二极管，判为 QUOTE_CONFLICT；
-- 手册标题区（第 1 页前 6 个非空行，无类型词再读第 1 页）不指向别的类型，否则 TITLE_MISMATCH：改引标题原文，或写 `kind_reason`（如合订本标题是同系列另一型号），以内部构成为由不算。
+- 首页标题/Description区（坐标优先；应用/特性/页脚不定类）不指向别的类型，否则 TITLE_MISMATCH：改引标题原文，或写 `kind_reason`（如合订本标题是同系列另一型号），以内部构成为由不算。
   IC 角色由标题词判定（[审查词表·器件角色](review-vocabulary.md#器件角色)的标题词列）；角色词同句里的 MOSFET、rectifier、
   fuse、relay 是它的负载或功能（Industrial eFuse），不算冲突；ThermoFuse 不算保险；“microprocessor supervisor”
   不是 MCU，“optoisolator” 是光耦不是隔离器。声明为泛称 `ic` 的原文若写明了某个角色，判 QUOTE_CONFLICT，

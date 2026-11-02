@@ -111,6 +111,11 @@ class DecouplingChecker(Checker):
                     required_inputs=connection_gaps, trigger=['decoupling-group:' + group['id']])
                 item['inventory_gaps'] = connection_gaps
                 item['full_inventory_gaps'] = group['gaps']
+                if group.get('purpose') == 'regulator_output':
+                    row = planner.add_check('PWR-C04', deepcopy(obj), key=group['id'], readiness='WAITING_EVIDENCE',
+                                            required_inputs=group['gaps'] + ['datasheet:本输出稳定性/有效容量/ESR与启动条件'],
+                                            trigger=['decoupling-purpose:regulator_output'])
+                    row['inventory_gaps'] = group['gaps']
                 no_cap = group.get('purpose') == 'no_direct_capacitor' and not group['fitted_capacitors']
                 if group.get('purpose', 'bypass') != 'bypass':
                     item['trigger'] = sorted(set(item['trigger']) | {'decoupling-purpose:' + group['purpose']})
