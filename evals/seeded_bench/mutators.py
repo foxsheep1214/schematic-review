@@ -39,6 +39,9 @@ class Mutation:
     nets: tuple
     note: str
     db: dict = field(repr=False)
+    baseline: dict = field(default=None, repr=False)
+    intent: dict = field(default=None, repr=False)
+    contract: dict = field(default_factory=dict)
 
     @property
     def site(self):
@@ -470,3 +473,93 @@ def mutations(db, per_operator=4):
             if seen.get(mutation.defect, 0) < per_operator:
                 seen[mutation.defect] = seen.get(mutation.defect, 0) + 1
                 yield mutation
+
+
+# Controlled pairs from the four adjudicated boards. Corrected baselines are
+# synthetic parameter contracts, never a claim that the source board was clean.
+def board_mutations(db):
+    g = ng.NetGraph(db)
+    from solve_dividers import parse_resistor
+
+    def present(ref):
+        return ref in db.get('parts', {}) and fitted(db, ref)
+
+    def model(ref):
+        return str(db.get('parts', {}).get(ref, {}).get('part', ''))
+
+    def rail_intent(net, voltage, citation):
+        return {'schema_version': 5, 'power_rails': {net: {
+            'voltage_v': {'min': voltage, 'max': voltage}, 'citation': citation}}}
+
+    for ref, pattern, voltage, rating, source in (
+            ('D54', r'TPD1E0B04DPYR', 5.0, 3.6, 'TI TPD1E0B04 datasheet recommended working range, adjudication lane-1 F058'),
+            ('D22', r'PTVS9V0S1UR,115', 15.0, 9.0, 'Nexperia PTVS9V0S1UR VRWM=9V, adjudication lane-2 F49')):
+        if not present(ref) or not re.fullmatch(pattern, model(ref)):
+            continue
+        nets = g.nets_of(ref)
+        rails = [n for n in nets if not ng.is_ground(n)]
+        if len(rails) != 1 or not any(ng.is_ground(n) for n in nets):
+            continue
+        base = copy.deepcopy(db)
+        # Explicit synthetic compliant TVS, without inventing an orderable MPN.
+        base['parts'][ref].update(part='SEED_PARAMETER_CONTRACT_TVS', prim='Device:D_TVS',
+                                  value='TVS VRWM=%gV' % (voltage + 3))
+        contract = {'normal_v': voltage, 'mutant_vrwm_v': rating, 'source': source,
+                    'baseline': 'synthetic TVS working-voltage contract, not an orderable MPN'}
+        yield Mutation('D-TVS-VRWM', ('PRO-E02',), (ref,), tuple(rails),
+                       'replace compliant working-voltage contract with ' + model(ref), copy.deepcopy(db),
+                       baseline=base, intent=rail_intent(rails[0], voltage, 'SEED contract: source schematic operating mode p1'),
+                       contract=contract)
+
+    caps = ('C139', 'C140')
+    if all(present(r) and model(r) == 'C1005X6S1A105K050BC' for r in caps):
+        common = set(g.nets_of(caps[0])) & set(g.nets_of(caps[1]))
+        rails = [n for n in common if not ng.is_ground(n)]
+        if len(rails) == 1 and any(ng.is_ground(n) for n in common):
+            base, out = copy.deepcopy(db), copy.deepcopy(db)
+            for ref in caps:
+                base['parts'][ref].update(part='SEED_PARAMETER_CONTRACT_MLCC_25V', value='1u/25V')
+                # Rating is bound by the exact manufacturer record below, not inferred from the model digits.
+                out['parts'][ref]['value'] = '1u/10V'
+            yield Mutation('D-MLCC-RATING-BELOW-PD', ('DEV-A01', 'DEV-C01'), caps, tuple(rails),
+                           '25V synthetic contract -> exact TDK 10V MLCC under controlled 15V mode', out,
+                           baseline=base, intent=rail_intent(rails[0], 15, 'SEED contract: source schematic 15V3A p8'),
+                           contract={'normal_v': 15, 'rating_v': 10, 'mpn': 'C1005X6S1A105K050BC',
+                                     'source': 'https://product.tdk.com/en/search/capacitor/ceramic/mlcc/info?part_no=C1005X6S1A105K050BC'})
+
+    if (present('R199') and model('R199') == 'CR1206-J/-000ELF' and len(g.nets_of('R199')) == 2
+            and (parse_resistor(db['parts']['R199'].get('value')) or {}).get('kohm') == .000005):
+        base = copy.deepcopy(db)
+        base['parts']['R199']['part'] = 'SEED_PARAMETER_CONTRACT_5mOhm'
+        yield Mutation('D-SHUNT-MPN-CONFLICT', ('DEV-D04',), ('R199',), tuple(g.nets_of('R199')),
+                       'keep 5mOhm value and Kelvin topology, replace MPN with 0Ohm CR1206-J/-000ELF', copy.deepcopy(db),
+                       baseline=base, contract={'value_ohm': .005, 'mpn_ohm': 0,
+                                               'source': 'Bourns CR1206-J/-000ELF qualification; lane-3 F146'})
+
+    if (all(present(r) and model(r) == 'PAC1954T-E/4MX' for r in ('U19', 'U20'))
+            and db['pin2net'].get('U19.6') == db['pin2net'].get('U20.6') == '3V3_SYS'
+            and all(db.get('pinname', {}).get(r + '.6') == 'ADDRSEL' for r in ('U19','U20'))
+            and all(db['pin2net'].get('U19.' + pin) == db['pin2net'].get('U20.' + pin)
+                    and db['pin2net'].get('U19.' + pin) not in (None, 'GND')
+                    for pin in ('4','5'))):
+        base = moved(db, 'U20.6', 'GND')
+        yield Mutation('D-I2C-ADDRESS-COLLISION', ('SIG-D01',), ('U19', 'U20'), ('3V3_SYS',),
+                       'U20 ADDRSEL GND (0x10) -> VDD (0x1F), matching U19', copy.deepcopy(db), baseline=base,
+                       contract={'pin': 'ADDRSEL.6', 'baseline_addresses': [31, 16], 'mutant_addresses': [31, 31],
+                                 'source': 'Microchip PAC1954 DS20006539D address selection; lane-3 F147'})
+
+    if (present('U36') and model('U36') == '74LCX07BQX'
+            and 'U36.13' in db.get('no_connect_nodes', [])):
+        base = moved(db, 'U36.13', 'GND')
+        base['no_connect_nodes'] = [n for n in base.get('no_connect_nodes', []) if n != 'U36.13']
+        yield Mutation('D-CMOS-UNUSED-IN-FLOAT', ('NET-A07', 'DEV-D05'), ('U36',), (),
+                       'disconnect unused input A5.13; retain output O5.12 and DAP NC markers', copy.deepcopy(db), baseline=base,
+                       contract={'input': 'U36.13', 'source': 'onsemi 74LCX07/D Rev2 p3 note4, lane-4 F219'})
+
+    if present('Y2') and model('Y2') == 'ABM8G-12.000MHZ-18-D2Y-T':
+        for mutation in crystal_load(db):
+            if 'Y2' in mutation.refs and {'C190', 'C193'} <= set(mutation.refs):
+                mutation.contract = {'cl_pf': 18, 'capacitors': ['C190', 'C193'],
+                                     'source': 'Abracon ABM8G ordering code CL=18pF, lane-3 M01'}
+                yield mutation
+                break

@@ -5591,5 +5591,33 @@
   "file": "scripts/checkers/powertree.py",
   "old": "if not re.search(r'(?:SNS|SENSE)(?:$|[_0-9])', str(graph.pinname.get(node, '')), re.I)",
   "new": "if True"
+ },
+ {
+  "id": "M870",
+  "name": "adjudicated TVS pairs have no corrected baseline",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "baseline=base, intent=rail_intent(rails[0], voltage,",
+  "new": "baseline=None, intent=rail_intent(rails[0], voltage,"
+ },
+ {
+  "id": "M871",
+  "name": "the original faulty board hides paired seed detection",
+  "file": "evals/seeded_bench/run.py",
+  "old": "paired_seen = {(f['rule'], f['detail']) for f in paired}",
+  "new": "paired_seen = seen"
+ },
+ {
+  "id": "M872",
+  "name": "a controlled seed forgets unrelated supply identity declarations",
+  "file": "evals/seeded_bench/run.py",
+  "old": "for net in rail_candidates(db, bound):",
+  "new": "for net in ():"
+ },
+ {
+  "id": "M873",
+  "name": "seed runtime errors pass silently",
+  "file": "evals/seeded_bench/run.py",
+  "old": "return 1 if any('error' in row for row in records) or any('error' in row for row in baselines.values()) else 0",
+  "new": "return 0"
  }
 ]

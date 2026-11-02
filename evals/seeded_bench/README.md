@@ -75,3 +75,32 @@ python3 -B evals/seeded_bench/run.py --offline --out <输出目录> --gate evals
 按上面的`--offline --out`用法运行，并将TMPDIR指向已创建的`/tmp/codex-work/<任务>/`；不需要下载新语料。每个操作器只选已贴装器件，每板每类最多4个位点。源码器件身份仅用于选位点，不代替人工核对准确MPN和工作模式。
 
 [本轮受控摘要](criteria-examples-2026-11-02.json)保存全部类别汇总、输入哈希与10类的逐位点结果。旧离线闸门要求D-CAP-VR为17，本分支修改前后均为15，因此旧`--gate baseline-offline.json`仍失败；这是已有基线差异，本轮未调低基线，也没有引入既有类别退化。漏报数是种子位点的统计，不是现场失效率或人工SR检出率。
+
+## 四板合并 1 的配对种子（2026-11-02）
+
+登记 **5 个新类型、7 个位点**，其中 `D-XTAL-LOAD` 复用已有类型。来源为已完成归因的四块板，
+元数据见 `boards-merge1.json`；第三方 XML 只读用户缓存，不进入仓库。
+原板已有错误时，`Mutation.baseline` 保存仅修正目标缺陷的合成参数合同，比较相同电压合同下的正确/错误两侧；
+不把有缺陷的原板当干净负例，也不伪造可订购物料。`contract` 记录准确 MPN、厂家条款或额定出处。
+
+```sh
+TMPDIR=/tmp/codex-work/boards-merge-1 python3 -B evals/seeded_bench/run.py --offline \
+  --boards-cache ~/.cache/sr-boards --compare <before/results.json> --out <after目录>
+```
+
+先创建上述临时目录。除目标轨的明确电压合同外，其余新发现供电网只登记拓扑身份，电压保持未知。
+基线或变异运行错误退出非零；错误不能算漏报或命中。
+
+| 类型 | 来源位点 | 合同与操作 | 自动目标提示 / 位点 |
+|---|---|---|---:|
+| D-TVS-VRWM | Thor D54；STM32 D22 | 合成合格 VRWM 合同换为 TPD1E0B04DPYR 的 3.6 V、PTVS9V0S1UR 的 9 V；分别固定 5 V、15 V 工作合同。统一收纳原归因的 D-TVS-VRWM-BELOW-PD 别名 | 2/2 |
+| D-MLCC-RATING-BELOW-PD | STM32 C139/C140 | 合成 25 V MLCC 换准确 TDK C1005X6S1A105K050BC（10 V），保留 15 V 合同和 TDK 资格记录，两颗作为一个位点 | 0/1 |
+| D-SHUNT-MPN-CONFLICT | RDIMM R199 | 合成 5 mΩ 合同仅把 MPN 换为 CR1206-J/-000ELF；保留 5 mΩ 值及 Kelvin 连线 | 0/1 |
+| D-I2C-ADDRESS-COLLISION | RDIMM U19/U20 | 同一 SCL/SDA、准确 PAC1954 身份下，U20 ADDRSEL.6 从 GND（0x10）移到 VDD（0x1F），U19 保持 0x1F | 0/1 |
+| D-CMOS-UNUSED-IN-FLOAT | Kria U36.13 | 由 GND 改 NC，只改未用输入，输出和 DAP 的 NC 保持 | 1/1 |
+| D-XTAL-LOAD（已有） | RDIMM Y2/C190/C193 | 将既有 18 pF 电容改 1 µF，记录 ABM8G 的 CL=18 pF；不新造晶体 | 0/1 |
+
+TVS 的目标命中是原有 PRO-E02 **窗口复核提示**，不是自动完成 VRWM 违规的电气判定。
+MLCC 额定、分流电阻 MPN、地址冲突与晶体负载仍有自动层缺口；其位点/合同已保存，不能把其他规则指向当目标检出。
+现有 247 个位点逐位点比较无退化，仍为 177 个目标提示；新增 7 个位点有 3 个目标提示、0 个运行错误。
+受控结果见 `boards-merge1-results.json`，包含逐位点自动提示、其他提示和计划指向。
