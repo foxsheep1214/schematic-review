@@ -99,3 +99,9 @@
 - L86-M33官方V1.3订货表PDFp49可锁身份，p14/15的TXD1/1PPS/AADET_N为输出，原生均input；同版发布PDF天线座K?而native/BOM K1，勿把两个数据缺陷说成物理接反。
 - RX上拉3V3对VIHmax3.1V是推荐窗疑点、不是已超3.6V绝限；FORCE_ON 3.3V分压名义2.18543V；JP2闭合5V→3V3仅条件风险，未定装配不能硬指控。V_BCKP无直接C不以参考图直接判FAIL。
 - SE5218仅原厂文本可取，403/HTML/截图失败不能记PDF可用；后缀未给。F1缺条款/120 REVIEW_INCOMPLETE与原生重复任务须保留，26根因计数与自动0 FINDING/2 CANDIDATE分开。
+
+- gyrocopterllc--flatmcu：543项（541+2补查）、121观察=9真/26误/0准则/5知识/81待定，2覆盖漏项；427未闭，valid=false/NO_GO，renderer拒绝，交执行记录。
+- assemblies只写R12不贴会令其余器件贴装未知，驱动/SOA少展开；逐件按图明确贴装后重冷扫再merge。power_switches当前schema2，results15。
+- DRV8353RS六GH/GL在自定义库全IN；p8/9真实O、p14/36内部150k ROFF。12条伪断驱与库类型真错误要并存；PWM正负是互补桥臂，不是差分对（9项）。
+- 源BOM与图：U4 G473/G431、J1五/六针、USB33/22Ω、shunt2/2.5mΩ、C39和电容封装冲突。东芝8物理脚在Custom封装合并成G1/D2/S3有据，不按脚数判错。
+- AP1117新版p6本地4.7uF；Cin0.3u/Cout1.3或2.2u偏离，D1/FB后电容不无模型相加。p2/p6 ESR冲突另留知识；相电压ADC与驱动内CSA需补ANA实例，75V/14A算例不冒充产品合同。
