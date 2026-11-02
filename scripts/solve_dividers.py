@@ -69,11 +69,16 @@ def parse_resistor(value, default_tol=None, exact=False):
     # megawatts. Any other word still makes the value unreadable.
     ratings = {}
     while True:
-        rating = re.fullmatch(r'(.*?)\s*/\s*(\d+(?:\.\d+)?)\s*(M?W|V)\s*', remainder)
+        fraction = re.fullmatch(r'(.*?)\s*/\s*(\d+(?:\.\d+)?)\s*/\s*(\d+(?:\.\d+)?)\s*(M?W)\s*', remainder)
+        rating = fraction or re.fullmatch(r'(.*?)\s*/\s*(\d+(?:\.\d+)?)\s*(M?W|V)\s*', remainder)
         if not rating:
             break
-        field = 'voltage_v' if rating.group(3) == 'V' else 'power_w'
-        amount = float(rating.group(2)) / (1000.0 if rating.group(3) == 'MW' else 1.0)
+        unit_rating = rating.group(4) if fraction else rating.group(3)
+        denominator = float(fraction.group(3)) if fraction else 1.0
+        if denominator <= 0:
+            return None
+        field = 'voltage_v' if unit_rating == 'V' else 'power_w'
+        amount = float(rating.group(2)) / denominator / (1000.0 if unit_rating == 'MW' else 1.0)
         if field in ratings or not (math.isfinite(amount) and amount > 0):
             return None
         ratings[field] = amount

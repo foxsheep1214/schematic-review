@@ -180,7 +180,7 @@ class CandidateTests(unittest.TestCase):
 
     def test_the_regulator_candidate_holds_inductor_output_capacitor_and_feedback(self):
         buck = by_id(generate())['POWER_CONVERTER-U7']
-        self.assertEqual(members(buck), ['C10', 'L2', 'R11', 'R12', 'U7'])
+        self.assertEqual(members(buck), ['C10', 'C3', 'L2', 'R11', 'R12', 'U7'])
         self.assertEqual(buck['nets']['output'], 'V3V3')
 
     def test_debug_holds_test_points_without_walking(self):
