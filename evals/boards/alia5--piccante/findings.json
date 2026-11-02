@@ -1,0 +1,958 @@
+{
+  "board": "alia5--piccante",
+  "source": {
+    "repo": "Alia5/PiCCANTE",
+    "commit": "62ede82f56ae1cc4addf9ef7b7bf20d447d8d712",
+    "schematic": "hardware/PiCCANTE-OBD-Dongle/PCB/PiCCANTE-OBD-Dongle.kicad_sch",
+    "license": "GPL-3.0"
+  },
+  "types": [
+    "CAN",
+    "USB",
+    "POWER_PROTECTION",
+    "POWER_CONVERTER",
+    "STARTUP",
+    "STORAGE",
+    "UART",
+    "ANALOG"
+  ],
+  "run": {
+    "db_sha256": "273559d33ea93fea44f863d272aefb0dcc5255720370c88632896ae74b7c50a1",
+    "plan_items": 299,
+    "findings_total": 34,
+    "results_judged": 55,
+    "needs_human_plan_items": 244,
+    "gate": "FAIL",
+    "sr_commit": "0336d44a7c19dc91b21fca3c77244de15d0c06b9",
+    "native_gate_valid": false,
+    "result_limitation": "schema15没有needs_human；保留逐ID pending_checks，原生functions为空避免局部事实冒充完整功能PASS；校验FAIL如实保留。",
+    "native_findings": 0,
+    "counting": "17个单节点候选逐条计；其余按不同根因计。包含误报/工具准备度与条件风险，不是已确认电气缺陷数。",
+    "native_gate_errors": 316,
+    "release": "NO_GO",
+    "native_results": {
+      "PASS": 47,
+      "NA": 8,
+      "FAIL": 0,
+      "INSUFFICIENT": 0
+    },
+    "pending_checks_file": "/Users/skyfend/.cache/sr-boards/alia5--piccante/review/review-results.json",
+    "function_review_file": "/Users/skyfend/.cache/sr-boards/alia5--piccante/review/function-review.json",
+    "top50_rows": 50,
+    "report_sha256": "7a85d8980351469637329f1cd65adf417f4f143ec6c340e8105ce406deb942f9"
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-3V3_EN-Pad37)"
+      ],
+      "sr_text": "unconnected-(A1-3V3_EN-Pad37) <- A1.37 (RaspberryPi_Pico_W，脚名 3V3_EN) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.37=3V3_EN仅在unconnected-(A1-3V3_EN-Pad37)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F02",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-ADC_VREF-Pad35)"
+      ],
+      "sr_text": "unconnected-(A1-ADC_VREF-Pad35) <- A1.35 (RaspberryPi_Pico_W，脚名 ADC_VREF) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.35=ADC_VREF仅在unconnected-(A1-ADC_VREF-Pad35)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F03",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-AGND-Pad33)"
+      ],
+      "sr_text": "unconnected-(A1-AGND-Pad33) <- A1.33 (RaspberryPi_Pico_W，脚名 AGND) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.33=AGND仅在unconnected-(A1-AGND-Pad33)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F04",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-GPIO2-Pad4)"
+      ],
+      "sr_text": "unconnected-(A1-GPIO2-Pad4) <- A1.4 (RaspberryPi_Pico_W，脚名 GPIO2) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.4=GPIO2仅在unconnected-(A1-GPIO2-Pad4)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F05",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-GPIO3-Pad5)"
+      ],
+      "sr_text": "unconnected-(A1-GPIO3-Pad5) <- A1.5 (RaspberryPi_Pico_W，脚名 GPIO3) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.5=GPIO3仅在unconnected-(A1-GPIO3-Pad5)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F06",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-GPIO9-Pad12)"
+      ],
+      "sr_text": "unconnected-(A1-GPIO9-Pad12) <- A1.12 (RaspberryPi_Pico_W，脚名 GPIO9) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.12=GPIO9仅在unconnected-(A1-GPIO9-Pad12)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F07",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-GPIO12-Pad16)"
+      ],
+      "sr_text": "unconnected-(A1-GPIO12-Pad16) <- A1.16 (RaspberryPi_Pico_W，脚名 GPIO12) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.16=GPIO12仅在unconnected-(A1-GPIO12-Pad16)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F08",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-GPIO13-Pad17)"
+      ],
+      "sr_text": "unconnected-(A1-GPIO13-Pad17) <- A1.17 (RaspberryPi_Pico_W，脚名 GPIO13) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.17=GPIO13仅在unconnected-(A1-GPIO13-Pad17)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F09",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-GPIO14-Pad19)"
+      ],
+      "sr_text": "unconnected-(A1-GPIO14-Pad19) <- A1.19 (RaspberryPi_Pico_W，脚名 GPIO14) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.19=GPIO14仅在unconnected-(A1-GPIO14-Pad19)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F10",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-GPIO15-Pad20)"
+      ],
+      "sr_text": "unconnected-(A1-GPIO15-Pad20) <- A1.20 (RaspberryPi_Pico_W，脚名 GPIO15) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.20=GPIO15仅在unconnected-(A1-GPIO15-Pad20)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F11",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-GPIO20-Pad26)"
+      ],
+      "sr_text": "unconnected-(A1-GPIO20-Pad26) <- A1.26 (RaspberryPi_Pico_W，脚名 GPIO20) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.26=GPIO20仅在unconnected-(A1-GPIO20-Pad26)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F12",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-GPIO21-Pad27)"
+      ],
+      "sr_text": "unconnected-(A1-GPIO21-Pad27) <- A1.27 (RaspberryPi_Pico_W，脚名 GPIO21) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.27=GPIO21仅在unconnected-(A1-GPIO21-Pad27)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F13",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-GPIO22-Pad29)"
+      ],
+      "sr_text": "unconnected-(A1-GPIO22-Pad29) <- A1.29 (RaspberryPi_Pico_W，脚名 GPIO22) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.29=GPIO22仅在unconnected-(A1-GPIO22-Pad29)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F14",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-GPIO27_ADC1-Pad32)"
+      ],
+      "sr_text": "unconnected-(A1-GPIO27_ADC1-Pad32) <- A1.32 (RaspberryPi_Pico_W，脚名 GPIO27_ADC1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.32=GPIO27_ADC1仅在unconnected-(A1-GPIO27_ADC1-Pad32)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F15",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-GPIO28_ADC2-Pad34)"
+      ],
+      "sr_text": "unconnected-(A1-GPIO28_ADC2-Pad34) <- A1.34 (RaspberryPi_Pico_W，脚名 GPIO28_ADC2) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.34=GPIO28_ADC2仅在unconnected-(A1-GPIO28_ADC2-Pad34)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F16",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-RUN-Pad30)"
+      ],
+      "sr_text": "unconnected-(A1-RUN-Pad30) <- A1.30 (RaspberryPi_Pico_W，脚名 RUN) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.30=RUN仅在unconnected-(A1-RUN-Pad30)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F17",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-VBUS-Pad40)"
+      ],
+      "sr_text": "unconnected-(A1-VBUS-Pad40) <- A1.40 (RaspberryPi_Pico_W，脚名 VBUS) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "A1.40=VBUS仅在unconnected-(A1-VBUS-Pad40)单节点网，源图无NC叉；PDF p1目检与原生XML一致。Pico-W PDF pp8-9与RP2040 PDF pp613,302-303说明模组特殊脚与GPIO复位偏置，但不能证明原作者已把本脚声明为未用。电气可悬空的特殊脚不按断供判错；是否补NC或保留外接能力须作者裁定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F18",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-ADC_VREF-Pad35)"
+      ],
+      "sr_text": "A1.35 (ADC_VREF) <- unconnected-(A1-ADC_VREF-Pad35)",
+      "verdict": "false_alarm",
+      "evidence": "A1.35 ADC_VREF是Pico W滤波后的3V3参考输出；Pico-W PDF p9、p21 Fig12示模组R7=200Ω从3V3供入ADC_VREF，再经R9=1Ω到ADC_AVDD及C13=2.2µF。载板不接外部参考合法，外部单节点不代表模组内部无源。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run power-input scan; scripts/checkers/powertree.py",
+        "what": "按已核模组针义区分内部生成参考/电源输出与必须外供输入；允许有原厂出处的内部源声明。保留一般未供电IC输入的报警。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F19",
+      "sr_rule": "PWR-A03",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "unconnected-(A1-AGND-Pad33)",
+        "GND"
+      ],
+      "sr_text": "unconnected-(A1-AGND-Pad33) ['A1.33'] 经已装配直流连接件到不了主地 GND；孤岛上 IC 地脚 ['A1.33']，无连接器、无已知隔离器件；跨域器件 ['A1']、条件返回器件 ['A1']：按引脚表和导通条件核回流，不要求跨隔离短接",
+      "verdict": "false_alarm",
+      "evidence": "A1.33在载板是单节点AGND；Pico-W PDF p21 Fig12 J0.33直接接模组地符号，同页J0的其他GND触点同地；PDF p9说明该脚是模拟地参考。载板A1其余7个GND均接GND，外部33脚不接不形成片内地岛。已放大核官方图，不依据名称合并任意隔离地。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint._ground_islands; scripts/checkers/domains.py",
+        "what": "为模组提供有原厂图和输入指纹的内部等地连接声明；输出明确区分载板外端悬空与真正内部地岛。不得仅因AGND/GND名字相近短接。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F20",
+      "sr_rule": "RST-A03",
+      "criteria": [
+        "G03-018",
+        "G04-005"
+      ],
+      "severity": "P1 conditional",
+      "refs": [
+        "U4",
+        "JPWR1"
+      ],
+      "nets": [
+        "VBATT"
+      ],
+      "sr_text": "U4（状态 as-drawn）：使能脚 U4.5 直连输入网 VBATT，未见 UVLO 分压或 RC 延时；输入缓慢爬升或跌落时的开启点由器件内部门限决定",
+      "verdict": "needs_human",
+      "evidence": "U4.5 ENA与U4.7 VIN、JPWR1.2直接同网VBATT。TPS5430 SLVS632L PDF p4：ENA绝限−0.3..7V，VIN工作5.5..36V；pp9-10有内部UVLO及允许ENA悬空的1.5MΩ上拉。因此只要VBATT>7V就已越ENA绝限，12V条件例为12−7=5V；12V是条件例，未冒充受控输入。README/OBD文件名只给车载用途，未给实际输入窗，故本轮保留needs_human，不能写已发生损坏或已满足。建议断开5脚到VBATT，按手册悬空常开，或用额定覆盖所需输入的开漏控制；输入合同确认后按同一7V边界重判。",
+      "proposed_fix": null,
+      "seed": null,
+      "related_sr_rules": [
+        "RST-E01",
+        "RST-T01"
+      ]
+    },
+    {
+      "id": "F21",
+      "sr_rule": "RST-E02",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "U4",
+        "C2"
+      ],
+      "nets": [
+        "Net-(U4-BOOT)",
+        "Net-(D1-K)"
+      ],
+      "sr_text": "核对 BOOT/strap/test 引脚的强制态与采样窗口（RST-E02.U4-1）",
+      "verdict": "false_alarm",
+      "evidence": "U4.1 BOOT仅经C2=0.01µF接U4.8 PH。TPS5430 PDF p3 Table4-1、p10 §6.3.5与p16 BOOT Capacitor明确是高侧自举供电脚，不是MCU boot strap；本条应NA，另核C2额定≥10V及自举连接。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:CircuitPlanning.plan_concrete_checks RST-E02 branch",
+        "what": "遇BOOT先消费已核器件角色/物理脚功能；regulator的BOOT/BST且电容跨BOOT-PH/SW为bootstrap，不生成strap强制态；MCU BOOT0/BOOT1继续生成。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F22",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1"
+      ],
+      "nets": [
+        "VSYS"
+      ],
+      "sr_text": "[NO_DOCUMENT] A1: datasheet audit has no AVAILABLE document for this ref（首次审计诊断，已用--require-ref A1恢复）",
+      "verdict": "false_alarm",
+      "evidence": "首次A1被heuristic分类unknown，虽intent.device_kinds.A1=mcu且resolution中有RaspberryPi_Pico_W完整官方PDF，_material_groups只按heuristic settlement=datasheet收集，A1未进materials；加--require-ref A1后立即VERIFIED，文件未替换。Pico-W PDF p1明确microcontroller board，db A1有40脚、GPIO和VSYS。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/audit_datasheets.py:_material_groups / build_datasheet_audit",
+        "what": "资料必需集合并入intent.device_kinds与intent.devices显式声明的ref；unknown多网器件不能因前缀A或分类未知被静默排除。加同db/同resolution有无--require-ref的回归。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F23",
+      "sr_rule": "PWR-C02",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "U4",
+        "C2",
+        "C4"
+      ],
+      "nets": [
+        "Net-(D1-K)",
+        "Net-(D2-A)"
+      ],
+      "sr_text": "PWR-C02.POWER-CONVERTER-U4-RUN.C2（同组多条PWR检查锚点C2）",
+      "verdict": "false_alarm",
+      "evidence": "最终计划同一POWER_CONVERTER-U4的anchors=[U4]，PWR-C04/06/15能锚到U4；C02/03/05/18/24却选择排序首件C2。db C2两端BOOT/PH，是10nF飞跨电容；控制器为U4 TPS5430，C4才是输出220µF。问题仍该审，错的是对象锚定，不能把对C2的器件条款当控制器证据。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:CircuitPlanning.plan_subjects refs[0] fallback",
+        "what": "从候选anchors和已核regulator角色选核心；没有唯一核心时保留明确多核心缺口，不以字典序第一颗阻容作控制器。BASIS问题保持，修正对象/ref/ID和依赖。"
+      },
+      "seed": null,
+      "related_sr_rules": [
+        "PWR-C03",
+        "PWR-C05",
+        "PWR-C18",
+        "PWR-C24"
+      ]
+    },
+    {
+      "id": "F24",
+      "sr_rule": "PWR-C04",
+      "criteria": [
+        "G03-003",
+        "G03-004"
+      ],
+      "severity": "observation",
+      "refs": [
+        "U4",
+        "C2",
+        "C4",
+        "L1",
+        "R12",
+        "R13"
+      ],
+      "nets": [
+        "Net-(D2-A)"
+      ],
+      "sr_text": "required_inputs=[datasheet:C2,datasheet:C4,datasheet:L1,datasheet:R12,datasheet:R13]（PWR-C04控制器条款准备度）",
+      "verdict": "false_alarm",
+      "evidence": "TPS5430原厂完整PDF已经AVAILABLE，PWR-C04却仅因拥有的普通C/L/R无逐颗专属datasheet而WAITING_EVIDENCE；C4有效容量/ESR确须按用途限定，L1需电流额定，R12/R13公差可按通用件最弱档先算。references/commodity-floors.md明确常规件只按用途排风险，不能整组索取手册。真实采购/ESR边界仍保留F27。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:CircuitPlanning.plan_subjects gaps comprehension",
+        "what": "以准确核心控制器手册为条款依赖；无源件按用途只要会改变结论的容量/ESR/Isat/公差/额定，可用最弱档/BOM约束。缺普通件专属PDF不单独阻断。依据SKILL审查纪律5及commodity-floors。"
+      },
+      "seed": null,
+      "related_sr_rules": [
+        "PWR-C15",
+        "DEV-C02"
+      ]
+    },
+    {
+      "id": "F25",
+      "sr_rule": "SIG-C03",
+      "criteria": [
+        "G04-032"
+      ],
+      "severity": "observation",
+      "refs": [
+        "R1",
+        "R2",
+        "R5",
+        "JCAN0",
+        "JCAN1",
+        "JCAN2",
+        "JCAN2Term0",
+        "JCAN2Term1",
+        "JCAN2Term2"
+      ],
+      "nets": [
+        "CAN0H",
+        "CAN0L",
+        "CAN1H",
+        "CAN1L",
+        "CAN2H",
+        "CAN2L"
+      ],
+      "sr_text": "三路CAN端接、节点/线长和总线预算未闭合",
+      "verdict": "needs_human",
+      "evidence": "JCAN0/1/2各1=L、2=H；R2/R1/R5各120Ω，一端在CANL，另一端到JCAN2Term0/1/2，跳帽另一脚才到CANH。未插帽时板载端接开路；插帽时单板为120Ω；若既有两只120Ω再加本板则120||120||120=40Ω，只有两只时60Ω。TCAN3413 PDF p25 §8.2.1.1及Top50 G04-032要求看实际端点，不把未给跳帽和车载拓扑判为板缺陷。",
+      "proposed_fix": null,
+      "seed": null,
+      "related_sr_rules": [
+        "SIG-C13",
+        "SIG-C16"
+      ]
+    },
+    {
+      "id": "F26",
+      "sr_rule": "RST-T04",
+      "criteria": [
+        "G04-010"
+      ],
+      "severity": "observation",
+      "refs": [
+        "A1",
+        "U1",
+        "U2",
+        "U5"
+      ],
+      "nets": [
+        "CAN_LOW_PWR",
+        "CAN0TX",
+        "CAN1TX",
+        "CAN2TX"
+      ],
+      "sr_text": "CAN_LOW_PWR同时驱动三只TCAN3413的STB，复位期状态需合并偏置核对",
+      "verdict": "needs_human",
+      "evidence": "A1.9 GPIO6直连U1/U2/U5.8，无离散偏置。TCAN3413 PDF p3有STB内部上拉，p8低态IIL −20..−2µA；RP2040 PDF pp302-303默认PDE=1/PUE=0，p617下拉50..80kΩ。三只STB与一只GPIO下拉竞争，手册只给0V测试电流，不能把它当全电压线性电阻推出必高/必低。TXD也有片内上拉，GPIO5/8/11默认下拉；DTO不等于整机复位安全态证明。缺受控复位/掉电安全态与Pico W/2 W装配分支，建议按要求设确定偏置并核合计漏电/驱动。",
+      "proposed_fix": null,
+      "seed": null,
+      "related_sr_rules": [
+        "SIG-D08"
+      ]
+    },
+    {
+      "id": "F27",
+      "sr_rule": "PWR-C04",
+      "criteria": [
+        "G03-003",
+        "G03-004"
+      ],
+      "severity": "observation",
+      "refs": [
+        "U4",
+        "C4",
+        "C2",
+        "L1",
+        "D1",
+        "D2"
+      ],
+      "nets": [
+        "Net-(D1-K)",
+        "Net-(D2-A)",
+        "VSYS"
+      ],
+      "sr_text": "U4输出C4仅220uF/1206，尚不能证明有效容量和ESR适配",
+      "verdict": "needs_human",
+      "evidence": "U4.8 PH→L1=15µH→Net-(D2-A)，C4=220uF跨该网/GND，D1阳极GND阴极PH，D2阳极输出阴极VSYS。TPS5430 PDF pp14-16限制LC组合，p15既核ESR上限又提醒ESR过小；其5V/15µH/220µF例为特定Poscap，不能把本板4.2735V的1206无极性符号自动当同一器件。C4无技术/容差/偏压/ESR资料，名义容量不构成全工况PASS。p16的Catch Diode与BOOT电容已核连接正确；L1的Isat/负载及输入窗尚未锁。",
+      "proposed_fix": null,
+      "seed": null,
+      "related_sr_rules": [
+        "PWR-C15",
+        "DEV-C01"
+      ]
+    },
+    {
+      "id": "F28",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "J1",
+        "A1",
+        "R7",
+        "R8",
+        "R9",
+        "R10",
+        "R11",
+        "C1"
+      ],
+      "nets": [
+        "+3.3V",
+        "Net-(A1-GPIO16)",
+        "Net-(A1-GPIO17)",
+        "Net-(A1-GPIO18)",
+        "Net-(A1-GPIO19)"
+      ],
+      "sr_text": "microSD物理触点与实际卡负载/模式尚未闭合",
+      "verdict": "knowledge_gap",
+      "evidence": "J1符号Micro_SD_Card，Footprint为EasyEDA TF-SMD_503398-1892，Datasheet URL却为Würth 693072010801.pdf，且固定源树没有受控BOM/该封装库文件。不能用不同系列手册证明真实触点视图；缺实际503398-1892厂家针图及所选卡协议/负载资料。网表已核1=DAT2，2=DAT3/CS(GPIO17)，3=CMD(GPIO19)，4=3V3，5=CLK(GPIO18)，6=GND，7=DAT0(GPIO16)，8=DAT1，9=SHIELD接GND；R7-R11各10k，C1=10µF。上述连线自洽不证明真实连接器和卡时序/电流。",
+      "proposed_fix": null,
+      "seed": null,
+      "related_sr_rules": [
+        "DEV-D03",
+        "SIG-D10",
+        "SIG-C09"
+      ]
+    },
+    {
+      "id": "F29",
+      "sr_rule": "SIG-C05",
+      "criteria": [
+        "G01-026",
+        "G01-027",
+        "G01-029"
+      ],
+      "severity": "observation",
+      "refs": [
+        "A1",
+        "D2",
+        "C4"
+      ],
+      "nets": [
+        "VSYS",
+        "unconnected-(A1-VBUS-Pad40)",
+        "Net-(D2-A)"
+      ],
+      "sr_text": "A1内置USB口的供电预算与实际主机资格未给；D2正常拓扑能阻USB回充C4",
+      "verdict": "needs_human",
+      "evidence": "Pico-W PDF pp9,15-16,21明确micro-USB VBUS经模组内D1到VSYS，载板D2阳极为U4输出、阴极为VSYS，符合外源二极管OR方向。USB-only时D2反偏，C4=220µF不直接挂USB VBUS；不得把C4名义值直接报USB入口超100µF。模组3V3同时供三TCAN和SD，需实际USB电源资格、卡模式/负载及内置输入电容核总预算。这里是Micro-B，不把Type-C/PD的40ms或特定附着态条款无条件套用。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F30",
+      "sr_rule": "ANA-C03",
+      "criteria": [
+        "G04-054",
+        "G04-005",
+        "G04-007",
+        "G04-009"
+      ],
+      "severity": "observation",
+      "refs": [
+        "A1",
+        "R14",
+        "R15"
+      ],
+      "nets": [
+        "VBATT",
+        "Net-(A1-GPIO26_ADC0)"
+      ],
+      "sr_text": "VBATT分压可计算，但输入最大值、掉电和误差目标未给",
+      "verdict": "needs_human",
+      "evidence": "VBATT→R15=100k→A1.31 GPIO26_ADC0→R14=10k→GND；名义VADC=VBATT/11，Rth=9.091kΩ。以通用±5%作条件界，分压比0.0829493..0.0995261，若ADC_AVDD=3.3V则满量程允许VBATT上界约33.157V；名义上界36.3V不能当公差保证。RP2040 PDF p618 Table627量程0..ADC_AVDD，p615数字IO绝限上端IOVDD+0.5V；0.5V不是允许连续钳位电压或注入电流保证。VBATT先上电而3V3=0时需核模拟脚注入/假供电；未给输入窗及允许失电条件，不能判已损坏或全窗通过。",
+      "proposed_fix": null,
+      "seed": null,
+      "related_sr_rules": [
+        "DEV-C03"
+      ]
+    },
+    {
+      "id": "F31",
+      "sr_rule": "PWR-D04",
+      "criteria": [
+        "G05-019",
+        "G05-054"
+      ],
+      "severity": "observation",
+      "refs": [
+        "JPWR1",
+        "U4",
+        "C3",
+        "R15",
+        "D2"
+      ],
+      "nets": [
+        "VBATT",
+        "GND",
+        "VSYS"
+      ],
+      "sr_text": "JPWR1源侧保护、反接、瞬态和上游合同未给",
+      "verdict": "needs_human",
+      "evidence": "JPWR1.2=VBATT直连C3.1/U4.5/U4.7/R15.1，1=GND，未见保险/TVS/输入串联防反。U4 VIN工作5.5..36V、绝限−0.3..40V，ENA更弱为7V；D2只在降压输出端隔离VSYS，不能声称保护输入反接或负载突降。源阻抗、上游OBD保险覆盖、正负瞬态和故障持续时间没有受控输入，不因未画板载TVS/保险直接判硬错。",
+      "proposed_fix": null,
+      "seed": null,
+      "related_sr_rules": [
+        "PRO-C04",
+        "PRO-D04"
+      ]
+    },
+    {
+      "id": "F32",
+      "sr_rule": "PWR-C01",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1",
+        "U1",
+        "U2",
+        "U5",
+        "J1",
+        "U4",
+        "L1"
+      ],
+      "nets": [
+        "+3.3V",
+        "VBATT",
+        "VSYS"
+      ],
+      "sr_text": "三路CAN加SD的3V3预算、U4磁件峰值与USB负载需按配置定界",
+      "verdict": "needs_human",
+      "evidence": "Pico-W PDF p9建议外部3V3负载<300mA，该值随VSYS和RP2040负载而变；TCAN3413 PDF pp5-6按dominant/recessive/standby与负载列电流，不能只取idle。三路若同时最重，再叠加卡写入峰值，需要实际卡/工作模式及Pico W或2 W装配。TPS5430 p5峰值限流4..6A，不能称3A为任何温度/磁件的整板供电保证；L1只标15µH，无Isat/DCR，实际稳态/短路磁件电流不可凭电感量闭合。",
+      "proposed_fix": null,
+      "seed": null,
+      "related_sr_rules": [
+        "PWR-C03",
+        "PWR-C19"
+      ]
+    },
+    {
+      "id": "F33",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G04-005",
+        "G04-007",
+        "G04-009"
+      ],
+      "severity": "observation",
+      "refs": [
+        "A1",
+        "U1",
+        "U2",
+        "U5",
+        "J1"
+      ],
+      "nets": [
+        "+3.3V"
+      ],
+      "sr_text": "SIG-C08.LINK-STARTUP-U4-EN.3-3V：对+3.3V供电网生成跨域信号注入问项",
+      "verdict": "false_alarm",
+      "evidence": "该对象的net是+3.3V，端点A1.36为模组3V3输出，U1/U2/U5.3/.5都是同一网的VCC/VIO，J1.4为VDD；这是直接共用供电网，不是IO驱动另一电源域的信号。接口规则规定power_node不问信号电平/方向，掉电信号项仍应保留在CANxTX/RX/STB；电源网本身按PWR追源/反灌。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:Deriver.cross_supply / Deriver.signal_nets / InterfacePlanning.plan_interfaces",
+        "what": "在逐网SIG-C08生成前过滤已确认的power_node/return；比较IO真实VIO域，而非模组所有电源脚集合。保留信号网上的跨域/掉电注入检查；本例+3.3V仍须PWR检查。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F34",
+      "sr_rule": "REQ-D03",
+      "criteria": [],
+      "severity": "observation",
+      "refs": [
+        "A1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "D1",
+        "D2",
+        "J1",
+        "JCAN0",
+        "JCAN1",
+        "JCAN2",
+        "JCAN2Term0",
+        "JCAN2Term1",
+        "JCAN2Term2",
+        "JPWR1",
+        "JUART1",
+        "L1",
+        "R1",
+        "R2",
+        "R5",
+        "R7",
+        "R8",
+        "R9",
+        "R10",
+        "R11",
+        "R12",
+        "R13",
+        "R14",
+        "R15",
+        "U1",
+        "U2",
+        "U4",
+        "U5"
+      ],
+      "nets": [
+        "VBATT",
+        "VSYS",
+        "+3.3V"
+      ],
+      "sr_text": "缺受控输入/装配与采购范围，不能用逐项needs_human冒充已完成整板功能判定",
+      "verdict": "needs_human",
+      "evidence": "固定源提交33件/52网/136物理节点，原生XML与db逐节点0差异；无BOM、受控工况/温度/电源窗、跳帽表和卡型号。用途仅依据README/文件名推断，industrial_telecom是本任务指定基线。普通R/C不逐颗索专属手册，按最弱档先算和给BOM约束；输入/装配状态未定与真正厂家缺数据分开。原生schema15没有needs_human/未定需求表达，本轮使用pending_checks逐ID和function-review逐功能记录，保留门禁FAIL，不编VENDOR_DATUM或完整功能PASS。",
+      "proposed_fix": null,
+      "seed": null,
+      "related_sr_rules": [
+        "DEV-D04",
+        "REQ-Q03"
+      ]
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G04-054",
+      "criteria": [
+        "G04-005",
+        "G04-007",
+        "G04-009"
+      ],
+      "sr_rule": "ANA-C03",
+      "refs": [
+        "A1",
+        "R14",
+        "R15"
+      ],
+      "nets": [
+        "VBATT",
+        "Net-(A1-GPIO26_ADC0)"
+      ],
+      "why_expected": "物理模拟ADC引脚和分压链存在，但候选只把它当STARTUP-U4.EN端点，ANA-C03缺失；本轮通过GAP-ADC-VBATT补问。是计划/功能模型漏问，未确认原板ADC过压。",
+      "evidence": "VBATT→R15=100k→A1.31 GPIO26_ADC0→R14=10k→GND；名义VADC=VBATT/11，Rth=9.091kΩ。以通用±5%作条件界，分压比0.0829493..0.0995261，若ADC_AVDD=3.3V则满量程允许VBATT上界约33.157V；名义上界36.3V不能当公差保证。RP2040 PDF p618 Table627量程0..ADC_AVDD，p615数字IO绝限上端IOVDD+0.5V；0.5V不是允许连续钳位电压或注入电流保证。VBATT先上电而3V3=0时需核模拟脚注入/假供电；未给输入窗及允许失电条件，不能判已损坏或全窗通过。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:Generator.analog / Generator.chains; scripts/plan_circuits.py:subject_precondition",
+        "what": "由已核mcu物理GPIO*_ADC*能力加被动分压追源生成ADC监测候选；允许与STARTUP引用共享，不能因整颗MCU被启动候选拥有而吞掉另一功能；按G04-054问量程、绝限、掉电注入。"
+      },
+      "seed": {
+        "kind": "D-ADC-DIVIDER-OVERRANGE",
+        "mutation": "在受控合成测试状态声明A1为RP2040/Pico W、IOVDD/ADC_AVDD=3.3V、VBATT=12V；把R14从10k改100k，R15保持100k，名义输入6V。用准确针表和固定输入合同，原板未判过压。",
+        "target_rule": "ANA-C03"
+      }
+    },
+    {
+      "id": "M02",
+      "criterion": "G05-019",
+      "sr_rule": "PRO-C04",
+      "refs": [
+        "JPWR1",
+        "U4",
+        "C3",
+        "R15"
+      ],
+      "nets": [
+        "VBATT",
+        "GND"
+      ],
+      "why_expected": "catalog已声明POWER_PROTECTION，但没有保护核心/FUSE词时仅REQ-Q07未定，原生计划无PRO-C04逐源支路。本轮GAP-VBATT-SOURCE补问。需核上游保护合同，不是已经证明应装而漏装保险丝。",
+      "evidence": "JPWR1.2=VBATT直连C3.1/U4.5/U4.7/R15.1，1=GND，未见保险/TVS/输入串联防反。U4 VIN工作5.5..36V、绝限−0.3..40V，ENA更弱为7V；D2只在降压输出端隔离VSYS，不能声称保护输入反接或负载突降。源阻抗、上游OBD保险覆盖、正负瞬态和故障持续时间没有受控输入，不因未画板载TVS/保险直接判硬错。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:Generator.inputs / Generator.input_walk; scripts/plan_circuits.py:CircuitPlanning.plan_subjects",
+        "what": "从每个已确认外部电源来源枚举到大电容、控制器和检测支路，即使没有保护器件也生成覆盖问项；允许有据的上游系统保护关闭，不能靠FUSE/MOV词触发。"
+      },
+      "seed": {
+        "kind": "D-SOURCE-BRANCH-UNCOVERED",
+        "mutation": "使用独立合成且受控的电源fixture：SOURCE→F1→LOAD，声明源电压/故障电流且上游没有额外保护；新增SOURCE源侧直接到J_NEW的配电支路，绕过F1。期望PRO-C04逐该新支路生成覆盖问项，不能只因未见保护核心而不问；此种子验证计划覆盖，不将本原板未知上游合同判为已证硬件缺陷。",
+        "target_rule": "PRO-C04"
+      }
+    },
+    {
+      "id": "M03",
+      "criterion": "G01-029",
+      "criteria": [
+        "G01-026",
+        "G01-027"
+      ],
+      "sr_rule": "SIG-C05",
+      "refs": [
+        "A1",
+        "D2",
+        "C4"
+      ],
+      "nets": [
+        "VSYS",
+        "unconnected-(A1-VBUS-Pad40)",
+        "Net-(D2-A)"
+      ],
+      "why_expected": "catalog USB和原厂Pico W内置micro-USB成立，但只留无bound_checks的REQ-Q07.USB，未问SIG-C05电源；本轮GAP-USB-MODULE补问。模组内部硬件仍须有文档边界，不从载板40脚悬空推断USB缺失。",
+      "evidence": "Pico-W PDF pp9,15-16,21明确micro-USB VBUS经模组内D1到VSYS，载板D2阳极为U4输出、阴极为VSYS，符合外源二极管OR方向。USB-only时D2反偏，C4=220µF不直接挂USB VBUS；不得把C4名义值直接报USB入口超100µF。模组3V3同时供三TCAN和SD，需实际USB电源资格、卡模式/负载及内置输入电容核总预算。这里是Micro-B，不把Type-C/PD的40ms或特定附着态条款无条件套用。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:Generator.ports / Generator.usb_connector; scripts/plan_circuits.py:CircuitPlanning.plan_subjects",
+        "what": "支持有原厂出处的模组内USB端口和VBUS/VSYS OR关系，展开本体SIG-C05；Type-C专用项按Micro-B角色排除。C4被D2隔离不计直挂VBUS，实际输入电容和预算单核。"
+      },
+      "seed": {
+        "kind": "D-USB-MODULE-BULK",
+        "mutation": "在合成fixture声明A1内置USB Device端口与物理40脚同VBUS；在A1.40与GND间加入220µF已贴电容、无限浪涌器。原板C4仍在D2阳极侧，作为反例对照，不能将原板220µF误判入口电容。",
+        "target_rule": "SIG-C05"
+      }
+    }
+  ],
+  "summary": {
+    "true_defect": 0,
+    "false_alarm": 7,
+    "criterion_issue": 0,
+    "knowledge_gap": 1,
+    "needs_human": 26,
+    "misses": 3
+  },
+  "evidence_root": "/Users/skyfend/.cache/sr-boards/alia5--piccante/review",
+  "source_lock": {
+    "source_commit": "62ede82f56ae1cc4addf9ef7b7bf20d447d8d712",
+    "sr_commit": "0336d44a7c19dc91b21fca3c77244de15d0c06b9",
+    "kicad_version": "10.0.7",
+    "source_files": {
+      "/Users/skyfend/.cache/sr-boards/alia5--piccante/db.json": "273559d33ea93fea44f863d272aefb0dcc5255720370c88632896ae74b7c50a1",
+      "/Users/skyfend/.cache/sr-boards/alia5--piccante/netlist.xml": "1b935e01e2c2d686d8ad2e3c6ef2075ce698471cec92d817e05f422c3a57a53c",
+      "/Users/skyfend/.cache/sr-boards/alia5--piccante/src/Readme.md": "b05ddfbc1d3ee13e0b589f810ed632b3b44d1960141621f51802288655e7eb00",
+      "/Users/skyfend/.cache/sr-boards/alia5--piccante/src/LICENSE.txt": "cc6429af71d99d103dd5adb2f85aa4da69f0ff5ba19e69fbc5f948c9116ce080",
+      "/Users/skyfend/.cache/sr-boards/alia5--piccante/src/hardware/PiCCANTE-OBD-Dongle/PCB/PiCCANTE-OBD-Dongle.kicad_sch": "bc6a60fc01a52a7c1ac5f647d5a48a995fe979ebcdb98bcaf7b22488740c8c89",
+      "/Users/skyfend/.cache/sr-boards/alia5--piccante/review/schematic.pdf": "00be219c10da0b1e35713ccb5f1b82a37e28c4203aa65a511a45dc2219e1b0a9",
+      "/Users/skyfend/.cache/sr-boards/alia5--piccante/review/ds/TCAN3413.pdf": "2c0e8963e7762bc91edf30a365cc10c31ce88e2ddda3b67a120c4158ae52930b",
+      "/Users/skyfend/.cache/sr-boards/alia5--piccante/review/ds/TPS5430.pdf": "d48506b7c4323b373331e8d6e193598450201a0820d0d28d7524528813ed5f86",
+      "/Users/skyfend/.cache/sr-boards/alia5--piccante/review/ds/Pico-W.pdf": "ba8649ba98437301b9f1621504569a27f1d2ba6111795b4df76783adb08de7c5",
+      "/Users/skyfend/.cache/sr-boards/alia5--piccante/review/ds/B340A.pdf": "1e56d67e7ebfbbd7f13518ef39f0faf9019b41e2761227873101ad9de165211d",
+      "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/01_微控制器与处理器/32位ARM_Cortex-M_MCU/Raspberry Pi - RP2040.pdf": "be56fbb75ba0ae9e26558a73c93ac3e75c2ad4e6878d3b6703de2a76d886ea8c"
+    },
+    "xml_nodes": 136,
+    "db_nodes": 136,
+    "node_mismatches": [],
+    "strict": true,
+    "license": "GPL-3.0; inspect/reference only; no third-party content copied into SR repository"
+  },
+  "scope": "固定commit原理图审查与工具改进评测；未签PCB/EMC/热/车规/整机认证，未修改第三方源。"
+}

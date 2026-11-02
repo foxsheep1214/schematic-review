@@ -63,3 +63,9 @@
 - D1–D8两端LED已有空pin_difference仍卡kind资料；共阳四脚RGB D9没有IC供电返回对，不应阻IC去耦库存，但真实颜色针序/额定照审。12k名义20mA，不能把芯片100mA绝限当LED允许电流。
 - J1自定义奇偶编号与Pmod镜像编号须按坐标/端面换算，不能见数字不等就判接错；下载的官方托管Pmod副本实际2011 Doc510-002，文件名不证明1.1.0；本轮LTC完整PDF未取得，只用在线文字。
 - Designator/Comment CSV需可追溯改列名后read_bom，fetch原db不改；schema15对未定主机/采购/故障合同无needs_human枚举，逐项pending+逐功能范围保留，原生资料不足0不等于审完，不伪造VENDOR_DATUM或功能PASS。
+
+- alia5--piccante：33件/52网，KiCad10.0.7 strict、XML/db136节点零差异；7电路/21框架/299项，55局部判/244逐ID待核；34归因=0真+7误报+0准则+1知识+26人工，3计划漏问，FAIL/NO_GO。
+- Pico W的ADC_VREF内部已由3V3滤波供入，AGND在官方Fig12接公共地；别把载板外引脚悬空判模组断供。A1首次审计被unknown漏收时，--require-ref A1可恢复已有PDF核验。
+- TPS5430 BOOT是C2跨PH的自举脚，不是strap；ENA绝限7V，直连VBATT只在源窗确认后按7V边界判，不套常见可直连VIN的EN。C2需≥10V；C4=220µF/1206不证明Poscap ESR或有效容量。
+- STARTUP经VBATT分压吸入A1/R14/R15会漏独立ANA-C03；模组内USB与无保护核心的源侧PRO-C04也要展开。CAN120Ω经外接帽，三节点40Ω仅是闭帽条件例；D2反偏使USB不能直接充C4，别误加220µF到VBUS。
+- schema15无needs_human/未定工况表达时留逐ID pending及逐功能旁账，不制造完整功能PASS；本轮原生functions为空，门禁FAIL且报告无效，资料不足0不等于244项已审结。
