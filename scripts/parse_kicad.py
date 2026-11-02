@@ -17,7 +17,7 @@ KiCad 网表 (kicadxml) -> 与 parse_netlist.py 相同的结构化索引
    `no_connect_nodes`——它是"图上声明不接"，不是"器件不贴"。
 2. **真正悬空的引脚**：没有 NC 标记却落在 `unconnected-(...)` 网里的引脚保持为
    真实单节点网，NET-A01 照常扫出，不被伪网络掩盖。
-3. **DNP 不贴**：`<property name="dnp"/>` 或 VALUE 带 NC 标记才写 `parts[ref].nc`。
+3. **DNP 不贴**：`dnp` 属性、`DNP`/`不贴` 字段的肯定标记或 VALUE 带 NC 才写 `parts[ref].nc`。
    `exclude_from_bom` 只是 BOM 卫生标记，不作装配证据。
 
 引脚功能名取 `pinfunction`（KiCad 的引脚名），缺失时回落到库符号的引脚名；

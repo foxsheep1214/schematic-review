@@ -13,7 +13,7 @@ from part_words import CONNECTOR, IC, LED_RE, RESISTOR, TESTPOINT
 from checkers.passive_stress import rated_voltage   # BOM 值字段里写明的耐压：100nF/16V、10uF 25V、4.7u/X5R/50V
 
 POLARITY = {'+': 'plus', 'P': 'plus', 'POS': 'plus', '-': 'minus', 'N': 'minus', 'NEG': 'minus'}
-REFDES_RE = re.compile(r'^(?!.*\?)[A-Za-z][A-Za-z0-9_/+-]*?\d+[A-Za-z]?$')   # USB-C1, PS2_KBD1, PGM/DBG1 are annotated
+REFDES_RE = re.compile(r'^(?!.*\?)(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9][A-Za-z0-9_/+-]*$')   # USB-C1, PS2_KBD1, PGM/DBG1 are annotated
 I2C_LINE_RE = re.compile(r'^(SDA|SCL)\d*$')
 
 
@@ -155,7 +155,7 @@ def i2c_pullups(lint):
         ics = [ref for ref in refs if lint.graph.kind(ref) == IC]
         access = [ref for ref in refs if lint.graph.kind(ref) == TESTPOINT]
         series = [ref for ref in refs if lint.graph.kind(ref) == RESISTOR and ref not in resistors]
-        if not resistors and len(ics) == 1 and len(ics) + len(access) + len(series) == len(refs):
+        if not resistors and access and len(ics) == 1 and len(ics) + len(access) + len(series) == len(refs):
             # 只有一颗 IC，其余是测试点：对端和上拉在生产/调试夹具上（连接器仍按候选，板外主机未必有上拉）。
             lint.add('SIG-A03', 'I²C 线无上拉',
                      f'{net}: 只有 {ics[0]} 和测试点 {access[:6]}，对端与上拉在生产/调试夹具；'
@@ -195,6 +195,15 @@ def floating_inputs(lint):
         # A datasheet NC pin typed input has no input to bias.
         from lint import DATASHEET_NC_PIN_RE
         if DATASHEET_NC_PIN_RE.match(lint.pinname.get(node, '')):
+            continue
+        # Narrow exact-family pin policies from the four-board adjudications. NC marks the unused mode.
+        identity = str(lint.parts.get(ref, {}).get('part') or '')
+        pin_name = str(lint.pinname.get(node, '')).upper()
+        allowed = (re.fullmatch(r'MAX3421E[A-Z0-9+/-]*', identity, re.I) and re.fullmatch(r'GPIN[0-7]', pin_name))
+        allowed = allowed or (re.fullmatch(r'TPS237[28][A-Z0-9/-]*', identity, re.I) and pin_name == 'AUTCLS')
+        if declared_nc and allowed:
+            lint.add('NET-A07', '手册允许未用输入开路',
+                     f'{node}: {identity} {pin_name} 按 MAX3421E Pin Description / TPS2372 Pin Functions 的内部偏置允许未用时开路；仍核准确变体', ref, kind='INFO')
             continue
         if net is None:
             lint.add('NET-A07', '声明输入脚无网络', f'{node}: 引脚类型为输入，网表中没有网络', ref)

@@ -171,7 +171,11 @@ def pin_signature(pin_names):
     mixed names give None; datasheet and explicit library evidence remain
     independent of this pin-name heuristic.
     """
-    aliases = {a for name, pin in pin_names for a in pin_aliases(name, pin)}
+    pins = list(pin_names)
+    # B01/C01/E01 are matrix contacts, not three transistor terminals.
+    if len(pins) > 8 or any(re.fullmatch(r'[BCEGDS]0\d+', normalize(name)) for name, pin in pins):
+        return None
+    aliases = {a for name, pin in pins for a in pin_aliases(name, pin)}
     base = (bool(aliases & {'B', 'BASE'})
             and bool(aliases & {'C', 'COLLECTOR', 'COL'})
             and bool(aliases & {'E', 'EMITTER', 'EMIT'}))
@@ -203,6 +207,9 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     signature = pin_signature(pin_names)
     blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))
     ic_ref = re.match(r'^(U|M|IC)\d', ref, re.I)
+    controller_pins = {a for name, pin in pin_names for a in pin_aliases(name, pin)}
+    if ic_ref and pin_count is not None and pin_count >= 4 and {'GATE', 'SENSE', 'IN'} <= controller_pins:
+        return IC, 'pin-names'  # an ideal-diode controller is not a two-terminal diode
     transistor = {kind for pattern, kind in KEYWORD_KINDS if kind in (MOSFET, BJT)
                   and not (pattern == SI_FET_WORDS and ic_ref) and re.search(pattern, blob, re.I)}
     # Optical libraries also contain emitters and integrated RGB controllers.

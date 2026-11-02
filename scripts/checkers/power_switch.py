@@ -101,7 +101,9 @@ class _Scan:
             pin = node.partition('.')[2]
             pintype = pw.normalize(self.graph.pintype.get(node))
             if kind == pw.IC and (pw.name_matches(DRIVER_PIN_RE, self.graph.pinname.get(node), pin)
-                                  or pintype in OUT_PINTYPES):
+                                  or pintype in OUT_PINTYPES
+                                  or (self.graph.role_kind(ref) == 'supervisor' and
+                                      pw.name_matches(re.compile(r'^N?(RESET|RST)\w*$', re.I), self.graph.pinname.get(node), pin))):
                 found.append({'node': node, 'via': via, 'source': 'driver-pin'})
             elif kind in SWITCH_KINDS and self.graph.role(node) == 'drain':
                 found.append({'node': node, 'via': via, 'source': 'discrete-stage'})
@@ -113,6 +115,9 @@ class _Scan:
 
     def drivers(self, gate_net):
         found = self._driver_pins(gate_net, 'direct')
+        supply = self.tree.source_of(gate_net)
+        if supply:
+            found.append({'node': supply['source'], 'via': 'supply:' + ','.join(supply['path']), 'source': 'supply-bias'})
         for ref, other in self.graph.neighbors(gate_net, pw.PASSIVE_LINKS):
             found.extend(self._driver_pins(other, 'series:' + ref))
         unique = {item['node'] + '|' + item['via']: item for item in found}
@@ -618,25 +623,26 @@ class PowerSwitchChecker(Checker):
             if not switch['gate_net'] or switch.get('role') == LEVEL_SHIFTER_ROLE:
                 continue
             head = '%s（%s，状态 %s）' % (switch['ref'], switch['kind'], state['id'])
+            control = '基极网 ' if switch['kind'] == pw.BJT else '栅极网 '
             if not switch['drivers'] and not switch['gate_pulls']:
                 untyped = self._untyped_ic_pins(lint.graph, switch['gate_net'])
                 if untyped:
                     # Netlists without pin types (OrCAD, hand-drawn libraries): an MCU GPIO may drive the gate.
                     lint.add('DRV-A03', self.cold_rules['DRV-A03'],
-                             head + '：栅极网 ' + switch['gate_net'] + ' 由 ' + '、'.join(untyped[:3])
+                             head + '：' + control + switch['gate_net'] + ' 由 ' + '、'.join(untyped[:3])
                              + ' 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，'
                                '并核上电、复位与驱动高阻时栅极状态',
                              switch['ref'], kind='CANDIDATE')
                 elif switch.get('chained_drivers'):
                     chain = switch['chained_drivers'][0]
                     lint.add('DRV-A03', self.cold_rules['DRV-A03'],
-                             head + '：栅极网 ' + switch['gate_net'] + ' 上无直接驱动脚与上下拉，驱动脚 '
+                             head + '：' + control + switch['gate_net'] + ' 上无直接驱动脚与上下拉，驱动脚 '
                              + chain['node'] + ' 经多级电阻（' + chain['via'].partition(':')[2]
                              + ' 等）到达，属电平移位/分压驱动网络；核上电与驱动高阻时的默认态和关断路径',
                              switch['ref'], kind='CANDIDATE')
                 else:
                     lint.add('DRV-A03', self.cold_rules['DRV-A03'],
-                             head + '：栅极网 ' + switch['gate_net']
+                             head + '：' + control + switch['gate_net']
                              + ' 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定',
                              switch['ref'])
             if switch['switch_node_evidence'] and not [s for s in switch['snubbers']

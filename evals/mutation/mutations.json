@@ -5500,5 +5500,96 @@
   "file": "scripts/plan_circuits.py",
   "old": "['passive-crystal:' + ref])",
   "new": "['passive-crystal:' + ref]) if False else None"
+ },
+ {
+  "id": "M851",
+  "name": "numbered matrix contacts form a transistor again",
+  "file": "scripts/part_words.py",
+  "old": "if len(pins) > 8 or any(re.fullmatch(r'[BCEGDS]0\\d+', normalize(name)) for name, pin in pins):",
+  "new": "if False:"
+ },
+ {
+  "id": "M852",
+  "name": "ideal diode controller words make a discrete diode again",
+  "file": "scripts/part_words.py",
+  "old": "if ic_ref and pin_count is not None and pin_count >= 4 and {'GATE', 'SENSE', 'IN'} <= controller_pins:",
+  "new": "if False:"
+ },
+ {
+  "id": "M853",
+  "name": "pulls are counted backwards on supply rails",
+  "file": "scripts/lint.py",
+  "old": "if ng.is_rail(net) or net in declared_supply_nets(self.graph, self.intent):",
+  "new": "if False:"
+ },
+ {
+  "id": "M854",
+  "name": "enable source discovery ignores zero ohm peers",
+  "file": "scripts/checkers/power_up.py",
+  "old": "peers = graph.low_resistance_peers(enable_net)",
+  "new": "peers = {enable_net: []}"
+ },
+ {
+  "id": "M855",
+  "name": "internal input bias policy is ignored",
+  "file": "scripts/board_scans.py",
+  "old": "if declared_nc and allowed:",
+  "new": "if False:"
+ },
+ {
+  "id": "M856",
+  "name": "multi digit bus indexes become misspellings again",
+  "file": "scripts/lint.py",
+  "old": "            or re.sub(r'\\d+', '#', la) == re.sub(r'\\d+', '#', lb))",
+  "new": "            or False)"
+ },
+ {
+  "id": "M857",
+  "name": "small supply bias is no driver for a transistor",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "        if supply:\n            found.append(",
+  "new": "        if False:\n            found.append("
+ },
+ {
+  "id": "M858",
+  "name": "wired open drain flag policy is ignored",
+  "file": "scripts/lint.py",
+  "old": "drain_only = len(drivers) > 1 and all(self._wired_open_drain(node) for node in outputs)",
+  "new": "drain_only = False"
+ },
+ {
+  "id": "M859",
+  "name": "SiC437 VOUT sense is a power source again",
+  "file": "scripts/checkers/powertree.py",
+  "old": "and pin == '18')  # SiC437 pin18 VOUT senses the output; SW delivers energy",
+  "new": "and False)  # SiC437 pin18 VOUT senses the output; SW delivers energy"
+ },
+ {
+  "id": "M862",
+  "name": "unknown resistor supply paths are called opens again",
+  "file": "scripts/lint.py",
+  "old": "            if unknown and source:",
+  "new": "            if False:"
+ },
+ {
+  "id": "M863",
+  "name": "a connector wins over the internal supply",
+  "file": "scripts/checkers/powertree.py",
+  "old": "                    off_board = off_board or {'source': node, 'path': list(reversed(path)),",
+  "new": "                    return {'source': node, 'path': list(reversed(path)),"
+ },
+ {
+  "id": "M864",
+  "name": "hyphenated KiCad net ties interrupt supply again",
+  "file": "scripts/checkers/powertree.py",
+  "old": "(?:^|:)Net[-_ ]?Tie(?:_|$)",
+  "new": "(?:^|:)NetTie(?:_|$)"
+ },
+ {
+  "id": "M865",
+  "name": "output sense feedback looks like an inductor input supply again",
+  "file": "scripts/checkers/powertree.py",
+  "old": "if not re.search(r'(?:SNS|SENSE)(?:$|[_0-9])', str(graph.pinname.get(node, '')), re.I)",
+  "new": "if True"
  }
 ]
