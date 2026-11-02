@@ -359,7 +359,7 @@ def crystal_load(db):
             out = copy.deepcopy(db)
             for cref in caps:
                 out['parts'][cref]['value'] = '1uF'
-            yield Mutation('D-XTAL-LOAD', ('CLK-C01',), (ref, *caps), (),
+            yield Mutation('D-XTAL-LOAD', ('CLK-A01', 'CLK-C01'), (ref, *caps), (),
                            ','.join(caps) + ' -> 1uF', out)
 
 

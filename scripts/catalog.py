@@ -410,6 +410,8 @@ RULES = (
          '保护配置或协议能力未明确的真实缺口仍保留；不统一要求电源 IC 具备 Recovery/Maskrom', 'subject', 'circuit'),
 
     # CLK 时钟
+    Rule('CLK-A01', '晶体负载电容远超 CL',
+         '两端都有对地负载电容的无源晶体，串联等效 C1·C2/(C1+C2) 超过 100 pF（G04-078，ST AN2867 §3.3；TI SNLA290 §7 建议 PHY 晶体 8–20 pF；100 pF 是留足余量的外包络，不是规范值）；与准确料号 CL 的相符、Cs、ESR 和起振裕量按 CLK-C01 算', 'lint', 'net'),
     Rule('CLK-C01', '晶体负载与起振',
          '按晶体准确料号核对 CL/ESR/驱动功率、振荡器适配和起振条件，反馈电阻、串联电阻按 datasheet/参考设计取值；'
          '一颗晶振只驱动一个器件；计时用途的频率预算含负载电容牵引；上电时序留够起振时间；寄生及实测裕量转 HANDOFF', 'subject', 'circuit'),
@@ -726,7 +728,7 @@ OBJECTIVE_RULES = {
                  'PWR-C24 SIG-C10 SIG-C12 SIG-C13 SIG-C14 SIG-C15 SIG-C16 SIG-C17 SIG-C19 ANA-C05').split()),
     'G4': tuple(('DEV-A01 DEV-A03 DEV-C01 DEV-C02 DEV-C03 DEV-C04 DEV-C05 DEV-C06 '
                  'PWR-A05 PWR-E01 PWR-E02 PWR-E03 PWR-C01 PWR-C02 PWR-C03 PWR-C05 '
-                 'PWR-C09 PWR-C10 PWR-C11 PWR-C14 PWR-C16 CLK-C01 DRV-C02 '
+                 'PWR-C09 PWR-C10 PWR-C11 PWR-C14 PWR-C16 CLK-A01 CLK-C01 DRV-C02 '
                  'REQ-C01 REQ-C02 PWR-C17 PWR-C18 PWR-C19 PWR-C21 PWR-C22 SIG-C11 ANA-C06').split()),
     'G5': tuple(('PWR-A06 PWR-T04 PWR-T05 PWR-C06 PWR-C13 SIG-A05 SIG-C05 SIG-C08 ANA-C03 ANA-C04 '
                  'PRO-E02 PRO-C01 PRO-C02 PRO-C03 PRO-A05 PRO-D01 PRO-D02 PRO-D03 DRV-A01 DRV-A02 DRV-A04 DRV-T01 DRV-C01 DRV-D01 '
@@ -753,6 +755,7 @@ BASIS = {
     'ANA-C03': ('G04-054',),
     'ANA-C05': ('G04-043', 'G04-047', 'G04-048', 'G04-049'),
     'ANA-C06': ('G04-052', 'G04-053'),
+    'CLK-A01': ('G04-078',),
     'CLK-C01': ('G04-078', 'G04-079', 'G04-080', 'G04-081', 'G04-082', 'G04-083', 'G04-084', 'G04-085'),
     'DEV-C01': ('G02-007', 'G02-027', 'G02-028', 'G03-037', 'G03-038', 'G03-040', 'G05-022'),
     'DEV-C02': ('G03-010', 'G03-039'),
@@ -2182,6 +2185,7 @@ EXPLANATIONS = {
     'RST-C02': _x('用 RC 时间常数估复位释放会漏掉门限容差和电源爬升速率', '按 V(t) 穿越门限的时刻核复位与 setup/hold 都满足即关闭', inputs='RST-T02/T03、CLK-C01 的建立条件'),
     'RST-D01': _x('平时能烧录的板子，固件或配置损坏后可能没有进入恢复的通道', '需求要求的恢复通道硬件可进入、电平匹配即关闭；烧录回执交上电集成'),
     'CLK-C01': _x('照手册配了负载电容，杂散电容和负阻裕量不足时仍可能低温不起振', '按准确料号核完 CL、ESR、驱动功率和起振裕量即关闭；实测交下游', inputs='DEV-D01 的晶体料号'),
+    'CLK-A01': _x('负载电容远大于晶体规定值时频偏大，甚至根本不起振', '负载电容按准确料号 CL 改正即关闭；相符计算和起振裕量归 CLK-C01', false_alarms='手册确实规定更大负载的谐振器或低频晶体，按该手册关闭'),
     'CLK-D01': _x('时钟频率对了，输出电平、电源域或使能默认态不对，接收端仍收不到', '输出制式与接收端匹配、使能默认态和上电有效时间满足即关闭', inputs='SIG-C07 的电平判据'),
     'CLK-D03': _x('主电源在时 RTC 正常，掉电后可能停钟、丢时或反向耗电', '晶体条件满足，备份充电电压电流与反向电流在器件限值内即关闭', inputs='PWR-C05 的掉电路径'),
     'SIG-A01': _x('交流耦合发送端缺直流通路时工作点不成立，链路看似连通却无输出', '按实际制式确认发送端有直流偏置通路，或器件内部已提供即关闭', false_alarms='CML 等内部自带端接的输出；名称线索误判的非 PECL 信号'),

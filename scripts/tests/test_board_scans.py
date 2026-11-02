@@ -269,6 +269,37 @@ class IsolatorGroundBridgeTest(unittest.TestCase):
         self.assertEqual(scans(db, 'PRO-A05'), [])
 
 
+class CrystalLoadTest(unittest.TestCase):
+    def crystal(self, c1='18pF', c2='18pF', ref='Y1'):
+        return board({ref: '16MHz', 'C1': c1, 'C2': c2, 'U1': 'MCU'},
+                     {'XI': [ref + '.1', 'C1.1', 'U1.3'], 'XO': [ref + '.2', 'C2.1', 'U1.4'], 'GND': ['C1.2', 'C2.2', 'U1.2']},
+                     {'U1.3': 'XIN', 'U1.4': 'XOUT'})
+
+    def test_typical_load_passes(self):
+        self.assertEqual(scans(self.crystal(), 'CLK-A01'), [])
+
+    def test_one_microfarad_is_a_candidate(self):
+        hits = scans(self.crystal('1uF', '1uF'), 'CLK-A01')
+        self.assertEqual([hit['kind'] for hit in hits], ['CANDIDATE'])
+        self.assertIn('Y1', hits[0]['detail'])
+
+    def test_the_bound_is_on_the_series_equivalent(self):
+        self.assertEqual(scans(self.crystal('180pF', '180pF'), 'CLK-A01'), [])   # 90 pF
+        self.assertEqual(len(scans(self.crystal('220pF', '220pF'), 'CLK-A01')), 1)   # 110 pF
+        self.assertEqual(scans(self.crystal('1uF', '18pF'), 'CLK-A01'), [])      # about 18 pF
+
+    def test_load_on_one_side_only_or_unreadable_is_not_judged(self):
+        db = self.crystal('1uF', '1uF')
+        db['parts']['C2']['nc'] = True
+        self.assertEqual(scans(db, 'CLK-A01'), [])
+        self.assertEqual(scans(self.crystal('1uF', '105'), 'CLK-A01'), [])
+
+    def test_an_active_oscillator_decoupling_capacitor_is_not_a_load(self):
+        db = board({'Y1': 'Oscillator', 'C1': '1uF', 'C2': '1uF'},
+                   {'VCC_3V3': ['Y1.1', 'C1.1'], 'CLK': ['Y1.2', 'C2.1'], 'GND': ['C1.2', 'C2.2']})
+        self.assertEqual(scans(db, 'CLK-A01'), [])
+
+
 class UsbVbusBulkTest(unittest.TestCase):
     def vbus(self, net='VBUS', **caps):
         return board(dict({'J1': 'USB_C'}, **caps),

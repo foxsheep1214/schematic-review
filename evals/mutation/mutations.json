@@ -5654,5 +5654,40 @@
   "file": "scripts/board_scans.py",
   "old": "lint.graph.between(a, b, {RESISTOR, FERRITE, INDUCTOR})",
   "new": "lint.graph.between(a, b, {RESISTOR})"
+ },
+ {
+  "id": "M873",
+  "name": "CLK-A01 oversized crystal load never reported",
+  "file": "scripts/board_scans.py",
+  "old": "        if load > CRYSTAL_LOAD_MAX_F:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M874",
+  "name": "CLK-A01 adds the two sides instead of series",
+  "file": "scripts/board_scans.py",
+  "old": "load = one * other / (one + other)",
+  "new": "load = one + other"
+ },
+ {
+  "id": "M875",
+  "name": "CLK-A01 limit moved to 10 pF",
+  "file": "scripts/board_scans.py",
+  "old": "CRYSTAL_LOAD_MAX_F = 100e-12",
+  "new": "CRYSTAL_LOAD_MAX_F = 10e-12"
+ },
+ {
+  "id": "M876",
+  "name": "an active oscillator counts as a passive crystal",
+  "file": "scripts/board_scans.py",
+  "old": "if len(nets) == 2 and not any(_named_rail(net) for net in nets):",
+  "new": "if len(nets) == 2:"
+ },
+ {
+  "id": "M877",
+  "name": "CLK-A01 judges a crystal with load on one side only",
+  "file": "scripts/board_scans.py",
+  "old": "        if not all(sides) or not all(farads for side in sides for _, farads in side):",
+  "new": "        sides = [side or [('', 1e-3)] for side in sides]\n        if not all(farads for side in sides for _, farads in side):"
  }
 ]

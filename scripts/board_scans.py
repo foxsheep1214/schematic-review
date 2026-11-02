@@ -10,7 +10,7 @@ import re
 
 from checkers.netgraph import is_ground, is_rail, rail_voltage
 from decoupling import parse_capacitance
-from part_words import CAPACITOR, CONNECTOR, FERRITE, IC, INDUCTOR, JUMPER, LED_RE, RESISTOR, SWITCH, TESTPOINT
+from part_words import CAPACITOR, CONNECTOR, CRYSTAL, FERRITE, IC, INDUCTOR, JUMPER, LED_RE, RESISTOR, SWITCH, TESTPOINT
 from checkers.passive_stress import rated_voltage   # BOM 值字段里写明的耐压：100nF/16V、10uF 25V、4.7u/X5R/50V
 
 POLARITY = {'+': 'plus', 'P': 'plus', 'POS': 'plus', '-': 'minus', 'N': 'minus', 'NEG': 'minus'}
@@ -28,6 +28,7 @@ USB_SINK_BULK_MAX_F = 100e-6
 # 只认名字明确的隔离器；光耦的两侧没有地脚名，归 PRO-D01。
 ISOLATOR_IDENTITY_RE = re.compile(r'ISOLATOR|ADUM\d|ADM2\d{3}|ADM3\d{3}|CA-?IS\d|\bISOW?\d{3}|\bSI8[4-9]\d|\bNSI\d', re.I)
 ISOLATOR_GROUND_PIN_RE = re.compile(r'^(?:GND|VSS)_?([12AB])$', re.I)
+CRYSTAL_LOAD_MAX_F = 100e-12
 CAN_PIN_RE = re.compile(r'^CAN_?([HL])$', re.I)
 CAN_SHORT_KOHM = 0.001
 USB_PIN_RE = re.compile(r'^(VBUS|CC[12]|D[+-])$', re.I)
@@ -329,6 +330,33 @@ def isolator_ground_bridge(lint):
                  '确无隔离需求时写明用途后关闭，工作资格归 PRO-C03', ref, kind='CANDIDATE')
 
 
+def _passive_crystals(lint):
+    """[(位号, 两端网)]：已装配、恰有两个非地网且都不是电源轨的晶体；有源振荡器有供电脚，不在内。"""
+    found = []
+    for ref, part in sorted(lint.parts.items()):
+        if part.get('nc') or lint.graph.kind(ref) != CRYSTAL:
+            continue
+        nets = sorted({net for net in lint.graph.nets_of(ref) if not is_ground(net) and net not in lint.pseudo})
+        if len(nets) == 2 and not any(_named_rail(net) for net in nets):
+            found.append((ref, nets))
+    return found
+
+
+def crystal_load(lint):
+    """CLK-A01：两端负载电容的串联等效远超任何晶体规定的 CL（G04-078）。"""
+    for ref, nets in _passive_crystals(lint):
+        sides = [_caps_to_ground(lint, net) for net in nets]
+        if not all(sides) or not all(farads for side in sides for _, farads in side):
+            continue
+        one, other = (sum(farads for _, farads in side) for side in sides)
+        load = one * other / (one + other)
+        if load > CRYSTAL_LOAD_MAX_F:
+            refs = ','.join(capacitor for side in sides for capacitor, _ in side)
+            lint.add('CLK-A01', '晶体负载电容远超 CL',
+                     f'{ref}: 负载电容 {refs} 串联等效 {load * 1e12:g}pF > 100pF（CL=C1·C2/(C1+C2)+Cs，G04-078；ST AN2867 §3.3）；'
+                     '按晶体准确料号的 CL 核，起振与频偏归 CLK-C01', ref, kind='CANDIDATE')
+
+
 def ldo_output_capacitor(lint):
     """PWR-A07：线性稳压器的输出网上没有接地电容，经磁珠或电感也到不了（G03-003）。"""
     for ref, part in sorted(lint.parts.items()):
@@ -398,4 +426,5 @@ def run(lint):
     ldo_output_capacitor(lint)
     can_bus_short(lint)
     isolator_ground_bridge(lint)
+    crystal_load(lint)
     floating_inputs(lint)
