@@ -5479,5 +5479,40 @@
   "file": "scripts/board_scans.py",
   "old": "total = sum(farads for _, farads in caps)",
   "new": "total = sum(farads for _, farads in caps[:1])"
+ },
+ {
+  "id": "M848",
+  "name": "PWR-A07 missing LDO output capacitor never reported",
+  "file": "scripts/board_scans.py",
+  "old": "            if not any(_caps_to_ground(lint, reached)\n",
+  "new": "            if False and not any(_caps_to_ground(lint, reached)\n"
+ },
+ {
+  "id": "M849",
+  "name": "PWR-A07 judges every IC with an output pin",
+  "file": "scripts/board_scans.py",
+  "old": "lint.graph.kind(ref) != IC or not LDO_IDENTITY_RE.search(identity):",
+  "new": "lint.graph.kind(ref) != IC:"
+ },
+ {
+  "id": "M850",
+  "name": "PWR-A07 ignores capacitors behind a ferrite",
+  "file": "scripts/board_scans.py",
+  "old": "for reached in lint.graph.series_path(net, {FERRITE, INDUCTOR}, max_hops=2)):",
+  "new": "for reached in [net]):"
+ },
+ {
+  "id": "M851",
+  "name": "PWR-A07 fires on a lone output pin",
+  "file": "scripts/board_scans.py",
+  "old": "                    or len(lint.nets.get(net, [])) < 2):\n                continue\n            if not any(_caps",
+  "new": "                    ):\n                continue\n            if not any(_caps"
+ },
+ {
+  "id": "M852",
+  "name": "a capacitor to any net counts as output capacitance",
+  "file": "scripts/board_scans.py",
+  "old": "for ref, other in lint.graph.neighbors(net, {CAPACITOR}) if is_ground(other)]",
+  "new": "for ref, other in lint.graph.neighbors(net, {CAPACITOR})]"
  }
 ]

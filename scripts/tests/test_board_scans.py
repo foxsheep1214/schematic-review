@@ -163,6 +163,52 @@ class UsbVbusBulkTest(unittest.TestCase):
         self.assertEqual(scans(db, 'SIG-A05'), [])
 
 
+class LdoOutputCapacitorTest(unittest.TestCase):
+    def ldo(self, parts=None, nets=None, value='AP2112K-3.3'):
+        all_nets = {'VIN': ['U1.1'], 'VCC_3V3': ['U1.5', 'U2.1'], 'GND': ['U1.2', 'U2.2']}
+        for net, nodes in (nets or {}).items():
+            all_nets[net] = all_nets.get(net, []) + nodes
+        return board(dict({'U1': value, 'U2': 'MCU'}, **(parts or {})), all_nets,
+                     {'U1.1': 'VIN', 'U1.2': 'GND', 'U1.5': 'VOUT', 'U2.1': 'VDD', 'U2.2': 'GND'})
+
+    def test_no_output_capacitor_is_a_candidate(self):
+        hits = scans(self.ldo(), 'PWR-A07')
+        self.assertEqual([hit['kind'] for hit in hits], ['CANDIDATE'])
+        self.assertIn('U1.5', hits[0]['detail'])
+
+    def test_an_output_capacitor_closes_it(self):
+        db = self.ldo({'C1': '1uF'}, {'VCC_3V3': ['C1.1'], 'GND': ['C1.2']})
+        self.assertEqual(scans(db, 'PWR-A07'), [])
+
+    def test_a_capacitor_behind_a_ferrite_counts(self):
+        db = self.ldo({'FB1': 'BLM18', 'C1': '1uF'},
+                      {'VCC_3V3': ['FB1.1'], 'VDD_F': ['FB1.2', 'C1.1'], 'GND': ['C1.2']})
+        self.assertEqual(scans(db, 'PWR-A07'), [])
+
+    def test_a_capacitor_to_another_signal_does_not_count(self):
+        db = self.ldo({'C1': '1uF'}, {'VCC_3V3': ['C1.1'], 'FB': ['C1.2']})
+        self.assertEqual(len(scans(db, 'PWR-A07')), 1)
+
+    def test_an_unfitted_capacitor_does_not_count(self):
+        db = self.ldo({'C1': '1uF'}, {'VCC_3V3': ['C1.1'], 'GND': ['C1.2']})
+        db['parts']['C1']['nc'] = True
+        self.assertEqual(len(scans(db, 'PWR-A07')), 1)
+
+    def test_an_ic_without_a_linear_regulator_identity_is_not_judged(self):
+        for value in ('TPS22918', 'TLV7031', 'STM32F7802'):
+            self.assertEqual(scans(self.ldo(value=value), 'PWR-A07'), [], value)
+
+    def test_common_linear_regulator_families_are_recognised(self):
+        for value in ('AMS1117-3.3', 'LD1117S33', 'MCP1700T-3302', 'TLV75533', 'TPS7A4700', '7805', 'L7805', 'my LDO'):
+            self.assertEqual(len(scans(self.ldo(value=value), 'PWR-A07')), 1, value)
+
+    def test_an_unused_output_pin_is_left_to_the_floating_net_rules(self):
+        db = self.ldo()
+        db['pin2net']['U1.5'] = 'LONE'
+        db['nets'] = {'VIN': ['U1.1'], 'LONE': ['U1.5'], 'VCC_3V3': ['U2.1'], 'GND': ['U1.2', 'U2.2']}
+        self.assertEqual(scans(db, 'PWR-A07'), [])
+
+
 class FloatingInputTest(unittest.TestCase):
     def test_declared_input_pins_without_a_real_net(self):
         db = board({'U1': 'SOC'}, {'GND': ['U1.4'], 'LONE': ['U1.2'], 'BUS': ['U1.3', 'U1.5']},

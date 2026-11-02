@@ -388,7 +388,7 @@ def regulator_cout(db):
                 out = db
                 for cref in caps:
                     out = removed(out, cref)
-                yield Mutation('D-LDO-COUT', ('PWR-C04',), (ref, *caps), (net,),
+                yield Mutation('D-LDO-COUT', ('PWR-A07', 'PWR-C04'), (ref, *caps), (net,),
                                'remove output capacitors ' + ','.join(caps), out)
 
 

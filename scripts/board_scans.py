@@ -10,7 +10,7 @@ import re
 
 from checkers.netgraph import is_ground, is_rail, rail_voltage
 from decoupling import parse_capacitance
-from part_words import CAPACITOR, CONNECTOR, IC, LED_RE, RESISTOR, TESTPOINT
+from part_words import CAPACITOR, CONNECTOR, FERRITE, IC, INDUCTOR, LED_RE, RESISTOR, TESTPOINT
 from checkers.passive_stress import rated_voltage   # BOM 值字段里写明的耐压：100nF/16V、10uF 25V、4.7u/X5R/50V
 
 POLARITY = {'+': 'plus', 'P': 'plus', 'POS': 'plus', '-': 'minus', 'N': 'minus', 'NEG': 'minus'}
@@ -20,6 +20,11 @@ I2C_LINE_RE = re.compile(r'^(SDA|SCL)\d*$')
 USB_VBUS_NET_RE = re.compile(r'(^|[/_.:-])(VBUS|VUSB)\d*$', re.I)
 USB_SINK_BULK_MAX_F = 100e-6
 USB_PIN_RE = re.compile(r'^(VBUS|CC[12]|D[+-])$', re.I)
+# 身份只作线索，判据是“输出网上没有电容”；无需 Cout 的型号由审查者按手册关闭。
+LDO_IDENTITY_RE = re.compile(r'REGULATOR_LINEAR|\bLDO|LOW.?DROPOUT|LINEAR.?REG|AMS1117|L[MD]1117|AP2112|AP2210|'
+                             r'MCP170\d|XC62\d\d|RT9013|RT9193|LP298\d|LP5907|TLV7\d{4}|TPS7[\dA]|SPX3819|HT7\d33|ME6211|'
+                             r'LM317|LM78\d\d|\bL?78\d\d\b', re.I)
+REGULATOR_OUT_PIN_RE = re.compile(r'^V?OUT\d*$|^VO$', re.I)
 
 
 def _named_rail(net):
@@ -208,6 +213,24 @@ def usb_vbus_bulk(lint):
                      '端口作 Source 按表 4-2，有限浪涌电路可关闭，角色与限流按 SIG-C05/PWR-C13 核', refs[0], kind='CANDIDATE')
 
 
+def ldo_output_capacitor(lint):
+    """PWR-A07：线性稳压器的输出网上没有接地电容，经磁珠或电感也到不了（G03-003）。"""
+    for ref, part in sorted(lint.parts.items()):
+        identity = ' '.join(str(part.get(key, '')) for key in ('part', 'value', 'prim'))
+        if part.get('nc') or lint.graph.kind(ref) != IC or not LDO_IDENTITY_RE.search(identity):
+            continue
+        for node in _nodes(lint, ref):
+            net = lint.pin2net.get(node)
+            if (not REGULATOR_OUT_PIN_RE.match(str(lint.pinname.get(node, '')).strip()) or net in lint.pseudo
+                    or len(lint.nets.get(net, [])) < 2):
+                continue
+            if not any(_caps_to_ground(lint, reached)
+                       for reached in lint.graph.series_path(net, {FERRITE, INDUCTOR}, max_hops=2)):
+                lint.add('PWR-A07', 'LDO 输出无电容',
+                         f'{ref}: 输出脚 {node} 所在网 {net} 上没有接地的已装配电容（G03-003；TI SLVA115A）；'
+                         '稳定性依赖输出电容，手册明确不要求时可关闭，容量与 ESR 归 PWR-C04', ref, kind='CANDIDATE')
+
+
 def floating_inputs(lint):
     """NET-A07：声明为输入的引脚悬空或只在单节点网上。"""
     from lint import _pin_class      # 延迟取用：lint 导入本模块
@@ -255,4 +278,5 @@ def run(lint):
     led_current_limit(lint)
     i2c_pullups(lint)
     usb_vbus_bulk(lint)
+    ldo_output_capacitor(lint)
     floating_inputs(lint)
