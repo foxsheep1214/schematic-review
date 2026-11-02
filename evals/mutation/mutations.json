@@ -5608,10 +5608,10 @@
  },
  {
   "id": "M866",
-  "name": "SIG-A06 reports an unfitted transceiver",
-  "file": "scripts/board_scans.py",
-  "old": "        if part.get('nc') or lint.graph.kind(ref) != IC:\n            continue\n        nodes = {CAN_PIN_RE",
-  "new": "        if lint.graph.kind(ref) != IC:\n            continue\n        nodes = {CAN_PIN_RE"
+  "name": "unfitted parts keep their pins and pin names in the scans",
+  "file": "scripts/lint.py",
+  "old": "        self.pin2net = {node: net for node, net in self.pin2net.items() if self.graph.is_fitted(node.partition('.')[0])}\n        self.pinname = {node: name for node, name in self.pinname.items() if self.graph.is_fitted(node.partition('.')[0])}\n",
+  "new": "        self.pin2net = dict(self.pin2net)\n        self.pinname = dict(self.pinname)\n"
  },
  {
   "id": "M867",
@@ -5717,13 +5717,6 @@
   "file": "scripts/board_scans.py",
   "old": "                       if OSCILLATOR_PIN_RE.search(str(lint.pinname.get(node, '')).strip())}",
   "new": "                       }"
- },
- {
-  "id": "M882",
-  "name": "CLK-A02 counts an unfitted IC",
-  "file": "scripts/board_scans.py",
-  "old": "            if lint.parts[ic].get('nc') or lint.graph.kind(ic) != IC:",
-  "new": "            if lint.graph.kind(ic) != IC:"
  },
  {
   "id": "M883",
