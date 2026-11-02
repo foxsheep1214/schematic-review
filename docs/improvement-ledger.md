@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 四块实际板合并步1：字段、装配、供电与计划误报源 (2026-11-02)
+
+保留KiCad字段/Val解码出处，低阻供电追溯留位号证据，排除DNP电气参与并报告数量，补未经需求确认的默认态及跨所有权逐晶体项；限定纠正重复的网名、偏置、脚名、驱动、型号许可与条件回流误报。四板冷扫638→314，已归因错误内容442→18；新行未裁决不当真缺陷。题列真缺陷全部保留或可定位，新增5类型7真实位点（3目标提示，其余保留自动层缺口），原247位点177目标提示逐位点无退化。详细数表、误报内容复核、计划回放调整及残留模式见提案。共用层与SKILL未改。
+
+- Event: user:2026-11-02 (用更多的实际电路板来驱动问题的改进; 再多找一些板子…每个板子跑得细致一些)
+- Causes: rule_not_enforced 5, knowledge_wrong 10
+- Changed: evals/detection/RESULTS.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/boards-merge1-v1/cases.json, evals/kicad_replay_bench/revisions/boards-merge1-v1/expected.json, evals/kicad_replay_bench/revisions/boards-merge1-v1/manifest.json, evals/kicad_replay_bench/revisions/boards-merge1-v1/sources.json, evals/kicad_replay_bench/revisions/native-fields-v1/cases.json, evals/kicad_replay_bench/revisions/native-fields-v1/expected.json, evals/kicad_replay_bench/revisions/native-fields-v1/manifest.json, evals/kicad_replay_bench/revisions/native-fields-v1/rh-ad8495-thermocouple-pinmap.intent.json, evals/kicad_replay_bench/revisions/native-fields-v1/sources.json, evals/kicad_replay_bench/run.py, evals/mutation/mutations.json, evals/seeded_bench/README.md, evals/seeded_bench/boards-merge1-results.json, evals/seeded_bench/boards-merge1.json, evals/seeded_bench/mutators.py, evals/seeded_bench/run.py, evals/typical_circuits/cases.json, references/architecture.md, scripts/board_scans.py, scripts/catalog.py, scripts/checkers/netgraph.py, scripts/checkers/power_switch.py, scripts/checkers/power_up.py, scripts/checkers/powertree.py, scripts/checkers/supervision.py, scripts/lint.py, scripts/parse_kicad.py, scripts/part_words.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/render_report.py, scripts/solve_dividers.py, scripts/tests/test_board_seed_pairs.py, scripts/tests/test_boards_merge.py, scripts/tests/test_guideline_criteria.py, scripts/tests/test_parse_kicad.py, scripts/tests/test_relay_nc_contact.py, scripts/tests/test_review_v2.py, docs/proposals/boards-merge-1-2026-11-02.md, docs/proposals/boards-merge-1-2026-11-02.json, docs/improvement-ledger.md
+- Gates: pytest 2516 passed, 2 skipped (真实配对ASG提交5e7c969；已安装ASG共用层历史漂移未改); mutation --changed 逐项全杀 (8轮379次执行，29新增变异); seeded --compare 无退化 (247既有位点177自动不变，新增7，合计254/180/0错误); typical 203 DETECTED/185 FIXED/14 KNOWN_FALSE_ALARM; KiCad replay 195/195; detection RESULTS updated; check_ledger PASS。
+
 ## 100 块真实开源板目录、固定版本取板与四路分流 (2026-11-02)
 
 搜索 2517 个去重仓库，完成 716 个筛查、235 个实际取板，190 项通过导出/解析/器件数技术门槛，其中 2 项在许可证终核排除；精选 100 个独立仓库，排除 seeded corpus 的同仓库来源。目录只收现代 KiCad、允许的明确许可证及 ≥15 器件的真实板项目，登记固定默认分支 HEAD、根图、源哈希、许可证证据、23 类词表标签及用途（同用途最多 4 块）。标准库取板工具浅拉取、稀疏检出层次源文件并实际导出 kicadxml/解析 db，strict 失败记录日志再回退；最终正式 catalog 全量重放 100/100，56 strict、44 no-strict。四路各 25 块，按类型及器件数平衡；没有启动逐板 SR，也没有改变检查器、共用准则或 seeded corpus。

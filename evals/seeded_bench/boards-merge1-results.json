@@ -54,9 +54,11 @@
     "PWR-C09",
     "PWR-C10",
     "PWR-D02",
+    "PWR-E02",
     "PWR-T01",
     "PWR-T03",
     "RST-E01",
+    "RST-T01",
     "RST-T03"
    ]
   },
@@ -84,9 +86,11 @@
     "PWR-C09",
     "PWR-C10",
     "PWR-D02",
+    "PWR-E02",
     "PWR-T01",
     "PWR-T03",
     "RST-E01",
+    "RST-T01",
     "RST-T03"
    ]
   },
@@ -213,5 +217,5 @@
    ]
   }
  ],
- "errors": 0
+ "note": "TVS auto hits are parameter-retrieval review hints, not computed voltage-window verdicts. MLCC/shunt/address/crystal numeric checks remain automatic gaps. Paired baselines are explicit synthetic parameter contracts where original source is already defective; no invented orderable MPN."
 }
