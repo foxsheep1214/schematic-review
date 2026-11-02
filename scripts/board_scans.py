@@ -128,6 +128,8 @@ def led_current_limit(lint):
 
 
 def _is_i2c_net(net):
+    if re.search(r'(?:^|[^A-Z0-9])I2S(?:[^A-Z0-9]|$)', str(net).upper()):
+        return False
     return any(I2C_LINE_RE.match(token) for token in re.split(r'[^A-Z0-9]+', str(net).upper()))
 
 
@@ -421,6 +423,14 @@ def floating_inputs(lint):
         # obligation. Require role evidence stronger than the refdes alone;
         # unknown parts, IC inputs and unmarked dangling nets still get checked.
         if declared_nc and lint.graph.qualified_connector_contact(ref):
+            continue
+        if lint.graph.kind(ref) == TESTPOINT and re.search(r'(?:^|:)MOUNTINGHOLE(?:_PAD)?$',
+                str(lint.parts.get(ref, {}).get('prim', '')), re.I):
+            continue
+        from part_words import unused_input_permission
+        permission = unused_input_permission(lint.db, node)
+        if permission:
+            lint.add('NET-A07', '手册允许未用输入开路', f'{node}: {permission}', ref, kind='INFO')
             continue
         # A datasheet NC pin typed input has no input to bias.
         from lint import DATASHEET_NC_PIN_RE

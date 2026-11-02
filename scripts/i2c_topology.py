@@ -195,7 +195,7 @@ class Inventory:
         hints = defaultdict(lambda: {'sda': set(), 'scl': set()})
         loose = set()
         for net, nodes in sorted(self.nets.items()):
-            if net in self.pseudo:
+            if net in self.pseudo or self.rail(net) or re.search(r'(?:^|[/_-])I2S(?:[/_-]|$)', net, re.I):
                 continue
             for label, anchor in [(net, 'net:')] + [(str(self.pinname.get(n, '')), 'pin:' + n.split('.', 1)[0] + ':') for n in nodes]:
                 match = SIGNAL.search(label)
@@ -457,7 +457,8 @@ def build_i2c_topology(db, intent=None):
     errors = validate_db_shape(db) or board_intent.validate(intent, db) or validate_i2c_intent(intent, db)
     if errors:
         raise ValueError('; '.join(errors))
-    cfg = (intent or {}).get('i2c_topology')
+    cfg = deepcopy((intent or {}).get('i2c_topology') or {})
+    cfg['rails'] = {**{net: row.get('citation', 'top-level power_rails') for net, row in (intent or {}).get('power_rails', {}).items()}, **cfg.get('rails', {})}
     inv = Inventory(db, cfg)
     buses, confirmed = inv.seeds()
     states = (intent or {}).get('assemblies') or [{'id': 'UNSPECIFIED', 'population': {}, 'jumpers': {}}]

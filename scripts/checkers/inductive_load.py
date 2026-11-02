@@ -457,6 +457,9 @@ class _Scan:
             if ref in self.excluded or not graph.is_fitted(ref):
                 continue
             kind = graph.kind(ref)
+            identity = ' '.join(str(graph.parts[ref].get(k, '')) for k in ('part', 'prim', 'value'))
+            if re.search(r'BALUN', identity, re.I) and kind in pw.WINDING_PAIRS:
+                continue  # RF balance/matching component, no switched coil inferred from T prefix
             passive_filter = self._input_filter(ref, kind)
             if passive_filter is not None:
                 found.append(passive_filter)

@@ -194,6 +194,18 @@ class PowerTree:
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'switch node via storage inductor; verify converter '
                                      'topology, FB target and upstream power'}
+                # Exact manufacturer pin function, independent of an erroneous library power_in direction.
+                if (re.fullmatch(r'TPS5430(?:DDA[RT]?)?', str(part.get('part', '')), re.I)
+                        and pin == '8' and 'PH' in pw.pin_aliases(graph.pinname.get(node), pin)
+                        and 'VIN' in pw.pin_aliases(graph.pinname.get(ref + '.7'), '7')):
+                    return {'source': node, 'path': list(reversed(path)),
+                            'basis': 'TPS5430 SLVS632L p3 Table4-1 PH switch output; voltage waveform not a DC guarantee'}
+                pins = graph.pins_of(ref)
+                for out_pin, in_pin, route_basis in pw.supply_pin_routes(part, pins):
+                    if route_basis == 'feedthrough-symbol' and not ng.is_ground(pins.get('3')):
+                        continue
+                    if pins[out_pin] == current and not ng.is_ground(pins[in_pin]):
+                        queue.append((pins[in_pin], path + [ref]))
                 ends = graph.nets_of(ref)
                 if self.feed and graph.kind(ref) == pw.JUMPER and len(ends) == 3 and current in ends:
                     # a three-way solder jumper (common C, choices A/B) selects one of two supplies: both are upstream

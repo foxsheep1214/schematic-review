@@ -9,6 +9,17 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 实际板合并步 2B：器件身份、脚角色与逐端点计划 (2026-11-02)
+
+20 板固定源冷扫与候选/合并链 before/after；标题只读语义区，原生 MPN/装配来源保留，端口/机械/继电器触点/磁性件/时钟/I²C/使能/未用输入/差分/驱动追源按物理语义修正；外部 SIG-C08、供电支路 PRO-C04、USB 持有保险丝、ADC 输入与 PMIC 输出分别逐对象派项。冷扫 722→662，已归因同规则同位置误报内容 193→138，不将未裁决新行算真缺陷；42 条 true_defect 归因记录（有重复）原值/位号保留，点名证据另核。完整候选合并 17/20→12/20，其余阻塞保留，不能冒称全链通过；7 块 after 成功链使用未确认的覆盖重放决定。详情、残留模式与准则问题见提案。共用层/SKILL/2A 候选持有及隔离域模型不改。
+
+原因按独立机制计：未落实 7 项是装配、MPN、外部注入、逐电源支路、跨所有权保险丝、ADC、PMIC 逐输出；错误知识 13 项是标题、接口、机械、触点、磁件、时钟、I²C、开关/LDO、未用输入、差分/耦合、驱动源、多端供电路由、USB 物理类型。阅读门第一步仅为新增三个生成资格行增加 266 字节（170810→171076）。实际 ASG 历史配对提交 5e7c969 用于共用层只读比对，未用本地副本伪装匹配。
+
+- Event: user:2026-11-02 (用更多的实际电路板来驱动问题的改进; 再多找一些板子…每个板子跑得细致一些)
+- Causes: rule_not_enforced 7, knowledge_wrong 13
+- Changed: docs/improvement-ledger.md, docs/proposals/boards-merge-2b-2026-11-02.json, docs/proposals/boards-merge-2b-2026-11-02.md, evals/detection/RESULTS.md, evals/kicad_replay_bench/revisions/boards-merge2b-v1/cases.json, evals/kicad_replay_bench/revisions/boards-merge2b-v1/expected.json, evals/kicad_replay_bench/revisions/boards-merge2b-v1/manifest.json, evals/kicad_replay_bench/revisions/boards-merge2b-v1/sources.json, evals/kicad_replay_bench/run.py, evals/mutation/README.md, evals/mutation/mutations.json, evals/seeded_bench/README.md, evals/seeded_bench/boards-merge2b-results.json, evals/seeded_bench/boards-merge2b.json, evals/seeded_bench/mutators.py, evals/seeded_bench/run.py, evals/typical_circuits/cases.json, references/check-catalog.md, references/checker-conventions.md, references/review-vocabulary.md, scripts/audit_datasheets.py, scripts/board_scans.py, scripts/catalog.py, scripts/checkers/decoupling.py, scripts/checkers/diff_levels.py, scripts/checkers/inductive_load.py, scripts/checkers/input_filter.py, scripts/checkers/power_switch.py, scripts/checkers/power_up.py, scripts/checkers/powertree.py, scripts/datasheet_kinds.py, scripts/decoupling.py, scripts/i2c_topology.py, scripts/interfaces.py, scripts/lint.py, scripts/parse_kicad.py, scripts/part_words.py, scripts/plan_circuits.py, scripts/tests/fixtures/interfaces-flyback-usb.json, scripts/tests/ledger4.py, scripts/tests/test_boards_merge2b_coverage.py, scripts/tests/test_boards_merge2b_identity.py, scripts/tests/test_boards_merge2b_roles.py, scripts/tests/test_boards_merge2b_seeds.py, scripts/tests/test_catalog.py, scripts/tests/test_circuit_decisions.py, scripts/tests/test_interface_rows.py, scripts/tests/test_optical_library.py, scripts/tests/test_part_kind_evidence.py, scripts/tests/test_part_number_families.py, scripts/tests/test_reading_path.py
+- Gates: pytest 2612 passed, 3 skipped (真实配对 ASG 5e7c969，只读比较); mutation --changed 单元层前两组 56/56、116/116，最终主运行 224 条加 4 条独立复验、覆盖 227 唯一变异全杀（40 新增 M960–M999）；seeded 254 既有位点/225 自动逐点无退化，新增 4 类/4 位点目标计划、自动 0，合计 258/225/0错误；typical 198 DETECTED/190 FIXED/14 KNOWN_FALSE_ALARM；KiCad replay 195/195；detection RESULTS updated；check_ledger PASS；受限路径字节未变。
+
 ## 合并步 1 并入 main，流水线每板前自动并入 boards-program (2026-11-02)
 
 把 main（设计准则库 1.6.1、8 类种子的 A 规则）并进 `boards-program`：分支新增的 29 条变异与 main 撞号，重编为 M883–M911；检出表按合并后重生成。

@@ -46,10 +46,26 @@ PINUSE = {
     'open_collector': 'OCL', 'open_emitter': 'OCA', 'no_connect': 'NC',
 }
 MPN_FIELD = re.compile(
-    r'^(MPN|MFR[._\s-]?P/?N|MANUFACTURER[_\s-]?PART[_\s-]?(NUMBER|NO\.?)|'
+    r'^(MPN|MFGRPART|MFR[._\s-]?P/?N|MANUFACTURER[_\s-]?PART[_\s-]?(NUMBER|NO\.?)|'
     r'PART[_\s-]?(NUMBER|NO\.?)|ORDER(ING)?[_\s-]?(CODE|NUMBER))$', re.I)
 UNCONNECTED = re.compile(r'^unconnected-\(.*\)$', re.I)
 NO_NAME = '~'
+
+
+# Assembly fields are design facts; do not infer population from BOM exclusion.
+POPULATION_FIELDS = {'populate', 'population', 'fitted', 'assembly', 'assemble', 'stuff', 'stuffed', 'mount'}
+UNFITTED_MARKS = {'dnp', 'dnf', 'dni', 'not fitted', 'not populated', 'do not populate', 'do not fit', '不贴', '不装'}
+
+
+def population_evidence(fields, properties):
+    evidence = []
+    for source, entries in (('property', properties), ('field', fields)):
+        for name, value in entries.items():
+            key, mark = name.strip().casefold(), str(value).strip().casefold()
+            if ((key in ('dnp', 'dnf', 'dni', '不贴') and mark in ({'1', 'true', 'yes', 'y', 'x'} | UNFITTED_MARKS | ({''} if source == 'property' else set())))
+                    or (key in POPULATION_FIELDS and mark in UNFITTED_MARKS)):
+                evidence.append({'source': source, 'field': name, 'raw': value, 'population': 'unfitted'})
+    return evidence
 
 
 def _text(value):
@@ -134,6 +150,7 @@ def _component(comp, libparts, pages):
                   for item in comp.findall('./property')}
     mpn = next((value for name, value in sorted(fields.items())
                 if MPN_FIELD.match(name) and value), '')
+    population = population_evidence(fields, properties)
     original_value = _text(comp.findtext('value'))
     val_field = next((name for name in fields if name.casefold() == 'val' and fields[name]), None)
     value = fields[val_field] if val_field else original_value
@@ -151,12 +168,10 @@ def _component(comp, libparts, pages):
         # Do not borrow the cached libpart's link when this declaration is empty.
         'datasheet': _text(comp.findtext('datasheet')),
         # dnp 是装配声明；exclude_from_bom 只是 BOM 卫生，不作装配证据。
-        'nc': (any(name.casefold() in ('dnp', '不贴') and str(mark).strip().casefold() not in ('0', 'false', 'no', 'n')
-                   for name, mark in properties.items())
-               or any(name.casefold() in ('dnp', '不贴') and str(mark).strip().casefold() in
-                      ('1', 'true', 'yes', 'y', 'x', 'dnp', '不贴') for name, mark in fields.items())
-               or is_not_populated(lib, value)),
+        'nc': bool(population) or is_not_populated(lib, value),
     }
+    if population:
+        part['population_provenance'] = population
     # Ordinary literal-only symbols retain their existing db representation.
     # New native facts participate in the fingerprint only when actually present.
     if fields or (parsed and parsed.get('method') == 'packaged-RKM'):

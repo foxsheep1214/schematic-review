@@ -1,0 +1,41 @@
+{
+ "note": "Only adjudicated public board metadata; XML/PDF/source stay in user cache. Four physical coverage probes, C rules remain expert judgments.",
+ "boards": [
+  {
+   "id": "greatscottgadgets--amalthea-hardware",
+   "source": {
+    "repo": "greatscottgadgets/amalthea-hardware",
+    "commit": "b1027cf452365fd1572cb8df8dfed4d3004ec8c2",
+    "schematic": "amalthea.kicad_sch",
+    "license": "CERN-OHL-P-2.0"
+   }
+  },
+  {
+   "id": "groupgets--kimchi-micro",
+   "source": {
+    "repo": "groupgets/kimchi-micro",
+    "commit": "1afeb30034cc824c47e1375efba6867965e94fe3",
+    "schematic": "hardware_sbc/kimchi_micro.kicad_sch",
+    "license": "CERN-OHL-S-2.0"
+   }
+  },
+  {
+   "id": "solderedelectronics--connect-programmer-hardware-design",
+   "source": {
+    "repo": "SolderedElectronics/CONNECT-programmer-hardware-design",
+    "commit": "f3d34ebe809e29ee786cef3484c479fa123abea2",
+    "schematic": "CAD/V1.1.1/CONNECT_programmer.kicad_sch",
+    "license": "TAPR-OHL-1.0"
+   }
+  },
+  {
+   "id": "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design",
+   "source": {
+    "repo": "SolderedElectronics/Fuel-gauge-BQ27441-breakout-hardware-design",
+    "commit": "82e9af6d545897fe12295a3f772c4f7898bac4ec",
+    "schematic": "CAD/V1.0.0/Fuel_gauge_BQ27441.kicad_sch",
+    "license": "TAPR-OHL-1.0"
+   }
+  }
+ ]
+}
