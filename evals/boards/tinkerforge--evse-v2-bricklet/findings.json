@@ -1,0 +1,1490 @@
+{
+  "board": "tinkerforge--evse-v2-bricklet",
+  "source": {
+    "repo": "Tinkerforge/evse-v2-bricklet",
+    "commit": "57c742094efb379ee10876dbacae977a18119153",
+    "schematic": "hardware/evse-v2.kicad_sch",
+    "license": "CERN-OHL-1.1"
+  },
+  "types": [
+    "AC_MAINS",
+    "ANALOG",
+    "CLOCK",
+    "ISOLATION",
+    "POWER_CONVERTER",
+    "POWER_PROTECTION",
+    "RS485",
+    "SPI"
+  ],
+  "run": {
+    "db_sha256": "1011cb916ae18ca9c70e478289936128eac622f7a7b3e6f645849348bd805419",
+    "plan_items": 821,
+    "findings_total": 37,
+    "results_judged": 53,
+    "gate": "FAIL",
+    "sr_commit": "d61e151641fa2feb81d082742f1bbb64f875bd25",
+    "pending_checks": 768,
+    "native_confirmed_findings": 1,
+    "native_confirmed_electrical_defects": 0,
+    "native_confirmed_graphical_defects": 1,
+    "lint_findings_and_candidates": 21,
+    "functions": 70,
+    "circuits": 24,
+    "strict": false,
+    "evidence_root": "/Users/skyfend/.cache/sr-boards/tinkerforge--evse-v2-bricklet/review",
+    "counting_note": "37条为本轮归因根因/观察，含原生1条图面缺陷、21条扫描疑点及15条工具/知识/输入观察；768条pending为逐计划项待核，不按768个硬件缺陷统计。漏报中2条计划对象缺口、1条自动候选漏提示，均非已证硬件缺陷。",
+    "datasheets_available": 10,
+    "datasheets_unresolved": 15
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "DOC-V01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "P111",
+        "U101"
+      ],
+      "nets": [
+        "Net-(U101B-P0.2_IO)"
+      ],
+      "sr_text": "原生导出p1的P111 Reference与U101.31脚号在同一行实际重叠，测试点位号和脚号发生混读。",
+      "verdict": "true_defect",
+      "evidence": "current-schematic.pdf p1 B区P111/U101.31，3倍原生渲染clock-crop.png。P111词框与31脚号词框相交1.720×4.277pt，图像确认字符混读；仅图纸可读性缺陷，不是电气连接错误。C128/16MHz邻近不另判。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-SCH-TEXT-COLLISION",
+        "mutation": "在隔离的KiCad副本中把P111 Reference移到U101.31脚号上，保持XML连接不变；原生导出局部图验证真墨迹重叠。此种子是图形输入变异，不是db电气变异。",
+        "target_rule": "DOC-V01"
+      },
+      "origin": "expert_review"
+    },
+    {
+      "id": "F02",
+      "sr_rule": "NET-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U101",
+        "RP102",
+        "U113"
+      ],
+      "nets": [
+        "485-D",
+        "485-DE"
+      ],
+      "sr_text": "485-D(2节点) <-> 485-DE(2节点)",
+      "verdict": "false_alarm",
+      "evidence": "db：485-D接U101.15与RP102.4，阵列另一端RP102.5接U113.5(D)；485-DE接U101.13与RP102.3，RP102.6接U113.4(DE)。SP3491 Rev1.0.3 p1/p9：D为数据输入、DE为独立驱动使能；独立有效网络不是误拼接。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:net_name_split",
+        "what": "在相似名称判断后核两端D/DE真实脚义，识别同一总线的数据与使能；不要仅依靠增加宽泛字符串例外而掩盖真实拼写错误。依据SP3491 p1/p9。"
+      },
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F03",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U102",
+        "U105"
+      ],
+      "nets": [
+        "+12V",
+        "VCC"
+      ],
+      "sr_text": "+12V (5节点): ['C109', 'C113', 'R129', 'U102', 'U105']",
+      "verdict": "false_alarm",
+      "evidence": "db +12V包含U102.7(+Vo)、U105.5(V+)、C109、C113和R129；源图U102=PEM1-S12-D12-S，输入U102.1经L102至VCC，.2/.6=GND，.5=-Vo。源图输出端真实存在；尚缺模块完整保证条件不等于无源。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/powertree.py:PowerTree; scripts/lint.py:Lint.power_path",
+        "what": "支持经核定的DC/DC模块+Vo/-Vo输出脚；把源存在性、输入是否有效、负载调整和可供电流分开。不能因正负号脚名未匹配就报无驱动。"
+      },
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F04",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "R129",
+        "R130",
+        "U101"
+      ],
+      "nets": [
+        "V12",
+        "+12V",
+        "GND"
+      ],
+      "sr_text": "V12 (3节点): ['R129', 'R130', 'U101']",
+      "verdict": "false_alarm",
+      "evidence": "db V12=U101.7 ADC、R129.1、R130.1；R129.2=+12V(300k)，R130.2=GND(100k)。名义12*100/(300+100)=3V，检测网并非供电输出。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/powertree.py:supply_candidates; scripts/lint.py:Lint.run",
+        "what": "对V12这种电压采样名用实际物理供电脚/负载与分压端点区分；允许有据标为sense，不强迫rail_exclusions之外再把采样节点声明为供电轨。依据本板KCL和U101 ADC脚名。"
+      },
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F05",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U101",
+        "R131",
+        "R132",
+        "P109"
+      ],
+      "nets": [
+        "ENABLE",
+        "3V3"
+      ],
+      "sr_text": "ENABLE: R132 上拉->3V3(3.3V)",
+      "verdict": "false_alarm",
+      "evidence": "ENABLE接U101.40(P0.9_IO/RTC_XTAL2)，R132=10k到3V3，R131=1k到P109.1。源图用途是外部充电允许输入；不是一个电源IC的EN/UVLO门限脚。该端口电平和掉电合同仍须审。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/checkers/power_up.py:build_inventory",
+        "what": "使能候选先核目标物理脚角色；普通MCU输入沿用GPIO/外部接口检查，不凭ENABLE网名索取电源芯片EN极性/绝限。"
+      },
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F06",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "",
+      "refs": [
+        "D101"
+      ],
+      "nets": [
+        "GND",
+        "LED"
+      ],
+      "sr_text": "D101 (TVS ‎PESD3V3L1BA tinkerforge:TVS) 跨 LED；轨名提示=无，型号提示=无。同网 IC 脚 U101.1(P4.6_IO) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；同网其他器件 Q101 各按自身耐压比较；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网不接连接器（内部节点）：瞬态按前级钳位后的残压或本地源（热插拔、感性关断）取，没有瞬态源时只核工作电压与稳态功耗；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "db D101=‎PESD3V3L1BA，跨GND,LED；相关IC端点U101.17,U101.37,U101.EP,U102.2,U102.6,U106.13,U106.2,U106.4,U106.EP,U108.1,U108.3,U108.4,U109.2,U109.3,U109.5,U110.2,U111.4,U112.2,U113.6,U113.7,U101.1. 该管为PESD3V3L1BA候选，须取准确器件VRWM/Vcl、接收脚绝限和掉电注入参数。 公开原厂下载受403限制或准确厂家未锁，未取得可独立绑定的钳位曲线；亦缺端口事件/源阻抗合同。因此是参数/手册缺口，不是确认的过压缺陷。关闭：锁准确管料号/手册页，按工作窗、指定事件残压和能量逐项比较。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F07",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "",
+      "refs": [
+        "D102"
+      ],
+      "nets": [
+        "ENABLE",
+        "GND"
+      ],
+      "sr_text": "D102 (TVS ‎PESD3V3L1BA tinkerforge:TVS) 跨 ENABLE；轨名提示=无，型号提示=无。同网 IC 脚 U101.40(P0.9_IO/RTC_XTAL2) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 P109、P113：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "db D102=‎PESD3V3L1BA，跨ENABLE,GND；相关IC端点U101.40,U101.17,U101.37,U101.EP,U102.2,U102.6,U106.13,U106.2,U106.4,U106.EP,U108.1,U108.3,U108.4,U109.2,U109.3,U109.5,U110.2,U111.4,U112.2,U113.6,U113.7. 该管为PESD3V3L1BA候选，须取准确器件VRWM/Vcl、接收脚绝限和掉电注入参数。 公开原厂下载受403限制或准确厂家未锁，未取得可独立绑定的钳位曲线；亦缺端口事件/源阻抗合同。因此是参数/手册缺口，不是确认的过压缺陷。关闭：锁准确管料号/手册页，按工作窗、指定事件残压和能量逐项比较。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F08",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "",
+      "refs": [
+        "D104"
+      ],
+      "nets": [
+        "GND",
+        "INPUT-MOTOR-SWITCH"
+      ],
+      "sr_text": "D104 (TVS ‎PESD3V3L1BA tinkerforge:TVS) 跨 INPUT-MOTOR-SWITCH；轨名提示=无，型号提示=无。同网 IC 脚 U101.25(P1.1_IHO) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 P107、P113：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "db D104=‎PESD3V3L1BA，跨GND,INPUT-MOTOR-SWITCH；相关IC端点U101.17,U101.37,U101.EP,U102.2,U102.6,U106.13,U106.2,U106.4,U106.EP,U108.1,U108.3,U108.4,U109.2,U109.3,U109.5,U110.2,U111.4,U112.2,U113.6,U113.7,U101.25. 该管为PESD3V3L1BA候选，须取准确器件VRWM/Vcl、接收脚绝限和掉电注入参数。 公开原厂下载受403限制或准确厂家未锁，未取得可独立绑定的钳位曲线；亦缺端口事件/源阻抗合同。因此是参数/手册缺口，不是确认的过压缺陷。关闭：锁准确管料号/手册页，按工作窗、指定事件残压和能量逐项比较。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F09",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "",
+      "refs": [
+        "D105"
+      ],
+      "nets": [
+        "GND",
+        "Net-(D105-A)"
+      ],
+      "sr_text": "D105 (TVS SMF4L13CA tinkerforge:TVS) 跨 Net-(D105-A)；轨名提示=无，型号提示=无。同网 IC 脚 U105.1(OUT) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网不接连接器（内部节点）：瞬态按前级钳位后的残压或本地源（热插拔、感性关断）取，没有瞬态源时只核工作电压与稳态功耗；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "db D105=SMF4L13CA，跨GND,Net-(D105-A)；相关IC端点U101.17,U101.37,U101.EP,U102.2,U102.6,U106.13,U106.2,U106.4,U106.EP,U108.1,U108.3,U108.4,U109.2,U109.3,U109.5,U110.2,U111.4,U112.2,U113.6,U113.7,U105.1. 该节点是OPA171输出，先核±12V实际轨、SMF4L13CA正常窗口和真实CP事件；不能仅凭正负输出名义值断言TVS导通。 公开原厂下载受403限制或准确厂家未锁，未取得可独立绑定的钳位曲线；亦缺端口事件/源阻抗合同。因此是参数/手册缺口，不是确认的过压缺陷。关闭：锁准确管料号/手册页，按工作窗、指定事件残压和能量逐项比较。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F10",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "",
+      "refs": [
+        "D106",
+        "U113"
+      ],
+      "nets": [
+        "GND",
+        "Net-(D106-A)"
+      ],
+      "sr_text": "D106 (TVS SMAJ24CA tinkerforge:TVS) 跨 Net-(D106-A)；轨名提示=无，型号提示=24V。同网 IC 脚 U113.10(Z)、U113.11(B) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；同网其他器件 L104 各按自身耐压比较；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 J101、P101、P104、P105、P106、P107、P108、P109、P112、P113：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "db D106=SMAJ24CA，跨GND,Net-(D106-A)；相关IC端点U101.17,U101.37,U101.EP,U102.2,U102.6,U106.13,U106.2,U106.4,U106.EP,U108.1,U108.3,U108.4,U109.2,U109.3,U109.5,U110.2,U111.4,U112.2,U113.6,U113.7,U113.10,U113.11. U113总线节点经L104至P110。SP3491 Rev1.0.3 p2/p5的总线窗口必须与准确SMAJ24CA在同一事件下的残压比较，不能把24当钳位值；原提示列出的其他大量连接器多数仅经公共GND可达，不能当信号端口。 公开原厂下载受403限制或准确厂家未锁，未取得可独立绑定的钳位曲线；亦缺端口事件/源阻抗合同。因此是参数/手册缺口，不是确认的过压缺陷。关闭：锁准确管料号/手册页，按工作窗、指定事件残压和能量逐项比较。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F11",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "",
+      "refs": [
+        "D107"
+      ],
+      "nets": [
+        "GND",
+        "VPP"
+      ],
+      "sr_text": "D107 (TVS ‎PESD3V3L1BA tinkerforge:TVS) 跨 VPP；轨名提示=无，型号提示=无。同网 IC 脚 U101.5(P2.2_AI) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 P105：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "db D107=‎PESD3V3L1BA，跨GND,VPP；相关IC端点U101.17,U101.37,U101.EP,U102.2,U102.6,U106.13,U106.2,U106.4,U106.EP,U108.1,U108.3,U108.4,U109.2,U109.3,U109.5,U110.2,U111.4,U112.2,U113.6,U113.7,U101.5. 该管为PESD3V3L1BA候选，须取准确器件VRWM/Vcl、接收脚绝限和掉电注入参数。 公开原厂下载受403限制或准确厂家未锁，未取得可独立绑定的钳位曲线；亦缺端口事件/源阻抗合同。因此是参数/手册缺口，不是确认的过压缺陷。关闭：锁准确管料号/手册页，按工作窗、指定事件残压和能量逐项比较。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F12",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "",
+      "refs": [
+        "D108"
+      ],
+      "nets": [
+        "GND",
+        "Net-(D108-A)"
+      ],
+      "sr_text": "D108 (TVS SMF4L13CA tinkerforge:TVS) 跨 Net-(D108-A)；轨名提示=无，型号提示=无。同网 IC 脚 U106.3(OUTA) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 P107：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "db D108=SMF4L13CA，跨GND,Net-(D108-A)；相关IC端点U101.17,U101.37,U101.EP,U102.2,U102.6,U106.13,U106.2,U106.4,U106.EP,U108.1,U108.3,U108.4,U109.2,U109.3,U109.5,U110.2,U111.4,U112.2,U113.6,U113.7,U106.3. 该节点是A5950 H桥输出并至P107，额定应按VBB和可达电机反电势/故障核，不把3V3逻辑绝限套功率输出。 公开原厂下载受403限制或准确厂家未锁，未取得可独立绑定的钳位曲线；亦缺端口事件/源阻抗合同。因此是参数/手册缺口，不是确认的过压缺陷。关闭：锁准确管料号/手册页，按工作窗、指定事件残压和能量逐项比较。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F13",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "",
+      "refs": [
+        "D109"
+      ],
+      "nets": [
+        "GND",
+        "Net-(D109-A)"
+      ],
+      "sr_text": "D109 (TVS SMF4L13CA tinkerforge:TVS) 跨 Net-(D109-A)；轨名提示=无，型号提示=无。同网 IC 脚 U106.6(OUTB) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 P107：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "db D109=SMF4L13CA，跨GND,Net-(D109-A)；相关IC端点U101.17,U101.37,U101.EP,U102.2,U102.6,U106.13,U106.2,U106.4,U106.EP,U108.1,U108.3,U108.4,U109.2,U109.3,U109.5,U110.2,U111.4,U112.2,U113.6,U113.7,U106.6. 该节点是A5950 H桥输出并至P107，额定应按VBB和可达电机反电势/故障核，不把3V3逻辑绝限套功率输出。 公开原厂下载受403限制或准确厂家未锁，未取得可独立绑定的钳位曲线；亦缺端口事件/源阻抗合同。因此是参数/手册缺口，不是确认的过压缺陷。关闭：锁准确管料号/手册页，按工作窗、指定事件残压和能量逐项比较。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F14",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "",
+      "refs": [
+        "D110"
+      ],
+      "nets": [
+        "GND",
+        "SWITCH"
+      ],
+      "sr_text": "D110 (TVS ‎PESD3V3L1BA tinkerforge:TVS) 跨 SWITCH；轨名提示=无，型号提示=无。同网 IC 脚 U101.43(P0.12_IO) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 P108、P113：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "db D110=‎PESD3V3L1BA，跨GND,SWITCH；相关IC端点U101.17,U101.37,U101.EP,U102.2,U102.6,U106.13,U106.2,U106.4,U106.EP,U108.1,U108.3,U108.4,U109.2,U109.3,U109.5,U110.2,U111.4,U112.2,U113.6,U113.7,U101.43. 该管为PESD3V3L1BA候选，须取准确器件VRWM/Vcl、接收脚绝限和掉电注入参数。 公开原厂下载受403限制或准确厂家未锁，未取得可独立绑定的钳位曲线；亦缺端口事件/源阻抗合同。因此是参数/手册缺口，不是确认的过压缺陷。关闭：锁准确管料号/手册页，按工作窗、指定事件残压和能量逐项比较。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F15",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "",
+      "refs": [
+        "D111",
+        "U113"
+      ],
+      "nets": [
+        "GND",
+        "Net-(D111-A)"
+      ],
+      "sr_text": "D111 (TVS SMAJ24CA tinkerforge:TVS) 跨 Net-(D111-A)；轨名提示=无，型号提示=24V。同网 IC 脚 U113.12(A)、U113.9(Y) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；同网其他器件 L104 各按自身耐压比较；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 P113：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "db D111=SMAJ24CA，跨GND,Net-(D111-A)；相关IC端点U101.17,U101.37,U101.EP,U102.2,U102.6,U106.13,U106.2,U106.4,U106.EP,U108.1,U108.3,U108.4,U109.2,U109.3,U109.5,U110.2,U111.4,U112.2,U113.6,U113.7,U113.12,U113.9. U113总线节点经L104至P110。SP3491 Rev1.0.3 p2/p5的总线窗口必须与准确SMAJ24CA在同一事件下的残压比较，不能把24当钳位值；原提示列出的其他大量连接器多数仅经公共GND可达，不能当信号端口。 公开原厂下载受403限制或准确厂家未锁，未取得可独立绑定的钳位曲线；亦缺端口事件/源阻抗合同。因此是参数/手册缺口，不是确认的过压缺陷。关闭：锁准确管料号/手册页，按工作窗、指定事件残压和能量逐项比较。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F16",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "",
+      "refs": [
+        "D113"
+      ],
+      "nets": [
+        "GND",
+        "GP-IN"
+      ],
+      "sr_text": "D113 (TVS ‎PESD3V3L1BA tinkerforge:TVS) 跨 GP-IN；轨名提示=无，型号提示=无。同网 IC 脚 U101.12(P2.9_AI) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 P113：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "db D113=‎PESD3V3L1BA，跨GND,GP-IN；相关IC端点U101.17,U101.37,U101.EP,U102.2,U102.6,U106.13,U106.2,U106.4,U106.EP,U108.1,U108.3,U108.4,U109.2,U109.3,U109.5,U110.2,U111.4,U112.2,U113.6,U113.7,U101.12. 该管为PESD3V3L1BA候选，须取准确器件VRWM/Vcl、接收脚绝限和掉电注入参数。 公开原厂下载受403限制或准确厂家未锁，未取得可独立绑定的钳位曲线；亦缺端口事件/源阻抗合同。因此是参数/手册缺口，不是确认的过压缺陷。关闭：锁准确管料号/手册页，按工作窗、指定事件残压和能量逐项比较。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F17",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "",
+      "refs": [
+        "D114"
+      ],
+      "nets": [
+        "GND",
+        "GP-OUT"
+      ],
+      "sr_text": "D114 (TVS ‎PESD3V3L1BA tinkerforge:TVS) 跨 GP-OUT；轨名提示=无，型号提示=无。同网 IC 脚 U101.23(P1.3_IHO) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；同网其他器件 Q104 各按自身耐压比较；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网不接连接器（内部节点）：瞬态按前级钳位后的残压或本地源（热插拔、感性关断）取，没有瞬态源时只核工作电压与稳态功耗；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "db D114=‎PESD3V3L1BA，跨GND,GP-OUT；相关IC端点U101.17,U101.37,U101.EP,U102.2,U102.6,U106.13,U106.2,U106.4,U106.EP,U108.1,U108.3,U108.4,U109.2,U109.3,U109.5,U110.2,U111.4,U112.2,U113.6,U113.7,U101.23. 该管为PESD3V3L1BA候选，须取准确器件VRWM/Vcl、接收脚绝限和掉电注入参数。 公开原厂下载受403限制或准确厂家未锁，未取得可独立绑定的钳位曲线；亦缺端口事件/源阻抗合同。因此是参数/手册缺口，不是确认的过压缺陷。关闭：锁准确管料号/手册页，按工作窗、指定事件残压和能量逐项比较。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F18",
+      "sr_rule": "DRV-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "L101"
+      ],
+      "nets": [
+        "5V",
+        "Net-(U110-IN)"
+      ],
+      "sr_text": "L101（inductor，状态 schematic-default）: 开关节点 5V 与 Net-(U110-IN) 之间未见续流二极管、钳位器件或 RC 吸收；若由驱动器内部钳位需给出资料证据",
+      "verdict": "false_alarm",
+      "evidence": "db L101 VALUE=FB；L101连接5V→U110.IN，C106=1µF到GND，为LDO输入磁珠滤波。图面p1没有此磁珠的励磁/关断线圈负载；不需要线圈续流二极管。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/inductive_load.py:loads/_series_filter",
+        "what": "核VALUE=FB、两端负载与储能器件角色；串联滤波磁珠不套开关线圈续流。保留真正继电器/电机/储能电感的DRV-T01/DRV-C01。"
+      },
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F19",
+      "sr_rule": "DRV-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "L103"
+      ],
+      "nets": [
+        "Net-(L103-Pad1)",
+        "Net-(L103-Pad2)"
+      ],
+      "sr_text": "L103（inductor，状态 schematic-default）: 开关节点 Net-(L103-Pad1) 与 Net-(L103-Pad2) 之间未见续流二极管、钳位器件或 RC 吸收；若由驱动器内部钳位需给出资料证据",
+      "verdict": "false_alarm",
+      "evidence": "db L103 VALUE=FB；L103连接Q105.S通路输出→P101电源、C101旁路支路，为主机供电磁珠滤波。图面p1没有此磁珠的励磁/关断线圈负载；不需要线圈续流二极管。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/inductive_load.py:loads/_series_filter",
+        "what": "核VALUE=FB、两端负载与储能器件角色；串联滤波磁珠不套开关线圈续流。保留真正继电器/电机/储能电感的DRV-T01/DRV-C01。"
+      },
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F20",
+      "sr_rule": "DRV-A03",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "Q101",
+        "U101"
+      ],
+      "nets": [
+        "LED",
+        "GND"
+      ],
+      "sr_text": "Q101（mosfet，状态 schematic-default）：栅极网 LED 由 U101.1 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，并核上电、复位与驱动高阻时栅极状态",
+      "verdict": "needs_human",
+      "evidence": "db Q101.G与U101.1共LED，.S=GND，.D外接P108.2；未见独立栅极拉阻。已知有GPIO连接，但缺准确XMC1404变体在复位/掉电下的默认偏置及外部负载安全态。不能把“方向未命名”直接判缺驱动，也不能把正常GPIO输出替代复位态。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F21",
+      "sr_rule": "DRV-A03",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "Q104",
+        "U101"
+      ],
+      "nets": [
+        "GP-OUT",
+        "GND"
+      ],
+      "sr_text": "Q104（mosfet，状态 schematic-default）：栅极网 GP-OUT 由 U101.23 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，并核上电、复位与驱动高阻时栅极状态",
+      "verdict": "needs_human",
+      "evidence": "db Q104.G与U101.23共GP-OUT，.S=GND，.D外接P113.3；未见独立栅极拉阻。已知有GPIO连接，但缺准确XMC1404变体在复位/掉电下的默认偏置及外部负载安全态。不能把“方向未命名”直接判缺驱动，也不能把正常GPIO输出替代复位态。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F22",
+      "sr_rule": "RST-A04",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U110"
+      ],
+      "nets": [
+        "unconnected-(U110-EN-Pad3)"
+      ],
+      "sr_text": "U110（状态 schematic-default）：使能脚 U110.3 所在网 unconnected-(U110-EN-Pad3) 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "verdict": "false_alarm",
+      "evidence": "TPS709 SBVS186H p3 Table5-1与p13 §7.4明确EN可悬空，内部300nA电流源默认开启。db U110.3有原生NC标记，未接VIN，属于允许接法；本结论只关闭EN来源。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_up.py:build_inventory; scripts/checkers/power_up.py:cold_findings",
+        "what": "在取得准确器件EN默认态声明后支持内部上拉/电流源且允许悬空的合法模型；不能从图上无外部拉阻直接推出开启不确定。依据TPS709 p3/p13。"
+      },
+      "seed": null,
+      "origin": "lint"
+    },
+    {
+      "id": "F23",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U111",
+        "P106",
+        "P110"
+      ],
+      "nets": [
+        "VCC",
+        "L",
+        "N"
+      ],
+      "sr_text": "VCC: 板上无来源，经P106.3由外部供电",
+      "verdict": "false_alarm",
+      "evidence": "这是INFO文字的错误，不是新增电气缺陷。db VCC直接接U111.3(V+)；U111.1/.2=L/N，.4=GND，源图IRM02-12 AC/DC模块。P106/P110可以外接并不证明“只经连接器”。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/powertree.py:PowerTree; scripts/lint.py:Lint._external_entry",
+        "what": "核AC/DC模块V+/V-输出语义，识别内部来源后再单列外部多源合同，INFO也不能把缺额定数据误写为无来源。"
+      },
+      "seed": null,
+      "origin": "lint_info"
+    },
+    {
+      "id": "F24",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U103"
+      ],
+      "nets": [],
+      "sr_text": "U103 TITLE_MISMATCH（声明器件类型与标题词冲突）",
+      "verdict": "false_alarm",
+      "evidence": "datasheets/dmmt5401.pdf p1标题150V PNP MATCHED PAIR HIGH-VOLTAGE TRANSISTOR，C/B/E六端；Diodes Incorporated为厂家品牌，非diode类型。 evidence/kind-repro.json可原样重放无kind_reason时的误判；本轮有据kind_reason已修正声明，不改检查器。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/datasheet_kinds.py:title_text/title_check/cues",
+        "what": "先定位真实文档标题，排除厂商品牌、应用清单和摘要中的运行方式。短前缀未识别角色时不要扫描全首页后把所有命中类型等权化；保留带出处的kind_reason。依据该PDF实际标题/端点功能。"
+      },
+      "seed": null,
+      "origin": "reproduced_kind_audit"
+    },
+    {
+      "id": "F25",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "Q102"
+      ],
+      "nets": [],
+      "sr_text": "Q102 TITLE_MISMATCH（声明器件类型与标题词冲突）",
+      "verdict": "false_alarm",
+      "evidence": "datasheets/si2305cds.pdf p1标题P-Channel 8V (D-S) MOSFET，G/S/D三端；Load Switch、DC/DC Converter是APPLICATIONS，不能作为load_switch/regulator器件身份。 evidence/kind-repro.json可原样重放无kind_reason时的误判；本轮有据kind_reason已修正声明，不改检查器。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/datasheet_kinds.py:title_text/title_check/cues",
+        "what": "先定位真实文档标题，排除厂商品牌、应用清单和摘要中的运行方式。短前缀未识别角色时不要扫描全首页后把所有命中类型等权化；保留带出处的kind_reason。依据该PDF实际标题/端点功能。"
+      },
+      "seed": null,
+      "origin": "reproduced_kind_audit"
+    },
+    {
+      "id": "F26",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U106"
+      ],
+      "nets": [],
+      "sr_text": "U106 TITLE_MISMATCH（声明器件类型与标题词冲突）",
+      "verdict": "false_alarm",
+      "evidence": "datasheets/a5950.pdf p1标题DC Motor Driver、p3 OUTA/OUTB桥输出；正文PWM control与synchronous rectification是电机驱动方式，不是独立PWM/SR电源控制器。 evidence/kind-repro.json可原样重放无kind_reason时的误判；本轮有据kind_reason已修正声明，不改检查器。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/datasheet_kinds.py:title_text/title_check/cues",
+        "what": "先定位真实文档标题，排除厂商品牌、应用清单和摘要中的运行方式。短前缀未识别角色时不要扫描全首页后把所有命中类型等权化；保留带出处的kind_reason。依据该PDF实际标题/端点功能。"
+      },
+      "seed": null,
+      "origin": "reproduced_kind_audit"
+    },
+    {
+      "id": "F27",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "P102",
+        "U108"
+      ],
+      "nets": [
+        "N",
+        "Net-(P102-P1)"
+      ],
+      "sr_text": "P102以Relay名称被识别为继电器并索取资料",
+      "verdict": "false_alarm",
+      "evidence": "db P102 VALUE=Relay、prim=tinkerforge:CONN_2、footprint=kicad-libraries:LSF-SMT-500-02-135，仅两脚P1/PM。current-schematic.pdf p1 Relay区是外部接触器接口，板上真实SSR是U108；Relay表示目的，不是P102的器件类型。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/device_kinds.py:KINDS",
+        "what": "当VALUE是用途别名Relay且原生符号/脚表/封装指向连接器时，核实后按connector处理，不因文字RELAY压过端口实体；载流/对端仍须DEV-D03/DEV-C04。"
+      },
+      "seed": null,
+      "origin": "classification_audit"
+    },
+    {
+      "id": "F28",
+      "sr_rule": "PWR-C04",
+      "criteria": [
+        "G03-003",
+        "G03-004"
+      ],
+      "severity": "",
+      "refs": [
+        "U110",
+        "C102",
+        "C110",
+        "C111",
+        "C127",
+        "C130",
+        "C131",
+        "C132"
+      ],
+      "nets": [
+        "3V3",
+        "GND"
+      ],
+      "sr_text": "U110输出电容总名义值102.82µF，高于手册最大47µF",
+      "verdict": "needs_human",
+      "evidence": "U110.5=3V3，直接到GND的C102/C110/C111/C127/C130/C131/C132分别0.1/2.2/100/0.1/0.1/0.22/0.1µF，合102.82µF。TPS709 SBVS186H p14 §8.1.1给3.3V档Ceff≥1.5µF、最大47µF、ESR0..0.2Ω；C111采购型号/偏压温度公差未给，不能把名义100µF当实用Ceff下界，也不能只核C110。需选定并核全并联Ceff/ESR窗口或改图后复审；未证明实物必然失稳。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "expert_review"
+    },
+    {
+      "id": "F29",
+      "sr_rule": "DEV-C05",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U109",
+        "RP105"
+      ],
+      "nets": [
+        "3V3",
+        "AC1",
+        "AC2"
+      ],
+      "sr_text": "U109在3V3供电下的传输保证没有被准确厂家资料覆盖",
+      "verdict": "knowledge_gap",
+      "evidence": "db U109.8=3V3、.5=GND。Broadcom AV02-0546EN p11推荐4.5..18V、p12 CTR/VOL与p13延时在给定VCC条件；onsemi托管Fairchild Rev1.0.5 PDF p5/p6 CTR/VOL/延时保证在4.5V/5V。原图HCPL2731未给厂家/采购后缀，不能把Broadcom硬下限无条件套onsemi，也不能借5V典型曲线证明3.3V。需锁采购变体并取得3.3V保证/有据定界或改供电和输出接口后重审；本轮不定true_defect。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "expert_review"
+    },
+    {
+      "id": "F30",
+      "sr_rule": "SIG-C03",
+      "criteria": [
+        "G04-026",
+        "G04-027",
+        "G04-028",
+        "G04-032",
+        "G04-061",
+        "G04-064",
+        "G04-076"
+      ],
+      "severity": "",
+      "refs": [
+        "U113",
+        "R134",
+        "R135",
+        "R136",
+        "R137",
+        "L104",
+        "P110"
+      ],
+      "nets": [
+        "Net-(D106-A)",
+        "Net-(D111-A)",
+        "3V3",
+        "GND"
+      ],
+      "sr_text": "RS485双端端接时本板偏置可能不足200mV",
+      "verdict": "needs_human",
+      "evidence": "db R134/R136各750Ω至3V3/GND，R135 DNP，R137=120Ω在P110.2/.3之间。忽略线圈DCR时单120Ω名义3.3*120/(1500+120)=0.244444V；另一端120Ω使等效60Ω，仅0.126923V。SP3491 Rev1.0.3 p5接收保证灵敏度±200mV，p9标准open-input failsafe不能直接当短接/双端端接failsafe。缺远端终端、空闲驱动和电缆合同，不能把假设双端终端判为本板已证缺陷。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "expert_review"
+    },
+    {
+      "id": "F31",
+      "sr_rule": "DEV-D01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U102",
+        "L102"
+      ],
+      "nets": [
+        "VCC",
+        "+12V",
+        "-12V",
+        "GND"
+      ],
+      "sr_text": "U102未有可绑定的PEM1-S12-D12-S原厂保证资料",
+      "verdict": "knowledge_gap",
+      "evidence": "源图U102.1=VIN经L102至VCC，.2输入GND/.6输出0V均GND，.5=-12V/.7=+12V；CUI/Bel公开下载403，source下载记录在review/download-*-log.json。缺输入窗、最小负载、负载调整、输出电容/短路能力，不把名义±12V固定点当上下界；同一双极性用途共地不是已证隔离错误。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "expert_review"
+    },
+    {
+      "id": "F32",
+      "sr_rule": "DEV-D01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U112",
+        "C124",
+        "C125",
+        "C126"
+      ],
+      "nets": [
+        "VCC",
+        "5V",
+        "GND"
+      ],
+      "sr_text": "U112 WPMDL110只有符号接口，内部变换与保证窗口未建立",
+      "verdict": "knowledge_gap",
+      "evidence": "U112.1=VCC、.2=GND、.3=5V；C124/C125各1µF在输入，C126=1µF在输出。源树无独立模块电路/BOM；WPMDL110未取得可绑定的准确原厂/受控模块资料，不能套任意5V芯片的Cout、热或反灌条款。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "expert_review"
+    },
+    {
+      "id": "F33",
+      "sr_rule": "DEV-D01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U101"
+      ],
+      "nets": [
+        "3V3",
+        "GND"
+      ],
+      "sr_text": "U101 XMC1404准确变体与官方完整脚表仍未绑定",
+      "verdict": "knowledge_gap",
+      "evidence": "源图VALUE=XMC1404、QFN48-EP2，XML有48编号脚+EP；Infineon官方XMC1400 V1.7在线全文可阅85页（官网URL保存在来源记录），本地下载空响应，未取得可哈希绑定的全文；采购Flash/温度/封装后缀也未给。MCU pin default、注入、电源复位和ADC窗口未以源符号自证。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "expert_review"
+    },
+    {
+      "id": "F34",
+      "sr_rule": "PRO-C05",
+      "criteria": [
+        "G05-024",
+        "G05-025",
+        "G05-027"
+      ],
+      "severity": "",
+      "refs": [
+        "F101",
+        "F102",
+        "R113",
+        "R128",
+        "PTC101",
+        "U108"
+      ],
+      "nets": [
+        "L",
+        "N",
+        "Net-(P104-P1)",
+        "Net-(P110-P4)",
+        "GND"
+      ],
+      "sr_text": "F101/F102、MOV及PTC的实际保护额定/协调未锁",
+      "verdict": "needs_human",
+      "evidence": "F101串P103.2→L，F102串P104.1→D115；两只VALUE均FUSE，无电流/分断/动作曲线；R128 MOV跨L/N，R113 MOV跨L/SSR输出；PTC101在P110.4到GND，VALUE PTC0.45A，源图另注0ZCJ0016FF2E，存在需要澄清的额定身份。缺BOM、上游预期短路与线束/负载耐受，不能说保护缺失，也不能判配合通过。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "expert_review"
+    },
+    {
+      "id": "F35",
+      "sr_rule": "CLK-C01",
+      "criteria": [
+        "G04-078",
+        "G04-079",
+        "G04-080",
+        "G04-081",
+        "G04-082",
+        "G04-083",
+        "G04-084",
+        "G04-085"
+      ],
+      "severity": "",
+      "refs": [
+        "X101",
+        "C128",
+        "C129",
+        "U101"
+      ],
+      "nets": [
+        "Net-(U101B-P0.10_IO/XTAL1)",
+        "Net-(U101B-P0.11_IO/XTAL2)"
+      ],
+      "sr_text": "X101负载与起振保证不能由16MHz和两只10pF关闭",
+      "verdict": "knowledge_gap",
+      "evidence": "X101.2/.1接U101.41/.42 XTAL1/2，.3=GND，C128/C129各10pF；理想CL串联=5pF，仍须加两端及走线寄生。晶体准确CL/ESR/驱动级和MCU振荡器模型未给；只连一颗MCU，未发现共用晶体错误。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "expert_review"
+    },
+    {
+      "id": "F36",
+      "sr_rule": "REQ-D03",
+      "criteria": [
+        "G01-001",
+        "G01-002",
+        "G01-003",
+        "G01-004",
+        "G01-006",
+        "G01-007",
+        "G01-008"
+      ],
+      "severity": "",
+      "refs": [],
+      "nets": [],
+      "sr_text": "缺受控产品边界及独立装配BOM，不能给整板合格结论",
+      "verdict": "needs_human",
+      "evidence": "用途仅从README.rst前8行和源图推断，industrial_telecom为本次指定基线；源树git ls-tree没有独立BOM/CSV/XLSX，read_bom.py未运行。C120/C121/R135按Value=DNP排除为默认装配推断，不代替量产BOM；AC输入范围、环境/降额、所有外部端口供电/安全态、负载和任务剖面未给。53局部判定与768逐ID待核均在review-results.json；原生门禁FAIL。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "expert_review"
+    },
+    {
+      "id": "F37",
+      "sr_rule": "PRO-D01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "P104",
+        "P105",
+        "U109",
+        "R116",
+        "R118",
+        "U111",
+        "U108"
+      ],
+      "nets": [
+        "L",
+        "GND",
+        "AC1",
+        "AC2"
+      ],
+      "sr_text": "市电/PE检测、功能地与保护地边界须由系统合同确认",
+      "verdict": "needs_human",
+      "evidence": "P104.2与P105 PE1/PE2均接GND；D115/F102/R118→U109.1 LED→U109.2=GND，D116/R116→U109.4 LED→U109.3=GND；输出U109.5亦GND。此图是高阻市电/PE状态检测（推断），不是可直接当浮地SELVe接口的光耦隔离。需确认接地方式、泄漏电流/单故障、断PE与接触器诊断安全要求；U111/U108的原理图绝缘资格与PCB爬电/样机安规试验分开。",
+      "proposed_fix": null,
+      "seed": null,
+      "origin": "expert_review"
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G04-009",
+      "sr_rule": "SIG-C08",
+      "refs": [
+        "P101",
+        "RP101",
+        "U101"
+      ],
+      "nets": [
+        "S-CLK",
+        "S-CS",
+        "S-MOSI",
+        "S-MISO"
+      ],
+      "why_expected": "对外SPI链即使正常同3V3，也应逐端掉电/外端先上电核Ioff与注入。已生成HOST-SPI和EXT-P101却没有SIG-C08。",
+      "evidence": "P101经RP101四支路82Ω至U101 SPI脚；外部5V由Q105理想二极管支路到P101，与U110的3V3供电和开关状态不同。最终821项里SIG-C08总数=0；已有SIG-C07/SIG-T04与PRO-D04通用端口题，不能替代该显式掉电问题。这是计划缺项，不是已证注入超限。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:InterfaceGraph.derive/cross_supply; scripts/catalog.py:INTERFACE_NET_SUBJECTS",
+        "what": "外部连接器端供电未知时保持未建模端点并展开SIG-C08；共轨/未知供电不能按同一供电状态剪掉。依据G04-005/007/009及本板SPI支路。"
+      },
+      "seed": null,
+      "layer": "plan_object_expansion"
+    },
+    {
+      "id": "M02",
+      "criterion": "G04-040",
+      "sr_rule": "PRO-D02",
+      "refs": [
+        "U111"
+      ],
+      "nets": [
+        "L",
+        "N",
+        "VCC",
+        "GND"
+      ],
+      "why_expected": "AC/DC模块输入L/N与输出VCC/GND本身是隔离带对象，不能因没有GND1/GND2或尚未核定regulator角色而只审SSR隔离。",
+      "evidence": "PRO-D02/PRO-C03仅展开MAINS-SWITCH(U108)，没有U111；MAINS-SUPPLY(AC_MAINS)的8项亦无模块隔离带跨接与工作资格。U111源图1=L 2=N 3=V+ 4=V-，MeanWell IRM-02-SPEC 2025-11-21 p1 classII/AC-DC用途、p2安全规格须逐输入输出对照。无已证隔离短路。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:build; scripts/checkers/domains.py; scripts/plan_circuits.py:CircuitPlanning",
+        "what": "为AC/DC模块保留输入/输出域对，而不是把全部引脚并到单一域；即使模块role未核完整也产生待确认隔离候选，并展开PRO-D02和PRO-C03。共地的双极性DC/DC另按真实用途排除，不机械报短路。"
+      },
+      "seed": {
+        "kind": "D-ACDC-BARRIER-BRIDGE",
+        "mutation": "在隔离的db副本中显式绑定U111输入L/N与输出VCC/GND为待维持隔离边界，再把U111.2原N合到GND且同步nets/pin2net；应检出跨接，保留原板高阻PE检测路径不改。种子前提是声明的模块隔离合同，原板不是已证缺陷正例。",
+        "target_rule": "PRO-D02"
+      },
+      "layer": "plan_object_expansion"
+    },
+    {
+      "id": "M03",
+      "criterion": "G03-003",
+      "sr_rule": "PWR-C04",
+      "refs": [
+        "U110",
+        "C111",
+        "C110"
+      ],
+      "nets": [
+        "3V3",
+        "GND"
+      ],
+      "why_expected": "PWR-C04专家计划已有，但自动层只检测有没有C，未把100µF并联大电容与已取得最大47µF窗口关联为待核候选；记录自动层漏提示。",
+      "evidence": "实际直接并联总名义102.82µF，TPS709 SBVS186H p14最大47µF；有C110并不豁免并联C111。缺C111的Ceff边界，因此期待候选而非自动FAIL。人工已在F28处理，不能说整轮漏审。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/board_scans.py:ldo_output_capacitor; scripts/checkers/decoupling.py",
+        "what": "在有已审原厂Cout上/下界时枚举全部贴装直接并联C及有效容量边界；仅有名义值时提示上界待核，已证有效容量越窗才判FAIL。不能把所有LDO硬编码成相同限值。"
+      },
+      "seed": null,
+      "layer": "automatic_candidate_only"
+    }
+  ],
+  "summary": {
+    "true_defect": 1,
+    "false_alarm": 12,
+    "criterion_issue": 0,
+    "knowledge_gap": 17,
+    "needs_human": 7,
+    "misses": 3
+  },
+  "top50_crosscheck": {
+    "count": 50,
+    "full_evidence": "/Users/skyfend/.cache/sr-boards/tinkerforge--evse-v2-bricklet/review/evidence/top50-crosscheck.json",
+    "items": [
+      {
+        "index": 1,
+        "criterion": "G01-018",
+        "state": "not_applicable",
+        "evidence": "无−48V电信输入；P103为L/N AC、VCC为名义+12V，不套ETSI −48V条款。",
+        "sr_rules": [
+          "PWR-C17"
+        ]
+      },
+      {
+        "index": 2,
+        "criterion": "G01-019",
+        "state": "not_applicable",
+        "evidence": "无−48V电信输入；P103为L/N AC、VCC为名义+12V，不套ETSI −48V条款。",
+        "sr_rules": [
+          "PWR-C17"
+        ]
+      },
+      {
+        "index": 3,
+        "criterion": "G01-020",
+        "state": "not_applicable",
+        "evidence": "无−48V电信输入；P103为L/N AC、VCC为名义+12V，不套ETSI −48V条款。",
+        "sr_rules": [
+          "PWR-C18"
+        ]
+      },
+      {
+        "index": 4,
+        "criterion": "G01-021",
+        "state": "not_applicable",
+        "evidence": "无−48V电信输入；P103为L/N AC、VCC为名义+12V，不套ETSI −48V条款。",
+        "sr_rules": [
+          "PRO-C01"
+        ]
+      },
+      {
+        "index": 5,
+        "criterion": "G01-022",
+        "state": "not_applicable",
+        "evidence": "无−48V电信输入；P103为L/N AC、VCC为名义+12V，不套ETSI −48V条款。",
+        "sr_rules": [
+          "PWR-C19"
+        ]
+      },
+      {
+        "index": 6,
+        "criterion": "G01-023",
+        "state": "not_applicable",
+        "evidence": "无−48V电信输入；P103为L/N AC、VCC为名义+12V，不套ETSI −48V条款。",
+        "sr_rules": [
+          "PWR-C13"
+        ]
+      },
+      {
+        "index": 7,
+        "criterion": "G01-024",
+        "state": "planned_pending",
+        "evidence": "实际输入窗、负载、元件保证条件或运行/掉电/复位合同未锁；相关计划问题已保留，不将未完成改报漏检。",
+        "sr_rules": [
+          "PWR-C18"
+        ]
+      },
+      {
+        "index": 8,
+        "criterion": "G01-025",
+        "state": "planned_pending",
+        "evidence": "实际输入窗、负载、元件保证条件或运行/掉电/复位合同未锁；相关计划问题已保留，不将未完成改报漏检。",
+        "sr_rules": [
+          "PWR-C18"
+        ]
+      },
+      {
+        "index": 9,
+        "criterion": "G01-026",
+        "state": "not_applicable",
+        "evidence": "没有USB/Type-C端口；P101为SPI Bricklet接口、P106为电源端口，5V不等于USB VBUS。",
+        "sr_rules": [
+          "SIG-C05"
+        ]
+      },
+      {
+        "index": 10,
+        "criterion": "G01-027",
+        "state": "not_applicable",
+        "evidence": "没有USB/Type-C端口；P101为SPI Bricklet接口、P106为电源端口，5V不等于USB VBUS。",
+        "sr_rules": [
+          "SIG-C05"
+        ]
+      },
+      {
+        "index": 11,
+        "criterion": "G01-029",
+        "state": "not_applicable",
+        "evidence": "没有USB/Type-C端口；P101为SPI Bricklet接口、P106为电源端口，5V不等于USB VBUS。",
+        "sr_rules": [
+          "PWR-C13",
+          "SIG-C05"
+        ]
+      },
+      {
+        "index": 12,
+        "criterion": "G01-030",
+        "state": "not_applicable",
+        "evidence": "没有USB/Type-C端口；P101为SPI Bricklet接口、P106为电源端口，5V不等于USB VBUS。",
+        "sr_rules": [
+          "SIG-D07"
+        ]
+      },
+      {
+        "index": 13,
+        "criterion": "G01-031",
+        "state": "not_applicable",
+        "evidence": "没有USB/Type-C端口；P101为SPI Bricklet接口、P106为电源端口，5V不等于USB VBUS。",
+        "sr_rules": [
+          "SIG-C05"
+        ]
+      },
+      {
+        "index": 14,
+        "criterion": "G03-003",
+        "state": "gap_automatic_candidate_only",
+        "evidence": "M03: 实际直接并联总名义102.82µF，TPS709 SBVS186H p14最大47µF；有C110并不豁免并联C111。缺C111的Ceff边界，因此期待候选而非自动FAIL。人工已在F28处理，不能说整轮漏审。",
+        "sr_rules": [
+          "PWR-C04"
+        ]
+      },
+      {
+        "index": 15,
+        "criterion": "G03-004",
+        "state": "planned_pending",
+        "evidence": "U110 PWR-C04三状态已有，直接名义102.82µF vs1.5..47µF且ESR0..0.2Ω；人工专题已发现，不能当整轮漏审。",
+        "sr_rules": [
+          "PWR-C04"
+        ]
+      },
+      {
+        "index": 16,
+        "criterion": "G03-016",
+        "state": "planned_pending",
+        "evidence": "实际输入窗、负载、元件保证条件或运行/掉电/复位合同未锁；相关计划问题已保留，不将未完成改报漏检。",
+        "sr_rules": [
+          "DRV-C02"
+        ]
+      },
+      {
+        "index": 17,
+        "criterion": "G03-018",
+        "state": "planned_pending",
+        "evidence": "实际输入窗、负载、元件保证条件或运行/掉电/复位合同未锁；相关计划问题已保留，不将未完成改报漏检。",
+        "sr_rules": [
+          "PWR-C06"
+        ]
+      },
+      {
+        "index": 18,
+        "criterion": "G03-019",
+        "state": "planned_pending",
+        "evidence": "实际输入窗、负载、元件保证条件或运行/掉电/复位合同未锁；相关计划问题已保留，不将未完成改报漏检。",
+        "sr_rules": [
+          "PWR-C06"
+        ]
+      },
+      {
+        "index": 19,
+        "criterion": "G03-021",
+        "state": "planned_pending",
+        "evidence": "实际输入窗、负载、元件保证条件或运行/掉电/复位合同未锁；相关计划问题已保留，不将未完成改报漏检。",
+        "sr_rules": [
+          "PWR-D03"
+        ]
+      },
+      {
+        "index": 20,
+        "criterion": "G03-025",
+        "state": "planned_pending",
+        "evidence": "实际输入窗、负载、元件保证条件或运行/掉电/复位合同未锁；相关计划问题已保留，不将未完成改报漏检。",
+        "sr_rules": [
+          "PWR-T04"
+        ]
+      },
+      {
+        "index": 21,
+        "criterion": "G03-028",
+        "state": "planned_pending",
+        "evidence": "实际输入窗、负载、元件保证条件或运行/掉电/复位合同未锁；相关计划问题已保留，不将未完成改报漏检。",
+        "sr_rules": [
+          "PWR-C24"
+        ]
+      },
+      {
+        "index": 22,
+        "criterion": "G03-032",
+        "state": "planned_pending",
+        "evidence": "实际输入窗、负载、元件保证条件或运行/掉电/复位合同未锁；相关计划问题已保留，不将未完成改报漏检。",
+        "sr_rules": [
+          "PWR-C05"
+        ]
+      },
+      {
+        "index": 23,
+        "criterion": "G03-037",
+        "state": "not_triggered_in_documented_assembly",
+        "evidence": "源图两端电容用无极性C符号/片式封装，未声明电解/钽或串联均压组；实际采购技术仍随BOM待核，不把0命中当装配极性通过。",
+        "sr_rules": [
+          "DEV-C01"
+        ]
+      },
+      {
+        "index": 24,
+        "criterion": "G03-038",
+        "state": "not_triggered_in_documented_assembly",
+        "evidence": "源图两端电容用无极性C符号/片式封装，未声明电解/钽或串联均压组；实际采购技术仍随BOM待核，不把0命中当装配极性通过。",
+        "sr_rules": [
+          "DEV-C01"
+        ]
+      },
+      {
+        "index": 25,
+        "criterion": "G03-040",
+        "state": "not_triggered_in_documented_assembly",
+        "evidence": "源图两端电容用无极性C符号/片式封装，未声明电解/钽或串联均压组；实际采购技术仍随BOM待核，不把0命中当装配极性通过。",
+        "sr_rules": [
+          "DEV-C01"
+        ]
+      },
+      {
+        "index": 26,
+        "criterion": "G04-005",
+        "state": "planned_pending",
+        "evidence": "实际输入窗、负载、元件保证条件或运行/掉电/复位合同未锁；相关计划问题已保留，不将未完成改报漏检。",
+        "sr_rules": [
+          "SIG-C08"
+        ]
+      },
+      {
+        "index": 27,
+        "criterion": "G04-007",
+        "state": "planned_pending",
+        "evidence": "实际输入窗、负载、元件保证条件或运行/掉电/复位合同未锁；相关计划问题已保留，不将未完成改报漏检。",
+        "sr_rules": [
+          "PRO-D04",
+          "SIG-C08"
+        ]
+      },
+      {
+        "index": 28,
+        "criterion": "G04-009",
+        "state": "gap_plan_object_expansion",
+        "evidence": "M01: P101经RP101四支路82Ω至U101 SPI脚；外部5V由Q105理想二极管支路到P101，与U110的3V3供电和开关状态不同。最终821项里SIG-C08总数=0；已有SIG-C07/SIG-T04与PRO-D04通用端口题，不能替代该显式掉电问题。这是计划缺项，不是已证注入超限。",
+        "sr_rules": [
+          "SIG-C08"
+        ]
+      },
+      {
+        "index": 29,
+        "criterion": "G04-010",
+        "state": "planned_pending",
+        "evidence": "实际输入窗、负载、元件保证条件或运行/掉电/复位合同未锁；相关计划问题已保留，不将未完成改报漏检。",
+        "sr_rules": [
+          "RST-T04"
+        ]
+      },
+      {
+        "index": 30,
+        "criterion": "G04-017",
+        "state": "not_applicable",
+        "evidence": "源图无I2C SDA/SCL链；S-CLK为SPI，不能因CLK词套I2C上拉。",
+        "sr_rules": [
+          "SIG-C01"
+        ]
+      },
+      {
+        "index": 31,
+        "criterion": "G04-018",
+        "state": "not_applicable",
+        "evidence": "源图无I2C SDA/SCL链；S-CLK为SPI，不能因CLK词套I2C上拉。",
+        "sr_rules": [
+          "SIG-C01"
+        ]
+      },
+      {
+        "index": 32,
+        "criterion": "G04-032",
+        "state": "not_applicable",
+        "evidence": "SP3491是RS485，不套CAN两端总阻60Ω；RS485按F30独立核。",
+        "sr_rules": [
+          "SIG-C03"
+        ]
+      },
+      {
+        "index": 33,
+        "criterion": "G04-040",
+        "state": "gap_plan_object_expansion",
+        "evidence": "M02: PRO-D02/PRO-C03仅展开MAINS-SWITCH(U108)，没有U111；MAINS-SUPPLY(AC_MAINS)的8项亦无模块隔离带跨接与工作资格。U111源图1=L 2=N 3=V+ 4=V-，MeanWell IRM-02-SPEC 2025-11-21 p1 classII/AC-DC用途、p2安全规格须逐输入输出对照。无已证隔离短路。",
+        "sr_rules": [
+          "PRO-D02"
+        ]
+      },
+      {
+        "index": 34,
+        "criterion": "G04-041",
+        "state": "planned_pending",
+        "evidence": "U105 OPA171输入名义0.0327..3.3V/1.65V，对±12V共模有名义余量；电源全窗和输出饱和仍待核，ANA-C01/05已展开。",
+        "sr_rules": [
+          "ANA-C01"
+        ]
+      },
+      {
+        "index": 35,
+        "criterion": "G04-054",
+        "state": "planned_pending",
+        "evidence": "V12名义3V；V-12/VCP1/VCP2=(4*3.3+Vsignal)/8，±12V时0.15..3.15V；实际±轨调整/ADC窗口和异常注入未知，ANA-C01/03已有。",
+        "sr_rules": [
+          "ANA-C03"
+        ]
+      },
+      {
+        "index": 36,
+        "criterion": "G04-078",
+        "state": "planned_pending",
+        "evidence": "CLK-C01已对X101及C128/C129展开；CL串联5pF+寄生，准确晶体ESR/CL与起振模型未锁。",
+        "sr_rules": [
+          "CLK-C01"
+        ]
+      },
+      {
+        "index": 37,
+        "criterion": "G04-079",
+        "state": "planned_pending",
+        "evidence": "CLK-C01已对X101及C128/C129展开；CL串联5pF+寄生，准确晶体ESR/CL与起振模型未锁。",
+        "sr_rules": [
+          "CLK-C01"
+        ]
+      },
+      {
+        "index": 38,
+        "criterion": "G04-082",
+        "state": "topology_checked",
+        "evidence": "X101仅连U101.41/42，未发现第二个振荡器并接；时钟CL/ESR/起振仍待F35。",
+        "sr_rules": [
+          "CLK-C01"
+        ]
+      },
+      {
+        "index": 39,
+        "criterion": "G05-019",
+        "state": "planned_pending",
+        "evidence": "F101/F102/MOV/PTC及外部短路电流/波形未知，保留保护/绝缘原理图前提与下游试验区分。",
+        "sr_rules": [
+          "PRO-C04"
+        ]
+      },
+      {
+        "index": 40,
+        "criterion": "G05-022",
+        "state": "planned_pending",
+        "evidence": "F101/F102/MOV/PTC及外部短路电流/波形未知，保留保护/绝缘原理图前提与下游试验区分。",
+        "sr_rules": [
+          "DEV-C01",
+          "DEV-C04"
+        ]
+      },
+      {
+        "index": 41,
+        "criterion": "G05-025",
+        "state": "planned_pending",
+        "evidence": "F101/F102/MOV/PTC及外部短路电流/波形未知，保留保护/绝缘原理图前提与下游试验区分。",
+        "sr_rules": [
+          "PRO-C05"
+        ]
+      },
+      {
+        "index": 42,
+        "criterion": "G05-030",
+        "state": "planned_pending",
+        "evidence": "F101/F102/MOV/PTC及外部短路电流/波形未知，保留保护/绝缘原理图前提与下游试验区分。",
+        "sr_rules": [
+          "PRO-E02"
+        ]
+      },
+      {
+        "index": 43,
+        "criterion": "G05-031",
+        "state": "planned_pending",
+        "evidence": "F101/F102/MOV/PTC及外部短路电流/波形未知，保留保护/绝缘原理图前提与下游试验区分。",
+        "sr_rules": [
+          "PRO-E02"
+        ]
+      },
+      {
+        "index": 44,
+        "criterion": "G05-032",
+        "state": "planned_pending",
+        "evidence": "F101/F102/MOV/PTC及外部短路电流/波形未知，保留保护/绝缘原理图前提与下游试验区分。",
+        "sr_rules": [
+          "PRO-E02"
+        ]
+      },
+      {
+        "index": 45,
+        "criterion": "G05-040",
+        "state": "planned_pending",
+        "evidence": "F101/F102/MOV/PTC及外部短路电流/波形未知，保留保护/绝缘原理图前提与下游试验区分。",
+        "sr_rules": [
+          "DRV-C02"
+        ]
+      },
+      {
+        "index": 46,
+        "criterion": "G05-041",
+        "state": "planned_pending",
+        "evidence": "F101/F102/MOV/PTC及外部短路电流/波形未知，保留保护/绝缘原理图前提与下游试验区分。",
+        "sr_rules": [
+          "DRV-C02"
+        ]
+      },
+      {
+        "index": 47,
+        "criterion": "G05-048",
+        "state": "planned_pending",
+        "evidence": "F101/F102/MOV/PTC及外部短路电流/波形未知，保留保护/绝缘原理图前提与下游试验区分。",
+        "sr_rules": [
+          "PRO-C01"
+        ]
+      },
+      {
+        "index": 48,
+        "criterion": "G05-054",
+        "state": "planned_pending",
+        "evidence": "F101/F102/MOV/PTC及外部短路电流/波形未知，保留保护/绝缘原理图前提与下游试验区分。",
+        "sr_rules": [
+          "PRO-D04",
+          "PWR-T05"
+        ]
+      },
+      {
+        "index": 49,
+        "criterion": "G05-057",
+        "state": "topology_checked_no_selected_mechanism",
+        "evidence": "外部输入未见反接阻断前单向TVS；市电入口为MOV，已标TVS多为CA/BA双向候选，实际厂家/故障合同另核，不能凭无保护管名作PASS。",
+        "sr_rules": [
+          "PWR-C26"
+        ]
+      },
+      {
+        "index": 50,
+        "criterion": "G05-087",
+        "state": "conditional_applicability",
+        "evidence": "Q105为5V理想二极管供电支路，G由U103检测驱动；并非已声明对外DC反接防护合同。DRV-E01/PWR-C23保留反向与多源问题，先核用途再套防反D/S判据。",
+        "sr_rules": [
+          "PWR-T05"
+        ]
+      }
+    ]
+  }
+}

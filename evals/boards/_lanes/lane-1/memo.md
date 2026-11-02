@@ -39,3 +39,9 @@
 - BD71847AMWV p110 MUXSW输出需有效11–33µF，本板NVCC_SD2仅1.22µF；卡VDD另接3V3，不能借卡电容补。BUCKx_FB/LDOx_VOUT/MUXSW_VOUT未展开PWR-C04；已有PWR-C09人工发现要与自动漏报分层。
 - NVCC供电轨要同时声明i2c_topology.rails，否则四路SDA/SCL经4.7k上拉串成两区；NVCC_I2C仍误作信号。R55 Populate=DNP仍被扫成下拉；MIC94164是负载开关，别索取LDO dropout。
 - schema15的pending不是原生INSUFFICIENT；原生报告会显示局部功能合格与资料不足0，必须显式列出全部未判ID和报告不可用状态。未核官方针表的PWR-T03不以XML自洽冒充完整分组PASS。
+
+- tinkerforge--evse-v2-bricklet：139件/125网，strict因F101/F102/L102六个无名脚失败，XML/db443节点一致；24电路/70框架/821项，53局部判/768逐ID待核，FAIL/NO_GO；37归因=1图面真+12误报+17资料+7人工，3分层漏问。
+- TPS709 EN允许悬空；3V3全并联名义102.82µF对手册Ceff最大47µF，不能只看2.2µF，也不能把名义值当有效下界。HCPL2731的3.3V保证要按厂家分支核，不无条件借Broadcom4.5V下限定onsemi硬错。
+- Diodes品牌/Load Switch应用/PWM及同步整流描述误导U103/Q102/U106标题定类；kind_reason要有真实标题/端点依据。P102名Relay实为2针连接器，L101/L103的FB是串联滤波，不套线圈续流。
+- 对外SPI没有SIG-C08时要留掉电注入计划缺口；AC/DC模块L/N→V+/V-也要逐输入输出核隔离，不能只找GND1/GND2。RS485750Ω偏置单120Ω约0.244V，双120Ω约0.127V，未锁远端不判原板缺陷。
+- schema15无needs_human/未完成功能格式：53局部事实留checks，全部70功能保留pending，不写完整功能PASS。原生报告只有诊断效力；P111与MCU31脚号真墨迹重叠可判P2，C128/16MHz仅邻近不另判。
