@@ -1,0 +1,170 @@
+{
+  "board": "rmingon--chlinknet",
+  "source": {
+    "repo": "rmingon/CHLinkNet",
+    "commit": "b2318d1130624ca1c122ba834d3767eae5a984eb",
+    "schematic": "hardware/hardware.kicad_sch",
+    "license": "CERN-OHL-S-2.0"
+  },
+  "review_directory": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review",
+  "temporary_directory": "/tmp/codex-work/chlinknet-lane4",
+  "kicad_version": "10.0.7",
+  "source_reported_kicad_version": "9.0.3 (README)",
+  "parse_strict": true,
+  "bom": "完整git tree未见BOM；read_bom未执行，不制造BOM",
+  "execution": {
+    "fetch": {
+      "exit_code": 0,
+      "command": "python3 -B evals/boards/_tools/fetch_board.py rmingon--chlinknet --cache ~/.cache/sr-boards"
+    },
+    "cold_initial_items": 190,
+    "circuit_decisions": {
+      "exit_code": 0,
+      "circuits": 7,
+      "decisions": 7,
+      "unassigned": 0
+    },
+    "cold_hot_lint": {
+      "exit_codes": [
+        0,
+        0
+      ],
+      "plan_items": 244,
+      "with_log": "../fetch.log",
+      "scanned_messages": {
+        "CANDIDATE": 50,
+        "FINDING": 5
+      }
+    },
+    "validate_review": {
+      "exit_code": 2,
+      "require_actionable": true,
+      "valid": false,
+      "release": "NO_GO",
+      "errors": [
+        "FN-IF-CLOCK-Y1-STARTUP-MCU: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing"
+      ],
+      "blocker_count": 389,
+      "summary": {
+        "checks": 244,
+        "results": {
+          "INSUFFICIENT": 191,
+          "NA": 15,
+          "PASS": 36,
+          "FAIL": 2
+        },
+        "confirmed_defects": 2,
+        "by_severity": {
+          "P0": 0,
+          "P1": 1,
+          "P2": 1,
+          "P3": 0
+        },
+        "improvements": 0
+      }
+    },
+    "render_report": {
+      "exit_code": 2,
+      "command": [
+        "python3",
+        "-B",
+        "scripts/render_report.py",
+        "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/review-plan.json",
+        "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/review-results.json",
+        "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/review-gate.json",
+        "--detail",
+        "full",
+        "-o",
+        "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/审查报告.md"
+      ],
+      "message": "review not finished, no report yet",
+      "cache_log": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/render-attempt.txt",
+      "formal_report_generated": false
+    }
+  },
+  "quality_screening": {
+    "status": "NEEDS_SEMANTIC_REVIEW",
+    "candidate_count": 78,
+    "flagged_check_count": 204,
+    "disposition": "全部建议逐条留出处置；共享决定性条款/模式误识别已核，跨范围与重复文字等台账质量欠账继续保留，未豁免为已闭。",
+    "dispositions_path": "quality-dispositions.json"
+  },
+  "artifacts": [
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/intent.json",
+      "sha256": "f218d4caf5d8a5cfa2ff3066049f9d0189dfad4b5ecef4220fef757389721ec1"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/datasheet-resolution.json",
+      "sha256": "9740fa60356c92ba1ee918b03e265c58bae58ddfd00f5df79abdfa9b0e764f74"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/datasheet-audit.json",
+      "sha256": "43f938aab00fd721bfb10531906da869ebf5b59c216db61c252e3a9f6879d123"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/record/circuit-candidates.json",
+      "sha256": "25a4bdc4ef0dfe4224ad3e009ccd715759f2ac384d6c9216c9a62813f088fbfe"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/review-plan-initial.json",
+      "sha256": "ea670e4936fe60b53c543c0ed0392a5b88b81b5388f5f3d61d170eac59a94c9f"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/lint-initial.json",
+      "sha256": "e72d5ef683a077a41c5a866ad6e7e4a6bd54e4782ca320a6443711358b068fd2"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/review-plan-cold.json",
+      "sha256": "a74b13f2549fe8f49ef204dcec69a741695fe6255dc44038bd6fdbfe1ae0a828"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/lint-cold.json",
+      "sha256": "4c1b6c9c307dc492f0a99d778e5a219cd69341df7196506464280d0029a20380"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/review-plan.json",
+      "sha256": "c494d887d340245688f3f21f46ef95cfb93265903ae6461e37c2edc3a2875519"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/lint-hot.json",
+      "sha256": "451aea0096217320c280cff5353544393e0868af165d3a56213be33a12cfc0f7"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/review-results.json",
+      "sha256": "c6fc3b5dd252b81edbb021ee390f0c9e1664910409f66e1a9c53073c1a933171"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/review-gate.json",
+      "sha256": "791423cce9c0e1acd2443c77ec82a394ebd929f849ed5e217e4a2ebf73acc4a8"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/资料请求.md",
+      "sha256": "3ae182cfec62eafc5132a1dde11d866b9e2786d04496b1e2e628940bbac80863"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/source-provenance.json",
+      "sha256": "cdb8d98fb0686d84374c760e8bab038a2a0e23e138b23d00da6bb676a1bbfa2d"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/independent-analysis.md",
+      "sha256": "e6f172637e4bb9c6a0160560dbe4d9a88ae8e928c4091827c08efb4e3ade90f8"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/render-attempt.txt",
+      "sha256": "ed913e717af322c9f4bf4e73df0937d932b8ea7112b76167e7ffba92499aa3fa"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/evidence/J2-actual.png",
+      "sha256": "dae1697b684bdac29ee509cde16420728af78801843e5fae7fa66559e788db85"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/审查执行记录.md",
+      "sha256": "aa1a5f79c4a0a054dbec7dd85bd38565e29899bd20c50d6279dd5d9e5a12a067"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/rmingon--chlinknet/review/quality-dispositions.json",
+      "sha256": "20caf1585dfdad7aa4ee79677338ef3405232da746aa91ab925db620e1df2a4d"
+    }
+  ]
+}

@@ -14,3 +14,10 @@
 - PH→L3应算真实电源；ENA别名/内部UVLO导致U3漏PWR-C06。跨类型隔离U5/U4/TR1与J9外供电支路分别补PRO-D02/PRO-C04对象，不能把漏对象当已证缺保护。
 - C62是模拟差分并联滤波；AM26LV32E开路fail-safe；R6 25296nΩ=25.296µΩ，且位于系统示意。原图夹带系统/BMB示例，不当本PCB贴装。
 - CAN/RS485 states=[]仍与lint冲突，分析run不等于产品合同；多地去耦return_net须group citation，U26输入C55在FB3之前不能算后段直接旁路；保留223条F1与277提示。
+
+
+- rmingon--chlinknet：244项、84条归因（2真/19误/2准则/2知识/59待确认），PRO-C04/PRO-D02两项覆盖漏报；FAIL/NO_GO，原生renderer拒绝，记录勿称正式报告。
+- README接口表必须与网表逐针核：本板J2.1/2实际3V3/GND，README反向；J3.4直3V3而文档有5V说法，JP1=BOOT1、JP2=BOOT0。不按README的RMII/25MHz替换实图身份。
+- CH340 V3C p4未用I/O可悬空、R232内下拉；NET-A06/A07可排除但NET-A01未标NC处置仍留。HY931147C的V+/V−是整流电源，磁件RJ45不是有源PHY IC，图片手册NO_TEXT不等于缺资料。
+- WCH官方CH32V30xSCH.pdf p9两CT共3V3+C14=0.1uF；G04-091不能无视千兆/集成磁件裁剪。Micro-B不能套PD/Type-C表4-2/4-3。TI LM1117输出电容/ESR在PDFp15，保护二极管在p13，勿记错页码。
+- U4泛称ic候选漏UART须显式加，主控/跳线另归STARTUP再重扫；244项保留191未闭，纯晶体接口F1仍机械要求数值条款，不引用无关HSE频率凑通过。
