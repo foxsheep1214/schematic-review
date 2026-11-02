@@ -57,3 +57,9 @@
 - IEA模块VIN-/VOUT-不能全脚并查集合域；TRIM未用应开路。补intent.devices后SW/RTN伪去耦消失；VOUT+/Vo(+)仍漏PWR-C04，厂家28V款外接电容0–470µF。
 - LV14540 FB是0.750V、全温0.735–0.765V；200k/33k名义5.295V、1%极值5.101–5.495V，勿套常见0.8V。CD-MMBL110S的Battery chargers是应用不是器件类型；桥物理号映射无定论不判实物接反。
 - 集成PD开关也要PORT-SHORT/储能放电，源保护逐支路问；IEA p21安全要求外部输入保险须核上游合同。schema15保留逐ID needs_human与FAIL，报告原生缺口计数不等于待核总数。
+
+- s59mz--kicad-led-drv-pmod：19件/1页，KiCad10.0.7 strict；115项=112原生+3人工gap，26局部判/89待核，10归因=1数据真+2误阻断+2知识+5人工，门禁FAIL；3计划漏问、0已证硬件漏检。
+- LTC3206是充电泵恒流驱动：CPO14→C4要求Ceff≥0.6µF/低ESR（3206f p12），CPO没被OUT/SW模型识别；ENRGB/S复合脚名也漏RST-T04，源侧PRO-C04不能只靠FUSE/MOV词触发。
+- D1–D8两端LED已有空pin_difference仍卡kind资料；共阳四脚RGB D9没有IC供电返回对，不应阻IC去耦库存，但真实颜色针序/额定照审。12k名义20mA，不能把芯片100mA绝限当LED允许电流。
+- J1自定义奇偶编号与Pmod镜像编号须按坐标/端面换算，不能见数字不等就判接错；下载的官方托管Pmod副本实际2011 Doc510-002，文件名不证明1.1.0；本轮LTC完整PDF未取得，只用在线文字。
+- Designator/Comment CSV需可追溯改列名后read_bom，fetch原db不改；schema15对未定主机/采购/故障合同无needs_human枚举，逐项pending+逐功能范围保留，原生资料不足0不等于审完，不伪造VENDOR_DATUM或功能PASS。
