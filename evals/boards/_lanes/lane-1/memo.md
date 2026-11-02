@@ -33,3 +33,9 @@
 - Vishay 1N4001首页应用脚注bridge rectifier不是器件类型；DIN0207是电阻封装不是工业DI；Device:C/矩形封装不能直接推出MLCC或已确认薄膜技术。
 - 稀疏检出可漏BOM，按固定commit另取到缓存；read_bom没保留Value时独立CSV对读。7805无需Cout稳定不等于大Cout反灌/输入短路已闭合，市电峰值也不能直接充当桥单管常态反压。
 - schema15未支持needs_human时留逐ID pending并保留FAIL；资料不足0仅统计已判。D5/D6未给VZ/MPN是关键设计值缺失；家族手册AVAILABLE不能冒充采购温度/后缀资格。
+
+- groupgets--kimchi-micro：311件/393网，KiCad10.0.7 strict；18电路/60框架，补U4完整针表后1337项，39局部已判/1298逐ID待核；36归因=2真+7误报+18知识+9人工，2分层漏问，门禁FAIL。
+- LFS BOM/PDF须取真实对象并校验OID；BOM311件匹配不表示VALUE/Mfgrpart无内部冲突。U3显示256M32而采购512M32是数据真缺陷，缓存符号名本身不算。
+- BD71847AMWV p110 MUXSW输出需有效11–33µF，本板NVCC_SD2仅1.22µF；卡VDD另接3V3，不能借卡电容补。BUCKx_FB/LDOx_VOUT/MUXSW_VOUT未展开PWR-C04；已有PWR-C09人工发现要与自动漏报分层。
+- NVCC供电轨要同时声明i2c_topology.rails，否则四路SDA/SCL经4.7k上拉串成两区；NVCC_I2C仍误作信号。R55 Populate=DNP仍被扫成下拉；MIC94164是负载开关，别索取LDO dropout。
+- schema15的pending不是原生INSUFFICIENT；原生报告会显示局部功能合格与资料不足0，必须显式列出全部未判ID和报告不可用状态。未核官方针表的PWR-T03不以XML自洽冒充完整分组PASS。
