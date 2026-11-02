@@ -87,3 +87,9 @@
 - 0.5mR解析器本身正确，parse_kicad._component仅^R数字位号调度导致SHA不取值；NetTie_2/Device:R也不能因特殊位号认未知IC。R100/R150需与采购100/150Ω分支留冲突，勿替设计改值。
 - 同提交PDF仍可过时（6R8对当前4R7）；U4 NCS20034/COS724采购身份矛盾要先锁。U6共GND不自动是隔离缺陷；隔离DC/DC仍需PWR-C04，源侧保护不能只问J3.6。
 - BOOT-OUT/VCC-GND须显式返回分组；schema15未知合同保留逐ID pending和29功能未完成旁账，原生资料不足0/电路无已证错误不等于审完，门禁FAIL如实交。
+
+- blkburn--zigbee：39件strict；8电路/25框架/222项，15局部判、207逐ID needs_human；20归因=3数据真缺陷+9误报+1模型知识缺口+7人工，3计划漏问，门禁FAIL。
+- MX25R8035FM1IH1 p84是HOLD#非RESET#；p8准许真正未外连WP#/HOLD#内部上拉。pspice:DIODE图形pin2阴极却名A、pin1却名K；先判库语义矛盾，别越界断言实物反接。
+- D6经1k接J2的信号钳位不能按直接网归内部functional_clamp；复用port_connectors应出PRO-E02。CT/RESET合法add仍丢nets/anchors，ADC/复位0展开，优先修引用关系而非手补计划。
+- RF-BM-2652B1完整原厂PDF可从B1_20240823 URL取得（内页May2023），产品页误链B2；模组脚36有内部上拉，别套裸片RESET说明。AHT10是连接器、BT1是座，不能猜上拉、电芯或供入方向。
+- schema15保留pending并让覆盖FAIL；局部功能合格/资料不足0不是全板通过。NETLIST_FACT正则不收SW1.1'这类原生脚号；独立核XML/db，不改真实脚号去适配校验器。
