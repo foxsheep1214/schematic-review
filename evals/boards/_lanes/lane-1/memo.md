@@ -51,3 +51,9 @@
 - Diodes页眉商标被识为diode；U2电路PWR-C04却anchor到邻接U1；机械触点不套半导体输入浮空，12V/VUSB电源边不套逻辑VIH/VIL，普通二极管不套eFuse。
 - U1符号1IN/2OUT/3G与自定义封装成套编号，几何支持右输出/中央GND，缺受控映射不判实物接错；U2仅SE5218缺3.3V后缀才是明确资料缺陷。C4名义2.2µF不证明p6有效≥1µF，USB-only须单核U1反灌。
 - strict因S1–S3十二触点缺名失败但XML/db70节点一致；分号CSV的Designation须显式转Value。schema15不支持needs_human/未判功能，旁账保留全部分母且门禁FAIL；DEV-D04非DOC前缀还不生成独立根因任务。
+
+- antmicro--poe-usb-c-pd-converter：269件/782端点，strict仅U10.3缺名；20电路/55功能，补官方脚表794→725项，74局部判/651待核，31根因=3真+13误报+8资料+7人工，4模型漏问，FAIL/NO_GO。
+- TPS2372-3的63.4Ω/90.9Ω宣告Class8与Type3能力不符；INA230 A0/A1八只strap全DNP确悬空；TPS65987D未用PP_HV1须接地，别当可悬空GPIO。
+- IEA模块VIN-/VOUT-不能全脚并查集合域；TRIM未用应开路。补intent.devices后SW/RTN伪去耦消失；VOUT+/Vo(+)仍漏PWR-C04，厂家28V款外接电容0–470µF。
+- LV14540 FB是0.750V、全温0.735–0.765V；200k/33k名义5.295V、1%极值5.101–5.495V，勿套常见0.8V。CD-MMBL110S的Battery chargers是应用不是器件类型；桥物理号映射无定论不判实物接反。
+- 集成PD开关也要PORT-SHORT/储能放电，源保护逐支路问；IEA p21安全要求外部输入保险须核上游合同。schema15保留逐ID needs_human与FAIL，报告原生缺口计数不等于待核总数。
