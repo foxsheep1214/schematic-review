@@ -99,3 +99,9 @@
 - STM32F407 VCAP49/73须各2.2µF且ESR<2Ω；W5500 RSVD23须接地，VBG18须浮空、RSVD38–42为NC；CP2102N VBUS需分压/等效限流，VREGIN/VDD各需4.7µF并0.1µF。PE0/1无ADC，意图未锁先留人工。
 - 共3V3不能把U13 PMODE43–45/U6 VREF+认成D18驱动；BSS138两侧上拉需低态合计(条件10k各侧约0.75mA)。本版PRO-C04与Y3 CLK-C01已有，漏项要核当前计划，别照搬旧memo。
 - schema15没有needs_human/未定合同状态；逐ID pending与55功能未完成旁账必须保留，原生资料不足0/4失败功能不代表全量55框架已审。报告valid=false仅诊断；p1可作定位而page1本身不被locator regex识别。
+
+- mlab-modules--solarmini01：28件/59端点/1页，157项=155自动+2补问；45局部结果/112逐ID人工，23归因=2数据真+10误+2知识+9人工，Top50两处计划漏问，FAIL/NO_GO。
+- SPV1040为boost：PV→L→LX是输入，VOUT4/D1.K才是输出；不要把所有SW经电感的远端都当输出，C1输入47uF与输出直接57.1uF分开，C7隔0.47Ω。
+- AN3319 p18明确0Ω把XSHUT并MPP-SET合法、外控应移除；XSHUT默认态和MPP-SET UVLO可能漏RST-T04/PWR-C06。J3 SIG-C08、J1/J4 PRO-C04本版已有，先查实际计划。
+- R2=-不可自动DNP；SMBJ5.0A指定D_SMA是数据错。D2最小击穿6.4V>5.5V，但无电池轻载接入适用性须锁；FERROCORE DE表IDC4A不等于有定义的全温Isat。
+- HOLE污染strict/手册/pinmux；add丢nets/anchors。源BOM截Individual再read_bom并独立核Value；schema15保留pending和完整功能分母，原生资料不足0不代表审完，未有效打包的报告索引须回缓存读。

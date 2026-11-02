@@ -1,0 +1,566 @@
+{
+  "board": "mlab-modules--solarmini01",
+  "source": "docs/proposals/criteria-top50-examples-2026-11-02.md",
+  "entries": [
+    {
+      "number": 1,
+      "criterion": "G01-018",
+      "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+      "expected_sr_rules": [
+        "PWR-C17"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 2,
+      "criterion": "G01-019",
+      "title": "−48 V 输入的工作电压范围与耐受范围",
+      "expected_sr_rules": [
+        "PWR-C17"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 3,
+      "criterion": "G01-020",
+      "title": "−48 V 输入 0.1 s 中断后自恢复",
+      "expected_sr_rules": [
+        "PWR-C18"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 4,
+      "criterion": "G01-021",
+      "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+      "expected_sr_rules": [
+        "PRO-C01"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 5,
+      "criterion": "G01-022",
+      "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+      "expected_sr_rules": [
+        "PWR-C19"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 6,
+      "criterion": "G01-023",
+      "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+      "expected_sr_rules": [
+        "PWR-C13"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 7,
+      "criterion": "G01-024",
+      "title": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+      "expected_sr_rules": [
+        "PWR-C18"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 8,
+      "criterion": "G01-025",
+      "title": "交流输入较长暂降与中断后自恢复（判据 C）",
+      "expected_sr_rules": [
+        "PWR-C18"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 9,
+      "criterion": "G01-026",
+      "title": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+      "expected_sr_rules": [
+        "SIG-C05"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 10,
+      "criterion": "G01-027",
+      "title": "USB 可用电流按实际协商档取",
+      "expected_sr_rules": [
+        "SIG-C05"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 11,
+      "criterion": "G01-029",
+      "title": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+      "expected_sr_rules": [
+        "PWR-C13",
+        "SIG-C05"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 12,
+      "criterion": "G01-030",
+      "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+      "expected_sr_rules": [
+        "SIG-D07"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 13,
+      "criterion": "G01-031",
+      "title": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+      "expected_sr_rules": [
+        "SIG-C05"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 14,
+      "criterion": "G03-003",
+      "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+      "expected_sr_rules": [
+        "PWR-C04"
+      ],
+      "status": "pending",
+      "evidence": "Cout直接57.1uF/C7隔R6，AN3319按允许纹波选容，PWR-C04已问；无完整负载/有效容量窗。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 15,
+      "criterion": "G03-004",
+      "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+      "expected_sr_rules": [
+        "PWR-C04"
+      ],
+      "status": "pending",
+      "evidence": "原厂只建议低ESR，无固定LDO式ESR窗，不能把经验选型写成必定违规。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 16,
+      "criterion": "G03-016",
+      "title": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+      "expected_sr_rules": [
+        "DRV-C02"
+      ],
+      "status": "not_applicable",
+      "evidence": "无外置线性通路MOSFET或热插拔控制器；U1集成开关不能套无依据外置SOA图。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 17,
+      "criterion": "G03-018",
+      "title": "变换器 UVLO 开启点低于输入窗下限",
+      "expected_sr_rules": [
+        "PWR-C06"
+      ],
+      "status": "plan_miss_M02",
+      "evidence": "MPP-SET的UVLO应由U1自己的PWR-C06核，而不是只问D2。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 18,
+      "criterion": "G03-019",
+      "title": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+      "expected_sr_rules": [
+        "PWR-C06"
+      ],
+      "status": "plan_miss_M02",
+      "evidence": "PV源阻抗/UVLO相关边界缺合同，U1门限计划漏问已补，非已证振荡。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 19,
+      "criterion": "G03-021",
+      "title": "软启动充电电流加启动期负载低于器件限流下限",
+      "expected_sr_rules": [
+        "PWR-D03"
+      ],
+      "status": "pending",
+      "evidence": "DS p8内置软启动；Cout57.1uF+R6后C7/外部电池未知，PWR-C04/PWR-C13已覆盖启动问法；不因无外置SS脚当硬件漏报。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 20,
+      "criterion": "G03-025",
+      "title": "复位门限高于各负载最低工作电压，掉电先复位",
+      "expected_sr_rules": [
+        "PWR-T04"
+      ],
+      "status": "not_applicable",
+      "evidence": "无MCU、负载RESET或电源监控器；XSHUT为使能，按29核。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 21,
+      "criterion": "G03-028",
+      "title": "上电时序在极值时间下满足约束",
+      "expected_sr_rules": [
+        "PWR-C24"
+      ],
+      "status": "not_applicable",
+      "evidence": "唯一U1单电源无CORE/IO多轨次序，PWR-C24按NA；外控掉电另SIG-C08。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 22,
+      "criterion": "G03-032",
+      "title": "稳压器反向电流在手册允许内或已阻断",
+      "expected_sr_rules": [
+        "PWR-C05"
+      ],
+      "status": "pending",
+      "evidence": "J4储能预偏置/暗光到U1.4，PWR-C05已问，无反流合同不能判合格。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 23,
+      "criterion": "G03-037",
+      "title": "电解与钽电容不承受反压",
+      "expected_sr_rules": [
+        "DEV-C01"
+      ],
+      "status": "pending",
+      "evidence": "C1/C6/C7正常极性正确；PV反接直接使C1反压，准许反接/防呆未锁，PRO-D04/PWR-C26已覆盖。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 24,
+      "criterion": "G03-038",
+      "title": "电解与钽电容的直流加纹波峰值在降额内",
+      "expected_sr_rules": [
+        "DEV-C01"
+      ],
+      "status": "pending",
+      "evidence": "C1/C6/C7均16V；正常例2.5V/约3.84V不超额定；纹波/温度/反接/降额选择仍未闭，DEV-C01已有。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 25,
+      "criterion": "G03-040",
+      "title": "串联使用的电解电容有均压措施",
+      "expected_sr_rules": [
+        "DEV-C01"
+      ],
+      "status": "not_applicable",
+      "evidence": "三只极性电容分别对GND，无串联电解均压链。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 26,
+      "criterion": "G04-005",
+      "title": "输入信号不超接收端绝对最大值",
+      "expected_sr_rules": [
+        "SIG-C08"
+      ],
+      "status": "pending",
+      "evidence": "J3直XSHUT绝限随VOUT变化；原生SIG-C08已展开，不能再报整体漏问。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 27,
+      "criterion": "G04-007",
+      "title": "未上电接口承受正常或故障信号不损坏",
+      "expected_sr_rules": [
+        "PRO-D04",
+        "SIG-C08"
+      ],
+      "status": "pending",
+      "evidence": "外控J3先供电/本板失电的注入路径由SIG-C08/PRO-D04已有问题承接。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 28,
+      "criterion": "G04-009",
+      "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+      "expected_sr_rules": [
+        "SIG-C08"
+      ],
+      "status": "pending",
+      "evidence": "J3可能经U1内部路径假供电，不能假设有任意注入容许；SIG-C08已问。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 29,
+      "criterion": "G04-010",
+      "title": "上电和复位期间关键输出有确定状态",
+      "expected_sr_rules": [
+        "RST-T04"
+      ],
+      "status": "plan_miss_M01",
+      "evidence": "XSHUT关键使能0R自偏置合法，但默认态未出RST-T04；已人工补问。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 30,
+      "criterion": "G04-017",
+      "title": "I²C 上拉电阻不超上升时间决定的上限",
+      "expected_sr_rules": [
+        "SIG-C01"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 31,
+      "criterion": "G04-018",
+      "title": "I²C 上拉电阻不低于灌电流决定的下限",
+      "expected_sr_rules": [
+        "SIG-C01"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 32,
+      "criterion": "G04-032",
+      "title": "CAN 总线两端端接，总阻约 60 Ω",
+      "expected_sr_rules": [
+        "SIG-C03"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 33,
+      "criterion": "G04-040",
+      "title": "隔离接口两侧的供电和地不被无意短接",
+      "expected_sr_rules": [
+        "PRO-D02"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 34,
+      "criterion": "G04-041",
+      "title": "运放两个输入在最坏工况下不超共模范围",
+      "expected_sr_rules": [
+        "ANA-C01"
+      ],
+      "status": "not_applicable",
+      "evidence": "无离散运放通用共模输入；ICTRL是芯片专用采样环，应按DS/AN控制器条款核，不套教学运放0..3.5V窗。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 35,
+      "criterion": "G04-054",
+      "title": "ADC 输入不超满量程和绝对最大值",
+      "expected_sr_rules": [
+        "ANA-C03"
+      ],
+      "status": "not_applicable",
+      "evidence": "无ADC输入；VCTRL/MPP-SET不是通用ADC满量程。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 36,
+      "criterion": "G04-078",
+      "title": "晶振负载电容与晶振规定 CL 相符",
+      "expected_sr_rules": [
+        "CLK-C01"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 37,
+      "criterion": "G04-079",
+      "title": "振荡器增益裕量足够起振",
+      "expected_sr_rules": [
+        "CLK-C01"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 38,
+      "criterion": "G04-082",
+      "title": "一颗晶振只驱动一个器件",
+      "expected_sr_rules": [
+        "CLK-C01"
+      ],
+      "status": "not_applicable",
+      "evidence": "无−48V/交流/USB/I2C/CAN/隔离/晶振的对应硬件端点或协议，不能因工业基线把不相关接口强套到光伏板。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 39,
+      "criterion": "G05-019",
+      "title": "每条配电支路在源侧有保护",
+      "expected_sr_rules": [
+        "PRO-C04"
+      ],
+      "status": "pending",
+      "evidence": "J1/J4源支路PRO-C04已逐针展开，D1无源直通及外接电池故障需系统保护合同，非规则缺失。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 40,
+      "criterion": "G05-022",
+      "title": "过流动作点上限下通路器件与连接器不超额定",
+      "expected_sr_rules": [
+        "DEV-C01",
+        "DEV-C04"
+      ],
+      "status": "pending",
+      "evidence": "稳态R6最大约128mA仅电流环；短路旁路不由其限制，DEV-C01/DEV-C04及PRO-C04/05已有。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 41,
+      "criterion": "G05-025",
+      "title": "故障电流下的动作时间短于被保护对象的耐受时间",
+      "expected_sr_rules": [
+        "PRO-C05"
+      ],
+      "status": "pending",
+      "evidence": "无离散保险，但需判源/BMS切断对通路耐受，PRO-C05已问；未知不得当保护已失败。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 42,
+      "criterion": "G05-030",
+      "title": "TVS 工作电压不低于被钳节点最高工作电压",
+      "expected_sr_rules": [
+        "PRO-E02"
+      ],
+      "status": "pending",
+      "evidence": "VRWM5V高于名义3.84V及明确5%例4.34V上游，但非完整电池/纹波窗。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 43,
+      "criterion": "G05-031",
+      "title": "TVS 钳位电压不超被保护器件绝对最大值",
+      "expected_sr_rules": [
+        "PRO-E02"
+      ],
+      "status": "pending",
+      "evidence": "6.4V最小击穿已超U1.4绝限5.5V；AN3319 p17非电池高电流接入适用性未锁，列F15。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 44,
+      "criterion": "G05-032",
+      "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+      "expected_sr_rules": [
+        "PRO-E02"
+      ],
+      "status": "pending",
+      "evidence": "未把600W/65.2A额定当本板脉冲；源波形/温度未锁，PRO-E02/PRO-C01已有。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 45,
+      "criterion": "G05-040",
+      "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+      "expected_sr_rules": [
+        "DRV-C02"
+      ],
+      "status": "not_applicable",
+      "evidence": "无外置热插拔MOSFET线性限流；内部开关按厂家控制器短路行为审。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 46,
+      "criterion": "G05-041",
+      "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+      "expected_sr_rules": [
+        "DRV-C02"
+      ],
+      "status": "not_applicable",
+      "evidence": "同45，无可适用外置功率管SOA轨迹契约。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 47,
+      "criterion": "G05-048",
+      "title": "熔断器分断能力不小于预期短路电流",
+      "expected_sr_rules": [
+        "PRO-C01"
+      ],
+      "status": "not_applicable",
+      "evidence": "无熔断器，不凭空要求某个分断值；源侧保护合同由39保留。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 48,
+      "criterion": "G05-054",
+      "title": "每个对外电源接口的反接有明确处置",
+      "expected_sr_rules": [
+        "PRO-D04",
+        "PWR-T05"
+      ],
+      "status": "pending",
+      "evidence": "PV内部防反存在但C1不在阻断之后；J4反接电池也未定义，PRO-D04/PWR-C26已有。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 49,
+      "criterion": "G05-057",
+      "title": "反接阻断之前没有单向 TVS 造成源短路",
+      "expected_sr_rules": [
+        "PWR-C26"
+      ],
+      "status": "not_applicable",
+      "evidence": "D2位于升压输出、并非PV入口防反器件之前；无该教学单向TVS前置反接短路结构。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    },
+    {
+      "number": 50,
+      "criterion": "G05-087",
+      "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+      "expected_sr_rules": [
+        "PWR-T05"
+      ],
+      "status": "not_applicable",
+      "evidence": "无外置MOS防反接，不套PMOS源漏方向。",
+      "checked_against": "全部28件/59节点、native p1、DS6991 Rev9、AN3319 Rev7 pp14–18；正例/反例的前提逐条核对。"
+    }
+  ],
+  "summary": {
+    "not_applicable": 31,
+    "pending": 16,
+    "plan_miss_M02": 2,
+    "plan_miss_M01": 1
+  }
+}

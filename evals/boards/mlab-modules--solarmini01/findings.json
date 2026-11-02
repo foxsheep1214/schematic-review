@@ -1,0 +1,640 @@
+{
+  "board": "mlab-modules--solarmini01",
+  "source": {
+    "repo": "mlab-modules/SOLARMINI01",
+    "commit": "95e265bf878306dc1ff4e3044bb8295469fb971e",
+    "schematic": "hw/sch_pcb/SOLARMINI01B.kicad_sch",
+    "license": "GPL-3.0"
+  },
+  "types": [
+    "POWER_CONVERTER",
+    "POWER_PROTECTION",
+    "ANALOG"
+  ],
+  "run": {
+    "db_sha256": "022da02c2ee05c23115171a2cc77b7a3e1a135ff40059ed55e2f28b7919c95ac",
+    "review_db_sha256": "8ddf4624de1d7ebcd828c25002eae304d7798ef8b8967f4beec330ae591f0e54",
+    "plan_items": 157,
+    "findings_total": 23,
+    "results_judged": 45,
+    "pending_needs_human": 112,
+    "gate": "FAIL",
+    "sr_commit": "1302ac3eb924ea14c1fa0075121b738cdac164d1",
+    "native_lint_candidates": 5,
+    "native_confirmed_defects": 2,
+    "native_functions_complete": 0,
+    "function_frames": 9,
+    "scope": "诊断审查；最终计划155自动项+2补问；45局部结果含1派生覆盖项，112逐ID需人工，0个完整功能通过。原生报告valid=false不可用作定稿结论。"
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "CANDIDATE",
+      "refs": [
+        "M1"
+      ],
+      "nets": [
+        "unconnected-(M1-Pad1)"
+      ],
+      "sr_text": "M1.1 -> unconnected-(M1-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "源图p1右上M1=MLAB_MECHANICAL:HOLE/MountingHole_3mm，唯一触点显式NC；XML/db均M1.1在独立伪网。输入型是机械库属性，不存在需内部上下拉的IC输入。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/board_scans.py:floating_inputs; scripts/parse_kicad.py:parse",
+        "what": "先按真实器件语义识别非电气安装孔，再忽略其无功能名/输入类型；普通IC的NC输入仍照常问。依据本板p1 HOLE+NC和NET-A07本身的功能输入判据。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F02",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "CANDIDATE",
+      "refs": [
+        "M2"
+      ],
+      "nets": [
+        "unconnected-(M2-Pad1)"
+      ],
+      "sr_text": "M2.1 -> unconnected-(M2-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "源图p1右上M2=MLAB_MECHANICAL:HOLE/MountingHole_3mm，唯一触点显式NC；XML/db均M2.1在独立伪网。输入型是机械库属性，不存在需内部上下拉的IC输入。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/board_scans.py:floating_inputs; scripts/parse_kicad.py:parse",
+        "what": "先按真实器件语义识别非电气安装孔，再忽略其无功能名/输入类型；普通IC的NC输入仍照常问。依据本板p1 HOLE+NC和NET-A07本身的功能输入判据。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F03",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "CANDIDATE",
+      "refs": [
+        "M3"
+      ],
+      "nets": [
+        "unconnected-(M3-Pad1)"
+      ],
+      "sr_text": "M3.1 -> unconnected-(M3-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "源图p1右上M3=MLAB_MECHANICAL:HOLE/MountingHole_3mm，唯一触点显式NC；XML/db均M3.1在独立伪网。输入型是机械库属性，不存在需内部上下拉的IC输入。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/board_scans.py:floating_inputs; scripts/parse_kicad.py:parse",
+        "what": "先按真实器件语义识别非电气安装孔，再忽略其无功能名/输入类型；普通IC的NC输入仍照常问。依据本板p1 HOLE+NC和NET-A07本身的功能输入判据。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F04",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "CANDIDATE",
+      "refs": [
+        "M4"
+      ],
+      "nets": [
+        "unconnected-(M4-Pad1)"
+      ],
+      "sr_text": "M4.1 -> unconnected-(M4-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "源图p1右上M4=MLAB_MECHANICAL:HOLE/MountingHole_3mm，唯一触点显式NC；XML/db均M4.1在独立伪网。输入型是机械库属性，不存在需内部上下拉的IC输入。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/board_scans.py:floating_inputs; scripts/parse_kicad.py:parse",
+        "what": "先按真实器件语义识别非电气安装孔，再忽略其无功能名/输入类型；普通IC的NC输入仍照常问。依据本板p1 HOLE+NC和NET-A07本身的功能输入判据。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F05",
+      "sr_rule": "DEV-D01",
+      "criteria": [],
+      "severity": "DIAGNOSTIC",
+      "refs": [
+        "M1",
+        "M2",
+        "M3",
+        "M4"
+      ],
+      "nets": [],
+      "sr_text": "HOLE refs=M1,M2,M3,M4：FETCH_DATASHEET_ONLINE / unverified-device-pinout",
+      "verdict": "false_alarm",
+      "evidence": "四孔均无源工作网络，1脚是安装孔占位。audit把HOLE纳入required material并要求IC完整脚表，进而PWR-D01/strict残留阻断；真正U1八脚已由ST DS6991 p3核过。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify; scripts/device_kinds.py:KINDS; scripts/audit_datasheets.py:build_datasheet_audit",
+        "what": "建立可有据排除的非电气/机械角色，保留源库NC；strict自检和资料审计共享该分类，不把所有M前缀忽略。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F06",
+      "sr_rule": "SIG-D13",
+      "criteria": [],
+      "severity": "PLAN",
+      "refs": [
+        "M1",
+        "M2",
+        "M3",
+        "M4"
+      ],
+      "nets": [],
+      "sr_text": "SYS-PINMAP：主控 M1、M2、M3、M4 的引脚复用与平台约束",
+      "verdict": "false_alarm",
+      "evidence": "plan FN-SYS-PINMAP仅含四孔；本板唯一电气IC为SPV1040电源芯片，没有处理器/可配置IO。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_system.py:plan_system; scripts/part_words.py:classify",
+        "what": "主控应以已核MCU/处理器角色或充分引脚证据触发，不凭M位号/unknown IC建pinmux框架；保留真正未知有源器件的分类待办。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F07",
+      "sr_rule": "PWR-T01",
+      "criteria": [],
+      "severity": "MODEL",
+      "refs": [
+        "U1",
+        "L1",
+        "C1",
+        "D1"
+      ],
+      "nets": [
+        "/PV+",
+        "Net-(D1-A)",
+        "Net-(D1-K)"
+      ],
+      "sr_text": "/PV+ source=U1.3 via L1；候选 output=/PV+，C1 role=output_capacitor",
+      "verdict": "false_alarm",
+      "evidence": "ST DS6991 p2 Fig2与本板p1表明J1→PV+→L1→LX是升压输入；U1.4和D1.K才是输出，C1是输入47uF。当前电源树和FN问题把输入反当输出，并漏在SYS-POWER列真实输出预算。已有PWR-C04仍问U1，故不夸成整轮Cout漏查。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/powertree.py:PowerTree._search/_via_storage_inductor; scripts/circuit_candidates.py:Generator",
+        "what": "先区分buck/boost或保留不确定方向；有官方LX/VOUT角色及整流路径时按boost识别输入/输出。保留输入47uF与输出57.1uF/负载侧47uF边界；加buck/boost对照变异。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F08",
+      "sr_rule": "ANA-T01",
+      "criteria": [],
+      "severity": "MODEL",
+      "refs": [
+        "R6",
+        "C7",
+        "D2",
+        "U1"
+      ],
+      "nets": [
+        "Net-(C7-Pad1)",
+        "Net-(D1-K)"
+      ],
+      "sr_text": "合法 add 决定后 OUTPUT-SENSE/OUTPUT-CLAMP 的 nets 与 anchors 为空；ANALOG只问1/7",
+      "verdict": "false_alarm",
+      "evidence": "intent.circuit_decisions逐成员via给真实网，circuit_decisions.py add却以[] nets/无anchor创建。R6是U1.6/.7的0.47Ω电流采样，经R4/R5两端滤波，AN3319 p17 Fig12吻合；已有ANA-T01路径补问而ANA-C01/C03等不具ADC机制应排除，不能强套ADC。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_decisions.py:derive (add branch); scripts/plan_circuits.py:subject_precondition",
+        "what": "从合法via/db恢复add成员网络和可引用的邻接官方脚，保持owned唯一；按具体机制区分集成电流反馈与ADC，而不是为消misfit手填circuits。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F09",
+      "sr_rule": "PRO-C07",
+      "criteria": [],
+      "severity": "PLAN",
+      "refs": [
+        "D2"
+      ],
+      "nets": [
+        "Net-(D1-K)",
+        "GND"
+      ],
+      "sr_text": "PRO-C07.OUTPUT-CLAMP.D2：eFuse 条件与行为",
+      "verdict": "false_alarm",
+      "evidence": "电路仅D2单向被动TVS，source28件无eFuse/负载开关；不能对其问集成开关短路、主动放电。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py:SUBJECT_REQUIRES; scripts/plan_circuits.py:subject_precondition",
+        "what": "PRO-C07须有已核eFuse/集成保护通路机制；纯TVS保留PRO-E02/防护协调，不套eFuse。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F10",
+      "sr_rule": "PRO-C08",
+      "criteria": [],
+      "severity": "PLAN",
+      "refs": [
+        "D2"
+      ],
+      "nets": [
+        "Net-(D1-K)",
+        "GND"
+      ],
+      "sr_text": "PRO-C08.OUTPUT-CLAMP.D2：熔断器与 PPTC 逐颗核算",
+      "verdict": "false_alarm",
+      "evidence": "全板无熔断器/PTC，D2是TVS；要求补PPTC Ihold/Itrip无对象。源侧缺保护合同已由J1/J4的PRO-C04问到，不从NA推源侧已合格。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py:SUBJECT_REQUIRES; scripts/plan_circuits.py:subject_precondition",
+        "what": "熔断器逐件规则只在真实fuse/PTC出现时展开；FUSE_PART机制不要被任意保护件代替。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F11",
+      "sr_rule": "DOC-D01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "R2"
+      ],
+      "nets": [
+        "Net-(U1-MPP-SET)",
+        "GND"
+      ],
+      "sr_text": "R2 没有给出阻值或明确不贴状态",
+      "verdict": "true_defect",
+      "evidence": "source-bom.csv Individual/Collated R2与当前原理图/网表均Value=\"-\"；R2.1到MPP-SET、R2.2到GND，没有明确DNP记录。未定义不是物理开路的证据。源图p1；ST DS6991 p3 pin1不能浮空，AN3319 p14分压决定输入采样。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-UNRESOLVED-RESISTOR",
+        "mutation": "在已知R1/下拉分压支路上将R2.value/original_value及BOM Value改为\"-\"，保留已贴装或未知状态且不设置DNP；期望数据缺陷，不能自动断路。",
+        "target_rule": "DOC-D01"
+      }
+    },
+    {
+      "id": "F12",
+      "sr_rule": "DEV-D01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D2"
+      ],
+      "nets": [
+        "Net-(D1-K)",
+        "GND"
+      ],
+      "sr_text": "D2 料号与指定封装不配套",
+      "verdict": "true_defect",
+      "evidence": "D2 Value=SMBJ5.0A、Footprint=Diode_SMD:D_SMA在源BOM与当前图一致；Vishay88392 Rev09-Jan-2024 p1/p5和Bourns SMBJ p1/p4均为SMB/DO-214AA，SMA=DO-214AC。确认的是料号/封装数据不配套，不判当前PCB焊盘实物。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-PACKAGE-IDENTITY-MISMATCH",
+        "mutation": "固定SMBJ5.0A厂家/完整型号合同与SMB封装要求，将parts.D2.jedec及BOM Footprint改D_SMA，拓扑/数值不变；应定位资料不配套。",
+        "target_rule": "DEV-D01"
+      }
+    },
+    {
+      "id": "F13",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "DEPENDENCY",
+      "refs": [
+        "D1"
+      ],
+      "nets": [
+        "Net-(D1-A)",
+        "Net-(D1-K)"
+      ],
+      "sr_text": "D1 15MQ040N 的准确旧型号额定/曲线未取得",
+      "verdict": "knowledge_gap",
+      "evidence": "已从HardwareWiki find_parts --mpn查无15MQ040N，联网Vishay结果为VS-15MQ040-M3后继料，未将其当原件；D1两端差集按快速通道已判PASS，不为差集索取手册。AN3319 p18需IF>=ILmax与VF边界，未用另型号曲线充原件。",
+      "proposed_fix": {
+        "owner": "datasheet",
+        "where": "datasheets-to-collect:15MQ040N / HardwareWiki raw datasheet",
+        "what": "补原始15MQ040N厂家版本及封装/IF/VF/反向特性；按受控替代料分支审后继型号，区分库存身份与旧料。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F14",
+      "sr_rule": "PWR-C03",
+      "criteria": [],
+      "severity": "DEPENDENCY",
+      "refs": [
+        "L1"
+      ],
+      "nets": [
+        "/PV+",
+        "Net-(D1-A)"
+      ],
+      "sr_text": "L1 已取得 FERROCORE DE 表，但饱和及高温额定定义仍不足",
+      "verdict": "knowledge_gap",
+      "evidence": "固定源doc/pdf/coil.pdf完整2页原厂FERROCORE表已读并渲染p2：DE1205/10uH行DCR0.025Ω、IDC4.00A，±20%；原文DCR & IDC listed are all Max. Value保持原样。手册未说明IDC基于饱和ΔL还是温升，也未给全温曲线，不能把IDC4A直接当Isat保证。AN3319 p15要求峰流/饱和资格，DS6991峰限1.5..1.8A；TME在线PDF下载403，已读取固定源随板同原厂版本。",
+      "proposed_fix": {
+        "owner": "datasheet",
+        "where": "datasheets-to-collect:DE1205-10",
+        "what": "保留已取得FERROCORE两页原表；只补IDC测试定义、饱和ΔL/温度保证及适用电流包络，不再索取已知10uH/4A/25mΩ。必要时选有明确Isat保证的受控型号。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F15",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032"
+      ],
+      "severity": "needs_human",
+      "refs": [
+        "D2",
+        "U1",
+        "J4"
+      ],
+      "nets": [
+        "Net-(D1-K)",
+        "Net-(C7-Pad1)"
+      ],
+      "sr_text": "D2 的击穿起点高于 U1 绝限；无电池轻载启动的适用性需确认",
+      "verdict": "needs_human",
+      "evidence": "U1.4绝限5.5V（DS6991 p4）；SMBJ5.0A VBRmin6.4V（Vishay88392 p2/Bourns SMBJ p2），下界已高0.9V，VCmax9.2V是指定额定脉冲不是本板波形。AN3319 p17要求非电池/IMP>0.5A轻载接入VCL<=5.5V；源示例Impp2.1A满足电流前提，但J4是否限定常接电池/允许空载未锁。该族保护能力偏离已证，实际场景缺口不伪装为硬件实测损坏。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F16",
+      "sr_rule": "PWR-D04",
+      "criteria": [
+        "G03-018",
+        "G03-019"
+      ],
+      "severity": "needs_human",
+      "refs": [
+        "J1",
+        "U1",
+        "R1",
+        "R2",
+        "L1"
+      ],
+      "nets": [
+        "/PV+",
+        "Net-(U1-MPP-SET)"
+      ],
+      "sr_text": "PV 示例参数不能替代全温输入与采能要求",
+      "verdict": "needs_human",
+      "evidence": "原图p1例Voc2.5V/Isc2.3A/Vmpp2.1V/Impp2.1A/Pm4.4Wp；U1峰流上限1.8A已小于2.1A，不能在此点持续采满MPP；R6另限约0.106A输出。但充电限流可能为有意取舍，缺受控采能目标，不能当已证性能缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F17",
+      "sr_rule": "DEV-D03",
+      "criteria": [],
+      "severity": "needs_human",
+      "refs": [
+        "J4",
+        "U1",
+        "R6",
+        "R7",
+        "R8"
+      ],
+      "nets": [
+        "Net-(C7-Pad1)"
+      ],
+      "sr_text": "J4 储能类型、允许电压与充电策略未定义",
+      "verdict": "needs_human",
+      "evidence": "J4.3/.4正输出，1/2/5/6回GND；Vnom=1.25*(1+560/270)=3.84259V；R6=0.47Ω和40..60mV给约85.1..127.7mA（不含阻值公差）。无电池化学体系/充电终止/保护/BMS定义，不把SPV1040称为某电芯完整充电器。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F18",
+      "sr_rule": "PWR-C26",
+      "criteria": [
+        "G03-037",
+        "G05-054"
+      ],
+      "severity": "needs_human",
+      "refs": [
+        "J1",
+        "J2",
+        "C1",
+        "U1"
+      ],
+      "nets": [
+        "/PV+",
+        "GND"
+      ],
+      "sr_text": "IC 的光伏反接保护不能覆盖输入极性 C1",
+      "verdict": "needs_human",
+      "evidence": "C1是47uF/16V极性钽电容图符，正端直PV+、负端GND，反接示例可直接施加约-2.5V。DS6991 p9 §6.10只说明IC保护。未给连接器防呆/允许反接窗口和C1准确反压规格，保留条件风险；正常正接极性没有画反。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F19",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G04-005",
+        "G04-007",
+        "G04-009",
+        "G04-010"
+      ],
+      "severity": "needs_human",
+      "refs": [
+        "J3",
+        "R1",
+        "R2",
+        "R3",
+        "U1"
+      ],
+      "nets": [
+        "Net-(U1-XSHUT)",
+        "Net-(U1-MPP-SET)"
+      ],
+      "sr_text": "J3 外控方式和掉电电平尚未锁定",
+      "verdict": "needs_human",
+      "evidence": "J3.1直U1.8并经R3=0R到MPP-SET；AN3319 p18允许该0R自使能、外控应移除0R。DS p4 XSHUT上界VOUT而非任意5V逻辑，p6门限0.34V上升max。缺外端高/低电平、高阻、供电顺序及R2值；SIG-C08原计划已存在，不报成此项整轮漏问。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F20",
+      "sr_rule": "PWR-C04",
+      "criteria": [
+        "G03-003",
+        "G03-004",
+        "G03-038"
+      ],
+      "severity": "needs_human",
+      "refs": [
+        "C1",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "U1"
+      ],
+      "nets": [
+        "/PV+",
+        "Net-(D1-K)",
+        "Net-(C7-Pad1)"
+      ],
+      "sr_text": "名义电容与近似反馈时间常数还不能证明输出纹波和动态",
+      "verdict": "needs_human",
+      "evidence": "U1.4直接0.1+10+47=57.1uF，C7=47uF在R6另一侧；AN3319 pp14–16按Isc/fs/允许纹波选容，不给固定LDO ESR窗。Vref+5%阻值假设Vout3.45185..4.28012V并非采购保证；C8 tau约182us对手册经验100us不能硬判缺陷；允许纹波/Ceff/全温采购窗未定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F21",
+      "sr_rule": "PRO-C04",
+      "criteria": [
+        "G05-019",
+        "G05-022",
+        "G05-025"
+      ],
+      "severity": "needs_human",
+      "refs": [
+        "J1",
+        "J4",
+        "L1",
+        "D1",
+        "R6",
+        "U1"
+      ],
+      "nets": [
+        "/PV+",
+        "Net-(D1-A)",
+        "Net-(D1-K)",
+        "Net-(C7-Pad1)"
+      ],
+      "sr_text": "输出短路的无源直通路径尚无源侧保护合同",
+      "verdict": "needs_human",
+      "evidence": "J1→L1→D1→R6→J4短路路径无需U1低侧PWM导通；U1 peakOCP关PWM不能切断D1。若J4接电池还需其BMS/熔断器边界。缺源阻抗/故障时长/线束额定；计划已有J1.1、J4.3/.4和OUTPUT-CLAMP的PRO-C04，因此本轮不报源侧保护规则漏问。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F22",
+      "sr_rule": "PWR-C05",
+      "criteria": [
+        "G03-032"
+      ],
+      "severity": "needs_human",
+      "refs": [
+        "J4",
+        "R6",
+        "C6",
+        "C7",
+        "U1",
+        "D1"
+      ],
+      "nets": [
+        "Net-(D1-K)",
+        "Net-(C7-Pad1)"
+      ],
+      "sr_text": "J4 外接储能、暗光和预偏置时反向能量尚未定界",
+      "verdict": "needs_human",
+      "evidence": "J4正网经R6直达U1.4；DS p8 §6.1从输出供电/p9暗光UVLO与反接保护不是任意外部储能的Ireverse保证。D1阴极朝VOUT只保证其自身方向，不涵盖同步开关或其它引脚路径。PWR-C05已问，缺真实电池/外部电源状态。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F23",
+      "sr_rule": "DEV-C05",
+      "criteria": [],
+      "severity": "needs_human",
+      "refs": [
+        "U1",
+        "L1",
+        "C1",
+        "C6",
+        "C7"
+      ],
+      "nets": [
+        "/PV+",
+        "Net-(D1-K)",
+        "Net-(C7-Pad1)"
+      ],
+      "sr_text": "环境、任务剖面和损耗上界尚未提供",
+      "verdict": "needs_human",
+      "evidence": "DS6991 p4 Tj工作-40..125°C、RthJA135°C/W有指定2层板条件；p6示例3W依赖Ta85°C/效率90%，不当本板保证；过温155°C不是允许连续温度。没有受控负载/环境/寿命，不虚构热验收；实际PCB温升另做后续验证。",
+      "proposed_fix": null,
+      "seed": null
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G04-010",
+      "sr_rule": "RST-T04",
+      "refs": [
+        "U1",
+        "J3",
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "nets": [
+        "Net-(U1-XSHUT)",
+        "Net-(U1-MPP-SET)"
+      ],
+      "why_expected": "U1的使能是关键启动控制，自动计划没有RST-T04；已通过intent.rule_gaps补1项，属于计划漏问而非已证硬件默认态失败。",
+      "evidence": "SPV1040 DS6991 Rev9 p3 pin8不能悬空、p6门限，AN3319 Rev7 p18的0R自使能/去0R外控；实际J3直8脚并经0R到1脚。STARTUP候选和START_NAME_RE均未识别XSHUT。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:START_NAME_RE; scripts/checkers/power_up.py; scripts/circuit_candidates.py:Generator",
+        "what": "以官方XSHUT等使能角色/别名触发默认态专问；保留R3自使能合法正例，变异断开R3且去其它偏置再测试。"
+      },
+      "seed": {
+        "kind": "D-XSHUT-DEFAULT-FLOAT",
+        "mutation": "构造受控合成分支（不是原板指控）：正例R2明确DNP、R3=0R，PV有效且J3外端明确高阻；变异仅将R3装配改DNP，使U1.8仅连高阻J3、无任何偏置。按DS p3 pin8不可浮空，期望默认态问题；保持nets/pin2net及population一致。",
+        "target_rule": "RST-T04"
+      }
+    },
+    {
+      "id": "M02",
+      "criterion": "G03-018",
+      "criteria": [
+        "G03-018",
+        "G03-019"
+      ],
+      "sr_rule": "PWR-C06",
+      "refs": [
+        "U1",
+        "R1",
+        "R2",
+        "R6"
+      ],
+      "nets": [
+        "/PV+",
+        "Net-(U1-MPP-SET)",
+        "Net-(U1-ICTRL+)",
+        "Net-(U1-ICTRL-)"
+      ],
+      "why_expected": "U1自带MPP-SET UVLO及ICTRL限流；转换器候选因PROTECTION_PART前提没满足而未展开自己的PWR-C06。D2的同规则不覆盖U1门限。已以rule_gaps补1项，非认定原板UVLO设计错误。",
+      "evidence": "DS6991 pp5–6 VUVLO与40..60mV；AN3319 pp14/17；源R2=-使分压未知、R6=0.47Ω。原计划PWR-C06只属于OUTPUT-CLAMP，POWER_CONVERTER-U1.not_asked因无保护器件跳过。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py:SUBJECT_REQUIRES[(POWER_CONVERTER,PWR-C06)]; scripts/plan_circuits.py:subject_precondition PROTECTION_PART",
+        "what": "已核电源控制器的UVLO/输入采样/输出限流脚也是保护机制，纳入MPP-SET/ICTRL官方角色；只问适用阈值，不把纯TVS代替有源门限。"
+      },
+      "seed": {
+        "kind": "D-MPPSET-UVLO-DIVIDER",
+        "mutation": "构造受控合成分支：VOUT外部预偏置3.3V（匹配DS p5测试条件），PV=2.1..2.5V；R3明确DNP、J3明确外部使能0.5V，正例R2明确DNP使MPP-SET经R1采PV。变异R2为已贴0R，使U1.1=GND=0V，低于UVLO关断最小0.14V而不启动；同步更新Value/BOM/parsed值及装配。此种子检验漏掉的U1 PWR-C06，不代表原板R2实际为0R。",
+        "target_rule": "PWR-C06"
+      }
+    }
+  ],
+  "summary": {
+    "true_defect": 2,
+    "false_alarm": 10,
+    "criterion_issue": 0,
+    "knowledge_gap": 2,
+    "needs_human": 9,
+    "misses": 2
+  }
+}
