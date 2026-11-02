@@ -1,0 +1,15 @@
+{
+ "revision": "boards-merge2a-v1",
+ "parents": {
+  "revisions/boards-merge1-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge1-v1/expected.json": "b013a3e9eb5df95cc4ea827fd0449fb2df6adcf2e274410011ad3e0b9d3849f7",
+  "revisions/boards-merge1-v1/manifest.json": "536578691b0f26f1c0ca0d92c2c90e496a6cb88e012aaa0747e0cd2a3041ac7b",
+  "revisions/boards-merge1-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480"
+ },
+ "derived_files": {
+  "revisions/boards-merge2a-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge2a-v1/expected.json": "71cefa7b7e33c4467afa6841101e1fd502f1f74981dffa6a4e6f994386b63450",
+  "revisions/boards-merge2a-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480"
+ },
+ "scope": "合并2A：没有输入滤波器不生成PWR-E03/C11，仅rf2检查数97→95；原XML、输入、脚表、历史约定不改，真实SW驱动变压器的DRV覆盖保留。"
+}

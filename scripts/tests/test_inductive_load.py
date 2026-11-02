@@ -532,10 +532,11 @@ class CommonModeInputFilterTest(unittest.TestCase):
     def load(self, db, intent):
         return loads_of(build_inventory(db, intent), 'run')['L1']
 
-    def test_name_alone_is_not_a_scope_exemption(self):
-        load = loads_of(build_inventory(self.board()))['L1']
-        self.assertIn('pin-roles:L1', load['gaps'])
-        self.assertNotEqual(load.get('applicability'), 'NOT_APPLICABLE')
+    def test_passive_choke_without_energy_switch_is_not_a_coil_clamp_object(self):
+        db = self.board()
+        self.assertEqual(loads_of(build_inventory(db)), {})
+        plan = build_review_plan(db)
+        self.assertTrue(any(x['rule'] == 'DEV-D02' and x['object'].get('ref') == 'L1' for x in plan['checks']))
 
     def test_controlled_map_produces_traceable_na_checks(self):
         db = self.board()
