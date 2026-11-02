@@ -5493,5 +5493,12 @@
   "file": "scripts/catalog.py",
   "old": "**{name: ('idle', 'active') for name in",
   "new": "**{name: () for name in"
+ },
+ {
+  "id": "M850",
+  "name": "passive crystal rows are hidden by functional ownership again",
+  "file": "scripts/plan_circuits.py",
+  "old": "['passive-crystal:' + ref])",
+  "new": "['passive-crystal:' + ref]) if False else None"
  }
 ]

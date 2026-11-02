@@ -9,7 +9,7 @@
  },
  "derived_files": {
   "revisions/boards-merge1-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
-  "revisions/boards-merge1-v1/expected.json": "63df86393dd31bf561afb02d50143efea5a8a8b7586a618823ffef6cf4692ebd",
+  "revisions/boards-merge1-v1/expected.json": "85e930c123e149199bd574638cf4e7a8baa7c4dfe162e591d329ccb566405d67",
   "revisions/boards-merge1-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3"
  },
  "scope": "合并步1：DNP后的真实贴装拓扑；历史字段/电气预期不改，只调整可解释的检查数。"

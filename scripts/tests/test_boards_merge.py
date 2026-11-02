@@ -94,3 +94,22 @@ def test_default_states_are_marked_unconfirmed_in_plan():
     planner.plan_subjects(catalog.CIRCUIT_TYPE_BY_NAME['UART'],[circuit],[])
     notes=[d for d in planner.diagnostics if d['code']=='DEFAULT_CIRCUIT_STATES']
     assert notes and all('未经需求确认' in d['detail'] for d in notes)
+
+
+def test_crystal_load_check_is_not_hidden_by_usb_ownership():
+    db=parse(netlist(comp('Y2','Device','Crystal','ABM8G-12.000MHZ-18-D2Y-T')
+                    +comp('U7','Device','IC','USB-controller'),
+                    net('XI',('Y2','1','','passive'),('U7','1','OSCI','input'))
+                    +net('XO',('Y2','2','','passive'),('U7','2','OSCO','output'))))
+    intent={'schema_version':5,'circuits':[{'id':'USB7','type':'USB','refs':['U7','Y2'],'owned':['U7','Y2'],
+             'nets':['XI','XO'],'states':['attached'],'citation':'synthetic netlist.xml p1', 'candidate_ids':['USB-U7']}]}
+    checks=build_review_plan(db,intent)['checks']
+    crystal=[c for c in checks if c['rule']=='CLK-C01' and c.get('object',{}).get('ref')=='Y2']
+    assert len(crystal)==1 and crystal[0]['owner']['id']=='USB7'
+    db['parts']['Y2']['nc']=True
+    assert not any(c['rule']=='CLK-C01' and c.get('object',{}).get('ref')=='Y2' for c in build_review_plan(db)['checks'])
+
+def test_active_oscillator_does_not_get_passive_load_check():
+    db=parse(netlist(comp('Y1','Oscillator','Oscillator','MEMS-CLOCK'),
+                    net('CLK',('Y1','1','OUT','output'))+net('VDD',('Y1','2','VDD','power_in'))))
+    assert not any(c['rule']=='CLK-C01' and c.get('object',{}).get('ref')=='Y1' for c in build_review_plan(db)['checks'])
