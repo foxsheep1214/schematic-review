@@ -9,6 +9,14 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 100 块真实开源板目录、固定版本取板与四路分流 (2026-11-02)
+
+搜索 2517 个去重仓库，完成 716 个筛查、235 个实际取板，190 项通过导出/解析/器件数技术门槛，其中 2 项在许可证终核排除；精选 100 个独立仓库，排除 seeded corpus 的同仓库来源。目录只收现代 KiCad、允许的明确许可证及 ≥15 器件的真实板项目，登记固定默认分支 HEAD、根图、源哈希、许可证证据、23 类词表标签及用途（同用途最多 4 块）。标准库取板工具浅拉取、稀疏检出层次源文件并实际导出 kicadxml/解析 db，strict 失败记录日志再回退；最终正式 catalog 全量重放 100/100，56 strict、44 no-strict。四路各 25 块，按类型及器件数平衡；没有启动逐板 SR，也没有改变检查器、共用准则或 seeded corpus。
+
+- Event: user:2026-11-02 (再多找一些板子，比如找100块，在codex里面运行4个对话分别分批来跑)
+- Causes: knowledge_missing 1
+- Changed: evals/boards/README.md, evals/boards/catalog.json, evals/boards/discovery.json, evals/boards/verification.json, evals/boards/_tools/fetch_board.py, evals/boards/_tools/run_lane.sh, evals/boards/_tools/board-prompt.md, evals/boards/_lanes/lane-1.json, evals/boards/_lanes/lane-2.json, evals/boards/_lanes/lane-3.json, evals/boards/_lanes/lane-4.json, scripts/tests/test_boards_tools.py, docs/improvement-ledger.md
+- Gates: pytest 2429 passed, 1 failed, 2 skipped; boards tools 15 passed; catalog replay 100/100; check_ledger PASS. Baseline external ASG shared-layer mismatch (ASG 1.5.0 vs this SR 1.4.1) is outside the authorized references scope and is not suppressed.
 
 ## 工业/通信板卡设计准则 Top 50：正反例与种子实测 (2026-11-02)
 
