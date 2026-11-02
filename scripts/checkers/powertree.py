@@ -205,7 +205,9 @@ class PowerTree:
                         queue.append((other, path + [ref]))
                     continue
                 resistor = parse_resistor(part.get('value')) if re.match(r'^R\d', ref) else None
-                if SERIES_REF_RE.match(ref) or (resistor and resistor['kohm'] == 0):
+                if (SERIES_REF_RE.match(ref) or graph.kind(ref) in {pw.INDUCTOR, pw.FERRITE, pw.FUSE}
+                        or re.search(r'(?:^|:)NetTie(?:_|$)', str(part.get('prim', '')), re.I)
+                        or (resistor and 0 <= resistor['kohm'] <= 0.001)):
                     queue.append((other, path + [ref]))
                 elif self.feed and (graph.kind(ref) in {pw.SWITCH, pw.FUSE, pw.FERRITE, pw.INDUCTOR, pw.JUMPER} | pw.SERIES_WINDINGS
                                     or (resistor and resistor['kohm'] <= FEED_RESISTOR_KOHM)):

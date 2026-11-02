@@ -875,6 +875,8 @@ def main():
 
     if a.json:
         json.dump({'findings': F,
+                   'power_paths': {net: path for net, path in lint.powertree._cache.items() if path},
+                   'feed_paths': {net: path for net, path in getattr(lint, '_feed_tree', lint.powertree)._cache.items() if path},
                    'skipped': [list(s) for s in lint.skipped],
                    'review_plan': review_plan,
                    'coverage': {

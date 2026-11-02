@@ -49,7 +49,7 @@ class V2Regressions(unittest.TestCase):
         db = network({'R1': {'value': '0.1R'}, 'FB1': {'value': 'FERRITE'}, 'U1': {'value': 'REG'}},
                      {'VDD_A': ['R1.1'], 'MID': ['R1.2', 'FB1.1'],
                       'SOURCE': ['FB1.2', 'U1.1']}, {'U1.1': 'VOUT'})
-        self.assertFalse(Lint(db).driven('VDD_A'))
+        self.assertTrue(Lint(db).driven('VDD_A'))  # <= 1 ohm fitted shunts carry DC (boards merge 1)
         intent = {'active_state': 'RUN', 'power_paths': [
             {'ref': 'R1', 'from': 'MID', 'to': 'VDD_A', 'state': 'RUN',
              'citation': 'Synthetic fitted 0.1 ohm sense resistor; conducting in RUN'}]}

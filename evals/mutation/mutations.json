@@ -5458,5 +5458,12 @@
   "file": "scripts/solve_dividers.py",
   "old": "    if packaged:\n",
   "new": "    if False:\n"
+ },
+ {
+  "id": "M845",
+  "name": "milliohm shunts interrupt supply provenance again",
+  "file": "scripts/checkers/powertree.py",
+  "old": "or (resistor and 0 <= resistor['kohm'] <= 0.001)",
+  "new": "or (resistor and resistor['kohm'] == 0)"
  }
 ]

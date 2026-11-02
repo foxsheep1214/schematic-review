@@ -24,3 +24,31 @@ def test_native_val_and_all_fields_retained():
     assert part['value_provenance']=={'field':'Val','raw':'0R01','method':'literal-RKM','ohm':.01}
     unknown=parse(xml.replace('0R01','undecided'))['parts']['R1']
     assert unknown['value']=='undecided' and unknown['value_provenance']['ohm'] is None
+
+from checkers.netgraph import NetGraph
+from checkers.powertree import PowerTree
+
+def supply_chain(resistance='0R01', dnp=False):
+    components=(comp('U1','Regulator_Linear','LDO','LDO')
+      + comp('R1','Device','R',resistance,properties='<property name="dnp"/>' if dnp else '')
+      + comp('L1','Device','L','1uH')+comp('F1','Device','Fuse','Fuse')
+      + comp('U2','Device','IC','IC'))
+    nets=(net('SOURCE',('U1','3','VOUT','power_out'),('R1','1','','passive'))
+      +net('MID',('R1','2','','passive'),('L1','1','','passive'))
+      +net('FUSED',('L1','2','','passive'),('F1','1','','passive'))
+      +net('VDD',('F1','2','','passive'),('U2','1','VDD','power_in')))
+    return parse(netlist(components,nets))
+
+@pytest.mark.parametrize('value',['0R','0R001','0R01','1R'])
+def test_supply_trace_crosses_small_resistors_and_keeps_refs(value):
+    found=PowerTree(NetGraph(supply_chain(value))).source_of('VDD')
+    assert found['source']=='U1.3'
+    assert found['path']==['R1','L1','F1']
+
+@pytest.mark.parametrize('value',['1R01','10R','unknown'])
+def test_supply_trace_does_not_assume_large_or_unknown_resistor_is_wire(value):
+    assert PowerTree(NetGraph(supply_chain(value))).source_of('VDD') is None
+
+def test_supply_trace_stops_at_unfitted_shunt():
+    assert PowerTree(NetGraph(supply_chain(dnp=True))).source_of('VDD') is None
+
