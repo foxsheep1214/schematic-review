@@ -12,6 +12,13 @@ from fractions import Fraction
 def parse_resistor(value, default_tol=None, exact=False):
     """解析 R/K/M、显式毫欧单位与公差；exact=True 保留十进制分数。"""
     raw = str(value or '').strip()
+    # Bounded library name, never a part-number substring. Keep the decode method.
+    packaged = re.fullmatch(r'R_([0-9]+(?:\.[0-9]+)?[RrKkMm](?:[0-9]+)?)(?:_[0-9]+(?:\.[0-9]+)?A)?_(01005|0201|0402|0603|0805|1206|1210|1812|2010|2512)', raw)
+    if packaged:
+        result = parse_resistor(packaged.group(1), default_tol=default_tol, exact=exact)
+        if result is not None:
+            result['method'] = 'packaged-RKM'
+        return result
     upper = raw.upper().replace('Ω', 'R')
     # Preserve the SI prefix's case before uppercasing: lowercase m is milli
     # (10mR, 10mohm, bare 10m, RKM 7m5 = 7.5 mOhm); uppercase M is mega (4M7).
@@ -49,6 +56,8 @@ def parse_resistor(value, default_tol=None, exact=False):
         unit = normal.group(2)
         end = normal.end()
     remainder = upper[end:]
+    if unit == 'M':
+        remainder = re.sub(r'^EG', '', remainder)   # SPICE-style 10Meg
     remainder = re.sub(r'^OHMS?', '', remainder)
     # Explicit trailing resistor package is metadata, not resistance/tolerance.
     # Reject all other suffixes through the existing full tolerance match.

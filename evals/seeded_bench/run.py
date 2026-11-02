@@ -50,13 +50,25 @@ def below_baseline(summary, baseline):
     return worse
 
 
-def lint(sut, db, work):
+def lint(sut, db, work, intent=None):
     dbp, lp, pp = work / 'db.json', work / 'lint.json', work / 'plan.json'
     dbp.write_text(json.dumps(db), encoding='utf-8')
     for p in (lp, pp):
         p.unlink(missing_ok=True)
+    extra = []
+    if intent is not None:
+        import copy
+        from board_intent import input_fingerprint
+        from plan_review import rail_candidates
+        bound = copy.deepcopy(intent)
+        for net in rail_candidates(db, bound):
+            bound.setdefault('power_rails', {}).setdefault(net, {'citation': 'SEED source topology; voltage unconfirmed'})
+        bound['input_sha256'] = input_fingerprint(db)
+        ip = work / 'intent.json'
+        ip.write_text(json.dumps(bound), encoding='utf-8')
+        extra = ['--intent', str(ip)]
     proc = subprocess.run([sys.executable, '-B', str(sut / 'scripts' / 'lint.py'), str(dbp),
-                           '--json', str(lp), '--plan-json', str(pp)],
+                           '--json', str(lp), '--plan-json', str(pp)] + extra,
                           capture_output=True, text=True, timeout=120)
     if not lp.exists():
         return None, None, proc.stderr[-400:]
@@ -81,16 +93,27 @@ def evaluate(sut, boards):
             seen = {(f['rule'], f['detail']) for f in base}
             baselines[board['id']] = {'findings': len(base),
                                       'by_rule': dict(sorted(_count(f['rule'] for f in base).items()))}
-            for m in mutators.mutations(db):
-                findings, checks, err = lint(sut, m.db, work)
+            source = mutators.board_mutations(db) if board.get('board_seeds_only') else mutators.mutations(db)
+            for m in source:
+                paired_seen = seen
+                if m.baseline is not None or m.intent is not None:
+                    paired, _, error = lint(sut, m.baseline if m.baseline is not None else db, work, m.intent)
+                    if paired is None:
+                        records.append({'board': board['id'], 'defect': m.defect, 'site': m.site, 'error': 'paired baseline: ' + str(error)})
+                        continue
+                    paired_seen = {(f['rule'], f['detail']) for f in paired}
+                findings, checks, err = lint(sut, m.db, work, m.intent)
                 rec = {'board': board['id'], 'defect': m.defect, 'site': m.site, 'note': m.note,
                        'targets': list(m.targets)}
+                if m.contract:
+                    rec['contract'] = m.contract
+                    rec['paired_baseline'] = m.baseline is not None
                 if findings is None:
                     rec['error'] = err
                     records.append(rec)
                     continue
                 tokens = m.refs + m.nets
-                new = [f for f in findings if (f['rule'], f['detail']) not in seen and located(f['detail'], tokens)]
+                new = [f for f in findings if (f['rule'], f['detail']) not in paired_seen and located(f['detail'], tokens)]
                 rec['auto'] = sorted({f['rule'] for f in new if f['rule'] in m.targets})
                 rec['other'] = sorted({f['rule'] for f in new if f['rule'] not in m.targets})
                 rec['pointed'] = sorted({c['rule'] for c in checks if 'board' not in c.get('object', {})
@@ -147,6 +170,7 @@ def main():
     ap.add_argument('--gate', type=Path, help='baseline.json: exit 1 if any defect type detects fewer sites')
     ap.add_argument('--sut', type=Path, default=HERE.parents[1], help='SR checkout under test')
     ap.add_argument('--out', type=Path, required=True)
+    ap.add_argument('--boards-cache', type=Path, help='append the four adjudicated boards, only their controlled pairs')
     ap.add_argument('--compare', type=Path, help='earlier results.json to show auto-detection deltas')
     args = ap.parse_args()
     if not args.offline and not args.cache:
@@ -155,6 +179,17 @@ def main():
     with tempfile.TemporaryDirectory(prefix='seeded-db-') as dbdir:
         boards = (offline_boards(dbdir) if args.offline
                   else json.loads((args.cache / 'manifest.json').read_text(encoding='utf-8')))
+        if args.boards_cache:
+            manifest = json.loads((HERE / 'boards-merge1.json').read_text(encoding='utf-8'))
+            from parse_kicad import build
+            from parse_netlist import integrity_problems
+            for item in manifest['boards']:
+                source = args.boards_cache / item['id'] / 'netlist.xml'
+                db = build(str(source))
+                db['integrity'] = {'self_check_passed': not integrity_problems(db)}
+                target = Path(dbdir) / (item['id'] + '.json')
+                target.write_text(json.dumps(db), encoding='utf-8')
+                boards.append({'id': item['id'], 'db': str(target), 'board_seeds_only': True})
         records, baselines = evaluate(args.sut.resolve(), boards)
     summary = summarize(records)
     compare = json.loads(args.compare.read_text(encoding='utf-8'))['summary'] if args.compare else None
@@ -169,7 +204,7 @@ def main():
         worse = below_baseline(summary, json.loads(args.gate.read_text(encoding='utf-8')))
         print('\n'.join(worse) or 'gate: no defect type below baseline')
         return 1 if worse else 0
-    return 0
+    return 1 if any('error' in row for row in records) or any('error' in row for row in baselines.values()) else 0
 
 
 if __name__ == '__main__':

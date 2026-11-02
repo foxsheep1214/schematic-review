@@ -88,7 +88,8 @@ ISOLATOR_RE = re.compile(r'ISOLAT|\bISO\d|ISOW|ADUM|SI8[46]\d|NSI\d|CA-IS|隔离
 # NET-A02：命名惯例里成对/成组出现的网名不是拼写分裂。
 NET_PAIR_TOKENS = [frozenset(p) for p in (
     ('RX', 'TX'), ('RXD', 'TXD'), ('RXP', 'TXP'), ('RXN', 'TXN'), ('MISO', 'MOSI'),
-    ('SDI', 'SDO'), ('DIN', 'DOUT'), ('SCL', 'SDA'), ('SCLK', 'SDATA'), ('CANH', 'CANL'),
+    ('SDI', 'SDO'), ('DIN', 'DOUT'), ('TDI', 'TDO'), ('BCLK', 'LRCLK'),
+    ('PS', 'PL'), ('FPD', 'LPD'), ('E', 'M'), ('LEDG', 'LEDY'), ('SCL', 'SDA'), ('SCLK', 'SDATA'), ('CANH', 'CANL'),
     # one transistor's terminals (VLDO_EN_G / VLDO_EN_S on a load switch, typical circuits 2026-10-26)
     ('G', 'S'), ('G', 'D'), ('D', 'S'), ('B', 'E'), ('B', 'C'), ('C', 'E'))]
 NET_VOLTAGE_TOKEN_RE = re.compile(r'^(\d+V\d*|V\d+|\d+\.\d+V)$', re.I)
@@ -113,7 +114,8 @@ def net_name_split(a, b):
     la, lb = a.rsplit('/', 1)[-1], b.rsplit('/', 1)[-1]
     if la == lb or difflib.SequenceMatcher(None, la, lb).ratio() <= 0.90:
         return False
-    if re.sub(r'\d+$', '', la) == re.sub(r'\d+$', '', lb):
+    if (re.sub(r'\d+$', '', la) == re.sub(r'\d+$', '', lb)
+            or re.sub(r'\d+', '#', la) == re.sub(r'\d+', '#', lb)):
         return False          # 仅差末位序号 -> 同族
     if re.sub(r'(_?[NP]|[+-])$', '', la) == re.sub(r'(_?[NP]|[+-])$', '', lb):
         return False          # 差分对
@@ -195,6 +197,12 @@ class Lint:
         analysis = board_intent.with_verified_kinds(self.intent, datasheet_audit)   # datasheet-verified kinds
         analysis_db = board_intent.graph_db(db, analysis)
         self.graph = NetGraph(analysis_db)
+        # Electrical scans see the installed board; the original db remains intact for assembly audit.
+        self.nets = {net: active for net, nodes in self.nets.items()
+                     if (active := [node for node in nodes if self.graph.is_fitted(node.partition('.')[0])])}
+        self.pin2net = {node: net for node, net in self.pin2net.items() if self.graph.is_fitted(node.partition('.')[0])}
+        self.pinname = {node: name for node, name in self.pinname.items() if self.graph.is_fitted(node.partition('.')[0])}
+        self.pintype = {node: kind for node, kind in self.pintype.items() if self.graph.is_fitted(node.partition('.')[0])}
         self.powertree = PowerTree(self.graph, self.intent)
         self.inventories = {checker.id: checker.build(analysis_db, analysis) for checker in REGISTRY}
 
@@ -258,11 +266,15 @@ class Lint:
 
     def pulls(self, net):
         pulls = []
+        if ng.is_rail(net) or net in declared_supply_nets(self.graph, self.intent):
+            return pulls  # a supply feed or sense shunt is not an EN bias
         for link in self.resistor_links(net):
+            if link['ohm'] is not None and link['ohm'] <= 1 and not ng.is_ground(link['other']):
+                continue
             other = link['other']
             if ng.is_ground(other):
                 pulls.append(dict(link, state='low', voltage=0.0))
-            elif RAIL_RE.match(other) or _volt(other) is not None:
+            elif self.powertree.is_rail(other) and not EN_RE.search(other):
                 pulls.append(dict(link, state='high', voltage=_volt(other)))
         return pulls
 
@@ -308,7 +320,7 @@ class Lint:
                 others.add(ref)
             if self.graph.kind(ref) == IC and self.graph.is_fitted(ref):
                 direct.append(f'{node}({self.graph.pinname.get(node) or "?"})')
-            elif self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2 and net in self.graph.nets_of(ref):
+            elif self.graph.is_fitted(ref) and self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2 and net in self.graph.nets_of(ref):
                 other = next(n for n in self.graph.nets_of(ref) if n != net)
                 for far in self.graph.nodes_on(other):
                     if self.graph.kind(far.partition('.')[0]) == IC and self.graph.is_fitted(far.partition('.')[0]):
@@ -319,6 +331,37 @@ class Lint:
         if behind:
             return f'IC 脚 {"、".join(sorted(behind))}（有串联阻抗，可按注入电流核）；' + rest
         return '同网没有 IC 脚；' + rest
+
+    def _wired_open_drain(self, node):
+        """Exact-family flag pin policies, not an exemption for every output on these parts."""
+        ref, _, pin = node.partition('.')
+        model = str(self.parts.get(ref, {}).get('part', ''))
+        names = pw.pin_aliases(self.pinname.get(node), pin)
+        return ((re.fullmatch(r'AP22615[A-Z0-9/-]*', model, re.I)
+                 and any(re.fullmatch(r'FLG|FLAG', name) for name in names))
+                or (re.fullmatch(r'SIC437[A-Z0-9/-]*', model, re.I)
+                    and any(re.fullmatch(r'PG|PGOOD', name) for name in names)))
+
+    def _unknown_supply_path(self, net):
+        """A possible supply through unreadable fitted resistors is unresolved, never an open or a short."""
+        queue, seen = [(net, [], [])], set()
+        while queue:
+            current, via, unknown = queue.pop(0)
+            if current in seen or ng.is_ground(current) or current in self.pseudo:
+                continue
+            seen.add(current)
+            source = self.power_path(current)
+            if unknown and source:
+                return {'source': source['source'], 'path': source['path'] + list(reversed(via)),
+                        'unknown_resistors': unknown}
+            for ref, other in self.graph.neighbors(current):
+                kind = self.graph.kind(ref)
+                value = parse_resistor(self.parts.get(ref, {}).get('value')) if kind == pw.RESISTOR else None
+                if kind == pw.RESISTOR and (value is None or value['kohm'] <= .001):
+                    queue.append((other, via + [ref], unknown + ([ref] if value is None else [])))
+                elif kind in (pw.INDUCTOR, pw.FERRITE, pw.FUSE):
+                    queue.append((other, via + [ref], unknown))
+        return None
 
     def _resistor_fed(self, net):
         """A two-terminal resistor on the net whose other end is driven or fed from off board (R6 acceptance
@@ -454,9 +497,13 @@ class Lint:
                 continue
             detail = (f'{"/".join(sorted(island))} {nodes[:8]} 经已装配直流连接件到不了主地 '
                       f'{"/".join(sorted(main))}；孤岛上 IC 地脚 {pins[:6]}，无连接器、无已知隔离器件')
-            if cross:
+            conditional = sorted({ref for ref in refs if g.kind(ref) in (pw.DIODE, pw.BRIDGE_RECTIFIER)
+                                  and len(g.nets_of(ref)) >= 2}
+                                 | {ref for ref in refs if g.kind(ref) not in TWO_TERMINAL
+                                    and any(net in parent and net not in island for net in g.nets_of(ref))})
+            if cross or conditional:
                 self.add('PWR-A03', '地名网孤岛（经多端器件跨接，待核片内连通）',
-                         detail + f'；{cross} 另有脚在主地，按手册核片内是否连通、外部是否必须相连',
+                         detail + f'；跨域器件 {cross}、条件返回器件 {conditional}：按引脚表和导通条件核回流，不要求跨隔离短接',
                          pins[0].split('.')[0], kind='CANDIDATE')
             else:
                 self.add('PWR-A03', '地名网孤岛（IC 地脚到不了主地）', detail, pins[0].split('.')[0])
@@ -500,6 +547,11 @@ class Lint:
                 continue
             if KICAD_AUTO_NET_RE.search(a) or KICAD_AUTO_NET_RE.search(b):
                 continue
+            if self.graph.between(a, b, {pw.RESISTOR, pw.INDUCTOR, pw.FERRITE, pw.JUMPER}, fitted_only=False):
+                continue  # explicitly drawn series/assembly option, including DNP, defines different nets
+            base = a[:-3] if a.endswith('_IN') else b[:-3] if b.endswith('_IN') else None
+            if base and {a, b} == {base + '_IN', base + '_N'} and base + '_P' in nets:
+                continue  # single-ended input beside an existing differential P/N pair
             self.add('NET-A02', '疑似网络名分裂',
                      f'{a}({len(nets[a])}节点) <-> {b}({len(nets[b])}节点)')
 
@@ -524,6 +576,10 @@ class Lint:
                 if entry:
                     self.add('PWR-A01', '电源轨只经连接器进板',
                              f'{n}: 板上无来源，经 {entry[:4]} 由外部供电；输入保护按 PRO 规则另核', kind='INFO')
+                elif uncertain := self._unknown_supply_path(n):
+                    self.add('PWR-A01', '供电路径阻值未明',
+                             f'{n}: 可能经 {uncertain["path"]} 接到 {uncertain["source"]}；未知阻值 {uncertain["unknown_resistors"]}，不判断路',
+                             kind='CANDIDATE', source_trace=uncertain)
                 else:
                     self.add('PWR-A01', '电源轨疑似无驱动',
                              f'{n} ({len(nds)}节点): {sorted(self.refs_of(n))[:6]}')
@@ -533,7 +589,7 @@ class Lint:
         for node in sorted(set(pinname) | {k for k, t in native.items() if t == 'power_in'}):
             pn = pinname.get(node, '')
             ref = node.split('.')[0]
-            if self.graph.kind(ref) in (CONNECTOR, pw.TESTPOINT):
+            if not self.graph.is_fitted(ref) or self.graph.kind(ref) in (CONNECTOR, pw.TESTPOINT):
                 continue
             if not (SUPPLY_PIN_RE.match(pn) or native.get(node) == 'power_in') or BOOTSTRAP_PIN_RE.match(pn):
                 continue
@@ -565,13 +621,23 @@ class Lint:
                              ref, kind='CANDIDATE')
                 elif not entry and not (STARTUP_PIN_RE.match(pn or '') and self._resistor_fed(n)):
                     # a high-voltage start-up pin is fed through its start-up resistor by design, whatever its value
-                    self.add('PWR-A02', '电源球所在轨无驱动', f'{node} ({pn}) <- {n}', ref)
+                    uncertain = self._unknown_supply_path(n)
+                    if uncertain:
+                        self.add('PWR-A02', '供电路径阻值未明',
+                                 f'{node} ({pn}) <- {n}: 未知阻值 {uncertain["unknown_resistors"]}，可能来源 {uncertain["source"]}，不判断路',
+                                 ref, kind='CANDIDATE', source_trace=uncertain)
+                    else:
+                        self.add('PWR-A02', '电源球所在轨无驱动', f'{node} ({pn}) <- {n}', ref)
 
         # PWR-A03 地脚未入地
         for node, pn in pinname.items():
             if re.match(r'^(VSS|AVSS|DVSS)', pn, re.I):
                 n = pin2net.get(node)
-                if not ng.is_ground(n):
+                ref = node.partition('.')[0]
+                model = str(self.parts.get(ref, {}).get('part', ''))
+                pd_return = (re.fullmatch(r'TPS237[28][A-Z0-9/-]*', model, re.I) and _ground_like(n)
+                             and bool(self.graph.named_pins(ref, re.compile(r'^RTN$', re.I))))
+                if not ng.is_ground(n) and not pd_return:
                     self.add('PWR-A03', 'VSS 球未入地',
                              f'{node} ({pn}) <- {n}', node.split('.')[0])
         self._ground_islands()
@@ -592,8 +658,16 @@ class Lint:
                     continue
                 typed = [(node, _pin_class(self.pintype.get(node)))
                          for node in nodes if node in self.pintype]
-                outputs = [node for node, kind in typed if kind == 'OUT']
-                if len(outputs) > 1:
+                outputs = [node for node, kind in typed if kind == 'OUT'
+                           and self.graph.kind(node.partition('.')[0]) not in
+                           (CONNECTOR, pw.TESTPOINT, pw.BRIDGE_RECTIFIER)]
+                # Parallel physical terminals with the same function on one package are one driver.
+                drivers = {(node.partition('.')[0], self.pinname.get(node) or node) for node in outputs}
+                drain_only = len(drivers) > 1 and all(self._wired_open_drain(node) for node in outputs)
+                if drain_only:
+                    self.add('NET-A06', '已核器件的开漏标志并联',
+                             f'{net}: {outputs}；AP22615 FLG / SiC437 PGOOD 为开漏；上拉电源域与电平窗口仍须核对', kind='INFO')
+                if len(drivers) > 1 and not drain_only:
                     self.add(
                         'NET-A06', '多个输出引脚直连',
                         f'{net}: {outputs}；开漏/三态等合法结构须逐条排除')
@@ -875,6 +949,8 @@ def main():
 
     if a.json:
         json.dump({'findings': F,
+                   'power_paths': {net: path for net, path in lint.powertree._cache.items() if path},
+                   'feed_paths': {net: path for net, path in getattr(lint, '_feed_tree', lint.powertree)._cache.items() if path},
                    'skipped': [list(s) for s in lint.skipped],
                    'review_plan': review_plan,
                    'coverage': {

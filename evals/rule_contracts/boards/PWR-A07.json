@@ -1,0 +1,167 @@
+{
+ "rule": "PWR-A07",
+ "runner": "cold",
+ "note": "AP2112 output with no capacitor vs 1uF to ground",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "AP2112K-3.3",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "5",
+      "VOUT",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "1uF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "AP2112K-3.3",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "5",
+      "VOUT",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "1uF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "C2",
+    "value": "1uF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

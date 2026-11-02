@@ -1,0 +1,119 @@
+{
+ "rule": "SIG-A05",
+ "runner": "cold",
+ "note": "VBUS direct bulk 220uF vs 47uF",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "USB_C",
+    "pins": [
+     [
+      "1",
+      "VBUS",
+      "VBUS"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "BQ24075",
+    "pins": [
+     [
+      "1",
+      "IN",
+      "VBUS"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "OUT",
+      "VSYS"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "220uF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VBUS"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "USB_C",
+    "pins": [
+     [
+      "1",
+      "VBUS",
+      "VBUS"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "BQ24075",
+    "pins": [
+     [
+      "1",
+      "IN",
+      "VBUS"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "OUT",
+      "VSYS"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "47uF",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VBUS"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

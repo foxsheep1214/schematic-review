@@ -49,16 +49,19 @@ class _Scan:
     def _enable_source(self, enable_net, input_nets):
         """使能来源形态；名字不构成结论，只按连接关系归类。"""
         graph = self.graph
-        if enable_net in input_nets:
-            return 'tied-to-input', []
-        to_rail = [(ref, other) for ref, other in graph.neighbors(enable_net, {pw.RESISTOR})
+        peers = graph.low_resistance_peers(enable_net)
+        if set(peers) & input_nets:
+            return 'tied-to-input', sorted({ref for path in peers.values() for ref in path})
+        if any(near in self.grounds for near in peers):
+            return 'pulled', sorted({ref for path in peers.values() for ref in path})
+        to_rail = [(ref, other) for ref, other in (edge for near in peers for edge in graph.neighbors(near, {pw.RESISTOR}))
                    if self.tree.is_rail(other) or (other not in self.grounds and self.feed.driven(other))]
-        to_ground = [(ref, other) for ref, other in graph.neighbors(enable_net, {pw.RESISTOR})
+        to_ground = [(ref, other) for ref, other in (edge for near in peers for edge in graph.neighbors(near, {pw.RESISTOR}))
                      if other in self.grounds]
         caps = [ref for ground in sorted(self.grounds)
-                for ref in graph.between(enable_net, ground, {pw.CAPACITOR})]
+                for near in peers for ref in graph.between(near, ground, {pw.CAPACITOR})]
         drivers = []
-        for node in graph.nodes_on(enable_net):
+        for node in sorted({node for near in peers for node in graph.nodes_on(near)}):
             ref = node.partition('.')[0]
             if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != pw.IC:
                 continue
@@ -68,7 +71,8 @@ class _Scan:
                 drivers.append({'node': node, 'source': 'power-good'})
             elif pintype in {'OUT', 'OUTPUT', 'TRISTATE', '3STATE', 'BI', 'BIDI', 'BIDIR'}:
                 drivers.append({'node': node, 'source': 'controller-output'})
-        refs = sorted({ref for ref, _ in to_rail + to_ground} | {x for x in caps})
+        refs = sorted({ref for ref, _ in to_rail + to_ground} | {x for x in caps}
+                      | {ref for path in peers.values() for ref in path})
         if drivers:
             return ('sequenced' if any(x['source'] == 'power-good' for x in drivers)
                     else 'controlled'), drivers
