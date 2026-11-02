@@ -35,3 +35,10 @@
 - FE1.1 VS_PLL/VS_A是地，BAT54C要展开双二极管，M.2触点不是第二驱动器；CM4 SCL0/SDA0和HDMI DDC已有1.8k上拉。
 - U25为DNP替代RTC且图面明确只装一颗；Y1/Y2仍应有CLK-C01，不能因被USB/I2C电路持有而吞掉时钟问题；Type-A不能套Type-C Source未附着断电。
 - add可显式填有依据的run（勿伪造需求），默认空状态会被lint拒；needs_human/schema15、DEV-D05.M1重复及输入依赖保留FAIL，164为提示+任务归因，非硬件故障数。
+
+## solderedelectronics--connect-programmer-hardware-design（2026-11-02）
+- K1/K2被分类器识别为connector也可能产生IC去耦组；无源触点不能套本体去耦，入口电容/载流另审。
+- Q1/Q2是RTS/DTR交叉发射极逻辑NPN；00/11释放、01拉IO0、10拉RESET。DRV-A03原提示已问高阻默认态，别因RST-T04只问LDO就重复算漏报。
+- F1被USB候选收走后没有PRO-C01/PRO-C05；500mA标签既非USB取电许可，也非保证动作点/分断能力。外部UART未知供电域仍欠SIG-C08结构化计算。
+- 同版OUTPUTS BOM/PDF需从固定提交另取；分号BOM转逗号、保留原始hash，25/25读入。CH340C允许未用I/O悬空且内置时钟，SE5218 EN=VIN合法。
+- 原生needs_human/schema15仍拒收；本轮242记录错误如实FAIL，75为50报告项+25已关闭问题，唯一硬结论是P3电源符号编号，非电气硬故障。
