@@ -69,3 +69,9 @@
 - SN74LVC16244物理26/27输入NC是真，22/23输出NC合法；TPS651851 pad49=VN、DIS端直连允许。MC14093库全INPUT、TF座K前缀relay、FD进DEBUG需按物理脚撤回。
 - U15电源控制POR、K2/K35/PAD配电、电池分压→K35.103需补覆盖；I2C R47/R48=10k，未知频率/Cb不可把条件算例当实物缺陷。
 - 工具functions开放项key全局唯一；REQ-Q07让materialize派生，覆盖PASS不等于电气PASS；缺条款且未审完必须保留REVIEW_INCOMPLETE，不能为了渲染改EXTERNAL_DATA；R45/R46属SD，R50被STARTUP候选持有，跨电路引用不强抢add。
+
+- abhishek-xi--isolated-flyback-converter：171项（163+8补查），29观察=2真/12误/0准则/2知识/13待定；4漏报，123未闭，FAIL/valid=false，renderer退出2，交执行记录。
+- LM5160 VCC是内部输出；D2阳极孤立/VOUT不可直接补线，非A型禁止外偏置。D1 PowerDI123、D2 SOD123与原图SMA字段冲突，不扩展为PCB实装判决。
+- 只知GND且VIN/VCC无窗口时，passive_stress竟给C12/C13=0V/PASS；逐条覆核上界。派生stub的proposal_override被derive_rows/DERIVED_ROW_KEPT丢弃，已有反证仍报缺码。
+- 匿名J1/J2输出漏电源树/预算和PRO-C04；SS只得RST模板、内置限流漏PRO-C05。模拟UVLO/RON/SS非数字VOH链，BST跨SW，TP1地测试焊盘勿作外接口。
+- Top50例头1.4.1而现库1.6.1/344条，按当前BASIS核；T1/D2网页片段不记本地完整PDF，1500Vac测试不当工作绝缘。F1未闭与REVIEW_INCOMPLETE保留，不伪造VENDOR_DATUM。

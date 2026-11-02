@@ -1,0 +1,1941 @@
+{
+  "board": "abhishek-xi--isolated-flyback-converter",
+  "source": {
+    "repo": "abhishek-xi/isolated-flyback-converter",
+    "commit": "3a607ea7c57de247771ef8a28ee6209deeb620e5",
+    "schematic": "Hardware/prj1.kicad_sch",
+    "license": "MIT"
+  },
+  "types": [
+    "ISOLATION",
+    "POWER_CONVERTER",
+    "POWER_PROTECTION",
+    "STARTUP"
+  ],
+  "type_disposition": {
+    "inferred_actual_topology": "Fly-Buck",
+    "catalog_power_protection": "无独立保护组；内置UVLO/限流按POWER_CONVERTER、STARTUP及补查PRO-C04/C05核；不虚构候选"
+  },
+  "run": {
+    "db_sha256": "2baf56d526966932cd136289d6b2878437e616a5fd7088a92c08c7f7cad87ded",
+    "plan_items": 171,
+    "findings_total": 29,
+    "results_judged": 171,
+    "gate": "FAIL",
+    "sr_commit": "2949baa898c75180707caf4b49ef8d790aba19c3",
+    "gate_valid": false,
+    "release": "NO_GO",
+    "native_result_counts": {
+      "NA": 16,
+      "PASS": 31,
+      "INSUFFICIENT": 123,
+      "FAIL": 1
+    },
+    "native_confirmed_defect_roots": 1,
+    "physical_defect_instances": 2,
+    "original_plan_items": 163,
+    "reviewer_added_items": 8,
+    "gate_errors": [
+      "DEV-C01.C12: 预判 PASS 被改判，proposal_override.code 须为 NON_COMMODITY_USE/STRESS_ABOVE_BOUND/SELECTED_PART_RATING/TEMPERATURE_ABOVE_ASSUMPTION 之一（采购范围/料号未定不是改判理由，记 DEV-D04）",
+      "DEV-C01.C13: 预判 PASS 被改判，proposal_override.code 须为 NON_COMMODITY_USE/STRESS_ABOVE_BOUND/SELECTED_PART_RATING/TEMPERATURE_ABOVE_ASSUMPTION 之一（采购范围/料号未定不是改判理由，记 DEV-D04）",
+      "PWR-C10.DECAP-5C436F7FE682F1F520AA.NET-D2-K: 预判 PASS 被改判，proposal_override.code 须为 NON_COMMODITY_USE/STRESS_ABOVE_BOUND/SELECTED_PART_RATING/TEMPERATURE_ABOVE_ASSUMPTION 之一（采购范围/料号未定不是改判理由，记 DEV-D04）",
+      "FN-EXT-J1: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing",
+      "FN-EXT-J2: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing",
+      "FN-EXT-J3: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing",
+      "FN-EXT-TP1: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing",
+      "FN-ISOLATION-PRI-SEC: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing",
+      "FN-LINK-STARTUP-U1-EN-UVLO: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing",
+      "FN-LINK-STARTUP-U1-SS: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing",
+      "FN-STARTUP-U1-EN-UVLO: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing",
+      "FN-STARTUP-U1-SS: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing",
+      "FN-SYS-GROUND: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing",
+      "FN-SYS-POWER: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing",
+      "FN-SYS-SEQUENCE: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing",
+      "FN-BOARD-OPEN: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing"
+    ],
+    "render_exit_code": 2,
+    "canonical_report_generated": false,
+    "report_kind": "ledger-derived execution record; native renderer refused REVIEW_INCOMPLETE",
+    "source_lock": "/Users/skyfend/.cache/sr-boards/abhishek-xi--isolated-flyback-converter/review/source-lock.json",
+    "review_path": "/Users/skyfend/.cache/sr-boards/abhishek-xi--isolated-flyback-converter/review",
+    "derivation_errors": []
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "DEV-D04",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D1"
+      ],
+      "nets": [
+        "Net-(D1-A)",
+        "Net-(D1-K)"
+      ],
+      "sr_text": "D1=DFLS1100-7，原厂订货封装为PowerDI123；原理图Footprint却写Diode_SMD:D_SMA。",
+      "verdict": "true_defect",
+      "evidence": "D1.value=DFLS1100-7；D1.jedec=Diode_SMD:D_SMA；原厂 https://www.diodes.com/datasheet/download/DFLS1100.pdf p1 Ordering/Mechanical Data分别规定PowerDI123。D1完整本地PDF已核p1/p5；D2官方PDF的p1网页正文已核，本地下载403。结论限MPN/封装字段冲突，不替代PCB焊盘或实装验收。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-DIODE-PACKAGE-FIELD",
+        "mutation": "在已核对封装的正例副本中保留 DFLS1100-7 与A/K网络，仅把 parts.D1.jedec 改成 Diode_SMD:D_SMA；对照原厂订货表裁定字段冲突。",
+        "target_rule": "DEV-D04"
+      },
+      "check_ids": [
+        "DEV-D04.BOARD"
+      ],
+      "native_finding": "SR-F01",
+      "root_group": "PROCUREMENT-PACKAGE",
+      "source_url": "https://www.diodes.com/datasheet/download/DFLS1100.pdf",
+      "source_locator": "p1"
+    },
+    {
+      "id": "F02",
+      "sr_rule": "DEV-D04",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D2"
+      ],
+      "nets": [
+        "/VOUT",
+        "Net-(D2-K)"
+      ],
+      "sr_text": "D2=B0530W-7-F，原厂订货封装为SOD123；原理图Footprint却写Diode_SMD:D_SMA。",
+      "verdict": "true_defect",
+      "evidence": "D2.value=B0530W-7-F；D2.jedec=Diode_SMD:D_SMA；原厂 https://www.diodes.com/datasheet/download/B0530W.pdf p1 Ordering/Mechanical Data分别规定SOD123。D1完整本地PDF已核p1/p5；D2官方PDF的p1网页正文已核，本地下载403。结论限MPN/封装字段冲突，不替代PCB焊盘或实装验收。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-DIODE-PACKAGE-FIELD",
+        "mutation": "在已核对封装的正例副本中保留 B0530W-7-F 与A/K网络，仅把 parts.D2.jedec 改成 Diode_SMD:D_SMA；对照原厂订货表裁定字段冲突。",
+        "target_rule": "DEV-D04"
+      },
+      "check_ids": [
+        "DEV-D04.BOARD"
+      ],
+      "native_finding": "SR-F01",
+      "root_group": "PROCUREMENT-PACKAGE",
+      "source_url": "https://www.diodes.com/datasheet/download/B0530W.pdf",
+      "source_locator": "p1"
+    },
+    {
+      "id": "F03",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U1",
+        "C12"
+      ],
+      "nets": [
+        "Net-(D2-K)",
+        "GND"
+      ],
+      "sr_text": "/VIN: 板上无来源，经 ['J3.2'] 由外部供电；输入保护按 PRO 规则另核",
+      "verdict": "false_alarm",
+      "evidence": "U1.9(VCC)=Net-(D2-K)，C12=1uF返回GND。TI SNVSA03E p4把9脚定义为内部高压启动稳压器的旁路端；p12 §7.3.2明确内部7.5V标称稳压器，p6在VIN24V/ICC20mA给6.47..8.52V。缺外部驱动不是缺电。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run / Lint._local_regulator_node；scripts/checkers/powertree.py:PowerTree._search",
+        "what": "消费有原厂出处的内部regulator_output角色，区分外部供电脚与内部旁路输出。不能按VCC名字或错误库power_in直接报无源；保留电压/有效容量的独立审查。为LM5160 VCC新增有/无原厂角色的成对回归。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A01.NET-aad057"
+      ]
+    },
+    {
+      "id": "F04",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U1",
+        "C12"
+      ],
+      "nets": [
+        "Net-(D2-K)",
+        "GND"
+      ],
+      "sr_text": "U1.9 (VCC) <- Net-(D2-K)",
+      "verdict": "false_alarm",
+      "evidence": "U1.9(VCC)=Net-(D2-K)，C12=1uF返回GND。TI SNVSA03E p4把9脚定义为内部高压启动稳压器的旁路端；p12 §7.3.2明确内部7.5V标称稳压器，p6在VIN24V/ICC20mA给6.47..8.52V。缺外部驱动不是缺电。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run / Lint._local_regulator_node；scripts/checkers/powertree.py:PowerTree._search",
+        "what": "消费有原厂出处的内部regulator_output角色，区分外部供电脚与内部旁路输出。不能按VCC名字或错误库power_in直接报无源；保留电压/有效容量的独立审查。为LM5160 VCC新增有/无原厂角色的成对回归。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-9-091c9e"
+      ]
+    },
+    {
+      "id": "F05",
+      "sr_rule": "DEV-D03",
+      "criteria": [
+        "G01-013"
+      ],
+      "severity": "",
+      "refs": [
+        "TP1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "TP1被作为对外连接器展开对端定义、载流、防护和故障契约",
+      "verdict": "false_alarm",
+      "evidence": "TP1.1=GND；Footprint=TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm；当前图page1是单点地测试焊盘。只有库原型为Conn_01x01，不代表外部电缆端口。其电气接点已核，可触达性另交PCB。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:Deriver.is_connector / derive",
+        "what": "结合原生Footprint、位号及带出处的测试节点角色排除明确testpoint；不要把所有Connector_Generic符号都当对外端口。保留真正单针外部端子的反例。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-C04.TP1",
+        "DEV-D03.TP1",
+        "PRO-D03.TP1",
+        "PRO-D04.TP1"
+      ],
+      "related_rules": [
+        "DEV-C04",
+        "PRO-D03",
+        "PRO-D04"
+      ]
+    },
+    {
+      "id": "F06",
+      "sr_rule": "SIG-C07",
+      "criteria": [
+        "G02-023",
+        "G04-003",
+        "G04-004",
+        "G04-016"
+      ],
+      "severity": "",
+      "refs": [
+        "U1",
+        "R6",
+        "R10",
+        "R7"
+      ],
+      "nets": [
+        "Net-(U1-EN/UVLO)",
+        "Net-(U1-RON)"
+      ],
+      "sr_text": "STARTUP-U1.EN-UVLO链被要求数字VOH/VOL对VIH/VIL匹配",
+      "verdict": "false_alarm",
+      "evidence": "U1.4 EN/UVLO经R6=127k/R10=10k连续分压；U1.5 RON经R7=301k到VIN；U1.6 SS接C13=82nF。TI p4/p7/p13把三脚定义为模拟欠压、开关定时和软启动，网中没有独立数字驱动器与接收器。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:Deriver.net_entry / power_node；scripts/circuit_candidates.py:chains",
+        "what": "对已核实模拟EN/UVLO、RON、SS链使用门限/斜坡/充电电流规则；生成数字电平比较前要求存在实际数字驱动-接收端点，勿因跨功能所有权产生数字接口。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-C07.LINK-STARTUP-U1-EN-UVLO"
+      ]
+    },
+    {
+      "id": "F07",
+      "sr_rule": "SIG-C07",
+      "criteria": [
+        "G02-023",
+        "G04-003",
+        "G04-004",
+        "G04-016"
+      ],
+      "severity": "",
+      "refs": [
+        "U1",
+        "C13"
+      ],
+      "nets": [
+        "Net-(U1-SS)"
+      ],
+      "sr_text": "STARTUP-U1.SS链被要求数字VOH/VOL对VIH/VIL匹配",
+      "verdict": "false_alarm",
+      "evidence": "U1.4 EN/UVLO经R6=127k/R10=10k连续分压；U1.5 RON经R7=301k到VIN；U1.6 SS接C13=82nF。TI p4/p7/p13把三脚定义为模拟欠压、开关定时和软启动，网中没有独立数字驱动器与接收器。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:Deriver.net_entry / power_node；scripts/circuit_candidates.py:chains",
+        "what": "对已核实模拟EN/UVLO、RON、SS链使用门限/斜坡/充电电流规则；生成数字电平比较前要求存在实际数字驱动-接收端点，勿因跨功能所有权产生数字接口。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-C07.LINK-STARTUP-U1-SS"
+      ]
+    },
+    {
+      "id": "F08",
+      "sr_rule": "RST-C01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U1",
+        "R6",
+        "R10",
+        "C13"
+      ],
+      "nets": [
+        "/TP",
+        "/VIN",
+        "GND",
+        "Net-(D2-K)",
+        "Net-(U1-BST)",
+        "Net-(U1-EN/UVLO)",
+        "Net-(U1-FB)",
+        "Net-(U1-RON)",
+        "Net-(U1-SS)"
+      ],
+      "sr_text": "采样窗口电平模板展开到了U1的模拟EN/UVLO及SS",
+      "verdict": "false_alarm",
+      "evidence": "page1 U1.4=R6/R10连续模拟UVLO，U1.6=C13软启动；无MCU、strap采样窗或RESET脚。TI p4/p13/p15；SS的名义充电时间可算，但不是复位脉宽，正确去向为PWR-D03/PWR-C06。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:CircuitPlanning.plan_subjects；scripts/catalog.py:STARTUP subject preconditions",
+        "what": "按实际启动机制选择问题：UVLO连续比较不生成strap采样；SS斜坡不生成RESET时序；保留真实RESET/strap的正反例。补充SS→PWR-D03，不能用删除所有启动检查来消噪。"
+      },
+      "seed": null,
+      "check_ids": [
+        "RST-C01.STARTUP-U1-EN-UVLO-POWER-ON.U1",
+        "RST-C01.STARTUP-U1-EN-UVLO-RESTART.U1",
+        "RST-C01.STARTUP-U1-SS-POWER-ON.U1",
+        "RST-C01.STARTUP-U1-SS-RESTART.U1"
+      ]
+    },
+    {
+      "id": "F09",
+      "sr_rule": "RST-C02",
+      "criteria": [
+        "G02-022"
+      ],
+      "severity": "",
+      "refs": [
+        "U1",
+        "R6",
+        "R10",
+        "C13"
+      ],
+      "nets": [
+        "/TP",
+        "/VIN",
+        "GND",
+        "Net-(D2-K)",
+        "Net-(U1-BST)",
+        "Net-(U1-EN/UVLO)",
+        "Net-(U1-FB)",
+        "Net-(U1-RON)",
+        "Net-(U1-SS)"
+      ],
+      "sr_text": "复位时序模板展开到了U1的模拟EN/UVLO及SS",
+      "verdict": "false_alarm",
+      "evidence": "page1 U1.4=R6/R10连续模拟UVLO，U1.6=C13软启动；无MCU、strap采样窗或RESET脚。TI p4/p13/p15；SS的名义充电时间可算，但不是复位脉宽，正确去向为PWR-D03/PWR-C06。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:CircuitPlanning.plan_subjects；scripts/catalog.py:STARTUP subject preconditions",
+        "what": "按实际启动机制选择问题：UVLO连续比较不生成strap采样；SS斜坡不生成RESET时序；保留真实RESET/strap的正反例。补充SS→PWR-D03，不能用删除所有启动检查来消噪。"
+      },
+      "seed": null,
+      "check_ids": [
+        "RST-C02.STARTUP-U1-EN-UVLO-POWER-ON.U1",
+        "RST-C02.STARTUP-U1-EN-UVLO-RESTART.U1",
+        "RST-C02.STARTUP-U1-SS-POWER-ON.U1",
+        "RST-C02.STARTUP-U1-SS-RESTART.U1"
+      ]
+    },
+    {
+      "id": "F10",
+      "sr_rule": "PRO-D02",
+      "criteria": [
+        "G04-040",
+        "G04-068"
+      ],
+      "severity": "",
+      "refs": [
+        "T1",
+        "C3"
+      ],
+      "nets": [
+        "GND",
+        "Net-(J1-Pin_1)"
+      ],
+      "sr_text": "ISOLATION-PRI/SEC 按 ISOLATION 只问到 2/7 条电路规则：换一个类型，或不建这块电路、让器件走器件检查项",
+      "verdict": "false_alarm",
+      "evidence": "本电路只含T1跨域磁耦合和C3=2200pF跨返回网，PRI=GND、SEC=Net-(J1-Pin_1)。PRO-D02/PRO-C03正是实际需要的隔离规则；没有逻辑数据、链路时序或IO默认态。2/7不是隔离类型不成立的证据。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:CircuitPlanning.plan_subjects (CIRCUIT_TYPE_MISFIT)",
+        "what": "按隔离变压器/跨域电容与数字隔离器区别期望规则集；正确裁剪后的问题少不触发换类型/删除电路建议。保留T1/C3的PRO-D02和PRO-C03，不将类型统计当电气缺陷。"
+      },
+      "seed": null,
+      "check_ids": [],
+      "diagnostic": "CIRCUIT_TYPE_MISFIT"
+    },
+    {
+      "id": "F11",
+      "sr_rule": "DEV-C01",
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "",
+      "refs": [
+        "C12",
+        "U1"
+      ],
+      "nets": [
+        "GND",
+        "Net-(D2-K)"
+      ],
+      "sr_text": "所需耐压 ≥0V 在该封装/容值可订购档内（Murata GRM188R61E106MA73 25V）；耐压约束记 DEV-D04",
+      "verdict": "false_alarm",
+      "evidence": "C12两端网见db；原始proposal.calculation.v_across_max=0.0，result=PASS。TI p6/p12：VCC在24V/20mA为6.47..8.52V，故C12不可能以0V作全范围上界。intent里的VIN/VCC缺voltage_v，只有GND/SEC返回声明0V；缺非零源窗口不能退化为地电位。不能据错误0V预判确认电容额定合格。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/passive_stress.py:_Bounds.ic_supply / _Bounds.window / _declared_rails",
+        "what": "按官方power角色及native_pintype检查全部IC供电；任一必要非零供电窗口缺失时返回未定界，不把仅已知GND的max=0当电源上界。增加仅声明返回网、VIN/VCC未定的回归，要求C12/C13不输出0V/PASS。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-C01.C12"
+      ]
+    },
+    {
+      "id": "F12",
+      "sr_rule": "DEV-C01",
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "",
+      "refs": [
+        "C13",
+        "U1"
+      ],
+      "nets": [
+        "GND",
+        "Net-(U1-SS)"
+      ],
+      "sr_text": "所需耐压 ≥0V 在该封装/容值可订购档内（Murata GRM188R61E106MA73 25V）；耐压约束记 DEV-D04",
+      "verdict": "false_alarm",
+      "evidence": "C13两端网见db；原始proposal.calculation.v_across_max=0.0，result=PASS。TI p13 §7.3.4：SS从0向2V充电，故C13的工作应力上界不是0V。intent里的VIN/VCC缺voltage_v，只有GND/SEC返回声明0V；缺非零源窗口不能退化为地电位。不能据错误0V预判确认电容额定合格。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/passive_stress.py:_Bounds.ic_supply / _Bounds.window / _declared_rails",
+        "what": "按官方power角色及native_pintype检查全部IC供电；任一必要非零供电窗口缺失时返回未定界，不把仅已知GND的max=0当电源上界。增加仅声明返回网、VIN/VCC未定的回归，要求C12/C13不输出0V/PASS。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-C01.C13"
+      ]
+    },
+    {
+      "id": "F13",
+      "sr_rule": "PWR-C10",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U1",
+        "C12"
+      ],
+      "nets": [
+        "Net-(D2-K)",
+        "GND"
+      ],
+      "sr_text": "组内电容耐压均在可订购档内（同 DEV-C01 预判）；耐压约束记 DEV-D04，ESR/有效容量只在器件条款或稳定性判据要求时由 PWR-C09/DEV-C02 核",
+      "verdict": "false_alarm",
+      "evidence": "U1.9的C12组继承DEV-C01.C12错误的0V/PASS；原厂p6/p12证明该节点非零。组内电容存在与25V常规候选可采购，都不能恢复这个失效的工作点推导。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/decoupling.py:rating_proposal；scripts/checkers/passive_stress.py:_Bounds.ic_supply",
+        "what": "仅继承来源有效且工作点完整的逐件预判；缺源窗口/无效0V定界时不生成组PASS。此处是前一根因的传播，不再算独立硬件缺陷。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-C10.DECAP-5C436F7FE682F1F520AA.NET-D2-K"
+      ],
+      "root_group": "ZERO-BOUND-PROPAGATION"
+    },
+    {
+      "id": "F14",
+      "sr_rule": "DEV-C01",
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "",
+      "refs": [
+        "C12",
+        "C13",
+        "U1"
+      ],
+      "nets": [
+        "/TP",
+        "/VIN",
+        "GND",
+        "Net-(D2-K)",
+        "Net-(U1-BST)",
+        "Net-(U1-EN/UVLO)",
+        "Net-(U1-FB)",
+        "Net-(U1-RON)",
+        "Net-(U1-SS)"
+      ],
+      "sr_text": "预判 PASS 被改判，proposal_override.code 须为 NON_COMMODITY_USE/STRESS_ABOVE_BOUND/SELECTED_PART_RATING/TEMPERATURE_ABOVE_ASSUMPTION 之一",
+      "verdict": "false_alarm",
+      "evidence": "review-results.json已为三个ID写proposal_override.code=STRESS_ABOVE_BOUND及VCC/SS反证；results_model.materialize经derive_rows覆盖stub时不保留proposal_override，review-gate仍报缺码。已核scripts/derive_rows.py保留列表与results_model.DERIVED_ROW_KEPT均漏此字段。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/derive_rows.py:derive；scripts/results_model.py:DERIVED_ROW_KEPT / materialize / strip_derived",
+        "what": "允许并保留派生行上的proposal_override注记，像bom_constraint一样贯穿读取、校验、打包；新增功能派生INS+有效override的回归，确认materialize后字段不丢且原始错误预判仍可追溯。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-C01.C12",
+        "DEV-C01.C13",
+        "PWR-C10.DECAP-5C436F7FE682F1F520AA.NET-D2-K"
+      ],
+      "scope": "validation_record",
+      "root_group": "OVERRIDE-ANNOTATION-LOSS"
+    },
+    {
+      "id": "F15",
+      "sr_rule": "DRV-C01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "T1"
+      ],
+      "nets": [
+        "/TP",
+        "Net-(D1-A)",
+        "Net-(R1-Pad2)",
+        "Net-(R3-Pad1)"
+      ],
+      "sr_text": "T1实为Fly-Buck耦合电感，不能按通用反激RCD或继电器模板下结论；原厂网页有1/3和4/6绕组与60uH/典型Isat线索，但本地完整资料、励磁峰流及漏感尖峰包络未完成。",
+      "verdict": "needs_human",
+      "evidence": "T1实为Fly-Buck耦合电感，不能按通用反激RCD或继电器模板下结论；原厂网页有1/3和4/6绕组与60uH/典型Isat线索，但本地完整资料、励磁峰流及漏感尖峰包络未完成。；实际位号 T1；网络 /TP,Net-(D1-A),Net-(R1-Pad2),Net-(R3-Pad1)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-ISOLATION-PRI-SEC/FN-ISOLATION-PRI-SEC-OPEN-8。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DRV-C01.T1-UNRESOLVED.T1",
+        "DRV-T01.T1-UNRESOLVED.T1"
+      ],
+      "open_ref": "FN-ISOLATION-PRI-SEC/FN-ISOLATION-PRI-SEC-OPEN-8",
+      "related_rules": [
+        "DRV-C01",
+        "DRV-T01"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F16",
+      "sr_rule": "PRO-C03",
+      "criteria": [
+        "G01-050"
+      ],
+      "severity": "P2",
+      "refs": [
+        "C3",
+        "T1"
+      ],
+      "nets": [
+        "/TP",
+        "GND",
+        "Net-(D1-A)",
+        "Net-(J1-Pin_1)",
+        "Net-(R1-Pad2)",
+        "Net-(R3-Pad1)"
+      ],
+      "sr_text": "C3=2200pF/0603跨PRI/SEC，T1=750314597；未给实际隔离工作电压、等级、重复峰值及C3资格。无直流短接不等于绝缘资格通过，1500Vac短时试验也不等于工作额定。",
+      "verdict": "needs_human",
+      "evidence": "C3=2200pF/0603跨PRI/SEC，T1=750314597；未给实际隔离工作电压、等级、重复峰值及C3资格。无直流短接不等于绝缘资格通过，1500Vac短时试验也不等于工作额定。；实际位号 C3,T1；网络 /TP,GND,Net-(D1-A),Net-(J1-Pin_1),Net-(R1-Pad2),Net-(R3-Pad1)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-ISOLATION-PRI-SEC/FN-ISOLATION-PRI-SEC-OPEN-10。 原厂T1 002.001 p2仅给功能绝缘250Vrms/400VDCpeak，p1 1500Vac为测试；未知道要求前不能判缺加强绝缘为缺陷。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-C03.ISOLATION-PRI-SEC-RUN.C3",
+        "PRO-D02.ISOLATION-PRI-SEC-RUN.C3"
+      ],
+      "open_ref": "FN-ISOLATION-PRI-SEC/FN-ISOLATION-PRI-SEC-OPEN-10",
+      "related_rules": [
+        "PRO-C03",
+        "PRO-D02"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F17",
+      "sr_rule": "DEV-C01",
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "P2",
+      "refs": [
+        "C1",
+        "C10",
+        "C11",
+        "C12",
+        "C13",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "C9",
+        "D1",
+        "D2",
+        "J1",
+        "J2",
+        "R1",
+        "R10",
+        "R2",
+        "R3",
+        "R4",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "T1",
+        "U1"
+      ],
+      "nets": [
+        "/TP",
+        "/VIN",
+        "/VOUT",
+        "GND",
+        "Net-(C4-Pad1)",
+        "Net-(D1-A)",
+        "Net-(D1-K)",
+        "Net-(D2-K)",
+        "Net-(J1-Pin_1)",
+        "Net-(J2-Pin_1)",
+        "Net-(R1-Pad2)",
+        "Net-(R3-Pad1)",
+        "Net-(U1-BST)",
+        "Net-(U1-EN/UVLO)",
+        "Net-(U1-FB)",
+        "Net-(U1-RON)",
+        "Net-(U1-SS)"
+      ],
+      "sr_text": "连接及名义值已核，缺本板受控VIN/负载/温度/故障包络，现有算例不足以裁定该方面。常规阻容的品牌/手册缺失本身不是开项；需先确定应力，再反推采购约束。",
+      "verdict": "needs_human",
+      "evidence": "连接及名义值已核，缺本板受控VIN/负载/温度/故障包络，现有算例不足以裁定该方面。常规阻容的品牌/手册缺失本身不是开项；需先确定应力，再反推采购约束。；实际位号 C1,C10,C11,C12,C13,C2,C3,C4,C5,C6,C7,C8,C9,D1,D2,J1,J2,R1,R10,R2,R3,R4,R6,R7,R8,R9,T1,U1；网络 /TP,/VIN,/VOUT,GND,Net-(C4-Pad1),Net-(D1-A),Net-(D1-K),Net-(D2-K),Net-(J1-Pin_1),Net-(J2-Pin_1),Net-(R1-Pad2),Net-(R3-Pad1),Net-(U1-BST),Net-(U1-EN/UVLO),Net-(U1-FB),Net-(U1-RON),Net-(U1-SS)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-POWER-CONVERTER-U1/FN-POWER-CONVERTER-U1-OPEN-1。 条件算例：R8/R9+2V仅得8.04V标称；R6/R10+1.24V仅得UVLO约16.988V，未获产品输入窗，不能指控低压不启动。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C01.C1",
+        "DEV-C01.C10",
+        "DEV-C01.C11",
+        "DEV-C01.C12",
+        "DEV-C01.C2",
+        "DEV-C01.C4",
+        "DEV-C01.C5",
+        "DEV-C01.C6",
+        "DEV-C01.C7",
+        "DEV-C01.C8",
+        "DEV-C01.C9",
+        "DEV-C01.POWER-CONVERTER-U1",
+        "DEV-C01.R1",
+        "DEV-C01.R2",
+        "DEV-C01.R3",
+        "DEV-C01.R4",
+        "DEV-C01.R8",
+        "DEV-C01.R9",
+        "DEV-C02.POWER-CONVERTER-U1",
+        "DEV-C03.POWER-CONVERTER-U1",
+        "DEV-C05.U1",
+        "PWR-C02.POWER-CONVERTER-U1-FAULT.C1",
+        "PWR-C02.POWER-CONVERTER-U1-RUN.C1",
+        "PWR-C02.POWER-CONVERTER-U1-STARTUP.C1",
+        "PWR-C03.POWER-CONVERTER-U1-FAULT.C1",
+        "PWR-C03.POWER-CONVERTER-U1-RUN.C1",
+        "PWR-C03.POWER-CONVERTER-U1-STARTUP.C1",
+        "PWR-C04.DECAP-5C436F7FE682F1F520AA.NET-D2-K",
+        "PWR-C04.POWER-CONVERTER-U1-FAULT.U1",
+        "PWR-C04.POWER-CONVERTER-U1-RUN.U1",
+        "PWR-C04.POWER-CONVERTER-U1-STARTUP.U1",
+        "PWR-C05.POWER-CONVERTER-U1-FAULT.C1",
+        "PWR-C05.POWER-CONVERTER-U1-RUN.C1",
+        "PWR-C05.POWER-CONVERTER-U1-STARTUP.C1",
+        "PWR-C06.POWER-CONVERTER-U1-FAULT.U1",
+        "PWR-C06.POWER-CONVERTER-U1-RUN.U1",
+        "PWR-C06.POWER-CONVERTER-U1-STARTUP.U1",
+        "PWR-C09.DECAP-5C436F7FE682F1F520AA.NET-D2-K",
+        "PWR-C09.DECAP-7B7D5EF7B88D1A7C968E.VIN",
+        "PWR-C10.DECAP-5C436F7FE682F1F520AA.NET-D2-K",
+        "PWR-C10.DECAP-7B7D5EF7B88D1A7C968E.VIN",
+        "PWR-C15.POWER-CONVERTER-U1-FAULT.U1",
+        "PWR-C15.POWER-CONVERTER-U1-RUN.U1",
+        "PWR-C15.POWER-CONVERTER-U1-STARTUP.U1",
+        "PWR-C18.POWER-CONVERTER-U1-FAULT.C1",
+        "PWR-C18.POWER-CONVERTER-U1-RUN.C1",
+        "PWR-C18.POWER-CONVERTER-U1-STARTUP.C1",
+        "PWR-C24.POWER-CONVERTER-U1.C1",
+        "PWR-D03.U1-NET-U1-EN-UVLO.U1-4",
+        "PWR-E01.U1-8",
+        "DEV-C01.C3",
+        "DEV-C01.ISOLATION-PRI-SEC",
+        "DEV-C02.ISOLATION-PRI-SEC",
+        "DEV-C05.T1",
+        "DEV-C01.R10",
+        "DEV-C01.R6",
+        "DEV-C01.R7",
+        "DEV-C01.STARTUP-U1-EN-UVLO",
+        "DEV-C03.STARTUP-U1-EN-UVLO",
+        "DEV-C01.C13",
+        "PWR-C01.GAP-OUTPUT-PWR-C01-J1.NET-D1-K",
+        "PWR-C01.GAP-OUTPUT-PWR-C01-J2.NET-J2-PIN-1",
+        "PWR-C01.NET-D2-K",
+        "PWR-C01.VIN"
+      ],
+      "open_ref": "FN-POWER-CONVERTER-U1/FN-POWER-CONVERTER-U1-OPEN-1",
+      "related_rules": [
+        "DEV-C01",
+        "DEV-C02",
+        "DEV-C03",
+        "DEV-C05",
+        "PWR-C01",
+        "PWR-C02",
+        "PWR-C03",
+        "PWR-C04",
+        "PWR-C05",
+        "PWR-C06",
+        "PWR-C09",
+        "PWR-C10",
+        "PWR-C15",
+        "PWR-C18",
+        "PWR-C24",
+        "PWR-D03",
+        "PWR-E01"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F18",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D1",
+        "D2",
+        "J1",
+        "J2",
+        "J3",
+        "T1"
+      ],
+      "nets": [
+        "/TP",
+        "/VIN",
+        "/VOUT",
+        "GND",
+        "Net-(D1-A)",
+        "Net-(D1-K)",
+        "Net-(D2-K)",
+        "Net-(J1-Pin_1)",
+        "Net-(J2-Pin_1)",
+        "Net-(R1-Pad2)",
+        "Net-(R3-Pad1)"
+      ],
+      "sr_text": "已核当前符号节点，但尚缺能锁定采购器件/物理端视图的完整资料或对端定义，不能把通用库脚号当原厂物理脚保证。",
+      "verdict": "knowledge_gap",
+      "evidence": "已核当前符号节点，但尚缺能锁定采购器件/物理端视图的完整资料或对端定义，不能把通用库脚号当原厂物理脚保证。；实际位号 D1,D2,J1,J2,J3,T1；网络 /TP,/VIN,/VOUT,GND,Net-(D1-A),Net-(D1-K),Net-(D2-K),Net-(J1-Pin_1),Net-(J2-Pin_1),Net-(R1-Pad2),Net-(R3-Pad1)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-POWER-CONVERTER-U1/FN-POWER-CONVERTER-U1-OPEN-22。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.D1",
+        "DEV-D02.D2",
+        "DEV-D02.J1",
+        "DEV-D02.J2",
+        "DEV-E01.J1",
+        "DEV-E01.J2",
+        "DEV-D01.T1",
+        "DEV-D02.T1",
+        "DEV-D05.T1",
+        "DEV-D02.J3",
+        "DEV-E01.J3"
+      ],
+      "open_ref": "FN-POWER-CONVERTER-U1/FN-POWER-CONVERTER-U1-OPEN-22",
+      "related_rules": [
+        "DEV-D01",
+        "DEV-D02",
+        "DEV-D05",
+        "DEV-E01"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F19",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D2"
+      ],
+      "nets": [
+        "/VOUT",
+        "Net-(D2-K)"
+      ],
+      "sr_text": "D2.2阳极仅接/VOUT孤网；图形也无另一处同名标签。TI p26外偏置仅适用于LM5160A，当前为LM5160DNT；需原设计者确认应删D2还是改变器件/偏置方案，不能直接补线。",
+      "verdict": "needs_human",
+      "evidence": "D2.2阳极仅接/VOUT孤网；图形也无另一处同名标签。TI p26外偏置仅适用于LM5160A，当前为LM5160DNT；需原设计者确认应删D2还是改变器件/偏置方案，不能直接补线。；实际位号 D2；网络 /VOUT,Net-(D2-K)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-POWER-CONVERTER-U1/FN-POWER-CONVERTER-U1-OPEN-28。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.VOUT-0f86d3"
+      ],
+      "open_ref": "FN-POWER-CONVERTER-U1/FN-POWER-CONVERTER-U1-OPEN-28",
+      "related_rules": [
+        "NET-A01"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F20",
+      "sr_rule": "PRO-C04",
+      "criteria": [
+        "G05-019",
+        "G05-020"
+      ],
+      "severity": "P2",
+      "refs": [
+        "J1",
+        "J2",
+        "J3"
+      ],
+      "nets": [
+        "/VIN",
+        "GND",
+        "Net-(D1-K)",
+        "Net-(J1-Pin_1)",
+        "Net-(J2-Pin_1)"
+      ],
+      "sr_text": "本端连接已列，缺对端、线缆、最大供/受电流及外部带电/反接/短路契约；U1有内置限流/UVLO，不因未见独立器件便断言缺保护。",
+      "verdict": "needs_human",
+      "evidence": "本端连接已列，缺对端、线缆、最大供/受电流及外部带电/反接/短路契约；U1有内置限流/UVLO，不因未见独立器件便断言缺保护。；实际位号 J1,J2,J3；网络 /VIN,GND,Net-(D1-K),Net-(J1-Pin_1),Net-(J2-Pin_1)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-POWER-CONVERTER-U1/FN-POWER-CONVERTER-U1-OPEN-29。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-C04.GAP-OUTPUT-PROTECT-J1.NET-D1-K",
+        "PRO-C04.GAP-OUTPUT-PROTECT-J2.NET-J2-PIN-1",
+        "DEV-C04.J1",
+        "DEV-D03.J1",
+        "PRO-D03.J1",
+        "PRO-D04.J1",
+        "SIG-C08.EXT-J1.NET-D1-K",
+        "SIG-C08.EXT-J1.NET-J1-PIN-1",
+        "DEV-C04.J2",
+        "DEV-D03.J2",
+        "PRO-D03.J2",
+        "PRO-D04.J2",
+        "SIG-C08.EXT-J2.NET-J2-PIN-1",
+        "DEV-C04.J3",
+        "DEV-D03.J3",
+        "PRO-C04.J3-2.J3-2",
+        "PRO-D03.J3",
+        "PRO-D04.J3"
+      ],
+      "open_ref": "FN-POWER-CONVERTER-U1/FN-POWER-CONVERTER-U1-OPEN-29",
+      "related_rules": [
+        "DEV-C04",
+        "DEV-D03",
+        "PRO-C04",
+        "PRO-D03",
+        "PRO-D04",
+        "SIG-C08"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F21",
+      "sr_rule": "PWR-D03",
+      "criteria": [
+        "G03-021",
+        "G03-033"
+      ],
+      "severity": "P2",
+      "refs": [
+        "C13",
+        "U1"
+      ],
+      "nets": [
+        "/TP",
+        "/VIN",
+        "GND",
+        "Net-(D2-K)",
+        "Net-(U1-BST)",
+        "Net-(U1-EN/UVLO)",
+        "Net-(U1-FB)",
+        "Net-(U1-RON)",
+        "Net-(U1-SS)"
+      ],
+      "sr_text": "C13=82nF，SS斜坡非复位；已独立计算名义16.08ms与充电分量，但缺有效C13、实际输出负载与峰流模型，不能关闭软启动电流。",
+      "verdict": "needs_human",
+      "evidence": "C13=82nF，SS斜坡非复位；已独立计算名义16.08ms与充电分量，但缺有效C13、实际输出负载与峰流模型，不能关闭软启动电流。；实际位号 C13,U1；网络 /TP,/VIN,GND,Net-(D2-K),Net-(U1-BST),Net-(U1-EN/UVLO),Net-(U1-FB),Net-(U1-RON),Net-(U1-SS)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-POWER-CONVERTER-U1/FN-POWER-CONVERTER-U1-OPEN-58。 计算为Cnom=82nF、ISS典型10.2uA、VSS=2V时t=16.078431ms；C10+C11=20uF充至8.04V的名义充电分量约10mA，尚未加外载、隔离折算和励磁纹波，不能当峰流通过。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-D03.GAP-SOFTSTART-SS.NET-U1-SS",
+        "DEV-C01.STARTUP-U1-SS",
+        "DEV-C02.STARTUP-U1-SS"
+      ],
+      "open_ref": "FN-POWER-CONVERTER-U1/FN-POWER-CONVERTER-U1-OPEN-58",
+      "related_rules": [
+        "DEV-C01",
+        "DEV-C02",
+        "PWR-D03"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F22",
+      "sr_rule": "PRO-C05",
+      "criteria": [
+        "G05-024",
+        "G05-025",
+        "G05-027"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "/TP",
+        "/VIN",
+        "GND",
+        "Net-(D2-K)",
+        "Net-(J2-Pin_1)",
+        "Net-(U1-BST)",
+        "Net-(U1-EN/UVLO)",
+        "Net-(U1-FB)",
+        "Net-(U1-RON)",
+        "Net-(U1-SS)"
+      ],
+      "sr_text": "已有U1峰谷限流和FB依赖off timer；未给故障初态、实际磁件电流/二极管脉冲耐受及最大停能边界，不能把典型100ns当保证关断时间。",
+      "verdict": "needs_human",
+      "evidence": "已有U1峰谷限流和FB依赖off timer；未给故障初态、实际磁件电流/二极管脉冲耐受及最大停能边界，不能把典型100ns当保证关断时间。；实际位号 U1；网络 /TP,/VIN,GND,Net-(D2-K),Net-(J2-Pin_1),Net-(U1-BST),Net-(U1-EN/UVLO),Net-(U1-FB),Net-(U1-RON),Net-(U1-SS)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-POWER-CONVERTER-U1/FAULT-TIME-COORDINATION。 TI p6/13的响应100ns是典型，不是最大保护时间，p6高侧限流2.125–2.875A也不等于全部磁件/端子故障耐受。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-C05.GAP-INTERNAL-FAULT-TIME.NET-J2-PIN-1"
+      ],
+      "open_ref": "FN-POWER-CONVERTER-U1/FAULT-TIME-COORDINATION",
+      "related_rules": [
+        "PRO-C05"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F23",
+      "sr_rule": "RST-T04",
+      "criteria": [
+        "G04-010"
+      ],
+      "severity": "P2",
+      "refs": [
+        "C13",
+        "C6",
+        "C7",
+        "C8",
+        "J3",
+        "R10",
+        "R6",
+        "R7",
+        "U1"
+      ],
+      "nets": [
+        "/TP",
+        "/VIN",
+        "GND",
+        "Net-(D2-K)",
+        "Net-(U1-BST)",
+        "Net-(U1-EN/UVLO)",
+        "Net-(U1-FB)",
+        "Net-(U1-RON)",
+        "Net-(U1-SS)"
+      ],
+      "sr_text": "输入分压UVLO、内部VCC和SS建立关系已追；外接负载的启动安全态、掉电先后及恢复要求未给，不能仅凭内部典型动作关闭整机状态。",
+      "verdict": "needs_human",
+      "evidence": "输入分压UVLO、内部VCC和SS建立关系已追；外接负载的启动安全态、掉电先后及恢复要求未给，不能仅凭内部典型动作关闭整机状态。；实际位号 C13,C6,C7,C8,J3,R10,R6,R7,U1；网络 /TP,/VIN,GND,Net-(D2-K),Net-(U1-BST),Net-(U1-EN/UVLO),Net-(U1-FB),Net-(U1-RON),Net-(U1-SS)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-STARTUP-U1-EN-UVLO/FN-STARTUP-U1-EN-UVLO-OPEN-8。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "RST-T04.STARTUP-U1-EN-UVLO-POWER-ON.U1",
+        "RST-T04.STARTUP-U1-EN-UVLO-RESTART.U1",
+        "RST-T04.STARTUP-U1-SS-POWER-ON.U1",
+        "RST-T04.STARTUP-U1-SS-RESTART.U1",
+        "RST-T03.SYS-SEQUENCE"
+      ],
+      "open_ref": "FN-STARTUP-U1-EN-UVLO/FN-STARTUP-U1-EN-UVLO-OPEN-8",
+      "related_rules": [
+        "RST-T03",
+        "RST-T04"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F24",
+      "sr_rule": "PWR-T01",
+      "criteria": [
+        "G03-027",
+        "G03-031",
+        "G05-089",
+        "G05-090"
+      ],
+      "severity": "P2",
+      "refs": [
+        "J1",
+        "J2"
+      ],
+      "nets": [
+        "GND",
+        "Net-(D1-K)",
+        "Net-(J1-Pin_1)",
+        "Net-(J2-Pin_1)"
+      ],
+      "sr_text": "本项已按实际对象核过，但决定其保证结论的工况或资料仍未齐，保留未完成，不能按零扫描命中判通过。",
+      "verdict": "needs_human",
+      "evidence": "本项已按实际对象核过，但决定其保证结论的工况或资料仍未齐，保留未完成，不能按零扫描命中判通过。；实际位号 J1,J2；网络 GND,Net-(D1-K),Net-(J1-Pin_1),Net-(J2-Pin_1)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-SYS-POWER/FN-SYS-POWER-OPEN-5。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-T01.GAP-OUTPUT-PWR-T01-J1.NET-D1-K",
+        "PWR-T01.GAP-OUTPUT-PWR-T01-J2.NET-J2-PIN-1",
+        "PWR-C19.BOARD",
+        "PWR-D04.BOARD"
+      ],
+      "open_ref": "FN-SYS-POWER/FN-SYS-POWER-OPEN-5",
+      "related_rules": [
+        "PWR-C19",
+        "PWR-D04",
+        "PWR-T01"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F25",
+      "sr_rule": "DEV-Q01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [],
+      "nets": [],
+      "sr_text": "U1与D1完整原厂PDF已取得并核身份；T1与D2可读官方网页页段，但本地完整PDF下载403，审计仍MISSING=2，不把网页片段当完整已收册。",
+      "verdict": "knowledge_gap",
+      "evidence": "U1与D1完整原厂PDF已取得并核身份；T1与D2可读官方网页页段，但本地完整PDF下载403，审计仍MISSING=2，不把网页片段当完整已收册。；实际位号 U1/J1/J2/J3全板输入；网络 /VIN、Net-(J2-Pin_1)、Net-(D1-K)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-BOARD-OPEN/FN-BOARD-OPEN-OPEN-1。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-Q01.DATASHEETS"
+      ],
+      "open_ref": "FN-BOARD-OPEN/FN-BOARD-OPEN-OPEN-1",
+      "related_rules": [
+        "DEV-Q01"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F26",
+      "sr_rule": "DOC-D02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [],
+      "nets": [],
+      "sr_text": "图可读且J3/J2/J1提供电源接点，但D2的VOUT标签孤立，输出针序/极性未加功能标注；测试覆盖与预期标注尚待设计者确认。",
+      "verdict": "needs_human",
+      "evidence": "图可读且J3/J2/J1提供电源接点，但D2的VOUT标签孤立，输出针序/极性未加功能标注；测试覆盖与预期标注尚待设计者确认。；实际位号 U1/J1/J2/J3全板输入；网络 /VIN、Net-(J2-Pin_1)、Net-(D1-K)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-BOARD-OPEN/FN-BOARD-OPEN-OPEN-2。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DOC-D02.BOARD",
+        "DOC-V02.BOARD"
+      ],
+      "open_ref": "FN-BOARD-OPEN/FN-BOARD-OPEN-OPEN-2",
+      "related_rules": [
+        "DOC-D02",
+        "DOC-V02"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F27",
+      "sr_rule": "PRO-D05",
+      "criteria": [
+        "G05-007",
+        "G05-008",
+        "G05-009",
+        "G05-010",
+        "G05-011",
+        "G05-013",
+        "G05-028",
+        "G05-029",
+        "G05-035"
+      ],
+      "severity": "P2",
+      "refs": [],
+      "nets": [],
+      "sr_text": "已识别J3输入、J1/J2输出及隔离电容/磁件；未给关键功能、可接受永久失效及故障顶事件，不能凭工业通信基线虚构冗余/FMEA验收要求。",
+      "verdict": "needs_human",
+      "evidence": "已识别J3输入、J1/J2输出及隔离电容/磁件；未给关键功能、可接受永久失效及故障顶事件，不能凭工业通信基线虚构冗余/FMEA验收要求。；实际位号 U1/J1/J2/J3全板输入；网络 /VIN、Net-(J2-Pin_1)、Net-(D1-K)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-BOARD-OPEN/FN-BOARD-OPEN-OPEN-4。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD",
+        "REQ-D05.BOARD"
+      ],
+      "open_ref": "FN-BOARD-OPEN/FN-BOARD-OPEN-OPEN-4",
+      "related_rules": [
+        "PRO-D05",
+        "PRO-D06",
+        "REQ-D05"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F28",
+      "sr_rule": "REQ-D02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [],
+      "nets": [],
+      "sr_text": "源README只给用途，没有受控输入/输出/负载/温度/故障与隔离指标；按任务授权推断用途继续受限审查，不能编需求或把参考设计示例当需求。",
+      "verdict": "needs_human",
+      "evidence": "源README只给用途，没有受控输入/输出/负载/温度/故障与隔离指标；按任务授权推断用途继续受限审查，不能编需求或把参考设计示例当需求。；实际位号 U1/J1/J2/J3全板输入；网络 /VIN、Net-(J2-Pin_1)、Net-(D1-K)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-BOARD-OPEN/FN-BOARD-OPEN-OPEN-8。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "REQ-D02.BOARD",
+        "REQ-D03.BOARD",
+        "REQ-D04.BOARD",
+        "REQ-Q01.REQUIREMENTS"
+      ],
+      "open_ref": "FN-BOARD-OPEN/FN-BOARD-OPEN-OPEN-8",
+      "related_rules": [
+        "REQ-D02",
+        "REQ-D03",
+        "REQ-D04",
+        "REQ-Q01"
+      ],
+      "requires_human_or_inputs": true
+    },
+    {
+      "id": "F29",
+      "sr_rule": "REQ-Q02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [],
+      "nets": [],
+      "sr_text": "已枚举本板供电/反馈/启动/隔离链，但负载及外部状态条件未定；补查输出支路和SS后仍不能宣称全工况覆盖完成。",
+      "verdict": "needs_human",
+      "evidence": "已枚举本板供电/反馈/启动/隔离链，但负载及外部状态条件未定；补查输出支路和SS后仍不能宣称全工况覆盖完成。；实际位号 U1/J1/J2/J3全板输入；网络 /VIN、Net-(J2-Pin_1)、Net-(D1-K)。 当前固定db与page1、TI SNVSA03E p4/p6/p7/p12–15/p23–26及evidence/analysis.md/ calculations.json为独立依据；缺口边逐条保留在FN-BOARD-OPEN/FN-BOARD-OPEN-OPEN-13。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "REQ-Q02.CHAINS",
+        "REQ-Q03.STATES"
+      ],
+      "open_ref": "FN-BOARD-OPEN/FN-BOARD-OPEN-OPEN-13",
+      "related_rules": [
+        "REQ-Q02",
+        "REQ-Q03"
+      ],
+      "requires_human_or_inputs": true
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G05-019",
+      "sr_rule": "PRO-C04",
+      "refs": [
+        "U1",
+        "T1",
+        "D1",
+        "J1",
+        "J2"
+      ],
+      "nets": [
+        "Net-(D1-K)",
+        "Net-(J2-Pin_1)"
+      ],
+      "why_expected": "J1/J2都是真实输出配电支路，源侧保护/系统声明必须逐支路审查；不能只问输入J3。",
+      "evidence": "原生163项中PRO-C04只有J3.2；J2.1来自T1.3经R3=0Ω，J1.2来自D1.K，R1=0Ω为次级回路。U1内置限流存在，故本条只证对象漏枚举，不证缺保护。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:InterfacePlanning.plan_interfaces；scripts/plan_circuits.py:CircuitPlanning.plan_concrete_checks",
+        "what": "从所有真实电源输出和外接电缆支路枚举PRO-C04，支持内部限流/上游保护声明和不完整合同；没有F/TVS也不能漏对象。"
+      },
+      "seed": {
+        "kind": "D-OUTPUT-BRANCH-COVERAGE",
+        "mutation": "在带内置限流的已核变换器正例上新增主侧与整流次级供电连接器，并保留实际返回网；要求两输出各出PRO-C04。",
+        "target_rule": "PRO-C04",
+        "coverage_only": true
+      },
+      "added_check_ids": [
+        "PRO-C04.GAP-OUTPUT-PROTECT-J1.NET-D1-K",
+        "PRO-C04.GAP-OUTPUT-PROTECT-J2.NET-J2-PIN-1"
+      ],
+      "scope": "plan_object_coverage; not a confirmed electrical defect"
+    },
+    {
+      "id": "M02",
+      "criterion": "G03-001",
+      "sr_rule": "PWR-C01",
+      "refs": [
+        "T1",
+        "D1",
+        "J1",
+        "J2"
+      ],
+      "nets": [
+        "Net-(D1-K)",
+        "Net-(J2-Pin_1)"
+      ],
+      "why_expected": "匿名自动网已被intent明确声明为实际输出，不应因名字自动生成而漏掉源/负载/预算；掉电反流核对须先明轨源。",
+      "evidence": "原生电源树只有/VIN及Net-(D2-K)，没有J1/J2输出；两路各有20uF跨其返回与外接端子，且为独立供能节点。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/powertree.py:_supply_nets / declared_supply_nets；scripts/plan_system.py:SystemPlanning.plan_system",
+        "what": "显式角色、实际整流/磁件输出、bulk和端子共同建立轨身份，勿用is_auto_named无条件排除已确认输出。逐输出生成PWR-T01/C01，供电能力未知仍留待核。"
+      },
+      "seed": {
+        "kind": "D-ANONYMOUS-OUTPUT-RAIL-COVERAGE",
+        "mutation": "把正例输出轨改为Net-(J2-Pin_1)/Net-(D1-K)，同步nets、pin2net并保留真实拓扑和有据intent，要求电源树/预算对象不消失。",
+        "target_rule": "PWR-C01",
+        "coverage_only": true
+      },
+      "added_check_ids": [
+        "PWR-C01.GAP-OUTPUT-PWR-C01-J1.NET-D1-K",
+        "PWR-C01.GAP-OUTPUT-PWR-C01-J2.NET-J2-PIN-1",
+        "PWR-T01.GAP-OUTPUT-PWR-T01-J1.NET-D1-K",
+        "PWR-T01.GAP-OUTPUT-PWR-T01-J2.NET-J2-PIN-1"
+      ],
+      "scope": "plan_object_coverage; not a confirmed electrical defect",
+      "related_rules": [
+        "PWR-T01"
+      ],
+      "related_criteria": [
+        "G03-031"
+      ],
+      "outside_top50": true,
+      "top50_context": "G03-032核对时延伸发现，实际BASIS用G03-001/PWR-C01和G03-031/PWR-T01，不错挂G03-032"
+    },
+    {
+      "id": "M03",
+      "criterion": "G03-021",
+      "sr_rule": "PWR-D03",
+      "refs": [
+        "U1",
+        "C13",
+        "C10",
+        "C11"
+      ],
+      "nets": [
+        "Net-(U1-SS)",
+        "Net-(J2-Pin_1)"
+      ],
+      "why_expected": "SS的充电电流与启动负载应对照限流；复位模板不能替代软启动检查。",
+      "evidence": "原生PWR-D03只锚定U1.4 EN/UVLO；U1.6 SS/C13=82nF虽有STARTUP候选，却只展开RST模板。TI p7 ISS=7.63..12.5uA(测试VSS0.5V)、p13软启动；实际负载未知，不能据名义时间判过流。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_up.py:_Scan.regulators；PowerUpChecker.plan；scripts/circuit_candidates.py:chains；scripts/plan_circuits.py:CircuitPlanning.plan_subjects",
+        "what": "对确认的SS脚生成专用PWR-D03对象，带CSS、输出电容、负载与峰值限流检查输入；不要只在EN源发现后才附带软启动。"
+      },
+      "seed": {
+        "kind": "D-SOFTSTART-SS-COVERAGE",
+        "mutation": "在LM5160正例保留模拟SS-Css及内置限流、不给RESET/strap脚；要求SS对象有PWR-D03，而非只生成RST-C02。",
+        "target_rule": "PWR-D03",
+        "coverage_only": true
+      },
+      "added_check_ids": [
+        "PWR-D03.GAP-SOFTSTART-SS.NET-U1-SS"
+      ],
+      "scope": "plan_object_coverage; not a confirmed electrical defect"
+    },
+    {
+      "id": "M04",
+      "criterion": "G05-025",
+      "sr_rule": "PRO-C05",
+      "refs": [
+        "U1",
+        "T1",
+        "D1",
+        "J1",
+        "J2"
+      ],
+      "nets": [
+        "/VIN",
+        "Net-(J2-Pin_1)",
+        "Net-(D1-K)"
+      ],
+      "why_expected": "内部保护同样需要最坏动作时间与被保护通路耐受配合，PWR-C06门限不替代PRO-C05动作时间。",
+      "evidence": "原生计划无PRO-C05；TI p6/13说明峰/谷限流和FB依赖off-timer，response100ns仅典型；下游磁件、整流、0Ω及端子是否耐受尚未判定。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:CircuitPlanning.plan_subjects / plan_concrete_checks；scripts/checkers/power_up.py",
+        "what": "将已核内置限流控制器也纳入保护链对象；要求故障初态、源范围、动作上下界及下游耐受，缺工况保留具体开放项，不能误报为无保护。"
+      },
+      "seed": {
+        "kind": "D-INTERNAL-LIMIT-FAULT-TIME-COVERAGE",
+        "mutation": "构造仅用控制器内置限流、没有独立F/eFuse的隔离变换器结构，保持真实输出支路；要求PRO-C05生成，不预填动作时间保证。",
+        "target_rule": "PRO-C05",
+        "coverage_only": true
+      },
+      "added_check_ids": [
+        "PRO-C05.GAP-INTERNAL-FAULT-TIME.NET-J2-PIN-1"
+      ],
+      "scope": "plan_object_coverage; not a confirmed electrical defect"
+    }
+  ],
+  "summary": {
+    "true_defect": 2,
+    "false_alarm": 12,
+    "criterion_issue": 0,
+    "knowledge_gap": 2,
+    "needs_human": 13,
+    "misses": 4
+  },
+  "counting": "findings按归因观察计；D1/D2分两个实例，原生台账合并为1个采购根因；15个独立开放原因覆盖123项未完成；false_alarm含错误的预判PASS与门禁注记丢失，均不冒充电路缺陷。",
+  "top50_audit": {
+    "example_path": "docs/proposals/criteria-top50-examples-2026-11-02.md",
+    "example_sha256": "0b743d8a6e80d4a31db7862474578934c103b9e1b28a445b038d8ab45504a60e",
+    "example_library_version": "1.4.1 (document header)",
+    "actual_library_version": "1.6.1",
+    "actual_library_sha256": "7bc94923cd6bb866c1667b187e1e7efc5c401a5857d803cf681cd489a00fa39b",
+    "items": [
+      {
+        "index": 1,
+        "criterion": "G01-018",
+        "title_in_example": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+        "title_current": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。J3为正DC输入，没有-48V/RTN电信接口。",
+        "misses": []
+      },
+      {
+        "index": 2,
+        "criterion": "G01-019",
+        "title_in_example": "−48 V 输入的工作电压范围与耐受范围",
+        "title_current": "−48 V 输入的工作电压范围与耐受范围",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。J3为正DC输入，没有-48V/RTN电信接口。",
+        "misses": []
+      },
+      {
+        "index": 3,
+        "criterion": "G01-020",
+        "title_in_example": "−48 V 输入 0.1 s 中断后自恢复",
+        "title_current": "−48 V 输入 0.1 s 中断后自恢复",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。J3为正DC输入，没有-48V/RTN电信接口。",
+        "misses": []
+      },
+      {
+        "index": 4,
+        "criterion": "G01-021",
+        "title_in_example": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+        "title_current": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。J3为正DC输入，没有-48V/RTN电信接口。",
+        "misses": []
+      },
+      {
+        "index": 5,
+        "criterion": "G01-022",
+        "title_in_example": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+        "title_current": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。J3为正DC输入，没有-48V/RTN电信接口。",
+        "misses": []
+      },
+      {
+        "index": 6,
+        "criterion": "G01-023",
+        "title_in_example": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+        "title_current": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。J3为正DC输入，没有-48V/RTN电信接口。",
+        "misses": []
+      },
+      {
+        "index": 7,
+        "criterion": "G01-024",
+        "title_in_example": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+        "title_current": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。没有市电/交流输入整流链。",
+        "misses": []
+      },
+      {
+        "index": 8,
+        "criterion": "G01-025",
+        "title_in_example": "交流输入较长暂降与中断后自恢复（判据 C）",
+        "title_current": "交流输入较长暂降与中断后自恢复（判据 C）",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。没有市电/交流输入整流链。",
+        "misses": []
+      },
+      {
+        "index": 9,
+        "criterion": "G01-026",
+        "title_in_example": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+        "title_current": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。J1/J2/J3均两针DC端子，无USB或Type-C/PD角色。",
+        "misses": []
+      },
+      {
+        "index": 10,
+        "criterion": "G01-027",
+        "title_in_example": "USB 可用电流按实际协商档取",
+        "title_current": "USB 可用电流按实际协商档取",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。J1/J2/J3均两针DC端子，无USB或Type-C/PD角色。",
+        "misses": []
+      },
+      {
+        "index": 11,
+        "criterion": "G01-029",
+        "title_in_example": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+        "title_current": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。J1/J2/J3均两针DC端子，无USB或Type-C/PD角色。",
+        "misses": []
+      },
+      {
+        "index": 12,
+        "criterion": "G01-030",
+        "title_in_example": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+        "title_current": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。J1/J2/J3均两针DC端子，无USB或Type-C/PD角色。",
+        "misses": []
+      },
+      {
+        "index": 13,
+        "criterion": "G01-031",
+        "title_in_example": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+        "title_current": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。J1/J2/J3均两针DC端子，无USB或Type-C/PD角色。",
+        "misses": []
+      },
+      {
+        "index": 14,
+        "criterion": "G03-003",
+        "title_in_example": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+        "title_current": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "covered_open",
+        "evidence": "本板30件完整清单及单页网表。PWR-C04/PWR-C15和DEV-C02涵盖C10/C11与C1/C2各20uF，Type3 R4/C4/C9已识别；有效容量/负载与稳定性边界待核。",
+        "misses": []
+      },
+      {
+        "index": 15,
+        "criterion": "G03-004",
+        "title_in_example": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+        "title_current": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "covered_open",
+        "evidence": "本板30件完整清单及单页网表。PWR-C04/PWR-C15和DEV-C02涵盖C10/C11与C1/C2各20uF，Type3 R4/C4/C9已识别；有效容量/负载与稳定性边界待核。",
+        "misses": []
+      },
+      {
+        "index": 16,
+        "criterion": "G03-016",
+        "title_in_example": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+        "title_current": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无独立线性充电通路MOSFET；U1内部Buck开关的启动限流和应力由PWR-C03/C06/D03另核，不套分立MOS SOA图。",
+        "misses": []
+      },
+      {
+        "index": 17,
+        "criterion": "G03-018",
+        "title_in_example": "变换器 UVLO 开启点低于输入窗下限",
+        "title_current": "变换器 UVLO 开启点低于输入窗下限",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "covered_open",
+        "evidence": "本板30件完整清单及单页网表。PWR-C06已有，R6=127k/R10=10k，UVLO名义约16.988V、滞回名义2.54V；输入下限、源阻抗与负载未知。",
+        "misses": []
+      },
+      {
+        "index": 18,
+        "criterion": "G03-019",
+        "title_in_example": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+        "title_current": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "covered_open",
+        "evidence": "本板30件完整清单及单页网表。PWR-C06已有，R6=127k/R10=10k，UVLO名义约16.988V、滞回名义2.54V；输入下限、源阻抗与负载未知。",
+        "misses": []
+      },
+      {
+        "index": 19,
+        "criterion": "G03-021",
+        "title_in_example": "软启动充电电流加启动期负载低于器件限流下限",
+        "title_current": "软启动充电电流加启动期负载低于器件限流下限",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "miss",
+        "evidence": "本板30件完整清单及单页网表。SS对象漏PWR-D03；已按rule_gap补查。",
+        "misses": [
+          "M03"
+        ]
+      },
+      {
+        "index": 20,
+        "criterion": "G03-025",
+        "title_in_example": "复位门限高于各负载最低工作电压，掉电先复位",
+        "title_current": "复位门限高于各负载最低工作电压，掉电先复位",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无MCU/RESET接收端；UVLO和SS不是负载复位门限。",
+        "misses": []
+      },
+      {
+        "index": 21,
+        "criterion": "G03-028",
+        "title_in_example": "上电时序在极值时间下满足约束",
+        "title_current": "上电时序在极值时间下满足约束",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "covered_open",
+        "evidence": "本板30件完整清单及单页网表。PWR-C24/RST-T03已列；J1/J2外接负载时序未给，不把未提供的顺序需求记成缺陷。",
+        "misses": []
+      },
+      {
+        "index": 22,
+        "criterion": "G03-032",
+        "title_in_example": "稳压器反向电流在手册允许内或已阻断",
+        "title_current": "稳压器反向电流在手册允许内或已阻断",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "covered_open",
+        "evidence": "本板30件完整清单及单页网表。PWR-C05与输出SIG-C08已覆盖预偏置/断电；J1/J2对端及外供电状态待核。",
+        "misses": []
+      },
+      {
+        "index": 23,
+        "criterion": "G03-037",
+        "title_in_example": "电解与钽电容不承受反压",
+        "title_current": "电解与钽电容不承受反压",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。C1–C13全为Device:C非极性SMD，无电解/钽或串联电解结构；通用电容应力仍由DEV-C01核。",
+        "misses": []
+      },
+      {
+        "index": 24,
+        "criterion": "G03-038",
+        "title_in_example": "电解与钽电容的直流加纹波峰值在降额内",
+        "title_current": "电解与钽电容的直流加纹波峰值在降额内",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。C1–C13全为Device:C非极性SMD，无电解/钽或串联电解结构；通用电容应力仍由DEV-C01核。",
+        "misses": []
+      },
+      {
+        "index": 25,
+        "criterion": "G03-040",
+        "title_in_example": "串联使用的电解电容有均压措施",
+        "title_current": "串联使用的电解电容有均压措施",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。C1–C13全为Device:C非极性SMD，无电解/钽或串联电解结构；通用电容应力仍由DEV-C01核。",
+        "misses": []
+      },
+      {
+        "index": 26,
+        "criterion": "G04-005",
+        "title_in_example": "输入信号不超接收端绝对最大值",
+        "title_current": "输入信号不超接收端绝对最大值",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "covered_open",
+        "evidence": "本板30件完整清单及单页网表。没有数字驱动跨电压接口；U1模拟VIN/FB/UVLO/BST绝限由DEV-C05/PWR规则核，外端预偏置由SIG-C08核。",
+        "misses": []
+      },
+      {
+        "index": 27,
+        "criterion": "G04-007",
+        "title_in_example": "未上电接口承受正常或故障信号不损坏",
+        "title_current": "未上电接口承受正常或故障信号不损坏",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "covered_open",
+        "evidence": "本板30件完整清单及单页网表。外端J1/J2预偏置/倒供已有SIG-C08及PRO-D04；对端电源条件未知。",
+        "misses": []
+      },
+      {
+        "index": 28,
+        "criterion": "G04-009",
+        "title_in_example": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+        "title_current": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "covered_open",
+        "evidence": "本板30件完整清单及单页网表。外端J1/J2预偏置/倒供已有SIG-C08及PRO-D04；对端电源条件未知。",
+        "misses": []
+      },
+      {
+        "index": 29,
+        "criterion": "G04-010",
+        "title_in_example": "上电和复位期间关键输出有确定状态",
+        "title_current": "上电和复位期间关键输出有确定状态",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "covered_open",
+        "evidence": "本板30件完整清单及单页网表。无GPIO；U1 UVLO/FPWM/SS默认态由RST-T04与PWR-D03核，未知负载安全态不能冒充已合格。",
+        "misses": []
+      },
+      {
+        "index": 30,
+        "criterion": "G04-017",
+        "title_in_example": "I²C 上拉电阻不超上升时间决定的上限",
+        "title_current": "I²C 上拉电阻不超上升时间决定的上限",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无I2C收发器/开漏时钟数据对；R6/R10为模拟UVLO，不是总线上拉。",
+        "misses": []
+      },
+      {
+        "index": 31,
+        "criterion": "G04-018",
+        "title_in_example": "I²C 上拉电阻不低于灌电流决定的下限",
+        "title_current": "I²C 上拉电阻不低于灌电流决定的下限",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无I2C收发器/开漏时钟数据对；R6/R10为模拟UVLO，不是总线上拉。",
+        "misses": []
+      },
+      {
+        "index": 32,
+        "criterion": "G04-032",
+        "title_in_example": "CAN 总线两端端接，总阻约 60 Ω",
+        "title_current": "CAN 总线两端端接，总阻约 60 Ω",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无CAN收发器/CANH-CANL或120Ω端接。",
+        "misses": []
+      },
+      {
+        "index": 33,
+        "criterion": "G04-040",
+        "title_in_example": "隔离接口两侧的供电和地不被无意短接",
+        "title_current": "隔离接口两侧的供电和地不被无意短接",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "covered_open",
+        "evidence": "本板30件完整清单及单页网表。PRO-D02/PRO-C03已明确C3/T1跨PRI/SEC；两地无直流桥接，C3=2.2nF资格与目标工作应力未定，不制造隔离短路缺陷。",
+        "misses": []
+      },
+      {
+        "index": 34,
+        "criterion": "G04-041",
+        "title_in_example": "运放两个输入在最坏工况下不超共模范围",
+        "title_current": "运放两个输入在最坏工况下不超共模范围",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无独立运放输入接口；U1内部反馈比较器按FB条款核。",
+        "misses": []
+      },
+      {
+        "index": 35,
+        "criterion": "G04-054",
+        "title_in_example": "ADC 输入不超满量程和绝对最大值",
+        "title_current": "ADC 输入不超满量程和绝对最大值",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无ADC/DAC或采样输入链。",
+        "misses": []
+      },
+      {
+        "index": 36,
+        "criterion": "G04-078",
+        "title_in_example": "晶振负载电容与晶振规定 CL 相符",
+        "title_current": "晶振负载电容与晶振规定 CL 相符",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无晶体/谐振器/外置有源时钟。U1内部COT定时不套皮尔斯振荡器。",
+        "misses": []
+      },
+      {
+        "index": 37,
+        "criterion": "G04-079",
+        "title_in_example": "振荡器增益裕量足够起振",
+        "title_current": "振荡器增益裕量足够起振",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无晶体/谐振器/外置有源时钟。U1内部COT定时不套皮尔斯振荡器。",
+        "misses": []
+      },
+      {
+        "index": 38,
+        "criterion": "G04-082",
+        "title_in_example": "一颗晶振只驱动一个器件",
+        "title_current": "一颗晶振只驱动一个器件",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无晶体/谐振器/外置有源时钟。U1内部COT定时不套皮尔斯振荡器。",
+        "misses": []
+      },
+      {
+        "index": 39,
+        "criterion": "G05-019",
+        "title_in_example": "每条配电支路在源侧有保护",
+        "title_current": "每条配电支路在源侧有保护",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "miss",
+        "evidence": "本板30件完整清单及单页网表。原始PRO-C04漏J1/J2输出配电支路，已补2项。",
+        "misses": [
+          "M01"
+        ]
+      },
+      {
+        "index": 40,
+        "criterion": "G05-022",
+        "title_in_example": "过流动作点上限下通路器件与连接器不超额定",
+        "title_current": "过流动作点上限下通路器件与连接器不超额定",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "covered_open",
+        "evidence": "本板30件完整清单及单页网表。DEV-C01/C04与PWR-C03/C06覆盖通路耐受；U1限流2.125..2.875A不等于外接端子保证能力，实际工况待核。",
+        "misses": []
+      },
+      {
+        "index": 41,
+        "criterion": "G05-025",
+        "title_in_example": "故障电流下的动作时间短于被保护对象的耐受时间",
+        "title_current": "故障电流下的动作时间短于被保护对象的耐受时间",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "miss",
+        "evidence": "本板30件完整清单及单页网表。原始计划未为内部峰谷限流展开PRO-C05时间/耐受协调；已补1项。",
+        "misses": [
+          "M04"
+        ]
+      },
+      {
+        "index": 42,
+        "criterion": "G05-030",
+        "title_in_example": "TVS 工作电压不低于被钳节点最高工作电压",
+        "title_current": "TVS 工作电压不低于被钳节点最高工作电压",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无TVS或轨对地齐纳；D1/D2为普通肖特基整流/偏置器件，不能按型号字母D推TVS。",
+        "misses": []
+      },
+      {
+        "index": 43,
+        "criterion": "G05-031",
+        "title_in_example": "TVS 钳位电压不超被保护器件绝对最大值",
+        "title_current": "TVS 钳位电压不超被保护器件绝对最大值",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无TVS或轨对地齐纳；D1/D2为普通肖特基整流/偏置器件，不能按型号字母D推TVS。",
+        "misses": []
+      },
+      {
+        "index": 44,
+        "criterion": "G05-032",
+        "title_in_example": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+        "title_current": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无TVS或轨对地齐纳；D1/D2为普通肖特基整流/偏置器件，不能按型号字母D推TVS。",
+        "misses": []
+      },
+      {
+        "index": 45,
+        "criterion": "G05-040",
+        "title_in_example": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+        "title_current": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无热插拔/串联线性通路MOS；内部开关短路保护由PWR-C03/C06与新增PRO-C05核，不伪造片内MOS SOA。",
+        "misses": []
+      },
+      {
+        "index": 46,
+        "criterion": "G05-041",
+        "title_in_example": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+        "title_current": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无热插拔/串联线性通路MOS；内部开关短路保护由PWR-C03/C06与新增PRO-C05核，不伪造片内MOS SOA。",
+        "misses": []
+      },
+      {
+        "index": 47,
+        "criterion": "G05-048",
+        "title_in_example": "熔断器分断能力不小于预期短路电流",
+        "title_current": "熔断器分断能力不小于预期短路电流",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。没有保险丝；上游保护契约仍在PRO-C04/J3待核，不制造分断额定缺陷。",
+        "misses": []
+      },
+      {
+        "index": 48,
+        "criterion": "G05-054",
+        "title_in_example": "每个对外电源接口的反接有明确处置",
+        "title_current": "每个对外电源接口的反接有明确处置",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "covered_open",
+        "evidence": "本板30件完整清单及单页网表。J3.2直接到U1.VIN、无板上防反器件；PRO-D04.J3已有，U1 p5最低-0.3V。反接幅值/源及系统处置未知，不能直接确认本板反接违规。",
+        "misses": []
+      },
+      {
+        "index": 49,
+        "criterion": "G05-057",
+        "title_in_example": "反接阻断之前没有单向 TVS 造成源短路",
+        "title_current": "反接阻断之前没有单向 TVS 造成源短路",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无单向TVS或反接阻断器件组合；不能把肖特基D1/D2当TVS。",
+        "misses": []
+      },
+      {
+        "index": 50,
+        "criterion": "G05-087",
+        "title_in_example": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+        "title_current": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+        "current_status": "active",
+        "closing_stage": "schematic",
+        "disposition": "not_applicable",
+        "evidence": "本板30件完整清单及单页网表。无分立MOS防反接结构。",
+        "misses": []
+      }
+    ]
+  },
+  "evidence_manifest": {
+    "source": {
+      "id": "abhishek-xi--isolated-flyback-converter",
+      "repo": "abhishek-xi/isolated-flyback-converter",
+      "commit": "3a607ea7c57de247771ef8a28ee6209deeb620e5",
+      "schematic": "Hardware/prj1.kicad_sch",
+      "license": "MIT",
+      "license_evidence": [
+        "https://github.com/abhishek-xi/isolated-flyback-converter/blob/3a607ea7c57de247771ef8a28ee6209deeb620e5/LICENSE"
+      ],
+      "kicad_version": "9.0",
+      "types": [
+        "ISOLATION",
+        "POWER_CONVERTER",
+        "POWER_PROTECTION"
+      ],
+      "note": "隔离反激电源板，补充变压器、整流与输入输出滤波。",
+      "copyleft": false,
+      "parts": 30,
+      "strict": true,
+      "schema_version": 20250114,
+      "application": "隔离DC变换",
+      "source_sha256": "4be2a2a4cefb204f407c84d746f175e72e66ce3302128255389e7d7f61f6c3b5"
+    },
+    "sr_commit": "2949baa898c75180707caf4b49ef8d790aba19c3",
+    "kicad_version": "10.0.7",
+    "input_files": {
+      "/Users/skyfend/.cache/sr-boards/abhishek-xi--isolated-flyback-converter/db.json": "2baf56d526966932cd136289d6b2878437e616a5fd7088a92c08c7f7cad87ded",
+      "/Users/skyfend/.cache/sr-boards/abhishek-xi--isolated-flyback-converter/netlist.xml": "da30de3fa8a36124005d5a0be78ebefbf9fe613a52f37b1d3e906687721a7def",
+      "/Users/skyfend/.cache/sr-boards/abhishek-xi--isolated-flyback-converter/src/Hardware/prj1.kicad_sch": "4be2a2a4cefb204f407c84d746f175e72e66ce3302128255389e7d7f61f6c3b5",
+      "/Users/skyfend/.cache/sr-boards/abhishek-xi--isolated-flyback-converter/src/README.md": "f2cbdc30bd4a035509a6be2dbe696892c033132c8b64a616de396acfd5d45b9d",
+      "/Users/skyfend/.cache/sr-boards/abhishek-xi--isolated-flyback-converter/src/LICENSE": "86b6a8bdb9e1f78b8fc123683b7255c32c9c6024a8dbfeca141fca3b0404d2c6"
+    },
+    "review_files": {
+      "intent.json": "25758f6e8578dbec2c4faff9104a22a5fa21e9169212df7653cf461b4a7d9011",
+      "review-plan.json": "1e5285c3da2c71bcdd66a62d09e853a8f584d1c28e1b1559b4b110d8614298ec",
+      "review-results.json": "619cf0f6aadb053b024b89a8df1246a1dc3aab0799d5c1ff11fe4ba02b67116a",
+      "review-gate.json": "b24f85c2dcd77c255c8bac95318d6999a8ba137642d93c7c215243bc9721650f",
+      "lint-cold.json": "e76f131bb8eea0e1850181349221b454fc33e720bf3fcf2055bc39e1068ce8bc",
+      "lint-hot.json": "5c61eb840c0dee96db273b0597586251674ec14cbda4f98aa5d531db47ce56f6"
+    },
+    "datasheets": {
+      "LM5160.pdf": "43e329f968d42caab7e133474b0d723749bee642009b6f24c19013c8c9f54d3e",
+      "DFLS1100.pdf": "4f52777b40108d66d99380e3c0831c302cd628ea45f111fe6a9d6c7b95915cd9"
+    },
+    "missing_full_pdf": [
+      "750314597",
+      "B0530W"
+    ],
+    "no_bom_in_source_tree": true,
+    "review_mode": "first",
+    "inference_scope": "/Users/skyfend/.cache/sr-boards/abhishek-xi--isolated-flyback-converter/review/scope.md"
+  }
+}
