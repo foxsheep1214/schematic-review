@@ -75,3 +75,51 @@ python3 -B evals/seeded_bench/run.py --offline --out <输出目录> --gate evals
 按上面的`--offline --out`用法运行，并将TMPDIR指向已创建的`/tmp/codex-work/<任务>/`；不需要下载新语料。每个操作器只选已贴装器件，每板每类最多4个位点。源码器件身份仅用于选位点，不代替人工核对准确MPN和工作模式。
 
 [本轮受控摘要](criteria-examples-2026-11-02.json)保存全部类别汇总、输入哈希与10类的逐位点结果。旧离线闸门要求D-CAP-VR为17，本分支修改前后均为15，因此旧`--gate baseline-offline.json`仍失败；这是已有基线差异，本轮未调低基线，也没有引入既有类别退化。漏报数是种子位点的统计，不是现场失效率或人工SR检出率。
+
+## 8 类种子的自动检出（2026-11-02）
+
+上一节登记的 44 个漏报位点已全部由新的自动扫描规则报出，自动检出 177→221/247，既有 203 个位点逐条不变，32 块板未植入时的发现数不变。
+C/D 规则由审查员判定，工具不下结论，所以新增的是 A 规则（`scripts/board_scans.py`），`BASIS` 映射到同一批准则，种子目标改为“新 A 规则或原 C 规则”。
+
+| 种子类型 | 新规则 | 判据与出处 | 自动 / 位点 | 仍须人工确认 |
+|---|---|---|---|---|
+| `D-USB-BULK` | SIG-A05 候选 | 有 USB 证据的板上，VBUS/VUSB 网直挂电容合计 >100 µF（USB PD 表 4.7 注 1、Type-C 表 4-3） | 4/4 | 端口角色（Source 按表 4-2）、前级限浪涌、非附着态 10 µF（SIG-C05/PWR-C13） |
+| `D-LDO-COUT` | PWR-A07 候选 | 线性稳压器输出网没有接地电容，经磁珠/电感也到不了（TI SLVA115A） | 1/1 | 手册是否允许无电容；容量、ESR、有效值（PWR-C04） |
+| `D-I2C-PU-HIGH` | SIG-A04 候选 | 并联上拉 >118 kΩ：标准模式 1 µs、Cb 只算 10 pF（UM10204 §7.1 式 (1)、表 11） | 13/13 | 实际模式与总线电容（SIG-C01）；此上限内的偏大仍靠人工 |
+| `D-I2C-PU-LOW` | SIG-A04 候选 | 并联上拉 <(V−0.4 V)/20 mA（§7.1 式 (2)、表 10）；轨压读不出按 1.8 V | 13/13 | 最弱器件 IOL（SIG-C01）；此下限内的偏小仍靠人工 |
+| `D-CAN-TERM-SHORT` | SIG-A06 疑点 | CANH/CANL 同网或被 ≤1 Ω 电阻跨接（TI TCAN1042 §10.2.2.1、SLLA270 §4） | 2/2 | 端接位置与总等效负载（SIG-C03） |
+| `D-ISO-BRIDGE` | PRO-A05 候选 | 型号或已核验角色为数字隔离器，两侧地同网或被 ≤1 Ω 电阻、磁珠、电感连通（TI SLLA284G §1） | 4/4 | 是否确有隔离需求、工作资格（PRO-C03）；光耦没有地脚名，归 PRO-D01 的计划项，本语料无光耦位点 |
+| `D-XTAL-LOAD` | CLK-A01 候选 | 两端负载电容串联等效 >100 pF（ST AN2867 §3.3 的公式；100 pF 是外包络，TI SNLA290 §7 建议 8–20 pF） | 5/5 | 与准确料号 CL 相符、Cs、ESR、起振裕量（CLK-C01） |
+| `D-XTAL-SHARED` | CLK-A02 疑点 | 无源晶体两端都接两颗以上 IC 的振荡脚（TI SNLA387 Clock Source） | 2/2 | 手册是否明确允许共用；外部时钟模式（CLK-D01） |
+
+这些判据是外包络：超出才报，落在包络内的不等于合格，具体数值仍由审查员按对应 C 规则算。
+`resonare-lcc` 的 `VBUS` 是逆变器直流母线，直挂 249.6 µF，曾被 SIG-A05 误报，因此要求板上有 USB 证据；已有单元测试和变异锁住。
+
+## 四板合并 1 的配对种子（2026-11-02）
+
+登记 **5 个新类型、7 个位点**，其中 `D-XTAL-LOAD` 复用已有类型。来源为已完成归因的四块板，
+元数据见 `boards-merge1.json`；第三方 XML 只读用户缓存，不进入仓库。
+原板已有错误时，`Mutation.baseline` 保存仅修正目标缺陷的合成参数合同，比较相同电压合同下的正确/错误两侧；
+不把有缺陷的原板当干净负例，也不伪造可订购物料。`contract` 记录准确 MPN、厂家条款或额定出处。
+
+```sh
+TMPDIR=/tmp/codex-work/boards-merge-1 python3 -B evals/seeded_bench/run.py --offline \
+  --boards-cache ~/.cache/sr-boards --compare <before/results.json> --out <after目录>
+```
+
+先创建上述临时目录。除目标轨的明确电压合同外，其余新发现供电网只登记拓扑身份，电压保持未知。
+基线或变异运行错误退出非零；错误不能算漏报或命中。
+
+| 类型 | 来源位点 | 合同与操作 | 自动目标提示 / 位点 |
+|---|---|---|---:|
+| D-TVS-VRWM | Thor D54；STM32 D22 | 合成合格 VRWM 合同换为 TPD1E0B04DPYR 的 3.6 V、PTVS9V0S1UR 的 9 V；分别固定 5 V、15 V 工作合同。统一收纳原归因的 D-TVS-VRWM-BELOW-PD 别名 | 2/2 |
+| D-MLCC-RATING-BELOW-PD | STM32 C139/C140 | 合成 25 V MLCC 换准确 TDK C1005X6S1A105K050BC（10 V），保留 15 V 合同和 TDK 资格记录，两颗作为一个位点 | 0/1 |
+| D-SHUNT-MPN-CONFLICT | RDIMM R199 | 合成 5 mΩ 合同仅把 MPN 换为 CR1206-J/-000ELF；保留 5 mΩ 值及 Kelvin 连线 | 0/1 |
+| D-I2C-ADDRESS-COLLISION | RDIMM U19/U20 | 同一 SCL/SDA、准确 PAC1954 身份下，U20 ADDRSEL.6 从 GND（0x10）移到 VDD（0x1F），U19 保持 0x1F | 0/1 |
+| D-CMOS-UNUSED-IN-FLOAT | Kria U36.13 | 由 GND 改 NC，只改未用输入，输出和 DAP 的 NC 保持 | 1/1 |
+| D-XTAL-LOAD（已有） | RDIMM Y2/C190/C193 | 将既有 18 pF 电容改 1 µF，记录 ABM8G 的 CL=18 pF；不新造晶体 | 0/1 |
+
+TVS 的目标命中是原有 PRO-E02 **窗口复核提示**，不是自动完成 VRWM 违规的电气判定。
+MLCC 额定、分流电阻 MPN、地址冲突与晶体负载仍有自动层缺口；其位点/合同已保存，不能把其他规则指向当目标检出。
+现有 247 个位点逐位点比较无退化，仍为 177 个目标提示；新增 7 个位点有 3 个目标提示、0 个运行错误。
+受控结果见 `boards-merge1-results.json`，包含逐位点自动提示、其他提示和计划指向。

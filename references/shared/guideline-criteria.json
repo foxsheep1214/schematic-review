@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "library_version": "1.4.1",
+  "library_version": "1.6.1",
   "default_baseline": "industrial_telecom",
   "vocabulary": {
     "baselines": [
@@ -30,6 +30,7 @@
       "ISOLATION",
       "DEBUG",
       "DC_48V",
+      "DC_24V",
       "AC_MAINS",
       "INDUSTRIAL_DI",
       "POE_PD",
@@ -65,13 +66,13 @@
     ]
   },
   "specs": {
-    "G01": "1.2",
+    "G01": "1.4",
     "G02": "1.2",
-    "G03": "1.3",
-    "G04": "1.0",
-    "G05": "1.0"
+    "G03": "1.4",
+    "G04": "1.1",
+    "G05": "1.1"
   },
-  "content_sha256": "0d42002b0f17fe0140d810f0e8af7ad704df426e61a60c6a250ebdf339374954",
+  "content_sha256": "c80035c11667b570c48a9485598dbc74904d2a50341b4d1b2b2a01638e22d0a6",
   "criteria": [
     {
       "id": "G01-001",
@@ -2024,6 +2025,207 @@
       }
     },
     {
+      "id": "G01-051",
+      "title": "正 24 V 输入写明来源、电压窗与上游保护",
+      "spec": "G01",
+      "version": "1.0",
+      "status": "active",
+      "nature": "method",
+      "applies_when": {
+        "circuit_types": [
+          "DC_24V"
+        ]
+      },
+      "not_applicable": "没有正 24 V 直流电源输入时不适用。工业数字输入信号按 INDUSTRIAL_DI，军车 28 V 按 VEHICLE_28V，不因电压相近归入本类。",
+      "inputs": [
+        "24 V 来源（电柜电源、DC 配电网、电池等）",
+        "板端最小/最大稳态电压（含纹波与线路压降）",
+        "源阻抗",
+        "上游保护类型与额定值",
+        "最大负载与效率"
+      ],
+      "asg_action": "写明上述各项，缺的标 TBR，不用 −48 V 或军车 28 V 的数值代替。按 P/η/V_min 算最低电压下的输入电流，对照上游保护额定值。同时声明 POWER_PROTECTION，合闸浪涌按 G03-017。证据：接口工况表与计算行。",
+      "sr_check": "独立复算；转换器与输入器件的工作范围不覆盖已声明窗的判不成立；窗为 TBR 的记输入缺口；耐压裕量按降额规范。关闭条件：窗已给定且覆盖。",
+      "source": [
+        {
+          "document": "ECSS-E-ST-10-24C Rev.1 接口管理",
+          "edition": "Rev.1 2024-11-15",
+          "clause": "附录 E.3.4 a",
+          "page": "56–57"
+        },
+        {
+          "document": "IEC 61160 Ed.2.0 设计评审",
+          "edition": "Ed.2.0 2005",
+          "clause": "附录 F.8 h",
+          "page": "65（印刷 63）"
+        }
+      ],
+      "closing_stage": "schematic",
+      "tailoring": "项目或产品标准给定的窗优先。按 IEC 61131-2 取值须先取得正文或经确认的转引，并注明版本（用户 2026-11-02 决定不设默认窗）。",
+      "relations": {
+        "reuses": [
+          "G03-017"
+        ],
+        "related": [
+          "G01-017",
+          "G01-052",
+          "G01-053",
+          "G01-054"
+        ]
+      }
+    },
+    {
+      "id": "G01-052",
+      "title": "正 24 V 输入声明反接与误接工况",
+      "spec": "G01",
+      "version": "1.0",
+      "status": "active",
+      "nature": "method",
+      "applies_when": {
+        "circuit_types": [
+          "DC_24V"
+        ]
+      },
+      "not_applicable": "没有正 24 V 直流电源输入时不适用。工业数字输入信号按 INDUSTRIAL_DI，军车 28 V 按 VEHICLE_28V，不因电压相近归入本类。",
+      "inputs": [
+        "连接器形式与现场接线方式",
+        "可能的最大负向电压与持续时间"
+      ],
+      "asg_action": "写明接口是否可能反接或误接、最大负向电压与持续时间，未给定标 TBR。处置按 G05-054，耐压按 G05-055，MOSFET 接法按 G05-087。证据：非正常行为声明。",
+      "sr_check": "现场接线端子无防呆且未声明反接工况的记输入缺口；已声明的按 G05-054、G05-055 核。关闭条件：声明存在且有处置。",
+      "source": [
+        {
+          "document": "TI TPS2660 数据手册（工业 eFuse，作厂家方法示例）",
+          "edition": "SLVSDG2G，2019-12 修订",
+          "clause": "§9.3.3 Reverse Input Supply Protection",
+          "page": "19"
+        }
+      ],
+      "closing_stage": "schematic",
+      "tailoring": "连接器有防呆的，写明理由后可不考虑反接。TPS2660 的 −60 V 是器件能力，不是接口要求。",
+      "relations": {
+        "reuses": [
+          "G05-054",
+          "G05-055"
+        ],
+        "related": [
+          "G01-014",
+          "G05-087",
+          "G01-051"
+        ]
+      }
+    },
+    {
+      "id": "G01-053",
+      "title": "正 24 V 输入声明中断与暂降，恢复不锁死",
+      "spec": "G01",
+      "version": "1.1",
+      "status": "active",
+      "nature": "method",
+      "applies_when": {
+        "circuit_types": [
+          "DC_24V"
+        ]
+      },
+      "not_applicable": "没有正 24 V 直流电源输入时不适用。工业数字输入信号按 INDUSTRIAL_DI，军车 28 V 按 VEHICLE_28V，不因电压相近归入本类。",
+      "inputs": [
+        "选定的暂降与中断组合及持续时间（GB/T 17626.29 表 1a、1b）",
+        "额定电压范围",
+        "各轨是否须保持",
+        "恢复判据（§9 的 a～d）"
+      ],
+      "asg_action": "按 GB/T 17626.29 表 1a、1b 写明选定的暂降与中断组合，中断分高阻抗和低阻抗；额定电压范围超过低端电压 20% 的按上下限分别写；恢复判据按 §9 的 a～d 写。未选定的标 TBR，不设默认等级。须保持的轨按 G03-023，其余按 G03-024（含恢复时再次浪涌）；低阻抗中断时储能经输入端的反灌按 G03-031。证据：工况表与保持或恢复检查。",
+      "sr_check": "核对工况已声明且中断分了高阻抗和低阻抗；欠压锁定与时序在恢复后不锁死；低阻抗中断的反灌和恢复时的瞬变过压有处置；未声明的记输入缺口。中断试验列为下游。关闭条件：工况已给定且核对通过。",
+      "source": [
+        {
+          "document": "GB/T 17626.29 电磁兼容 试验和测量技术 直流电源输入端口电压暂降、短时中断和电压变化的抗扰度试验",
+          "edition": "GB/T 17626.29—2006/IEC 61000-4-29:2000",
+          "clause": "§1 范围",
+          "page": "4（印刷 1）"
+        },
+        {
+          "document": "GB/T 17626.29 电磁兼容 试验和测量技术 直流电源输入端口电压暂降、短时中断和电压变化的抗扰度试验",
+          "edition": "GB/T 17626.29—2006/IEC 61000-4-29:2000",
+          "clause": "§3.4、§4、§5",
+          "page": "5（印刷 2）"
+        },
+        {
+          "document": "GB/T 17626.29 电磁兼容 试验和测量技术 直流电源输入端口电压暂降、短时中断和电压变化的抗扰度试验",
+          "edition": "GB/T 17626.29—2006/IEC 61000-4-29:2000",
+          "clause": "表 1a、1b 及注",
+          "page": "6（印刷 3）"
+        },
+        {
+          "document": "GB/T 17626.29 电磁兼容 试验和测量技术 直流电源输入端口电压暂降、短时中断和电压变化的抗扰度试验",
+          "edition": "GB/T 17626.29—2006/IEC 61000-4-29:2000",
+          "clause": "§8.2.1、§9",
+          "page": "9（印刷 6）"
+        },
+        {
+          "document": "GB/T 17799.2 电磁兼容 通用标准 工业环境中的抗扰度",
+          "edition": "GB/T 17799.2—2023",
+          "clause": "附录 A 表 A.1（资料性）",
+          "page": "15（印刷 9）"
+        }
+      ],
+      "closing_stage": "schematic",
+      "tailoring": "GB/T 17626.29 只给可选等级，§1 写明严酷度由技术委员会、用户或制造商选择，所以本条不设默认等级（用户 2026-11-02 决定）。它等同采用 IEC 61000-4-29:2000；IEC 已出 2026 版，差异未核。GB/T 17799.2 附录 A 的“等级 2”在 2000 版没有对应编号，未解释，不写入。IEC 61131-2 的 PS1/PS2 未取得原文，不写数值，取得后另行修订。",
+      "relations": {
+        "reuses": [
+          "G03-023",
+          "G03-024",
+          "G03-031"
+        ],
+        "related": [
+          "G01-051"
+        ]
+      }
+    },
+    {
+      "id": "G01-054",
+      "title": "正 24 V 端口按归类登记浪涌与快速瞬变工况",
+      "spec": "G01",
+      "version": "1.0",
+      "status": "active",
+      "nature": "shall",
+      "applies_when": {
+        "circuit_types": [
+          "DC_24V"
+        ]
+      },
+      "not_applicable": "没有正 24 V 直流电源输入时不适用。工业数字输入信号按 INDUSTRIAL_DI，军车 28 V 按 VEHICLE_28V，不因电压相近归入本类。",
+      "inputs": [
+        "是否接 DC 配电网（§3.6）",
+        "是否连接长距离线路（§3.5：建筑物内超过 30 m 或引至建筑物外）",
+        "电缆总长是否可能超过 3 m",
+        "是否为电池输入"
+      ],
+      "asg_action": "先按 §3.6 归类端口再登记。接 DC 配电网：快速瞬变 ±1 kV（5/50 ns，5 或 100 kHz）；连接长距离线路时再加浪涌 1.2/50（8/20）线—地 ±1 kV、线—线 ±0.5 kV。不打算接 DC 配电网的按信号端口：连接长距离线路时浪涌线—地 ±1 kV，电缆可能超过 3 m 时快速瞬变 ±1 kV。判据均为 B。与电池或可充电电池连接（充电时从设备移开或断开）的输入端口，这两项不适用。证据：端口归类与等级表。",
+      "sr_check": "核对端口归类依据已写明；输入端有与登记等级相称的钳位或耐受设计；未归类的记输入缺口。试验列为下游。关闭条件：归类与登记齐全且核对通过。",
+      "source": [
+        {
+          "document": "GB/T 17799.2 电磁兼容 通用标准 工业环境中的抗扰度",
+          "edition": "GB/T 17799.2—2023",
+          "clause": "表 3 序号 3.2、3.3 及注 b、c、d、f、h；表 2 序号 2.2、2.3 及注 b、c",
+          "page": "13（印刷 7）"
+        },
+        {
+          "document": "GB/T 17799.2 电磁兼容 通用标准 工业环境中的抗扰度",
+          "edition": "GB/T 17799.2—2023",
+          "clause": "§3.5、§3.6",
+          "page": "9（印刷 3）"
+        }
+      ],
+      "closing_stage": "schematic",
+      "tailoring": "只覆盖工业场所；其他场所按 GB/T 17799.1（未取得），先标 TBR。产品标准或项目另有等级的以其为准，写明偏离。本条只登记工况（用户 2026-11-02 决定放 G01），防护器件选型与协调由 G07 主判，G07 成文前按 G05 的钳位规则核。§3.5 的定义写的是信号/控制端口线路，表 3 注 b 把它用于 DC 端口，本条按表 3 注 b 适用。使用专用 AC-DC 适配器的按表 3 注 d、f。",
+      "relations": {
+        "related": [
+          "G01-051",
+          "G05-031"
+        ]
+      }
+    },
+    {
       "id": "G02-001",
       "title": "凡结论依赖参数变化的需求都映射到最坏工况分析项",
       "spec": "G02",
@@ -3716,16 +3918,16 @@
       "id": "G03-007",
       "title": "外补偿穿越频率低于开关频率限值与最低 RHP 零点",
       "spec": "G03",
-      "version": "1.0",
+      "version": "1.1",
       "status": "active",
       "nature": "method",
       "applies_when": {
         "circuit_types": [
           "POWER_CONVERTER"
         ],
-        "text": "补偿网络外接的开关变换器"
+        "text": "补偿网络外接，或补偿参数由设计者配置（固件、寄存器或配置工具设定，如 PD 控制器直驱光耦的 CV/CC 环）的开关变换器"
       },
-      "not_applicable": "内补偿器件按 G03-003～G03-005。",
+      "not_applicable": "补偿参数不可配置的内补偿器件按 G03-003～G03-005。",
       "tailoring": "",
       "inputs": [
         "控制方式（电压型 / 电流型、CCM / DCM）与拓扑",
@@ -3760,16 +3962,16 @@
       "id": "G03-008",
       "title": "外补偿环路在最坏组合下相位裕量不低于取值",
       "spec": "G03",
-      "version": "1.0",
+      "version": "1.1",
       "status": "active",
       "nature": "method",
       "applies_when": {
         "circuit_types": [
           "POWER_CONVERTER"
         ],
-        "text": "补偿网络外接的开关变换器"
+        "text": "补偿网络外接，或补偿参数由设计者配置（固件、寄存器或配置工具设定，如 PD 控制器直驱光耦的 CV/CC 环）的开关变换器"
       },
-      "not_applicable": "内补偿器件按 G03-003～G03-005。",
+      "not_applicable": "补偿参数不可配置的内补偿器件按 G03-003～G03-005。",
       "tailoring": "",
       "inputs": [
         "控制方式（电压型 / 电流型、CCM / DCM）与拓扑",
@@ -3815,16 +4017,16 @@
       "id": "G03-009",
       "title": "外补偿环路在最坏组合下增益裕量不低于取值",
       "spec": "G03",
-      "version": "1.0",
+      "version": "1.1",
       "status": "active",
       "nature": "method",
       "applies_when": {
         "circuit_types": [
           "POWER_CONVERTER"
         ],
-        "text": "补偿网络外接的开关变换器"
+        "text": "补偿网络外接，或补偿参数由设计者配置（固件、寄存器或配置工具设定，如 PD 控制器直驱光耦的 CV/CC 环）的开关变换器"
       },
-      "not_applicable": "内补偿器件按 G03-003～G03-005。",
+      "not_applicable": "补偿参数不可配置的内补偿器件按 G03-003～G03-005。",
       "tailoring": "",
       "inputs": [
         "控制方式（电压型 / 电流型、CCM / DCM）与拓扑",
@@ -4201,7 +4403,7 @@
       "id": "G03-017",
       "title": "启动浪涌不超过 G01 接口限值，且不使上游保护动作",
       "spec": "G03",
-      "version": "1.0",
+      "version": "1.1",
       "status": "active",
       "nature": "method",
       "applies_when": {
@@ -4209,7 +4411,7 @@
           "POWER_CONVERTER",
           "POWER_PROTECTION"
         ],
-        "text": "有热插拔控制器、eFuse、负载开关、缓启动或限流 LDO 的电源入口与配电支路"
+        "text": "有热插拔控制器、eFuse、负载开关、缓启动或限流 LDO 的电源入口与配电支路，以及只靠 NTC、串联电阻等被动限流或没有主动限流的电源入口"
       },
       "not_applicable": "",
       "tailoring": "",
@@ -7554,14 +7756,14 @@
       "id": "G04-040",
       "title": "隔离接口两侧的供电和地不被无意短接",
       "spec": "G04",
-      "version": "1.0",
+      "version": "1.1",
       "status": "active",
       "nature": "method",
       "applies_when": {
         "circuit_types": [
           "ISOLATION"
         ],
-        "text": "有数字隔离器或隔离接口时（绝缘等级归 G06）"
+        "text": "有数字隔离器、隔离接口或隔离电源的初次级隔离带时，含 Y 电容等有意跨接（绝缘等级归 G06）"
       },
       "not_applicable": "",
       "tailoring": "",
@@ -11258,14 +11460,15 @@
       "id": "G05-036",
       "title": "有源过压保护动作点下限高于输入窗上限",
       "spec": "G05",
-      "version": "1.0",
+      "version": "1.1",
       "status": "active",
       "nature": "method",
       "applies_when": {
         "circuit_types": [
-          "POWER_PROTECTION"
+          "POWER_PROTECTION",
+          "POWER_CONVERTER"
         ],
-        "text": "有热插拔控制器、eFuse 或带限流的负载开关时"
+        "text": "有热插拔控制器、eFuse 或带限流的负载开关时；也含用齐纳、比较器等检测过压后驱动控制器 FAULT 或使能脚的保护（如辅助绕组过压锁定、比较器型故障锁存），此时被监视轨的正常工作窗视作输入窗"
       },
       "not_applicable": "没有有源过压保护的不适用。",
       "tailoring": "",
@@ -11301,14 +11504,15 @@
       "id": "G05-037",
       "title": "有源过压保护动作点上限低于被保护器件绝对最大值",
       "spec": "G05",
-      "version": "1.0",
+      "version": "1.1",
       "status": "active",
       "nature": "method",
       "applies_when": {
         "circuit_types": [
-          "POWER_PROTECTION"
+          "POWER_PROTECTION",
+          "POWER_CONVERTER"
         ],
-        "text": "有热插拔控制器、eFuse 或带限流的负载开关时"
+        "text": "有热插拔控制器、eFuse 或带限流的负载开关时；也含用齐纳、比较器等检测过压后驱动控制器 FAULT 或使能脚的保护（如辅助绕组过压锁定、比较器型故障锁存）"
       },
       "not_applicable": "没有有源过压保护的不适用。",
       "tailoring": "",
@@ -11464,7 +11668,7 @@
       "id": "G05-041",
       "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
       "spec": "G05",
-      "version": "1.0",
+      "version": "1.1",
       "status": "active",
       "nature": "method",
       "applies_when": {
@@ -11474,7 +11678,7 @@
         "device_kinds": [
           "mosfet"
         ],
-        "text": "热插拔控制器或限流器驱动外部通路 MOSFET 时"
+        "text": "热插拔控制器或限流器驱动外部通路 MOSFET 时；也含 PD 控制器等直驱的外部输出通路开关（如 VBUS 开关）"
       },
       "not_applicable": "",
       "tailoring": "",
@@ -12296,14 +12500,15 @@
       "id": "G05-060",
       "title": "锁存型保护有写明的复位路径",
       "spec": "G05",
-      "version": "1.0",
+      "version": "1.1",
       "status": "active",
       "nature": "method",
       "applies_when": {
         "circuit_types": [
-          "POWER_PROTECTION"
+          "POWER_PROTECTION",
+          "POWER_CONVERTER"
         ],
-        "text": "使用锁存型保护时"
+        "text": "使用锁存型保护时（含控制器锁定后靠断电或 VCC 衰减复位的）"
       },
       "not_applicable": "非锁存型不适用。",
       "tailoring": "",

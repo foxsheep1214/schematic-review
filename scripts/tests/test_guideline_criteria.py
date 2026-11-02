@@ -4,6 +4,8 @@ same shared layer, byte for byte (user 2026-10-31: 请开始执行这个方案; 
 """
 import copy
 import json
+import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -16,8 +18,14 @@ import catalog
 import device_kinds
 import guideline_criteria as g
 
-ASG = Path.home() / '.agents' / 'skills' / 'autonomous-schematic-generation'
+# Explicit paired checkout for reproducible cross-skill integration; default remains installed ASG.
+ASG = Path(os.environ.get('SR_ASG_SHARED_ROOT') or Path.home() / '.agents' / 'skills' / 'autonomous-schematic-generation')
 SHARED = g.SHARED_FILES
+
+
+def committed_bytes(repo, name):
+    """The file as committed at HEAD: another session's uncommitted edit in that checkout is not yet the shared layer."""
+    return subprocess.run(['git', '-C', str(repo), 'show', 'HEAD:' + name], check=True, capture_output=True).stdout
 
 
 def rule(rid='G04-001', **changes):
@@ -180,11 +188,29 @@ class GuidelineRulesTests(unittest.TestCase):
         self.assertEqual(g.shared_versions()['library_version'], g.load()['library_version'])
         self.assertRegex(g.shared_label(), r'^共用层 [0-9a-f]{12}，设计准则库 \S+，降额 v\d+$')
 
-    @unittest.skipUnless((ASG / SHARED[1]).is_file(), 'autonomous-schematic-generation without the rule library')
+    def test_dc_24v_checks_its_declared_window_not_the_telecom_48v_one(self):
+        subjects = {t.name: t.subjects for t in catalog.CIRCUIT_TYPES}['DC_24V']
+        self.assertIn('PWR-C27', subjects)
+        self.assertNotIn('PWR-C17', subjects)
+        self.assertIn('DC_24V', catalog.EXTERNAL_INTERFACE_TYPES)
+        mapped = {gid for rule in subjects for gid in catalog.BASIS[rule]}
+        self.assertTrue({'G01-051', 'G01-052', 'G01-053', 'G01-054'} <= mapped)
+
+    @unittest.skipUnless((ASG / '.git').exists() and (ASG / SHARED[1]).is_file(),
+                         'autonomous-schematic-generation checkout without the rule library')
     def test_asg_holds_the_same_shared_layer(self):
         for name in SHARED:
-            self.assertEqual((ASG / name).read_bytes(), (ROOT / name).read_bytes(), name)
-        self.assertEqual(g.shared_digest(ASG), g.shared_digest())
+            self.assertEqual(committed_bytes(ASG, name), (ROOT / name).read_bytes(), name)
+
+    def test_the_asg_comparison_ignores_an_uncommitted_edit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            git = ['git', '-C', tmp, '-c', 'user.name=t', '-c', 'user.email=t@example.invalid']
+            subprocess.run(['git', 'init', '-q', tmp], check=True)
+            (Path(tmp) / 'f.json').write_bytes(b'committed')
+            subprocess.run(git + ['add', 'f.json'], check=True)
+            subprocess.run(git + ['commit', '-qm', 'x'], check=True)
+            (Path(tmp) / 'f.json').write_bytes(b'in progress')
+            self.assertEqual(committed_bytes(tmp, 'f.json'), b'committed')
 
 
 if __name__ == '__main__':
