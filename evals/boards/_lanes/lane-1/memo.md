@@ -129,3 +129,9 @@
 - TPS65023B的L1/L2/L3、VDCDCx、DCDCx_EN、VRTC须贯通正式端口模型；否则无源误报、C04/C06漏问，SCLK/SDAT内部I2C还漏SIG-C01。PRO-C04当前已覆盖J2/J3，别重复列漏报。
 - 三轨名义Cout76.05/74.64/128.32µF；22µF不是硬最大。LM3880 EN内部7µA+C31=470n合法，83.93ms只是典型；X1图C596959/BOM C496694/ASV链接冲突只证资料错。
 - CSV Designator/Comment须显式改列并独立对值；add并入可丢nets/anchor。schema15留312逐ID与18框架旁账，不用报告功能1/资料不足0冒充审完；UG480仅官方在线条款、Infineon完整PDF未取到。
+
+- g-pereira--greenmobi-bms：140件/396节点/4页，KiCad10.0.7 strict；10电路/29框架/474项，48局部判、426逐ID待核，门禁FAIL；22归因=6数据真缺陷+6误报+1知识+9人工，3分层漏项（0已证硬件漏检）。
+- H1等Mechanical:MountingHole_Pad配SolderWire实为外部功率端，勿报无供源或DEBUG；BAT+/BAT-、CHG+/CHG-是功率正负，不套数字差分。Buck沿共BAT+误吞独立CHG开关须由有据决定拆开。
+- C3007519是TCXO采购身份而Y1画无源晶体；C2858491是ESP32-C3FH4含flash，别误报六SPI脚NC；USB_DN/DP网名反语义但物理GPIO19/18接线正确。Q1用逻辑1G/2S/3Tab，非厂家物理3脚。
+- BQ76952 p75/BQ76942 p74-75允许未用REGIN/BREG接地、DSG/FUSE悬空；D1栅源钳位不是对地TVS，C49/C50串联100n也不是电解均压对象。未定U5变体、D1稳压值、TH1曲线不要填假参数。
+- add不能抢STARTUP候选已持有的U3，且派生nets/anchors为空；自供电USB VBUS检测、后级EN循环属自动诊断缺口，J6经R22供BAT属源侧逐支路计划缺口；schema15不支持needs_human，保留逐IDpending与FAIL，资料不足0不代表审完。
