@@ -1,0 +1,1310 @@
+{
+  "board": "imike78--home-mini-v1-drop-in-pcb",
+  "source": {
+    "repo": "iMike78/home-mini-v1-drop-in-pcb",
+    "commit": "b912ebdacddee8b12e09ff6f6c6c52c4f41dd670",
+    "schematic": "home-mini-DiP-v1.kicad_sch",
+    "license": "CERN-OHL-S-2.0"
+  },
+  "types": [
+    "AV",
+    "I2C",
+    "POWER_CONVERTER",
+    "POWER_PROTECTION",
+    "RF",
+    "SPI",
+    "STARTUP",
+    "USB"
+  ],
+  "run": {
+    "db_sha256": "93b799acdec8a128e8f6d453c6123d6cfc4fec1744d3a1fa7e19cc4a7ed309dd",
+    "plan_items": 815,
+    "findings_total": 46,
+    "results_judged": 65,
+    "gate": "FAIL",
+    "sr_commit": "29368450d61262ab26b09b7472d8ccee2b9db3a0",
+    "scan_findings_candidates": 40,
+    "native_report": {
+      "exit_code": 2,
+      "produced": false,
+      "reason": "REVIEW_INCOMPLETE remains; renderer refuses formal report"
+    },
+    "results_registered": 815,
+    "results_unclosed": 750,
+    "gate_errors": 179,
+    "report_kind": "pipeline_execution_record",
+    "review_dir": "/Users/skyfend/.cache/sr-boards/imike78--home-mini-v1-drop-in-pcb/review",
+    "top50_checked": 50,
+    "source_schematic_pages": 6,
+    "materials_summary": {
+      "required_materials": 19,
+      "available": 13,
+      "available_text_only": 0,
+      "symbol_fallback": 0,
+      "needs_verification": 0,
+      "missing": 6,
+      "not_found": 0,
+      "unresolved": 6,
+      "all_required_available": false
+    },
+    "artifact_sha256": {
+      "intent.json": "b70aa137aadd568ff55562b9ef9709845db1bdff14eff67021e1d44a7e1ee51a",
+      "circuit-candidates.json": "46a67275bad31610da03ae2b3900e10fa5718d555f5bc93b219630d06432ba0b",
+      "review-plan.json": "539d72a346e1b0c2a5602f3bf961cdf6c19ec6bdb38ed8fe3edb8972d96379d7",
+      "review-results.json": "6d818e5ea25dfd0a6ffb756a9d36f1d53ea88e2cd9c5df2154c12159b76cdd45",
+      "review-gate.json": "199a4c065a2935357f8889297629d73b85d90660421249e3f5bc6ae6d6d3709c",
+      "top50-crosscheck.json": "132350dbdd2d43c34b5c2e470ab38e6e559d921fa74bea77ade08e9ca01077fb",
+      "independent-evidence.md": "5604699b9b061bd8ba9463d7f60bd01af927a3a77fb48ceb3e0d574b600d056b",
+      "evidence-sources.json": "29141886427415e2da549c46c6667437be24d21fe6ea63bc957eec14de28c5af",
+      "inventory-replay-diagnostic.json": "735136bc9638af4baf9e476a459da4b643692a89b61f1c408d257caf90e671ab"
+    },
+    "report_sha256": "42e40b3118b6d9fe8c0f4412b49b9571ffa8a98e5704e3d2055844c157ab90fe"
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "TP9",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/SPI_CS_N"
+      ],
+      "sr_text": "/XMOS/SPI_CS_N <- U8.6 (XU316-1024-QF60B-C24​)：双向脚只挂标签，未用的调制解调/GPIO 线常见；确认有意不用后补 NC 或接出",
+      "verdict": "false_alarm",
+      "evidence": "原始db.nets同时含U8与测试铜焊盘（TP9/TP12），原生PDFp4是测试点符号；DNP不移除PCB铜。把仅排除BOM的铜测试点过滤掉后再报单节点是对象计数错误；该信号的实际用途仍不从此PASS推出。 取证：independent-evidence.md#TOUCHELECTRODES",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/netgraph.py:is_fitted；scripts/lint.py:Lint.run NET-A01",
+        "what": "为无装配实物的TestPoint_Pad保留电气节点；不能把此例扩展为所有DNP器件均导通。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.XMOS-SPI-CS-N-14f849"
+      ],
+      "evidence_section": "TOUCHELECTRODES"
+    },
+    {
+      "id": "F02",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J3",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/TCK"
+      ],
+      "sr_text": "/XMOS/TCK <- U8.24 (XU316-1024-QF60B-C24​)",
+      "verdict": "false_alarm",
+      "evidence": "XM014429B PDFp8(印刷p7)：TCK.24有PD、TDI.18/TMS.23有PU，TDO.20是可闲置输出；J3为DNP可选JTAG。不能由单节点或input-only断言缺偏置/漏驱动；调试可触达性另外保留。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/part_words.py:unused_input_permission",
+        "what": "从已核逐脚声明读取PU/PD、允许闲置输出和DNP调试选项；只撤回这些准确脚的漏驱动结论，不按芯片家族批量放行。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.XMOS-TCK-72e2c9"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F03",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J3",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/TDI"
+      ],
+      "sr_text": "/XMOS/TDI <- U8.18 (XU316-1024-QF60B-C24​)",
+      "verdict": "false_alarm",
+      "evidence": "XM014429B PDFp8(印刷p7)：TCK.24有PD、TDI.18/TMS.23有PU，TDO.20是可闲置输出；J3为DNP可选JTAG。不能由单节点或input-only断言缺偏置/漏驱动；调试可触达性另外保留。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/part_words.py:unused_input_permission",
+        "what": "从已核逐脚声明读取PU/PD、允许闲置输出和DNP调试选项；只撤回这些准确脚的漏驱动结论，不按芯片家族批量放行。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.XMOS-TDI-81f2b8"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F04",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J3",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/TDO"
+      ],
+      "sr_text": "/XMOS/TDO <- U8.20 (XU316-1024-QF60B-C24​)",
+      "verdict": "false_alarm",
+      "evidence": "XM014429B PDFp8(印刷p7)：TCK.24有PD、TDI.18/TMS.23有PU，TDO.20是可闲置输出；J3为DNP可选JTAG。不能由单节点或input-only断言缺偏置/漏驱动；调试可触达性另外保留。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/part_words.py:unused_input_permission",
+        "what": "从已核逐脚声明读取PU/PD、允许闲置输出和DNP调试选项；只撤回这些准确脚的漏驱动结论，不按芯片家族批量放行。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.XMOS-TDO-73508e"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F05",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J3",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/TMS"
+      ],
+      "sr_text": "/XMOS/TMS <- U8.23 (XU316-1024-QF60B-C24​)",
+      "verdict": "false_alarm",
+      "evidence": "XM014429B PDFp8(印刷p7)：TCK.24有PD、TDI.18/TMS.23有PU，TDO.20是可闲置输出；J3为DNP可选JTAG。不能由单节点或input-only断言缺偏置/漏驱动；调试可触达性另外保留。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/part_words.py:unused_input_permission",
+        "what": "从已核逐脚声明读取PU/PD、允许闲置输出和DNP调试选项；只撤回这些准确脚的漏驱动结论，不按芯片家族批量放行。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.XMOS-TMS-28c7e3"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F06",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/XL_DN0"
+      ],
+      "sr_text": "/XMOS/XL_DN0 <- U8.35 (XU316-1024-QF60B-C24​)：双向脚只挂标签，未用的调制解调/GPIO 线常见；确认有意不用后补 NC 或接出",
+      "verdict": "needs_human",
+      "evidence": "原始物理连接见db.nets['/XMOS/XL_DN0']。该xCONNECT输入只到DNP J4；手册PDFp9/p17提供未用GPIO弱下拉，但未确认本板固件是否启用该link，保留用途确认。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.XMOS-XL-DN0-b00bca"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F07",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/XL_DN1"
+      ],
+      "sr_text": "/XMOS/XL_DN1 <- U8.33 (XU316-1024-QF60B-C24​)：双向脚只挂标签，未用的调制解调/GPIO 线常见；确认有意不用后补 NC 或接出",
+      "verdict": "needs_human",
+      "evidence": "原始物理连接见db.nets['/XMOS/XL_DN1']。该xCONNECT输入只到DNP J4；手册PDFp9/p17提供未用GPIO弱下拉，但未确认本板固件是否启用该link，保留用途确认。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.XMOS-XL-DN1-bf0278"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F08",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J4",
+        "R28",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/XL_UP0"
+      ],
+      "sr_text": "/XMOS/XL_UP0 <- R28.2 (22R)",
+      "verdict": "false_alarm",
+      "evidence": "R28=22R，另一端分别到U8.36/.37 xCONNECT输出，末端仅到DNP J4调试接口；该装配无外部接收端，非断开的必需负载。XM014429B PDFp8定义X1D18/19输出角色；xmos.kicad_sch的XTAG DEV J4明确DNP。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "单节点无源端沿已贴串阻回溯输出，再结合DNP可选接口标为装配信息；没有可选接口/端点出处时继续候选。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.XMOS-XL-UP0-da766f"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F09",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J4",
+        "R29",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/XL_UP1"
+      ],
+      "sr_text": "/XMOS/XL_UP1 <- R29.2 (22R)",
+      "verdict": "false_alarm",
+      "evidence": "R29=22R，另一端分别到U8.36/.37 xCONNECT输出，末端仅到DNP J4调试接口；该装配无外部接收端，非断开的必需负载。XM014429B PDFp8定义X1D18/19输出角色；xmos.kicad_sch的XTAG DEV J4明确DNP。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "单节点无源端沿已贴串阻回溯输出，再结合DNP可选接口标为装配信息；没有可选接口/端点出处时继续候选。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.XMOS-XL-UP1-fe579f"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F10",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "TP12",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/XOD31"
+      ],
+      "sr_text": "/XMOS/XOD31 <- U8.55 (XU316-1024-QF60B-C24​)：双向脚只挂标签，未用的调制解调/GPIO 线常见；确认有意不用后补 NC 或接出",
+      "verdict": "false_alarm",
+      "evidence": "原始db.nets同时含U8与测试铜焊盘（TP9/TP12），原生PDFp4是测试点符号；DNP不移除PCB铜。把仅排除BOM的铜测试点过滤掉后再报单节点是对象计数错误；该信号的实际用途仍不从此PASS推出。 取证：independent-evidence.md#TOUCHELECTRODES",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/netgraph.py:is_fitted；scripts/lint.py:Lint.run NET-A01",
+        "what": "为无装配实物的TestPoint_Pad保留电气节点；不能把此例扩展为所有DNP器件均导通。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.XMOS-XOD31-679e0c"
+      ],
+      "evidence_section": "TOUCHELECTRODES"
+    },
+    {
+      "id": "F11",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U6"
+      ],
+      "nets": [
+        "ESP_IO42"
+      ],
+      "sr_text": "ESP_IO42 <- U6.48 (ESP32-S3R8)：双向脚只挂标签，未用的调制解调/GPIO 线常见；确认有意不用后补 NC 或接出",
+      "verdict": "needs_human",
+      "evidence": "原始物理连接见db.nets['ESP_IO42']。ESP32-S3对应备用GPIO没有NC标记；GPIO可不使用不等于本板已声明不用，需要接口/装配意图。 取证：independent-evidence.md#PINIDENTITY",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.ESP-IO42-b642c4"
+      ],
+      "evidence_section": "PINIDENTITY"
+    },
+    {
+      "id": "F12",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U6"
+      ],
+      "nets": [
+        "ESP_IO48"
+      ],
+      "sr_text": "ESP_IO48 <- U6.36 (ESP32-S3R8)：双向脚只挂标签，未用的调制解调/GPIO 线常见；确认有意不用后补 NC 或接出",
+      "verdict": "needs_human",
+      "evidence": "原始物理连接见db.nets['ESP_IO48']。ESP32-S3对应备用GPIO没有NC标记；GPIO可不使用不等于本板已声明不用，需要接口/装配意图。 取证：independent-evidence.md#PINIDENTITY",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.ESP-IO48-4e86f1"
+      ],
+      "evidence_section": "PINIDENTITY"
+    },
+    {
+      "id": "F13",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "TP1",
+        "U1"
+      ],
+      "nets": [
+        "Net-(TP1-T)"
+      ],
+      "sr_text": "Net-(TP1-T) <- U1.3 (AP22802AW5-7)",
+      "verdict": "false_alarm",
+      "evidence": "U1.3为开漏FLG，AP22802手册PDFp2 Pin Descriptions确认FLG为开漏故障输出，未接收的输出不构成输入漏驱动；此处不声称手册有“未用允许悬空”原句；TP1本为测试焊盘且DNP。不是必需输入失去驱动。 取证：independent-evidence.md#USBPOWER",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "依据已核FLG脚用途/未用允许条款及测试铜焊盘处理，不把未读出的故障输出判为电气断线。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.NET-7176d3"
+      ],
+      "evidence_section": "USBPOWER"
+    },
+    {
+      "id": "F14",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "TP6",
+        "U2"
+      ],
+      "nets": [
+        "Net-(U2-ELEC0)"
+      ],
+      "sr_text": "Net-(U2-ELEC0) <- U2.8 (MPR121QR2)",
+      "verdict": "false_alarm",
+      "evidence": "Net-(U2-ELEC0)是MPR121电容触摸电极，非需数字驱动的逻辑输入；原始网表包含铜测试焊盘，过滤dnp后只剩U2。Rev.4 PDFp2 Table1电极定义、原生PDFp3 Touch。 取证：independent-evidence.md#TOUCHELECTRODES",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/checkers/netgraph.py:is_fitted",
+        "what": "区分电容触摸/天线等模拟电极端点和数字输入；BOM的DNP不应消掉TestPoint_Pad的PCB铜。数字输入与DNP电阻/连接器仍按真实装配判。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.NET-4934e8"
+      ],
+      "evidence_section": "TOUCHELECTRODES"
+    },
+    {
+      "id": "F15",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "TP7",
+        "U2"
+      ],
+      "nets": [
+        "Net-(U2-ELEC1)"
+      ],
+      "sr_text": "Net-(U2-ELEC1) <- U2.9 (MPR121QR2)",
+      "verdict": "false_alarm",
+      "evidence": "Net-(U2-ELEC1)是MPR121电容触摸电极，非需数字驱动的逻辑输入；原始网表包含铜测试焊盘，过滤dnp后只剩U2。Rev.4 PDFp2 Table1电极定义、原生PDFp3 Touch。 取证：independent-evidence.md#TOUCHELECTRODES",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/checkers/netgraph.py:is_fitted",
+        "what": "区分电容触摸/天线等模拟电极端点和数字输入；BOM的DNP不应消掉TestPoint_Pad的PCB铜。数字输入与DNP电阻/连接器仍按真实装配判。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.NET-dbf259"
+      ],
+      "evidence_section": "TOUCHELECTRODES"
+    },
+    {
+      "id": "F16",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "TP8",
+        "U2"
+      ],
+      "nets": [
+        "Net-(U2-ELEC2)"
+      ],
+      "sr_text": "Net-(U2-ELEC2) <- U2.10 (MPR121QR2)",
+      "verdict": "false_alarm",
+      "evidence": "Net-(U2-ELEC2)是MPR121电容触摸电极，非需数字驱动的逻辑输入；原始网表包含铜测试焊盘，过滤dnp后只剩U2。Rev.4 PDFp2 Table1电极定义、原生PDFp3 Touch。 取证：independent-evidence.md#TOUCHELECTRODES",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/checkers/netgraph.py:is_fitted",
+        "what": "区分电容触摸/天线等模拟电极端点和数字输入；BOM的DNP不应消掉TestPoint_Pad的PCB铜。数字输入与DNP电阻/连接器仍按真实装配判。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.NET-51c571"
+      ],
+      "evidence_section": "TOUCHELECTRODES"
+    },
+    {
+      "id": "F17",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U8"
+      ],
+      "nets": [
+        "XMOS_USB_N"
+      ],
+      "sr_text": "XMOS_USB_N <- U8.28 (XU316-1024-QF60B-C24​)：双向脚只挂标签，未用的调制解调/GPIO 线常见；确认有意不用后补 NC 或接出",
+      "verdict": "needs_human",
+      "evidence": "原始物理连接见db.nets['XMOS_USB_N']。USB线在本板没有对端；XM014429B PDFp27允许不使用USB时相关供电脚悬空，但是否保留未来USB功能、是否补NC标记仍需装配/接口意图。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.XMOS-USB-N-aa6a49"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F18",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U8"
+      ],
+      "nets": [
+        "XMOS_USB_P"
+      ],
+      "sr_text": "XMOS_USB_P <- U8.29 (XU316-1024-QF60B-C24​)：双向脚只挂标签，未用的调制解调/GPIO 线常见；确认有意不用后补 NC 或接出",
+      "verdict": "needs_human",
+      "evidence": "原始物理连接见db.nets['XMOS_USB_P']。USB线在本板没有对端；XM014429B PDFp27允许不使用USB时相关供电脚悬空，但是否保留未来USB功能、是否补NC标记仍需装配/接口意图。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.XMOS-USB-P-a4b91e"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F19",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U8"
+      ],
+      "nets": [
+        "XU316_WS2812"
+      ],
+      "sr_text": "XU316_WS2812 <- U8.48 (XU316-1024-QF60B-C24​)：双向脚只挂标签，未用的调制解调/GPIO 线常见；确认有意不用后补 NC 或接出",
+      "verdict": "needs_human",
+      "evidence": "原始物理连接见db.nets['XU316_WS2812']。命名备用脚未给受控使用/不用说明；不把无法确定意图判成误报或真实缺陷。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.XU316-WS2812-815a90"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F20",
+      "sr_rule": "NET-A02",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "U6",
+        "U7"
+      ],
+      "nets": [
+        "/ESP32-S3R8/SPI_D",
+        "/ESP32-S3R8/SPI_HD"
+      ],
+      "sr_text": "/ESP32-S3R8/SPI_D(2节点) <-> /ESP32-S3R8/SPI_HD(2节点)",
+      "verdict": "false_alarm",
+      "evidence": "两网分别为U6.35↔U7.5(IO0)与U6.30↔U7.7(IO3)，物理脚不同；W25Q128JV Rev.M PDFp7引脚配置/脚义。SPI_D与SPI_HD是合法Quad-SPI兄弟信号，不是拼写分裂。 取证：independent-evidence.md#PINIDENTITY",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:net_name_split / NET_PAIR_TOKENS",
+        "what": "结合两端SPI/Quad-SPI脚义及同族命名排除D/HD；不能全局忽略所有D/HD近似名，未知端点仍留候选。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A02.ESP32-S3R8-SPI-D-ff0f1f"
+      ],
+      "evidence_section": "PINIDENTITY"
+    },
+    {
+      "id": "F21",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J3",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/TCK"
+      ],
+      "sr_text": "/XMOS/TCK: ['U8.24']",
+      "verdict": "false_alarm",
+      "evidence": "XM014429B PDFp8(印刷p7)：TCK.24有PD、TDI.18/TMS.23有PU，TDO.20是可闲置输出；J3为DNP可选JTAG。不能由单节点或input-only断言缺偏置/漏驱动；调试可触达性另外保留。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/part_words.py:unused_input_permission",
+        "what": "从已核逐脚声明读取PU/PD、允许闲置输出和DNP调试选项；只撤回这些准确脚的漏驱动结论，不按芯片家族批量放行。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A06.XMOS-TCK-07f282"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F22",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J3",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/TDI"
+      ],
+      "sr_text": "/XMOS/TDI: ['U8.18']",
+      "verdict": "false_alarm",
+      "evidence": "XM014429B PDFp8(印刷p7)：TCK.24有PD、TDI.18/TMS.23有PU，TDO.20是可闲置输出；J3为DNP可选JTAG。不能由单节点或input-only断言缺偏置/漏驱动；调试可触达性另外保留。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/part_words.py:unused_input_permission",
+        "what": "从已核逐脚声明读取PU/PD、允许闲置输出和DNP调试选项；只撤回这些准确脚的漏驱动结论，不按芯片家族批量放行。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A06.XMOS-TDI-b87bc4"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F23",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J3",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/TMS"
+      ],
+      "sr_text": "/XMOS/TMS: ['U8.23']",
+      "verdict": "false_alarm",
+      "evidence": "XM014429B PDFp8(印刷p7)：TCK.24有PD、TDI.18/TMS.23有PU，TDO.20是可闲置输出；J3为DNP可选JTAG。不能由单节点或input-only断言缺偏置/漏驱动；调试可触达性另外保留。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/part_words.py:unused_input_permission",
+        "what": "从已核逐脚声明读取PU/PD、允许闲置输出和DNP调试选项；只撤回这些准确脚的漏驱动结论，不按芯片家族批量放行。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A06.XMOS-TMS-b76c24"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F24",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "TP6",
+        "U2"
+      ],
+      "nets": [
+        "Net-(U2-ELEC0)"
+      ],
+      "sr_text": "Net-(U2-ELEC0): ['U2.8']",
+      "verdict": "false_alarm",
+      "evidence": "Net-(U2-ELEC0)是MPR121电容触摸电极，非需数字驱动的逻辑输入；原始网表包含铜测试焊盘，过滤dnp后只剩U2。Rev.4 PDFp2 Table1电极定义、原生PDFp3 Touch。 取证：independent-evidence.md#TOUCHELECTRODES",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/checkers/netgraph.py:is_fitted",
+        "what": "区分电容触摸/天线等模拟电极端点和数字输入；BOM的DNP不应消掉TestPoint_Pad的PCB铜。数字输入与DNP电阻/连接器仍按真实装配判。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A06.NET-8fbaf9"
+      ],
+      "evidence_section": "TOUCHELECTRODES"
+    },
+    {
+      "id": "F25",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "TP7",
+        "U2"
+      ],
+      "nets": [
+        "Net-(U2-ELEC1)"
+      ],
+      "sr_text": "Net-(U2-ELEC1): ['U2.9']",
+      "verdict": "false_alarm",
+      "evidence": "Net-(U2-ELEC1)是MPR121电容触摸电极，非需数字驱动的逻辑输入；原始网表包含铜测试焊盘，过滤dnp后只剩U2。Rev.4 PDFp2 Table1电极定义、原生PDFp3 Touch。 取证：independent-evidence.md#TOUCHELECTRODES",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/checkers/netgraph.py:is_fitted",
+        "what": "区分电容触摸/天线等模拟电极端点和数字输入；BOM的DNP不应消掉TestPoint_Pad的PCB铜。数字输入与DNP电阻/连接器仍按真实装配判。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A06.NET-02db12"
+      ],
+      "evidence_section": "TOUCHELECTRODES"
+    },
+    {
+      "id": "F26",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "TP8",
+        "U2"
+      ],
+      "nets": [
+        "Net-(U2-ELEC2)"
+      ],
+      "sr_text": "Net-(U2-ELEC2): ['U2.10']",
+      "verdict": "false_alarm",
+      "evidence": "Net-(U2-ELEC2)是MPR121电容触摸电极，非需数字驱动的逻辑输入；原始网表包含铜测试焊盘，过滤dnp后只剩U2。Rev.4 PDFp2 Table1电极定义、原生PDFp3 Touch。 取证：independent-evidence.md#TOUCHELECTRODES",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/checkers/netgraph.py:is_fitted",
+        "what": "区分电容触摸/天线等模拟电极端点和数字输入；BOM的DNP不应消掉TestPoint_Pad的PCB铜。数字输入与DNP电阻/连接器仍按真实装配判。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A06.NET-7f20a9"
+      ],
+      "evidence_section": "TOUCHELECTRODES"
+    },
+    {
+      "id": "F27",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "R8",
+        "U3"
+      ],
+      "nets": [
+        "+5V",
+        "/Power/3V3_EN"
+      ],
+      "sr_text": "/Power/3V3_EN: R8 上拉->+5V(5.0V)",
+      "verdict": "false_alarm",
+      "evidence": "U3.EN为高有效，R8=100k上拉+5V；TPS6282x SLVSEF9I PDFp4允许VIN/EN到6V，p5给EN高门限1V。该候选没有反向偏置证据，轨实际输入窗另核。 取证：independent-evidence.md#CONTROLS",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run RST-A01",
+        "what": "把有效极性和上拉电压候选区分；准确A/B变体及已核电平满足时不报反向偏置，高电压超限仍单独审。"
+      },
+      "seed": null,
+      "check_ids": [
+        "RST-A01.POWER-3V3-EN-8d6567"
+      ],
+      "evidence_section": "CONTROLS"
+    },
+    {
+      "id": "F28",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "Q3",
+        "R53",
+        "U11"
+      ],
+      "nets": [
+        "+5V",
+        "Net-(Q3-C)"
+      ],
+      "sr_text": "Net-(Q3-C): R53 上拉->+5V(5.0V)",
+      "verdict": "false_alarm",
+      "evidence": "U11.EN高有效（TLV733P PDFp4），R53上拉+5V、Q3集电极下拉；MUTE_ON高时Q3使麦克风断电。高拉EN不是极性错误；漏电/门限全角仍留RST-E01。 取证：independent-evidence.md#CONTROLS",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run RST-A01",
+        "what": "把有效极性和上拉电压候选区分；准确A/B变体及已核电平满足时不报反向偏置，高电压超限仍单独审。"
+      },
+      "seed": null,
+      "check_ids": [
+        "RST-A01.NET-377e29"
+      ],
+      "evidence_section": "CONTROLS"
+    },
+    {
+      "id": "F29",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "R4",
+        "U1"
+      ],
+      "nets": [
+        "Net-(U1-EN)",
+        "VBUS"
+      ],
+      "sr_text": "Net-(U1-EN): R4 上拉->VBUS",
+      "verdict": "false_alarm",
+      "evidence": "AP22802A为高有效EN（PDFp2引脚说明/页3功能框图），R4上拉VBUS，意图为供电即开；并非低有效版本B的误上拉。源范围与浪涌另核。 取证：independent-evidence.md#CONTROLS",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run RST-A01",
+        "what": "把有效极性和上拉电压候选区分；准确A/B变体及已核电平满足时不报反向偏置，高电压超限仍单独审。"
+      },
+      "seed": null,
+      "check_ids": [
+        "RST-A01.NET-080adb"
+      ],
+      "evidence_section": "CONTROLS"
+    },
+    {
+      "id": "F30",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "P1",
+      "refs": [
+        "D2"
+      ],
+      "nets": [
+        "ESP_USB_N"
+      ],
+      "sr_text": "D2 (PESD0402V05 PESD0402V05 Diode:SZESD9B5.0ST5G) 跨 ESP_USB_N；轨名提示=无，型号提示=无。同网 IC 脚 U6.25(GPIO19) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 J1：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "D2准确料号DOWO PESD0402V05，直接接U6 USB脚及J1；缺该厂该型号指定波形/电流/温度下Vcl与能量。符号缓存SZESD9B5.0ST5G不是准确器件，不能据同名ON手册关闭。 取证：independent-evidence.md#USBCLAMPS",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-E02.D2-946030"
+      ],
+      "evidence_section": "USBCLAMPS"
+    },
+    {
+      "id": "F31",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "P1",
+      "refs": [
+        "D3"
+      ],
+      "nets": [
+        "ESP_USB_P"
+      ],
+      "sr_text": "D3 (PESD0402V05 PESD0402V05 Diode:SZESD9B5.0ST5G) 跨 ESP_USB_P；轨名提示=无，型号提示=无。同网 IC 脚 U6.26(GPIO20) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 J1：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "D3准确料号DOWO PESD0402V05，直接接U6 USB脚及J1；缺该厂该型号指定波形/电流/温度下Vcl与能量。符号缓存SZESD9B5.0ST5G不是准确器件，不能据同名ON手册关闭。 取证：independent-evidence.md#USBCLAMPS",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-E02.D3-2011e3"
+      ],
+      "evidence_section": "USBCLAMPS"
+    },
+    {
+      "id": "F32",
+      "sr_rule": "SIG-A03",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U6"
+      ],
+      "nets": [
+        "I2C2_SCL"
+      ],
+      "sr_text": "I2C2_SCL: ['U6', 'U8'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "verdict": "needs_human",
+      "evidence": "I2C2_SCL仅U6/U8两端，无外部Rp；U6为GPIO38/39、U8为可编程端口。需确认此链路是否实际以开漏I2C使用及内部上拉设置/速率/总线Cb。仅有I2C2网名不能证明缺上拉是实物缺陷。 取证：independent-evidence.md#CONTROLS",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "SIG-A03.I2C2-SCL-42c128"
+      ],
+      "evidence_section": "CONTROLS"
+    },
+    {
+      "id": "F33",
+      "sr_rule": "SIG-A03",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U6"
+      ],
+      "nets": [
+        "I2C2_SDA"
+      ],
+      "sr_text": "I2C2_SDA: ['U6', 'U8'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "verdict": "needs_human",
+      "evidence": "I2C2_SDA仅U6/U8两端，无外部Rp；U6为GPIO38/39、U8为可编程端口。需确认此链路是否实际以开漏I2C使用及内部上拉设置/速率/总线Cb。仅有I2C2网名不能证明缺上拉是实物缺陷。 取证：independent-evidence.md#CONTROLS",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "SIG-A03.I2C2-SDA-df27e0"
+      ],
+      "evidence_section": "CONTROLS"
+    },
+    {
+      "id": "F34",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "TP8",
+        "U2"
+      ],
+      "nets": [
+        "Net-(U2-ELEC2)"
+      ],
+      "sr_text": "U2.10 -> Net-(U2-ELEC2): 输入脚所在网只有该节点",
+      "verdict": "false_alarm",
+      "evidence": "Net-(U2-ELEC2)是MPR121电容触摸电极，非需数字驱动的逻辑输入；原始网表包含铜测试焊盘，过滤dnp后只剩U2。Rev.4 PDFp2 Table1电极定义、原生PDFp3 Touch。 取证：independent-evidence.md#TOUCHELECTRODES",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/checkers/netgraph.py:is_fitted",
+        "what": "区分电容触摸/天线等模拟电极端点和数字输入；BOM的DNP不应消掉TestPoint_Pad的PCB铜。数字输入与DNP电阻/连接器仍按真实装配判。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.U2-10-9a7100"
+      ],
+      "evidence_section": "TOUCHELECTRODES"
+    },
+    {
+      "id": "F35",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "TP6",
+        "U2"
+      ],
+      "nets": [
+        "Net-(U2-ELEC0)"
+      ],
+      "sr_text": "U2.8 -> Net-(U2-ELEC0): 输入脚所在网只有该节点",
+      "verdict": "false_alarm",
+      "evidence": "Net-(U2-ELEC0)是MPR121电容触摸电极，非需数字驱动的逻辑输入；原始网表包含铜测试焊盘，过滤dnp后只剩U2。Rev.4 PDFp2 Table1电极定义、原生PDFp3 Touch。 取证：independent-evidence.md#TOUCHELECTRODES",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/checkers/netgraph.py:is_fitted",
+        "what": "区分电容触摸/天线等模拟电极端点和数字输入；BOM的DNP不应消掉TestPoint_Pad的PCB铜。数字输入与DNP电阻/连接器仍按真实装配判。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.U2-8-cafeb7"
+      ],
+      "evidence_section": "TOUCHELECTRODES"
+    },
+    {
+      "id": "F36",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "TP7",
+        "U2"
+      ],
+      "nets": [
+        "Net-(U2-ELEC1)"
+      ],
+      "sr_text": "U2.9 -> Net-(U2-ELEC1): 输入脚所在网只有该节点",
+      "verdict": "false_alarm",
+      "evidence": "Net-(U2-ELEC1)是MPR121电容触摸电极，非需数字驱动的逻辑输入；原始网表包含铜测试焊盘，过滤dnp后只剩U2。Rev.4 PDFp2 Table1电极定义、原生PDFp3 Touch。 取证：independent-evidence.md#TOUCHELECTRODES",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/checkers/netgraph.py:is_fitted",
+        "what": "区分电容触摸/天线等模拟电极端点和数字输入；BOM的DNP不应消掉TestPoint_Pad的PCB铜。数字输入与DNP电阻/连接器仍按真实装配判。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.U2-9-91b165"
+      ],
+      "evidence_section": "TOUCHELECTRODES"
+    },
+    {
+      "id": "F37",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J3",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/TDI"
+      ],
+      "sr_text": "U8.18 -> /XMOS/TDI: 输入脚所在网只有该节点",
+      "verdict": "false_alarm",
+      "evidence": "XM014429B PDFp8(印刷p7)：TCK.24有PD、TDI.18/TMS.23有PU，TDO.20是可闲置输出；J3为DNP可选JTAG。不能由单节点或input-only断言缺偏置/漏驱动；调试可触达性另外保留。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/part_words.py:unused_input_permission",
+        "what": "从已核逐脚声明读取PU/PD、允许闲置输出和DNP调试选项；只撤回这些准确脚的漏驱动结论，不按芯片家族批量放行。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.U8-18-c8eff1"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F38",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J3",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/TMS"
+      ],
+      "sr_text": "U8.23 -> /XMOS/TMS: 输入脚所在网只有该节点",
+      "verdict": "false_alarm",
+      "evidence": "XM014429B PDFp8(印刷p7)：TCK.24有PD、TDI.18/TMS.23有PU，TDO.20是可闲置输出；J3为DNP可选JTAG。不能由单节点或input-only断言缺偏置/漏驱动；调试可触达性另外保留。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/part_words.py:unused_input_permission",
+        "what": "从已核逐脚声明读取PU/PD、允许闲置输出和DNP调试选项；只撤回这些准确脚的漏驱动结论，不按芯片家族批量放行。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.U8-23-dc32a2"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F39",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "J3",
+        "U8"
+      ],
+      "nets": [
+        "/XMOS/TCK"
+      ],
+      "sr_text": "U8.24 -> /XMOS/TCK: 输入脚所在网只有该节点",
+      "verdict": "false_alarm",
+      "evidence": "XM014429B PDFp8(印刷p7)：TCK.24有PD、TDI.18/TMS.23有PU，TDO.20是可闲置输出；J3为DNP可选JTAG。不能由单节点或input-only断言缺偏置/漏驱动；调试可触达性另外保留。 取证：independent-evidence.md#JTAG",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/part_words.py:unused_input_permission",
+        "what": "从已核逐脚声明读取PU/PD、允许闲置输出和DNP调试选项；只撤回这些准确脚的漏驱动结论，不按芯片家族批量放行。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.U8-24-3c55ac"
+      ],
+      "evidence_section": "JTAG"
+    },
+    {
+      "id": "F40",
+      "sr_rule": "RST-A03",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "R10",
+        "U4"
+      ],
+      "nets": [
+        "Net-(U4-EN)"
+      ],
+      "sr_text": "U4（状态 as-built）：使能脚 U4.5 直连输入网 Net-(U4-EN)，未见 UVLO 分压或 RC 延时；输入缓慢爬升或跌落时的开启点由器件内部门限决定",
+      "verdict": "false_alarm",
+      "evidence": "U4.EN通过0R接+5V，TPS62065 SLVS833E PDFp12典型电路允许EN随输入，p5自带UVLO上升1.90–1.99V；外部EN延时不是无条件要求。本结论不代替低压输入/跨轨时序核算。 取证：independent-evidence.md#RAILS",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_up.py:scan",
+        "what": "内置UVLO与手册明确允许EN接输入时，将“无外部分压/RC”降为已知接法说明；仅在需求启动窗不匹配时保留缺陷候选。"
+      },
+      "seed": null,
+      "check_ids": [
+        "RST-A03.U4-3c102b"
+      ],
+      "evidence_section": "RAILS"
+    },
+    {
+      "id": "F41",
+      "sr_rule": "DEV-D05",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "U2",
+        "R2"
+      ],
+      "nets": [
+        "Net-(U2-REXT)",
+        "GND"
+      ],
+      "sr_text": "U2 REXT电阻R2=200k，偏离手册75kΩ、1%的外围要求。",
+      "verdict": "true_defect",
+      "evidence": "db R2=200k；U2.7→R2.2→R2.1 GND。MPR121 Rev.4 PDFp2 Table1及p3两供电配置；已渲染核对。200/75=2.666667。应改为75kΩ 1%并复核参考电流/触摸配置；不宣称实物必然失效。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-MPR121-REXT",
+        "mutation": "在准确MPR121、REXT.7到地的75kΩ 1%合成基线上把R2改200k；保留准确资料条款及引脚映射，期待人工/条款检查识别偏离。",
+        "target_rule": "DEV-D05"
+      },
+      "check_ids": [
+        "DEV-D05.U2"
+      ],
+      "evidence_section": "REXT"
+    },
+    {
+      "id": "F42",
+      "sr_rule": "DEV-D04",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U5"
+      ],
+      "nets": [
+        "+1V8",
+        "Net-(U5-IN)"
+      ],
+      "sr_text": "U5的Datasheet字段写AP2112K-1.8TRG1，采购字段却是ME6211C18M5G-N。",
+      "verdict": "true_defect",
+      "evidence": "原生db.parts.U5.datasheet/fields.Datasheet为AP2112K-1.8TRG1；Manufacturer Part/MPN均ME6211C18M5G-N。准确ME6211 V20 PDFp3选型、p4封装/脚表及p7 C18电气表已核。属于资料引用数据错误，不是已证芯片装错或电压错。修正为ME6211准确手册链接并重新审计。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-DATASHEET-IDENTITY",
+        "mutation": "在MPN=ME6211C18M5G-N的正确db上把Datasheet字段改为AP2112K-1.8TRG1，保持value和Manufacturer Part不变；检查应保留错配处置。",
+        "target_rule": "DEV-D04"
+      },
+      "check_ids": [
+        "DEV-D04.BOARD"
+      ],
+      "evidence_section": "PINIDENTITY"
+    },
+    {
+      "id": "F43",
+      "sr_rule": "PWR-C04",
+      "criteria": [
+        "G03-003",
+        "G03-004"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U3",
+        "C17",
+        "C4",
+        "C20",
+        "C50",
+        "FB2",
+        "FB4",
+        "FB9"
+      ],
+      "nets": [
+        "+3V3"
+      ],
+      "sr_text": "U3直接输出Cout的容差下界不足20µF，磁珠后电容贡献尚未定界。",
+      "verdict": "needs_human",
+      "evidence": "SLVSEF9I PDFp14：TPS62827（非A）要求20µF有效Cout。C17 22µF±20%（原生Description及Samsung产品页）；17.6+0.1×3=17.9µF。其余三颗即便各+20%合计17.96µF；但FB2/FB4/FB9后电容可能参与环路，未求等效阻抗，不直接判整板失稳。需明确手册Cout计入边界、MLCC偏压与环路。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-C04.POWER-CONVERTER-U3-FAULT.U3",
+        "PWR-C04.POWER-CONVERTER-U3-RUN.U3",
+        "PWR-C04.POWER-CONVERTER-U3-STARTUP.U3"
+      ],
+      "evidence_section": "COUT"
+    },
+    {
+      "id": "F44",
+      "sr_rule": "DEV-D05",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U2",
+        "U6"
+      ],
+      "nets": [
+        "/ESP32-S3R8/TOUCH_IRQ"
+      ],
+      "sr_text": "MPR121 IRQ开集电极输出无外部上拉，内部偏置与使用方式未确认。",
+      "verdict": "needs_human",
+      "evidence": "MPR121 Rev.4 PDFp2 IRQ=开集电极、低有效；网表仅U2.1/U6.7 GPIO2。ESP32-S3手册PDFp65有内部弱上拉典型45kΩ，但是否配置、使用IRQ还是轮询及速度尚未由受控接口说明确认；不把缺外部电阻直接定为缺陷。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [],
+      "evidence_section": "CONTROLS"
+    },
+    {
+      "id": "F45",
+      "sr_rule": "PWR-D04",
+      "criteria": [
+        "G01-017",
+        "G01-051"
+      ],
+      "severity": "P2",
+      "refs": [
+        "J1",
+        "U1",
+        "U3",
+        "U4",
+        "U5",
+        "U11"
+      ],
+      "nets": [
+        "VBUS",
+        "+5V",
+        "+3V3",
+        "+0V9",
+        "+1V8"
+      ],
+      "sr_text": "电源输入窗、各态负载、环境与故障边界未给出受控基线。",
+      "verdict": "needs_human",
+      "evidence": "README只能推断原机Micro-USB/FPC输入；U1前4.8µF、后多轨与功放。准确IC手册已取，不能把+5V网名当4.75–5.5V保证，不能据此算全温启动/限流/总预算通过。需原设计者给端口测量点、适配器/线缆范围、音频/Wi-Fi/LED并发负载及允许故障。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [],
+      "evidence_section": "USBPOWER"
+    },
+    {
+      "id": "F46",
+      "sr_rule": "SIG-T02",
+      "criteria": [
+        "G04-017",
+        "G04-018"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U2",
+        "U6",
+        "U8",
+        "U13"
+      ],
+      "nets": [
+        "ESP_3V3",
+        "I2C_SCL",
+        "I2C_SDA",
+        "I2C2_SCL",
+        "I2C2_SDA"
+      ],
+      "sr_text": "I2C topology inventory/binding is stale or modified；incomplete I2C planned coverage；I2C generated criterion/object changed；stale I2C object binding",
+      "verdict": "false_alarm",
+      "evidence": "同一db和工具版本，原计划6段；仅用plan.i2c_topology.context重建为10段；该context只保存input_sha256/device_kinds_verified，漏power_rails。把原intent.power_rails补回后重建为6段，除context/digest外全部主体与原计划相同。未编辑清单或网表。复现实验见review/inventory-replay-diagnostic.json；该软件错误不证明各段I2C电气通过。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/i2c_topology.py:build_i2c_topology context；scripts/board_intent.py:context",
+        "what": "I2C重建上下文须包含影响轨/上拉识别的power_rails（及实际依赖的rail_exclusions），生成与门禁重建用相同声明；增加ESP_3V3这类非默认轨名的回放一致性测试，不通过修改保存的inventory绕过。"
+      },
+      "seed": null,
+      "check_ids": [],
+      "evidence_section": "INVENTORY-REPLAY"
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G05-030",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032"
+      ],
+      "sr_rule": "PRO-E02",
+      "refs": [
+        "D4",
+        "J1",
+        "FB1"
+      ],
+      "nets": [
+        "Net-(D4-A2)",
+        "GND"
+      ],
+      "why_expected": "D4为对外入口跨地防护钳位，应逐器件问工作电压/钳位/脉冲能力；不是要求有更多TVS。",
+      "evidence": "D4=TPD1E10B06DPYR，原生Description=5.5V TVS；.1=GND、.2与J1.10–15/FB1.1同网。815项最终计划没有PRO-E02.D4；只有D2/D3。protective_clamps.CLAMP_RE不含TPD且part_text只读part/value/prim，不读Description；三个字符串均未命中现有正则。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/protective_clamps.py:CLAMP_RE / part_text / protected_net",
+        "what": "优先采用已核TVS/ESD器件类别与实际两端跨地拓扑，原生Description可作候选提示；准确TPD器件验证后补PRO-E02，保留双向钳位和开关节点排除，不把所有TPD前缀无条件当TVS。"
+      },
+      "seed": {
+        "kind": "D-CLAMP-IDENTITY-TPD",
+        "mutation": "保持D4两端网络与准确TVS语义，将基线能识别的PESD名字改成TPD1E10B06DPYR（保留Description为TVS和身份依据）；应仍有PRO-E02对象。属于覆盖变异，不声称D4已超额定。",
+        "target_rule": "PRO-E02"
+      }
+    },
+    {
+      "id": "M02",
+      "criterion": "G04-010",
+      "sr_rule": "RST-T04",
+      "refs": [
+        "U6",
+        "U14",
+        "R74",
+        "R76",
+        "R77",
+        "C98"
+      ],
+      "nets": [
+        "AUDIO_PA_EN",
+        "Net-(R74-Pad2)",
+        "/AUDIO/AMP_CTL"
+      ],
+      "why_expected": "主控复位/失电期间功放使能默认态属于关键控制输出，不能仅由稳压器EN/PG候选覆盖。",
+      "evidence": "U6.24→R74(0R)→R76(4.7k)→U14.1 *SHUTDOWN；R77=470k到GNDA，C98=10nF。最终8条RST-T04仅U1/U3/U11（含U3.PG），没有本路径。R77存在，故本项是对象覆盖漏问，尚未证明默认态不安全；系统RST-T03不等于逐线RST-T04。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:startup candidate generation；scripts/checkers/power_up.py:scan",
+        "what": "由主控GPIO沿已贴串阻追到规范化EN/SHUTDOWN/OE/RESET脚，支持*SHUTDOWN别名；展开实际默认态路径并计入接收芯片内部偏置。可用rule_gaps显式补回，避免将AV电路视为无控制线。"
+      },
+      "seed": {
+        "kind": "D-GPIO-CONTROL-COVERAGE",
+        "mutation": "保留本板U6.24→R74/R76→U14.1与R77/C98路径作为合成正向覆盖位点；将SHUTDOWN脚名在SHUTDOWN/*SHUTDOWN/~{SHUTDOWN}间变换，均应有RST-T04。该位点测枚举一致性，不注入虚假的电气失效。",
+        "target_rule": "RST-T04"
+      }
+    }
+  ],
+  "summary": {
+    "true_defect": 2,
+    "false_alarm": 30,
+    "criterion_issue": 0,
+    "knowledge_gap": 2,
+    "needs_human": 12,
+    "misses": 2
+  }
+}

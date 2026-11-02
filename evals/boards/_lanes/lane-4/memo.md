@@ -75,3 +75,9 @@
 - 只知GND且VIN/VCC无窗口时，passive_stress竟给C12/C13=0V/PASS；逐条覆核上界。派生stub的proposal_override被derive_rows/DERIVED_ROW_KEPT丢弃，已有反证仍报缺码。
 - 匿名J1/J2输出漏电源树/预算和PRO-C04；SS只得RST模板、内置限流漏PRO-C05。模拟UVLO/RON/SS非数字VOH链，BST跨SW，TP1地测试焊盘勿作外接口。
 - Top50例头1.4.1而现库1.6.1/344条，按当前BASIS核；T1/D2网页片段不记本地完整PDF，1500Vac测试不当工作绝缘。F1未闭与REVIEW_INCOMPLETE保留，不伪造VENDOR_DATUM。
+
+- imike78--home-mini-v1-drop-in-pcb：815项/65确定/750未闭；46归因=2真/30误/0准则/2知识/12待确认，2覆盖漏问；FAIL，renderer拒绝，报告为执行记录。
+- I2C保存context漏power_rails：原6段→重放10段，补回原声明后主体全同；先修重放一致性，别改inventory消警。
+- MPR121 REXT的R2=200k偏离Rev4 PDFp2的75kΩ 1%；U5资料字段AP2112与采购ME6211不同。TPS62827非A需20µF有效Cout，22µF负容差不够，但磁珠后贡献先定界。
+- 电极ELE0/1/2只接铜焊盘不等于漏数字源；DNP TestPoint_Pad仍是铜。XU316旧手册PDFp8明确TCK PD、TDI/TMS PU；QSPI D/HD别当分裂网。
+- TPD1E10B06因CLAMP_RE/part_text漏PRO-E02；*SHUTDOWN的U6→U14控制线不应只靠稳压器EN/PG的RST-T04覆盖。40扫描外另5观察+1软件误报，未审完项不当缺陷计数。
