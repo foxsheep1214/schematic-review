@@ -242,12 +242,46 @@ def declared_kinds(intent):
 
 
 def graph_db(db, intent):
-    """Netlist view for connectivity analysis with datasheet-declared device kinds attached.
+    """Analysis view: verified kinds and source-bound official names for unnamed native pins.
 
     Returns a shallow copy; db_fingerprint covers only netlist keys, so digests are unchanged.
     """
     kinds = declared_kinds(intent)
-    return dict(db, device_kinds=kinds) if kinds else db
+    devices = (intent or {}).get('devices') or {}
+    devices = devices if isinstance(devices, dict) else {}
+    if not kinds and not devices:
+        return db
+    names = dict(db.get('pinname') or {})
+    evidence, conflicts = dict(db.get('pin_name_evidence') or {}), []
+    for ref, device in devices.items():
+        # An incomplete/uncited table is a lead, not a replacement pin definition.
+        if not isinstance(device, dict) or not device.get('pinout_complete') or not device.get('citation'):
+            continue
+        pins = device.get('pins')
+        if not isinstance(pins, dict):
+            continue
+        for pin, spec in pins.items():
+            if not isinstance(ref, str) or not isinstance(pin, str) or not isinstance(spec, dict):
+                continue
+            node = ref + '.' + pin
+            if node not in db.get('pin2net', {}) or spec.get('role') == 'absent':
+                continue
+            official = spec.get('name', '')
+            native = names.get(node, '')
+            if native and native != '~':
+                left, right = (set(part_words.pin_aliases(n, pin)) for n in (native, official))
+                synonyms = (part_words.GATE_NAMES, part_words.DRAIN_NAMES, part_words.SOURCE_NAMES,
+                            part_words.ANODE_NAMES, part_words.CATHODE_NAMES)
+                equivalent = bool(left & right) or any(left & group and right & group for group in synonyms)
+                if official and not equivalent:
+                    conflicts.append({'code': 'PIN_NAME_CONFLICT', 'node': node, 'native': native,
+                                      'official': official, 'citation': device['citation']})
+                continue
+            if official:
+                names[node] = official
+                evidence[node] = {'basis': 'official-pin-table', 'name': official, 'citation': device['citation']}
+    return dict(db, device_kinds=kinds, resolved_pinname=names, devices=devices,
+                pin_name_evidence=evidence, pin_name_conflicts=conflicts)
 
 
 def device_errors(devices, db):
@@ -328,7 +362,7 @@ def context(intent, key, extra=()):
     经手册核验的器件类型影响识别结果，随清单保存（device_kinds_verified），过期检测才能复现。
     """
     source = intent if isinstance(intent, dict) else {}
-    out = {k: source[k] for k in ('input_sha256', 'assemblies') + tuple(extra) + (key,) if k in source}
+    out = {k: source[k] for k in ('input_sha256', 'assemblies', 'devices') + tuple(extra) + (key,) if k in source}
     kinds = declared_kinds(source)
     if kinds:
         out[VERIFIED_KEY] = kinds

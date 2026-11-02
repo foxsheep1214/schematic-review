@@ -6375,5 +6375,26 @@
   "file": "evals/seeded_bench/mutators.py",
   "old": "r'BD71847A?MWV(?:-E2)?', model('U4')",
   "new": "r'BD71847A?MWV', model('U4')"
+ },
+ {
+  "id": "M1000",
+  "name": "official missing pin names not merged",
+  "file": "scripts/board_intent.py",
+  "old": "names[node] = official",
+  "new": "names[node] = ''"
+ },
+ {
+  "id": "M1001",
+  "name": "native named pin loses priority",
+  "file": "scripts/board_intent.py",
+  "old": "if native and native != '~':",
+  "new": "if False:"
+ },
+ {
+  "id": "M1002",
+  "name": "pin map context lost on replay",
+  "file": "scripts/board_intent.py",
+  "old": "('input_sha256', 'assemblies', 'devices') + tuple(extra)",
+  "new": "('input_sha256', 'assemblies') + tuple(extra)"
  }
 ]

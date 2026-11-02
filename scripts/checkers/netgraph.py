@@ -99,8 +99,10 @@ class NetGraph:
         self.nets = db.get('nets', {})
         self.parts = db.get('parts', {})
         self.pin2net = db.get('pin2net', {})
-        self.pinname = db.get('pinname', {})
+        self.pinname = db.get('resolved_pinname', db.get('pinname', {}))
         self.pintype = db.get('pintype', {})
+        self.pin_evidence = db.get('pin_name_evidence', {})
+        self.pin_conflicts = db.get('pin_name_conflicts', [])
         self.pseudo = set(db.get('pseudo_nets', []))
         self._pins = {}
         for node, net in self.pin2net.items():

@@ -197,6 +197,7 @@ class Lint:
         analysis = board_intent.with_verified_kinds(self.intent, datasheet_audit)   # datasheet-verified kinds
         analysis_db = board_intent.graph_db(db, analysis)
         self.graph = NetGraph(analysis_db)
+        self.pinname = self.graph.pinname
         # Electrical scans see the installed board; the original db remains intact for assembly audit.
         self.nets = {net: active for net, nodes in self.nets.items()
                      if (active := [node for node in nodes if self.graph.is_fitted(node.partition('.')[0])])}
@@ -519,6 +520,10 @@ class Lint:
     def run(self):
         nets, parts, pinname, pin2net = (
             self.nets, self.parts, self.pinname, self.pin2net)
+
+        for conflict in self.graph.pin_conflicts:
+            self.add('DEV-D02', '原生与已核脚表脚名冲突',
+                     str(conflict), conflict['node'].partition('.')[0], kind='CANDIDATE')
 
         # NET-A01 单节点悬空网
         for n, nds in nets.items():

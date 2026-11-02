@@ -375,7 +375,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.checks = []
         self.functions = []
         self.rule_plan = []
-        self.diagnostics = []
+        self.diagnostics = list(analysis_db.get('pin_name_conflicts', []))
         self._ids = set()
 
     def add_check(self, rule, obj, key=None, criterion=None,

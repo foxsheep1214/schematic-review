@@ -39,7 +39,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 步骤 | 入口 | 工具 | 库 |
 |---|---|---|---|
 | ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`device_kinds.py`（器件类别登记表）、`part_words.py`、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
-| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`guideline_criteria.py`、`stress_check.py`（共用应力核对：降额限值、应力判法、挑规则）（共用设计准则库：校验、选用、覆盖；与 ASG 同字节）、`checkers/` |
+| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`（原生事实不变，给 NetGraph 附完整有出处脚表的缺名解析与冲突）、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`guideline_criteria.py`、`stress_check.py`（共用应力核对：降额限值、应力判法、挑规则）（共用设计准则库：校验、选用、覆盖；与 ASG 同字节）、`checkers/` |
 | ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
 | ④ 校验 | `validate_review.py` | `migrate_results.py` | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`validate_remediation.py`、`review_engine.py` |
 | ⑤ 出报告 | `render_report.py`、`pack_review.py` | — | `report_html.py` |
@@ -131,6 +131,8 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 2026-11-02 | 设计准则库 1.5.0（条数不变）：新增第 7 个对外接口电路类型 `DC_24V`（检查项 `PWR-C18`、`PWR-C13`、`PRO-C01`、`PWR-T05`，不含 −48 V 专用的 `PWR-C17`）；放宽 G03-007/008/009/017、G04-040、G05-036/037/041/060 共 9 条的适用条件，G05-036/037/060 增加 POWER_CONVERTER | 用户 2026-11-02“可以现在就做的，放到另一个子对话里面”：让准则库能被不同类型的板子触发，为两块校准板跑 ASG→SR 做准备；正 24 V 不能误用 −48 V 类型 |
 | 2026-11-02 | 设计准则库 1.6.0（344 条）：新增 G01-051～054，由 `DC_24V` 触发；只有 G01-054（GB/T 17799.2 表 2、表 3）带数值，电压窗、反接、中断都要求项目写明，不设默认值；新增检查项 `PWR-C27`，核器件范围覆盖已声明的 24 V 输入窗，`BASIS` 把 G01-051 映射到 `PWR-D04` 与 `PWR-C27`，G01-052、053、054 分别映射到 `PWR-T05`、`PWR-C18`、`PRO-C01` | 用户 2026-11-02“按建议全部入库”。IEC 61131-2 与 IEC 61000-4-29 未取得原文，延续 2026-10-31 的决定不写 24 V 电压窗与 PS1/PS2；现有 `PWR-C17`、`PWR-C21` 写死了 −48 V 和军车 28 V 的数值，核不了项目声明的窗 |
 | 2026-11-02 | 设计准则库 1.6.1（344 条）：G01-053 按 GB/T 17626.29-2006 修订，要求项目写明选定的暂降与中断组合，中断分高阻抗和低阻抗，仍不设默认等级；`PWR-C18` 增加 24 V 的组合、低阻抗反灌与恢复过压核对 | 用户 2026-11-02“入库并修订”。该标准 §1 把严酷度留给技术委员会、用户或制造商，只能提供可选等级；`PWR-T01` 按电源轨生成，不能挂到 `DC_24V` 的检查项 |
+
+| 2026-11-02 | 已核完整物理脚表贯通 NetGraph：原生有名优先、缺名补义、冲突显式记录；分析别名不改原生索引与输入指纹，清单上下文保存脚表出处 | 用户合并步 3：已核脚表贯通到连接图；只调整识别，不改变判断职责或格式版本 |
 
 ## 四、规则维护
 
