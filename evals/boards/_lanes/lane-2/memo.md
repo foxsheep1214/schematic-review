@@ -42,3 +42,10 @@
 - F1被USB候选收走后没有PRO-C01/PRO-C05；500mA标签既非USB取电许可，也非保证动作点/分断能力。外部UART未知供电域仍欠SIG-C08结构化计算。
 - 同版OUTPUTS BOM/PDF需从固定提交另取；分号BOM转逗号、保留原始hash，25/25读入。CH340C允许未用I/O悬空且内置时钟，SE5218 EN=VIN合法。
 - 原生needs_human/schema15仍拒收；本轮242记录错误如实FAIL，75为50报告项+25已关闭问题，唯一硬结论是P3电源符号编号，非电气硬故障。
+
+## pionixpublic--cb-eval-board（2026-11-02）
+- AMC3311同时有隔离放大/隔离DC-DC角色；domains把U6多地归并是假模型，别把DC_ISO_GND改接GND。按p3侧别、p26返回组补声明再审。
+- TPS27S100 EN与171023801 ENABLE被当linear会错出10项PWR-E02且漏PWR-D03；内置SS不用外露SS脚也要问充电电流+启动负载。
+- U1采购码是Amphenol座，ADC3真实功能在自定义模组脚；R25/R26需逐通道ANA-C03。+24V外引/可供入触点也要从轨枚举PRO-C04，别仅围已见保护IC查。
+- U8 DNP、H孔、VBUS NC、PT1000桥和MDI磁性先分清；TMP100框图Diode/逻辑门ESD段不是标题。PT1000双臂加载须联立节点，不能直接串联分压。
+- 同版BOM244件，两副本hash相同；PDF按图框Id非物理次序。原生不接NEEDS_HUMAN/未定级，FAIL如实保留；175条归因不是175个硬故障。
