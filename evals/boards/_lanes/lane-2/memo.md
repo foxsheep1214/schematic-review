@@ -63,3 +63,9 @@
 - Q35是RGB level_shifter却生POWER_CONVERTER、供电旁路误成snubber；SW3 SolderWire封装不是独立连接器，BTL扬声器不是数据差分对。
 - R1/R2/R53的0 (1%)(NC)与nc=False并存要保留装配未知；input_sha256用board_intent.input_fingerprint；schema15终态不兼容如实FAIL，不造需求过门禁。
 - Top50已问的HVEN默认态/RST-T04不重复记漏报；4项是USB、LDO启动、外引支路、RGB掉电的计划覆盖遗漏，不是4个已证硬件故障。
+
+## solderedelectronics--capacitive-soil-sensor-hardware-design（2026-11-02）
+- TLC555首页ESD额定会误判TVS；D1的AVAILABLE/text_extract不等于page_text能读txt，更不等于编号图已核。FD1/H1/H2零电气脚不应要求电气定界表。
+- R8=TC33X-2-103E须按原厂code103=10k±25%核滑臂加载；R1被R5+R6+R7并联，C1的tau约0.13570s；约870kHz的555低频简式已越模型边界。
+- 外源K1.2声明状态/出处后供电网逻辑链会消失；U2.5仍是power，去耦设regulator_output；LDO无SS脚也须问启动充电+负载/限流（M01）。
+- 网表未列电极元件不证明传感断路：固定PCB有无net的F.Cu宽线；仅V2.0.0 BOM不能混入V1.2.2。20组共享依赖已合并，原生不接needs_human/未定级，保留FAIL；26条归因非26个硬件故障。
