@@ -153,7 +153,7 @@
   `device_kinds` 也覆盖集成电路：每颗 IC 声明手册标题给出的角色（角色登记表 `catalog.DEVICE_ROLES`，见
   [检查目录·器件角色](check-catalog.md#器件角色)；标题没有任何登记角色的写泛称 ic，计划列成 `DEVICE_KIND_GENERIC` 诊断），
   没有核验过的角色是 DEV-D02 的缺口；角色决定电路候选的核心器件和它生成的电路类型。
-- 计划顶层 `domains`（参考地分区、跨域器件、核心器件、截止网络，由 `checkers/domains.py` 按地的直流连通推导）见同文。
+- 计划顶层 `domains`（参考地分区、跨域器件、核心器件、截止网络，由 `checkers/domains.py` 按有证据的参考关系及隔离两侧推导）见同文。
 - **电路不手画**：`circuits` 由 `record/circuit-candidates.json`（`scripts/circuit_candidates.py` 从网表、已核实的器件类别和检查器库存生成，见[自动检查](automation.md)）与 `circuit_decisions` 推出，
   `python3 scripts/circuit_decisions.py intent.json record/circuit-candidates.json --db db.json --write` 写入 `circuits` 和 `circuit_candidates_sha256`；
   lint/计划对声明电路的 intent 必须带 `--candidates`，手写的电路列表与决定推出的不相等即拒绝（类型、成员集合、工作态、候选编号逐个比较）。
@@ -163,9 +163,9 @@
     一句泛引文不能给每块电路都加态。候选的态是类型的固定表。
   - `merge`：`candidate` 列几个候选，`id` 必填，`citation` 引一条把它们描述成一个流程的条款；电路候选不与跨电路候选（ISOLATION、STARTUP、保护链）合并。
   - `split`：`into: [{id, members}]`，每部分成员是该候选成员的子集，所有成员都要有去处，`citation` 可定位。
-  - `reject`：`reason` 为 OUTSIDE_SCOPE / NOT_A_CIRCUIT / DUPLICATE_OF（后者带 `of: <已推出的电路>`，成员须都在它里面），`citation` 可定位；被拒候选的成员进 REQ-Q08 复核，已被接受、合并、拆分或 add 的电路持有的除外。
+  - `reject`：`reason` 为 OUTSIDE_SCOPE / NOT_A_CIRCUIT / DUPLICATE_OF（后者带 `of: <已推出的电路>`，成员须都在它里面），`citation` 可定位；有效决定立即释放该候选的持有，未重归且未被其他电路持有的成员进 REQ-Q08。
     拒绝一颗没有候选的器件写 `{"decision": "reject", "ref", "reason"（OUTSIDE_SCOPE / NOT_A_CIRCUIT）, "citation"}`：它不再进 REQ-Q08 清单，原因随记录。
-  - `add`：生成器没找到的功能，`id`、`type`（规则总表的包名）、`members` 只能收 `unassigned` 中的器件、`via` 为每颗写它所在的网，`citation` 可定位。
+  - `add`：生成器没找到的功能，`id`、`type`（规则总表的包名）、`members` 收未被候选持有的器件，或先 reject 已释放的成员；决定按顺序生效。`via` 逐颗点名原网络，`citation` 可定位；其他未拒绝候选仍持有的不能取走。
     `id` 若是前面决定已推出的电路，器件并入那块电路（`type` 须一致），不另起电路——驱动变换器开关的门极驱动、使能驱动管都这样归位。
   - 未归属的有源件（候选文件 `unassigned` 里 kind 为 mosfet / bjt / opto / ic 的）必须有 add 或 reject 决定，留在 REQ-Q08 清单上校验不过；两端件照旧留在 REQ-Q08。
     候选走线从电路自己的网走到小信号三极管的门极/基极时把它收进电路并从漏极/集电极继续（成员 role `driven_switch`），所以多数驱动管不会落到未归属。
@@ -173,8 +173,6 @@
   推出的电路带 `id`、`type`、`refs`、`owned`、`nets`、`states`、`citation`、`candidate_ids`、`cross_cutting`、`anchors`。
   `split` 拆出的每块另带 `key`（`候选 id/块 id`），检查项的 `circuit_key` 用它，两块不再共用母候选的键；`nets` 只留含核心器件的那块全部继承，
   其余块只留成员走线点到的候选网络（2026-10-27，R8 拆出的 LDO 继承了 BULK、两块共键重复 18 组）。
-  `refs` 是电路持有的全部器件，`owned` 是其中归它所有的：每颗被持有的器件恰好在一块电路的 `owned` 里，其余持有它的电路只引用它
-  （可在条件与计算里引用，计划不为它生成检查项）。归属在决定后保留的电路之间按认领强弱判定：电路的核心器件 > 电路成员 >
-  电路里的端点类角色（端口的 PD 控制器）> 链路成员（启动链、保护链）> 隔离带 > 链路的核心器件与端点；被拒或判为重复的候选让出的器件
-  由下一个认领者拥有，打平的要 own 决定。一颗非核心器件最多被两块电路持有。
-  审查员认为候选漏了器件，不往电路里手加：那是规则或网表的缺口，记在 REQ-Q08（候选生成没有归属的器件逐颗列出）并改规则。
+  `refs` 是全部引用，`owned` 是唯一所属：器件应力行按所属归位，独立逐对象检查仍照常。认领强弱为核心 > 成员 > 端点角色 > 链路成员 > 隔离带 > 链路端点；拒绝后在保留电路间重算，普通平级冲突要 own。
+  供电电容（输入/输出/储能/去耦）引用不限，稳定次序取一个记账所有者；功率开关/电感只属于一个独立功能，控制器核心唯一，跨电路链和隔离引用保留。其余非核心器件最多两电路持有。
+  审查员认为候选漏了器件，不往电路里手加：那是规则或网表的缺口，记在 REQ-Q08并改规则。

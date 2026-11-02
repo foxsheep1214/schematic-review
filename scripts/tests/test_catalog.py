@@ -147,7 +147,10 @@ class GeneratedOutputTest(unittest.TestCase):
             db['nets'][net].append('Q8.' + pin)
             db['pin2net']['Q8.' + pin] = net
             db['pinname']['Q8.' + pin] = name
-        refs = ['U1', 'U2', 'U4', 'Q8', 'D9', 'TH9', 'J9']
+        from test_inductive_load import add
+        add(db, 'Y91', 'Crystal', [('1', '', 'XI91'), ('2', '', 'XO91')])
+        add(db, 'U91', 'RTC DS3231', [('1', 'VCC', 'VCC_3V3'), ('2', 'GND', 'GND')])
+        refs = ['U1', 'U2', 'U4', 'Q8', 'D9', 'TH9', 'J9', 'Y91', 'U91']
         intent = {'schema_version': 5, 'expect': {'SOC': 1}, 'guideline_baseline': 'aerospace',   # asks every baseline rule
                   'device_kinds_verified': {'U4': {'kind': 'mcu', 'citation': 'synthetic'}},   # CFG-D01 asks its groups
                   'features': {'CUSTOM': {'applicability': 'APPLICABLE', 'citation': 'synthetic requirement'}},

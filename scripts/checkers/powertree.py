@@ -13,6 +13,7 @@ import part_words as pw
 from solve_dividers import parse_resistor
 
 from . import netgraph as ng
+from . import isolation_sides
 
 # 输出脚候选：型号/脚名提示，仍需资料取证核功能与上游供电
 SOURCE_PIN_RE = re.compile(r'^(VOUT|VREG|VDD_EXT|VO)(?:$|[_+\d])', re.I)
@@ -100,12 +101,14 @@ class PowerTree:
         self.graph = graph
         self.feed = feed
         intent = intent or {}
+        self.intent = intent
         self.state = intent.get('active_state')
         self.sources = {x.get('node'): x for x in intent.get('power_sources', [])
                         if x.get('citation') and self.state in x.get('states', [])}
         self.directed = [x for x in intent.get('power_paths', [])
                          if x.get('citation') and x.get('state') == self.state]
         self._cache = {}
+        self._side_cache = {}
 
     def source_of(self, net):
         """来源候选与到达路径；找不到返回 None。不是电源轨准出。"""
@@ -169,6 +172,13 @@ class PowerTree:
                         if graph.role(ref + '.' + other_node) == other_role and other_net != current:
                             queue.append((other_net, path + [ref]))
                 pin = node.partition('.')[2]
+                if ref not in self._side_cache:
+                    self._side_cache[ref] = isolation_sides.model(graph, ref, self.intent)
+                side = self._side_cache[ref]
+                if side and pin in side.get('power_outputs', []):
+                    return {'source': node, 'path': list(reversed(path)),
+                            'basis': 'isolated device output pin; verify upstream power: ' + side['citation'],
+                            'side': next(s['id'] for s in side['sides'] if pin in s['pins'])}
                 sense_only = (re.fullmatch(r'SIC437[A-Z0-9/-]*', str(part.get('part', '')), re.I)
                               and pin == '18')  # SiC437 pin18 VOUT senses the output; SW delivers energy
                 output_name = pw.name_matches(SOURCE_PIN_RE, graph.pinname.get(node), pin) and not sense_only
@@ -194,6 +204,18 @@ class PowerTree:
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'switch node via storage inductor; verify converter '
                                      'topology, FB target and upstream power'}
+                # Exact manufacturer pin function, independent of an erroneous library power_in direction.
+                if (re.fullmatch(r'TPS5430(?:DDA[RT]?)?', str(part.get('part', '')), re.I)
+                        and pin == '8' and 'PH' in pw.pin_aliases(graph.pinname.get(node), pin)
+                        and 'VIN' in pw.pin_aliases(graph.pinname.get(ref + '.7'), '7')):
+                    return {'source': node, 'path': list(reversed(path)),
+                            'basis': 'TPS5430 SLVS632L p3 Table4-1 PH switch output; voltage waveform not a DC guarantee'}
+                pins = graph.pins_of(ref)
+                for out_pin, in_pin, route_basis in pw.supply_pin_routes(part, pins):
+                    if route_basis == 'feedthrough-symbol' and not ng.is_ground(pins.get('3')):
+                        continue
+                    if pins[out_pin] == current and not ng.is_ground(pins[in_pin]):
+                        queue.append((pins[in_pin], path + [ref]))
                 ends = graph.nets_of(ref)
                 if self.feed and graph.kind(ref) == pw.JUMPER and len(ends) == 3 and current in ends:
                     # a three-way solder jumper (common C, choices A/B) selects one of two supplies: both are upstream

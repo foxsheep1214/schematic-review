@@ -533,7 +533,7 @@ class PackReviewTests(unittest.TestCase):
         # the fixture's active parts outside every candidate (U1 since results 7) are rejected on purpose; passives may stay
         intent = {'schema_version': 5, 'circuit_decisions': [{'candidate': c['id'], 'decision': 'accept'} for c in candidates['candidates']]
                   + [{'decision': 'reject', 'ref': u['ref'], 'reason': 'OUTSIDE_SCOPE', 'citation': 'p1'}
-                     for u in candidates['unassigned'] if u.get('kind') == 'ic']}
+                     for u in candidates['unassigned'] if u.get('kind') in ('ic', 'mosfet', 'bjt', 'opto')]}
         import circuit_decisions
         path.write_text(json.dumps(circuit_decisions.write_circuits(intent, candidates)))
         errors, _ = self.run_pack()

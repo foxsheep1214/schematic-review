@@ -10,7 +10,7 @@
 | 来源 | 唯一正例/缺陷 | 命中 | 漏报 | 未知 | 错误 | 误报 | 负例通过 | 未分类 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | seeded | 247 | 221 | 26 | 0 | 0 | 0 | 0 | 0 |
-| typical | 203 | 203 | 0 | 0 | 0 | 14 | 185 | 0 |
+| typical | 198 | 198 | 0 | 0 | 0 | 14 | 190 | 0 |
 | history | 53 | 4 | 2 | 47 | 0 | 0 | 0 | 0 |
 
 ## 有已知缺陷或正例的准则
@@ -432,8 +432,8 @@
 | typical | NET-A06 | hit | 5 |
 | typical | NET-A06 | tn | 8 |
 | typical | NET-A07 | fp | 5 |
-| typical | NET-A07 | hit | 29 |
-| typical | NET-A07 | tn | 1 |
+| typical | NET-A07 | hit | 24 |
+| typical | NET-A07 | tn | 6 |
 | typical | PRO-A04 | hit | 1 |
 | typical | PWR-A01 | hit | 3 |
 | typical | PWR-A01 | tn | 30 |
@@ -452,19 +452,19 @@
 
 | 输入 | SHA256 |
 |---|---|
-| seeded results.json | `4859501a7bfc87e4a94072e0c4aecf719cb303b622fcc424169bb425d70ac879` |
-| typical results.json | `146c14726f5e7fe02646c749de1c0cf3ef59bd5fec609c48465c999f97ff2b5b` |
-| KiCad replay results.json | `d0431b2bc9740adb0956569ca74e4df01b1779fb8605ff494a028ab0cde082bc` |
+| seeded results.json | `039fa15953d6efe1a45c0a0a78114d5942659b6e93656c83b3b3401621775ac2` |
+| typical results.json | `9c91fdb3a5981ddede7875197c3887d8b4fabb30f3afeffd6341242a8bf614c2` |
+| KiCad replay results.json | `c9770bac4ecbefaaafa0fe069dcc91f47c5584e345237134aa8b2d166328e903` |
 | known_defects.json | `35c824bfdcb2f967bba1ee843d94969c53c153ad1ad2434cdf345405e6c90452` |
-| catalog.py | `ecaba63bdce853c3088a7ca2cf4bf1bd8c77b284dd4e7c19d5af146b407ebfef` |
+| catalog.py | `7d557a6ded54fa65993e76e8accadfd12a769e617fc44939d72c8275282897e2` |
 | guideline-criteria.json | `7bc94923cd6bb866c1667b187e1e7efc5c401a5857d803cf681cd489a00fa39b` |
 | seeded corpus.json | `191a704ebd11e0e16da56c8cafb8fd4f66ba933b05a80453ef1dd1814661a532` |
-| typical cases.json | `f53f1bf04959016c7a445c5f6315873d71795654bac7f4b89dc5a6616a3a013e` |
-| improvement-ledger.md | `9ce032c720e69199a5474fec9efde4c4667e8b8646aaf3986292a86365f3752d` |
+| typical cases.json | `a50edcdf02179676060f9af577a905d4b7d9fdcc614c8ec3c168576d1a23f020` |
+| improvement-ledger.md | `b3107e13a72c2ce37554385dbf7a81f0250391bf0d1ad52e0e3c10d1f36c29b2` |
 | docs/audits/2026-10-07-module-scope-replay.md | `6c8f91297d55555a484838931f91eefdc1af094f3efc277babac3b214dfe85f0` |
 | docs/audits/2026-10-07-review-charter.md | `7ae76d400315188e0a2d94a7cef8b69076f2e813715cb4020132b00697d14574` |
 
-- KiCad 原生回放（本次/所给结果，约定 boards-merge1-v1）：{'MATCH': 195, 'KNOWN': 0, 'MISMATCH': 0}。字段一致性没有缺陷真值，不计入 H/M/FP。
+- KiCad 原生回放（本次/所给结果，约定 boards-merge2-v1）：{'MATCH': 195, 'KNOWN': 0, 'MISMATCH': 0}。字段一致性没有缺陷真值，不计入 H/M/FP。
 - input_bench：只读取 2026-10-07 历史记录 4/4，未重新运行；缺原作者输入，不把导入拒绝计作电气检出。
 - consistency_bench：没有随仓库保存的评分结果，且只度量一致性，不判对错；未计分。
 - mutation：代码测试门，不是设计缺陷检出，排除。规则合同是合成触发板，亦排除。

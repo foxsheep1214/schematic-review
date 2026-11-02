@@ -400,20 +400,23 @@ class Lint:
                 continue
             # Contact roles come from pin names; a symbol without pin names may carry them in its
             # three distinct net names (COM/NC/NO), as hand-drawn relay libraries do.
-            unnamed = not any(str(self.pinname.get(ref + '.' + p, '')).strip() for p in self.graph.pins_of(ref))
+            unnamed = not any(re.fullmatch(r'(NC|COM|NO)\d*', str(self.pinname.get(ref + '.' + p, '')).strip(), re.I)
+                              for p in self.graph.pins_of(ref))
 
             def contact(pin_node, pin_net):
                 name = str(self.pinname.get(pin_node, '')).strip().upper()
                 if name or not unnamed:
                     return name
                 return str(pin_net).rsplit('/', 1)[-1].strip().upper()
-            if kind != 'relay' or contact(node, net) != 'NC':
+            token = re.fullmatch(r'(NC|COM|NO)(\d*)', contact(node, net))
+            if kind != 'relay' or not token or token.group(1) != 'NC':
                 return False
             roles = defaultdict(list)
             for pin, pin_net in self.graph.pins_of(ref).items():
                 name = contact(ref + '.' + pin, pin_net)
-                if name in {'NC', 'COM', 'NO'}:
-                    roles[name].append(pin_net)
+                matched = re.fullmatch(r'(NC|COM|NO)(\d*)', name)
+                if matched and matched.group(2) == token.group(2):
+                    roles[matched.group(1)].append(pin_net)
             if any(len(roles[name]) != 1 for name in ('NC', 'COM', 'NO')):
                 return False
             contact_nets = [roles[name][0] for name in ('NC', 'COM', 'NO')]
@@ -454,7 +457,10 @@ class Lint:
             frontier, seen = [(n, 0)], {n}
             while frontier:
                 net, hops = frontier.pop()
-                for _, other in g.neighbors(net, kinds=PASSIVE_LINKS):
+                for link, other in g.neighbors(net, kinds=PASSIVE_LINKS):
+                    resistance = parse_resistor(self.parts.get(link, {}).get('value')) if g.kind(link) == pw.RESISTOR else None
+                    if g.kind(link) == pw.RESISTOR and (resistance is None or resistance['kohm'] > .001):
+                        continue     # finite bleed resistance is not an equipotential ground bond
                     if other in seen:
                         continue
                     seen.add(other)
@@ -490,8 +496,10 @@ class Lint:
             words = {t for x in list(island) + [self.pinname.get(x, '') for x in pins]
                      for t in re.split(r'[^A-Z0-9]+', str(x).upper())}
             cross = sorted(ref for ref in refs & main_refs if g.kind(ref) not in TWO_TERMINAL)
+            from checkers import isolation_sides
             isolators = [ref for ref in refs
-                         if g.kind(ref) in (OPTO, TRANSFORMER) or ISOLATOR_RE.search(blob(ref))]
+                         if isolation_sides.model(g, ref, self.intent) is not None
+                         or g.kind(ref) in (OPTO, TRANSFORMER) or ISOLATOR_RE.search(blob(ref))]
             if (not pins or isolators or words & {'SENSE', 'SNS', 'KELVIN'}
                     or any(g.kind(ref) == CONNECTOR for ref in refs)):
                 continue
@@ -518,6 +526,10 @@ class Lint:
                 continue
             if len(nds) == 1:
                 ref = nds[0].split('.')[0]
+                permission = pw.unused_input_permission(self.db, nds[0])
+                if permission:
+                    self.add('NET-A01', '手册允许未用输入开路', f'{nds[0]}: {permission}', ref, kind='INFO')
+                    continue
                 if KICAD_UNCONNECTED_RE.match(n):
                     # KiCad names a pin left open without an NC flag; datasheet NC/DNC pins are meant to be open.
                     if DATASHEET_NC_PIN_RE.match(pinname.get(nds[0], '')):
@@ -674,7 +686,8 @@ class Lint:
                 if nodes and len(typed) == len(nodes) and typed and all(
                         kind == 'IN' for _, kind in typed) and not any(
                         self.graph.kind(node.partition('.')[0]) in {CONNECTOR} | PASSIVE_LINKS
-                        or DATASHEET_NC_PIN_RE.match(self.pinname.get(node, '')) for node in nodes):
+                        or DATASHEET_NC_PIN_RE.match(self.pinname.get(node, ''))
+                        or pw.unused_input_permission(self.db, node) for node in nodes):
                     # A connector contact typed input (some header libraries) is driven off-board; a series
                     # resistor, inductor or ferrite typed input (an RF choke feeding a PA's VCC) passes the other net.
                     self.add(

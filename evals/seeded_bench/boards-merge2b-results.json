@@ -1,0 +1,172 @@
+{
+ "baseline_commit": "7b2ce7d",
+ "legacy_sites": 254,
+ "legacy_auto_before": 225,
+ "legacy_auto_after": 225,
+ "regressions": [],
+ "new_sites": [
+  {
+   "board": "greatscottgadgets--amalthea-hardware",
+   "defect": "D-EXTERNAL-INJECTION-BYPASS",
+   "site": "J1+U1+/PICO",
+   "note": "bypass a synthetic 10k injection-limiting resistor at the real J1.28/U1.43 interface",
+   "targets": [
+    "SIG-C08"
+   ],
+   "contract": {
+    "source": "lane-1 amalthea M01; AT86RF215 digital input and J1.28 pin map",
+    "test_contract_only": "external source 5V while local supply is 0V; clamp 0.3V and permitted injection 1mA are synthetic probe assumptions, not AT86RF215 guarantees",
+    "baseline": "synthetic 10k series limiter; mutant is original direct net"
+   },
+   "paired_baseline": true,
+   "auto": [],
+   "other": [],
+   "pointed": [
+    "DEV-C04",
+    "DEV-C05",
+    "DEV-D01",
+    "DEV-D02",
+    "DEV-D03",
+    "DEV-D05",
+    "DEV-E01",
+    "PRO-C04",
+    "PRO-D03",
+    "PRO-D04",
+    "PWR-C09",
+    "PWR-C10",
+    "PWR-D02",
+    "PWR-T03",
+    "SIG-C08",
+    "SIG-D13"
+   ],
+   "planned_targets": [
+    "SIG-C08"
+   ]
+  },
+  {
+   "board": "groupgets--kimchi-micro",
+   "defect": "D-PMIC-OUTPUT-COUT",
+   "site": "U4+C113+C54+NVCC_SD2",
+   "note": "replace synthetic 22uF+0.22uF nominal baseline by original MUXSW 1.22uF",
+   "targets": [
+    "PWR-C04",
+    "PWR-C09"
+   ],
+   "contract": {
+    "source": "lane-1 kimchi F29/M01; ROHM BD71847AMWV Rev003 p110 Table5-36",
+    "required_effective_uF": [
+     11,
+     33
+    ],
+    "mutant_nominal_uF": 1.22,
+    "baseline": "synthetic nominal 22.22uF; DC-bias/temperature qualification is not certified by this probe"
+   },
+   "paired_baseline": true,
+   "auto": [],
+   "other": [],
+   "pointed": [
+    "DEV-C01",
+    "DEV-C05",
+    "DEV-D01",
+    "DEV-D02",
+    "DEV-D05",
+    "PWR-C04",
+    "PWR-C09",
+    "PWR-C10",
+    "PWR-D02",
+    "PWR-T03",
+    "SIG-D13"
+   ],
+   "planned_targets": [
+    "PWR-C04",
+    "PWR-C09"
+   ]
+  },
+  {
+   "board": "solderedelectronics--connect-programmer-hardware-design",
+   "defect": "D-POWER-BRANCH-BYPASS",
+   "site": "F1+K1+Net-(F1-Pad2)",
+   "note": "short around the real input fuse; verify branch protection even when USB owns F1",
+   "targets": [
+    "PRO-C04",
+    "PRO-C01",
+    "PRO-C05"
+   ],
+   "contract": {
+    "source": "lane-2 connect-programmer M01; F1/K1 VBUS netlist",
+    "scope": "physical bypass of the sole local fuse; upstream fault source and clearing-energy limits remain explicit expert inputs, no fuse-time guarantee inferred"
+   },
+   "paired_baseline": true,
+   "auto": [],
+   "other": [],
+   "pointed": [
+    "DEV-C04",
+    "DEV-D02",
+    "DEV-D03",
+    "DEV-D05",
+    "DEV-E01",
+    "NET-A01",
+    "PRO-C01",
+    "PRO-C04",
+    "PRO-C05",
+    "PRO-D03",
+    "PRO-D04",
+    "PWR-C09",
+    "PWR-C10",
+    "PWR-D02",
+    "PWR-T03",
+    "SIG-C08"
+   ],
+   "planned_targets": [
+    "PRO-C01",
+    "PRO-C04",
+    "PRO-C05"
+   ]
+  },
+  {
+   "board": "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design",
+   "defect": "D-ADC-SHUNT-RANGE",
+   "site": "U1+R6+VCC+VSYS",
+   "note": "raise the physical SRP/SRN shunt 10mOhm to 1Ohm; input-range question must remain located",
+   "targets": [
+    "ANA-C03"
+   ],
+   "contract": {
+    "source": "lane-3 bq27441 M01, SLUSBH1C SRP/SRN pin functions",
+    "test_contract_only": "1A load and allowed differential 20mV are synthetic coverage-probe requirements; they are not a claimed BQ27441 guaranteed limit",
+    "baseline_diff_v": 0.01,
+    "mutant_diff_v": 1.0
+   },
+   "paired_baseline": true,
+   "auto": [],
+   "other": [],
+   "pointed": [
+    "ANA-C03",
+    "DEV-C05",
+    "DEV-D01",
+    "DEV-D02",
+    "DEV-D05",
+    "PRO-C04",
+    "PWR-C01",
+    "PWR-C09",
+    "PWR-C10",
+    "PWR-D02",
+    "PWR-T01",
+    "PWR-T03",
+    "RST-T03",
+    "SIG-C08",
+    "SIG-D13"
+   ],
+   "planned_targets": [
+    "ANA-C03"
+   ]
+  }
+ ],
+ "total_sites": 258,
+ "total_auto": 225,
+ "errors": 0,
+ "result_sha256": {
+  "before": "a3f081cb08cd287e8c8f33a5345b50b743aa05c81637fa353f44da9c8f62e6da",
+  "after": "3ead853ff6a4d137ada69b86853be7bd12fe7f84455752a113ef44b86b02e3e6"
+ }
+}

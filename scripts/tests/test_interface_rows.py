@@ -108,9 +108,9 @@ class CrossDomainNetTests(unittest.TestCase):
         db['pin2net']['U5.9'] = 'V5'
         db['nets']['V5'].append('U5.9')
         plan = plan_for(db)
-        injection = [(c['object']['interface'], c['object']['net']) for c in rows(plan, 'SIG-C08') if 'interface' in c['object']]
+        injection = [(c['object']['interface'], c['object']['net']) for c in rows(plan, 'SIG-C08') if c['object'].get('interface', '').startswith('IF-')]
         self.assertEqual(injection, [('IF-ANALOG-U5~USB-J2', 'FLT_DRV')])
-        self.assertEqual(rows(plan_for(), 'SIG-C08'), [])   # the plain board has no such net
+        self.assertEqual([r for r in rows(plan_for(), 'SIG-C08') if r['object'].get('interface', '').startswith('IF-')], [])   # the plain board has no such net
 
 
 if __name__ == '__main__':

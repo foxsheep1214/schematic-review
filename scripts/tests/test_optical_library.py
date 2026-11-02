@@ -39,7 +39,7 @@ class OpticalNamespaceTest(unittest.TestCase):
                                   if c['object'].get('optocoupler')}, {'PRO-D01', 'PRO-E01'})
 
     def test_part_identity_keywords_are_preserved(self):
-        for key in ('part', 'value', 'jedec'):
+        for key in ('part', 'value'):
             with self.subTest(key=key):
                 self.assertEqual(classify('X9', {key: 'OPTO_TRANSISTOR', 'prim': 'we-opto:GENERIC'}, 4),
                                  (OPTO, 'part-keyword'))

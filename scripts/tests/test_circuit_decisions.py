@@ -250,7 +250,7 @@ class OwnershipTests(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertEqual(next(c for c in circuits if c['id'] == 'SENSE')['owned'], ['R14', 'R15', 'R5', 'R6', 'U4', 'U5'])
         split = {'candidate': 'POWER_CONVERTER-U7', 'decision': 'split', 'citation': 'U7 datasheet p12 Figure 9',
-                 'into': [{'id': 'BUCK-POWER', 'members': ['U7', 'L2', 'C10']}, {'id': 'BUCK-FB', 'members': ['R11', 'R12']}]}
+                 'into': [{'id': 'BUCK-POWER', 'members': ['U7', 'L2', 'C10', 'C3']}, {'id': 'BUCK-FB', 'members': ['R11', 'R12']}]}
         circuits, errors = cd.derive(self.candidates, accept_all(self.candidates, **{'POWER_CONVERTER-U7': split}))
         self.assertEqual(errors, [])
         parts = {c['id']: c['owned'] for c in circuits if c['id'].startswith('BUCK-')}
@@ -372,6 +372,9 @@ class ActivePartTests(unittest.TestCase):
         fx.fixture.add(db, 'Q7', 'MOSFET-N', [('1', 'G', 'LONE_G'), ('2', 'D', 'LONE_D'), ('3', 'S', 'SGND')])
         fx.fixture.add(db, 'R70', '10K', [('1', '1', 'LONE_G'), ('2', '2', 'SGND')])
         intent, audit = fx.intent_for(db)
+        # Isolate the active-unassigned validator from converter discovery. Ground contacts are no gate driver.
+        intent['power_switches'] = {'schema_version': 2, 'exclusions': [
+            {'ref': 'Q7', 'citation': 'synthetic fixture p3: a signal transistor outside converter discovery'}]}
         return db, intent, audit, cc.build(db, intent, audit)
 
     def test_an_active_unassigned_part_without_a_decision_is_refused(self):

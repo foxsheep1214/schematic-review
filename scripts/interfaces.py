@@ -38,6 +38,7 @@ from checkers.planutil import frame_slug
 
 SCHEMA_VERSION = 1
 CONNECTOR_RE = re.compile(r'^(J|P|CN)\d', re.I)
+PORT_POWER_PIN_RE = re.compile(r'^(?:VBUS|VUSB|V?OUT\d*|VI|V[+-])$', re.I)
 DRIVER, RECEIVER, BIDIRECTIONAL, PASSIVE = 'DRIVER', 'RECEIVER', 'BIDIRECTIONAL', 'PASSIVE'
 NATIVE_ROLES = {'output': DRIVER, 'open_collector': DRIVER, 'open_emitter': DRIVER, 'tri_state': DRIVER,
                 'power_out': DRIVER, 'input': RECEIVER, 'power_in': RECEIVER, 'bidirectional': BIDIRECTIONAL}
@@ -140,7 +141,7 @@ class Deriver:
         return out
 
     def is_connector(self, ref):
-        return CONNECTOR_RE.match(ref) is not None or self.graph.kind(ref) == pw.CONNECTOR
+        return self.graph.kind(ref) == pw.CONNECTOR
 
     def cross_supply(self, endpoints):
         ics = [e for e in endpoints if self.graph.kind(e['pin'].partition('.')[0]) == pw.IC]
@@ -159,7 +160,20 @@ class Deriver:
         return None
 
     def net_entry(self, net, ends):
-        return {'net': net, 'endpoints': ends, 'cross_supply': self.cross_supply(ends), 'power_node': self.power_node(net)}
+        power = self.power_node(net)
+        if not power and re.fullmatch(r'(?:.*/)?AC_[LN]', net, re.I) and any(
+                self.graph.kind(e['pin'].partition('.')[0]) == pw.CONNECTOR and
+                str(self.graph.pinname.get(e['pin'], '')).upper() in {'L', 'N', 'LINE', 'NEUTRAL', 'AC_L', 'AC_N'}
+                for e in ends):
+            power = 'ac-port-pin'
+        if not power and any((pw.name_matches(powertree.SUPPLY_IN_PIN_RE, self.graph.pinname.get(e['pin']),
+                                             e['pin'].partition('.')[2]) or
+                              pw.name_matches(PORT_POWER_PIN_RE, self.graph.pinname.get(e['pin']), e['pin'].partition('.')[2]) or
+                              self.native.get(e['pin']) in ('power_in', 'power_out')) and
+                             self.graph.kind(e['pin'].partition('.')[0]) in (pw.IC, pw.CONNECTOR)
+                             for e in ends):
+            power = 'supply-pin'  # physical pin function; never a source/current guarantee
+        return {'net': net, 'endpoints': ends, 'cross_supply': self.cross_supply(ends), 'power_node': power}
 
     def owners_on(self, net):
         return {self.owner_of[ref] for ref in self.graph.refs_on(net) if ref in self.owner_of}
@@ -262,7 +276,7 @@ def coverage_errors(plan):
                 out.append(f'{iid}: {rule} row missing')
         for rule in catalog.INTERFACE_NET_SUBJECTS.get(kind, ()):
             for entry in nets:
-                if entry.get('cross_supply') and (iid, rule, entry['net']) not in asked:
+                if (entry.get('cross_supply') or (kind == 'EXTERNAL' and not entry.get('power_node') and not ng.is_ground(entry['net']))) and (iid, rule, entry['net']) not in asked:
                     out.append(f'{iid}: {rule} row missing on {entry["net"]} (its ends draw from different supplies)')
         if iid not in framed:
             out.append(f'{iid}: interface frame missing')
@@ -310,21 +324,67 @@ class InterfacePlanning:
                 row['question'] = catalog.interface_question(rule, iid, logic, parts)
             for rule in catalog.INTERFACE_NET_SUBJECTS.get(kind, ()):
                 for entry in entries:
-                    if entry['cross_supply']:
+                    if entry['cross_supply'] or (kind == 'EXTERNAL' and not entry.get('power_node') and not ng.is_ground(entry['net'])):
                         row = self._ready_check(rule, {'interface': iid, 'net': entry['net']}, gaps, trigger, key=iid)
                         row['question'] = catalog.interface_question(rule, iid, [entry['net']])
+                        if kind == 'EXTERNAL':
+                            row['object']['nodes'] = [e['pin'] for e in entry['endpoints'] if e['pin'].partition('.')[0] == iid[4:]]
+                            row['question'] = (f"{iid} 的 {entry['net']} 信号脚在本板掉电、外设先上电时，注入电流与串阻是否满足本器件限值；"
+                                               '对端供电未知，按注入电流/串阻问')
+                            row['readiness'] = 'WAITING_EVIDENCE'
+                            row['required_inputs'] = sorted(set(row['required_inputs']) | {'external-peer:对端供电、掉电状态与信号驱动窗口'})
+            if kind == 'EXTERNAL':
+                graph = ng.NetGraph(board_intent.graph_db(self.db, self.kind_intent))
+                ref = iid[4:]
+                seen_fuse_checks = set()
+                for pin, net in sorted(graph.pins_of(ref).items()):
+                    entry = next((e for e in entries if e['net'] == net), None)
+                    if not entry or (not entry.get('power_node') and not ng.is_rail(str(net).rsplit('/', 1)[-1])) or ng.is_ground(net):
+                        continue
+                    node = ref + '.' + pin
+                    row = self._ready_check('PRO-C04', {'interface': iid, 'ref': ref, 'node': node, 'net': net},
+                                            ['requirements:端口供入/供出角色、故障电流及上游系统保护'], trigger, key=node)
+                    row['question'] = f'{node}（{net}）这条外引/可供入电源支路的源侧保护及与连接器/负载的耐受配合是否成立；未装保护件时，上游系统覆盖依据是什么'
+                    # A USB circuit may own a fuse; coverage follows the physical power path rather than its owner.
+                    for link, far in graph.neighbors(net, pw.PASSIVE_LINKS):
+                        if ng.is_ground(far) or far in graph.pseudo or far == net:
+                            continue
+                        power_load = any(graph.kind(r) == pw.RELAY for r in graph.refs_on(far)) or any(
+                            graph.kind(n.partition('.')[0]) == pw.IC and
+                            pw.name_matches(powertree.SUPPLY_IN_PIN_RE, graph.pinname.get(n), n.partition('.')[2])
+                            for n in graph.nodes_on(far))
+                        if not power_load:
+                            continue
+                        branch = self._ready_check('PRO-C04', {'interface': iid, 'ref': link, 'net': far, 'source_node': node},
+                                                  ['requirements:该负载支路故障电流、上游覆盖与支路耐受'], trigger, key=node + '-' + link)
+                        branch['question'] = f'{node} 经 {link} 到 {far} 的独立负载支路，源侧保护与本支路耐受是否协调；上游共用保护能否覆盖'
+                    reached = graph.series_path(net, pw.PASSIVE_LINKS, max_hops=4)
+                    fuses = {r for near in reached for r in graph.refs_on(near) if graph.kind(r) == pw.FUSE}
+                    for fuse in sorted(fuses):
+                        for rule in ('PRO-C01', 'PRO-C05'):
+                            if (rule, fuse, net) in seen_fuse_checks:
+                                continue
+                            seen_fuse_checks.add((rule, fuse, net))
+                            row = self._ready_check(rule, {'interface': iid, 'ref': fuse, 'net': net},
+                                                    ['datasheet:保险丝动作曲线/分断能力及支路故障包络'], trigger, key=fuse)
+                            row['question'] = f'{iid} 电源路径上的 {fuse}，动作/分断能力与支路故障电流及耐受是否协调'
             members = [c for c in self.checks if (c.get('object') or {}).get('interface') == iid]
             if not members:
                 continue
+            parts = sorted(set(parts) | {c['object']['ref'] for c in members if c.get('object', {}).get('ref')})
+            nets = sorted(set(nets) | {c['object']['net'] for c in members if c.get('object', {}).get('net')})
             frame = {'id': 'FN-' + frame_slug(iid), 'interface': iid, 'interface_kind': kind,
                      'question': catalog.interface_frame_question(kind, iid, item['owners'], nets, parts),
                      'objects': {'refs': parts, 'nets': nets}, 'states': ['run'], 'members': [],
                      'blind_spots': {}, 'checklist': list(catalog.BOUNDING_STEPS)}
             for row in members:
-                if kind == 'EXTERNAL':
+                if kind == 'EXTERNAL' and row['rule'] in catalog.INTERFACE_SUBJECTS['EXTERNAL']:
                     row['question'] = catalog.interface_question(row['rule'], iid, nets, [row['object']['ref']])
                 row['function_id'] = frame['id']
                 row['aspect'] = catalog.title(row['rule'])
+                if kind == 'EXTERNAL' and row['rule'] in {'SIG-C08', 'PRO-C04', 'PRO-C01', 'PRO-C05'}:
+                    obj = row['object']
+                    row['aspect'] += ' / ' + (obj.get('node') or str(obj.get('ref', '')) + ':' + str(obj.get('net', '')))
                 frame['members'].append({'check_id': row['id'], 'rule': row['rule'], 'aspect': row['aspect'], 'state': None})
                 frame['blind_spots'][row['rule']] = catalog.explanation(row['rule'])['risk_if_omitted']
             self.functions.append(frame)

@@ -457,6 +457,7 @@ class _Scan:
             if ref in self.excluded or not graph.is_fitted(ref):
                 continue
             kind = graph.kind(ref)
+            identity = ' '.join(str(graph.parts[ref].get(k, '')) for k in ('part', 'prim', 'value'))
             passive_filter = self._input_filter(ref, kind)
             if passive_filter is not None:
                 found.append(passive_filter)
@@ -479,6 +480,12 @@ class _Scan:
                         if len(terminals) == 2:
                             gaps.append('pin-roles-inferred:' + ref + '（符号无脚名，线圈脚按拓扑推断，按手册核对）')
                 if len(terminals) != 2:
+                    switched = [self._switch_on(n)[0] for n in graph.nets_of(ref)]
+                    energy_driver = any(sw and (graph.kind(sw) in SWITCH_KINDS
+                        or graph.role_kind(sw) in catalog.roles_for('POWER_CONVERTER')) for sw in switched) or any(
+                        self._is_converter_node(n) for n in graph.nets_of(ref))
+                    if kind != pw.RELAY and ref not in self.declared and not energy_driver:
+                        continue  # a passive RF balun/choke is not a switched coil merely because it has >2 pins
                     gaps.append('pin-roles:' + ref)
                     found.append(self._entry(ref, kind, None, None, None, 'topology', gaps))
                     continue

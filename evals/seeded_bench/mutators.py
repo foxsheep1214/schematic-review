@@ -563,3 +563,67 @@ def board_mutations(db):
                                      'source': 'Abracon ABM8G ordering code CL=18pF, lane-3 M01'}
                 yield mutation
                 break
+
+    yield from merge2b_mutations(db)
+
+
+def merge2b_mutations(db):
+    """Four physical, controlled coverage probes from the adjudicated merge-2B boards.
+
+    Target C rules remain expert questions. A planned target is recorded separately from an automatic finding.
+    """
+    parts, p2n = db.get('parts', {}), db.get('pin2net', {})
+
+    def model(ref):
+        return str(parts.get(ref, {}).get('part') or '')
+
+    if (model('U1') == 'AT86RF215IQ-ZU' and p2n.get('U1.43') == p2n.get('J1.28') == '/PICO'):
+        base = moved(db, 'J1.28', 'SEED_PEER_PICO')
+        base['parts']['R90001'] = {'part': 'R', 'prim': 'Device:R', 'value': '10k', 'nc': False}
+        base['pin2net'].update({'R90001.1': 'SEED_PEER_PICO', 'R90001.2': '/PICO'})
+        rebuild(base)
+        yield Mutation('D-EXTERNAL-INJECTION-BYPASS', ('SIG-C08',), ('J1', 'U1'), ('/PICO',),
+                       'bypass a synthetic 10k injection-limiting resistor at the real J1.28/U1.43 interface',
+                       copy.deepcopy(db), baseline=base,
+                       contract={'source': 'lane-1 amalthea M01; AT86RF215 digital input and J1.28 pin map',
+                                 'test_contract_only': 'external source 5V while local supply is 0V; clamp 0.3V and permitted injection 1mA are synthetic probe assumptions, not AT86RF215 guarantees',
+                                 'baseline': 'synthetic 10k series limiter; mutant is original direct net'})
+
+    if (model('U1') == 'CH340C' and model('U2') == 'SE5218' and 'F1' in parts
+            and p2n.get('F1.1') == 'VUSB' and p2n.get('F1.2') == p2n.get('K1.A4')):
+        out = copy.deepcopy(db)
+        out['parts']['R90002'] = {'part': 'R', 'prim': 'Device:R', 'value': '0R', 'nc': False}
+        out['pin2net'].update({'R90002.1': p2n['F1.1'], 'R90002.2': p2n['F1.2']})
+        rebuild(out)
+        yield Mutation('D-POWER-BRANCH-BYPASS', ('PRO-C04', 'PRO-C01', 'PRO-C05'), ('F1', 'K1'), (p2n['F1.2'],),
+                       'short around the real input fuse; verify branch protection even when USB owns F1',
+                       out, baseline=copy.deepcopy(db),
+                       contract={'source': 'lane-2 connect-programmer M01; F1/K1 VBUS netlist',
+                                 'scope': 'physical bypass of the sole local fuse; upstream fault source and clearing-energy limits remain explicit expert inputs, no fuse-time guarantee inferred'})
+
+    if (re.fullmatch(r'BQ27441.*', model('U1')) and 'R6' in parts
+            and p2n.get('U1.8') == p2n.get('R6.1') == 'VCC'
+            and p2n.get('U1.7') == p2n.get('R6.2') == 'VSYS'):
+        base, out = copy.deepcopy(db), copy.deepcopy(db)
+        base['parts']['R6']['value'] = '0R01'
+        out['parts']['R6']['value'] = '1R'
+        yield Mutation('D-ADC-SHUNT-RANGE', ('ANA-C03',), ('U1', 'R6'), ('VCC', 'VSYS'),
+                       'raise the physical SRP/SRN shunt 10mOhm to 1Ohm; input-range question must remain located',
+                       out, baseline=base,
+                       contract={'source': 'lane-3 bq27441 M01, SLUSBH1C SRP/SRN pin functions',
+                                 'test_contract_only': '1A load and allowed differential 20mV are synthetic coverage-probe requirements; they are not a claimed BQ27441 guaranteed limit',
+                                 'baseline_diff_v': .01, 'mutant_diff_v': 1.0})
+
+    if (re.fullmatch(r'BD71847A?MWV(?:-E2)?', model('U4')) and p2n.get('U4.55') == 'NVCC_SD2'
+            and all(r in parts for r in ('C113', 'C54'))
+            and p2n.get('C113.2') == p2n.get('C54.1') == 'NVCC_SD2'):
+        base = copy.deepcopy(db)
+        base['parts']['C113']['value'] = '22uF'
+        out = copy.deepcopy(db)
+        out['parts']['C113']['value'] = '1uF';out['parts']['C54']['value'] = '0.22uF'
+        yield Mutation('D-PMIC-OUTPUT-COUT', ('PWR-C04', 'PWR-C09'), ('U4', 'C113', 'C54'), ('NVCC_SD2',),
+                       'replace synthetic 22uF+0.22uF nominal baseline by original MUXSW 1.22uF',
+                       out, baseline=base,
+                       contract={'source': 'lane-1 kimchi F29/M01; ROHM BD71847AMWV Rev003 p110 Table5-36',
+                                 'required_effective_uF': [11, 33], 'mutant_nominal_uF': 1.22,
+                                 'baseline': 'synthetic nominal 22.22uF; DC-bias/temperature qualification is not certified by this probe'})
