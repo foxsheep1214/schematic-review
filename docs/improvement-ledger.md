@@ -10,6 +10,15 @@ count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
+## 准则库 1.6.1：PWR-C18 补 24 V 中断核对 (2026-11-02)
+
+同步共用层 1.6.1，G01-053 按 GB/T 17626.29-2006 修订。`PWR-C18` 增加 24 V 按项目选定的暂降与中断组合核，低阻抗中断的反灌和恢复时的瞬变过压要有处置。重生成 check-catalog。
+
+- Event: user:2026-11-02 (入库并修订)
+- Causes: knowledge_missing 1
+- Changed: references/shared/guideline-criteria.json, scripts/catalog.py, references/check-catalog.md, references/architecture.md, docs/improvement-ledger.md
+- Gates: pytest 2418 passed; mutation --changed: 34/34 killed at unit tier (contract tier 11 killed, 23 survived)
+
 ## 准则库 1.6.0：DC_24V 检查项 PWR-C27 与映射 (2026-11-02)
 
 同步共用层 1.6.0（344 条）。新增检查项 `PWR-C27`，核器件范围覆盖已声明的 24 V 输入窗，因为现有 `PWR-C17`、`PWR-C21` 写死了 −48 V 和军车 28 V 的数值。`BASIS` 映射 G01-051～054，加一条测试守住 `DC_24V` 不带 `PWR-C17`。
