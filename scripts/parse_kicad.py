@@ -36,6 +36,7 @@ import xml.etree.ElementTree as ET
 
 from parse_netlist import is_not_populated, self_check
 from page_inventory import native_inventory, NATIVE
+from solve_dividers import parse_resistor
 
 # KiCad 电气类型 -> 既有 PINUSE 词汇；未知类型保留原文，不静默当作 UNSPEC
 PINUSE = {
@@ -133,7 +134,11 @@ def _component(comp, libparts, pages):
                   for item in comp.findall('./property')}
     mpn = next((value for name, value in sorted(fields.items())
                 if MPN_FIELD.match(name) and value), '')
-    value = _text(comp.findtext('value'))
+    original_value = _text(comp.findtext('value'))
+    val_field = next((name for name in fields if name.casefold() == 'val' and fields[name]), None)
+    value = fields[val_field] if val_field else original_value
+    value_source = val_field or 'value'
+    parsed = parse_resistor(value) if re.match(r'^R\d', comp.get('ref', ''), re.I) else None
     footprint = _text(comp.findtext('footprint'))
     sheetpath = comp.find('sheetpath')
     path = sheetpath.get('names') if sheetpath is not None else None
@@ -148,6 +153,13 @@ def _component(comp, libparts, pages):
         # dnp 是装配声明；exclude_from_bom 只是 BOM 卫生，不作装配证据。
         'nc': 'dnp' in properties or is_not_populated(lib, value),
     }
+    # Ordinary literal-only symbols retain their existing db representation.
+    # New native facts participate in the fingerprint only when actually present.
+    if fields or (parsed and parsed.get('method') == 'packaged-RKM'):
+        part.update(original_value=original_value, fields=fields,
+                    value_provenance={'field': value_source, 'raw': value,
+                                      'method': parsed.get('method', 'literal-RKM') if parsed else 'unknown',
+                                      'ohm': parsed['kohm'] * 1000 if parsed else None})
     return part, pages.get(path), lib, normalization
 
 

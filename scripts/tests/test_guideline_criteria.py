@@ -4,6 +4,7 @@ same shared layer, byte for byte (user 2026-10-31: 请开始执行这个方案; 
 """
 import copy
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -16,7 +17,8 @@ import catalog
 import device_kinds
 import guideline_criteria as g
 
-ASG = Path.home() / '.agents' / 'skills' / 'autonomous-schematic-generation'
+# Explicit paired checkout for reproducible cross-skill integration; default remains installed ASG.
+ASG = Path(os.environ.get('SR_ASG_SHARED_ROOT') or Path.home() / '.agents' / 'skills' / 'autonomous-schematic-generation')
 SHARED = g.SHARED_FILES
 
 

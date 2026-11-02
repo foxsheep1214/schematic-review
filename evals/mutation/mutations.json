@@ -5444,5 +5444,19 @@
   "file": "scripts/render_report.py",
   "old": "sum(len(r) for r in handoff_groups(plan, handoffs).values())",
   "new": "len(handoffs)"
+ },
+ {
+  "id": "M843",
+  "name": "KiCad Val loses priority over library Value",
+  "file": "scripts/parse_kicad.py",
+  "old": "value = fields[val_field] if val_field else original_value",
+  "new": "value = original_value"
+ },
+ {
+  "id": "M844",
+  "name": "packaged resistor name is unreadable again",
+  "file": "scripts/solve_dividers.py",
+  "old": "    if packaged:\n",
+  "new": "    if False:\n"
  }
 ]
