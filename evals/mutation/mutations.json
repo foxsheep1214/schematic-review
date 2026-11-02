@@ -5097,10 +5097,10 @@
  },
  {
   "id": "M793",
-  "name": "the title area never falls back to page 1",
+  "name": "semantic description is never consulted",
   "file": "scripts/datasheet_kinds.py",
-  "old": "return title if cues(title) else text",
-  "new": "return title"
+  "old": "return ' '.join(line for line in title + description if not re.fullmatch(r'(?i)diodes(?: incorporated| inc\\.?)?', line))",
+  "new": "return ' '.join(title)"
  },
  {
   "id": "M794",
@@ -5750,8 +5750,8 @@
   "id": "M887",
   "name": "DNP fields are no longer assembly evidence",
   "file": "scripts/parse_kicad.py",
-  "old": "or any(name.casefold() in ('dnp', '不贴') and str(mark).strip().casefold() in",
-  "new": "or any(False and str(mark).strip().casefold() in"
+  "old": "for source, entries in (('property', properties), ('field', fields)):",
+  "new": "for source, entries in (('property', properties),):"
  },
  {
   "id": "M888",
@@ -5920,5 +5920,54 @@
   "file": "scripts/lint.py",
   "old": "if not ng.is_ground(n) and not pd_return:",
   "new": "if not ng.is_ground(n):"
+ },
+ {
+  "id": "M960",
+  "name": "native assembly fields ignore Populate DNP",
+  "file": "scripts/parse_kicad.py",
+  "old": "(key in POPULATION_FIELDS and mark in UNFITTED_MARKS)",
+  "new": "(False)"
+ },
+ {
+  "id": "M961",
+  "name": "material grouping ignores the explicit native MPN",
+  "file": "scripts/audit_datasheets.py",
+  "old": "if MPN_FIELD.match(name) and _text(value):",
+  "new": "if False:"
+ },
+ {
+  "id": "M962",
+  "name": "easyC contacts revert to relay prefix",
+  "file": "scripts/part_words.py",
+  "old": "(?:^|:)EASYC(?:_|$)",
+  "new": "(?:^|:)NOT_EASYC(?:_|$)"
+ },
+ {
+  "id": "M963",
+  "name": "TCXO again inherits its crystal footprint",
+  "file": "scripts/part_words.py",
+  "old": "        return IC, 'part-keyword'\n    if re.search(r'(?:^|:)SW_DIP",
+  "new": "        return CRYSTAL, 'part-keyword'\n    if re.search(r'(?:^|:)SW_DIP"
+ },
+ {
+  "id": "M964",
+  "name": "datasheet discovery reads all first page application words",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "    return semantic_identity_text(text)",
+  "new": "    return text or ''"
+ },
+ {
+  "id": "M965",
+  "name": "maker Diodes becomes a diode cue",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "    text = re.sub(r'(?im)^\\s*diodes\\s*$|\\bdiodes\\s+(?:incorporated|inc\\.?)\\b', '', str(text or ''))",
+  "new": "    text = str(text or '')"
+ },
+ {
+  "id": "M966",
+  "name": "native connectors again need IC bypass groups",
+  "file": "scripts/decoupling.py",
+  "old": "return kind if basis == 'part-keyword' and kind in NO_SUPPLY_PARTS else 'unmodeled'",
+  "new": "return 'unmodeled'"
  }
 ]

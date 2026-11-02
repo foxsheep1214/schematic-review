@@ -44,7 +44,7 @@ def squash(text):
 
 
 SHORT_CUE = 3   # squashed, "Supply Current vs" holds tvs and "Maximum Current" mcu: a cue this short is read as a word
-WORD_CUES = ('fuse',)   # squashed, "Littelfuse" (a maker's name) holds fuse: read as a word too
+WORD_CUES = ('fuse', 'diode')   # squashed, "Littelfuse" (a maker's name) holds fuse: read as a word too
 
 
 def named_by(word, text, flat=None):
@@ -59,6 +59,7 @@ def named_by(word, text, flat=None):
 
 def cues(text, specific=True):
     """Kinds named in text; with specific=True a TVS/Zener word suppresses the generic 'diode'."""
+    text = re.sub(r'(?im)^\s*diodes\s*$|\bdiodes\s+(?:incorporated|inc\.?)\b', '', str(text or ''))
     flat = squash(text)
     found = {kind for kind, words in KIND_CUES if any(named_by(w, text, flat) for w in words)}
     if specific and found & SPECIFIC_DIODES:
@@ -241,14 +242,40 @@ def title_check(result, declaration, document_path, read_page):
     return dict(result, status='VERIFIED', title_mismatch=dict(mismatch, kind_reason=reason))
 
 
+# Do not read application headings, examples, features or page furniture as the device's title.
+SECTION_HEADING_RE = re.compile(
+    r'^(?:\d+(?:\.\d+)*\s*[.)]?\s*)?(?:features|applications?|typical application|'
+    r'pin (?:functions?|descriptions?)|functional (?:block|description)|absolute maximum|'
+    r'ordering(?: information)?|package(?: information)?|marking|electrical characteristics|'
+    r'contents|evaluation board)\b', re.I)
+DESCRIPTION_RE = re.compile(r'^(?:\d+(?:\.\d+)*\s*[.)]?\s*)?(?:general )?description\s*$', re.I)
+
+
+def semantic_identity_text(text):
+    """Title plus a bounded Description block; never a fallback to an entire page."""
+    lines = [ln.strip() for ln in str(text or '').splitlines() if ln.strip()]
+    title = []
+    for line in lines[:TITLE_LINES]:
+        if SECTION_HEADING_RE.match(line) or DESCRIPTION_RE.match(line):
+            break
+        title.append(line)
+    # A numbered Description heading may occur after Features/Applications in PDF reading order.
+    description = []
+    for i, line in enumerate(lines):
+        if DESCRIPTION_RE.match(line):
+            for item in lines[i + 1:i + 9]:
+                if SECTION_HEADING_RE.match(item) or DESCRIPTION_RE.match(item):
+                    break
+                description.append(item)
+            break
+    return ' '.join(line for line in title + description if not re.fullmatch(r'(?i)diodes(?: incorporated| inc\.?)?', line))
+
+
 def title_text(document_path, read_page=None):
-    """The datasheet's own title (C1): the first lines of page 1, or the whole page 1 when they name no kind."""
+    """Only semantic title/description areas of page 1 provide identity cues."""
     read_page = read_page or page_text
     text = read_page(document_path, 1) if document_path else None
-    if not text:
-        return ''
-    title = ' '.join([ln.strip() for ln in text.splitlines() if ln.strip()][:TITLE_LINES])
-    return title if cues(title) else text
+    return semantic_identity_text(text)
 
 
 def agrees(kind, named):
@@ -271,17 +298,11 @@ def candidates(document_path, pages=(1, 2), read_page=None):
     """Kinds named on the first pages, with a short context snippet; suggestions only."""
     read_page = read_page or page_text
     out = []
-    for page in pages:
-        text = read_page(document_path, page) if document_path else None
-        if not text:
-            continue
-        lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
-        for kind in sorted(cues(text)):
-            words = dict(KIND_CUES)[kind]
-            line = next((ln for ln in lines if any(named_by(w, ln) for w in words)), '')
-            out.append({'kind': kind, 'page': page, 'snippet': line[:120]})
-        if out:
-            break
+    if 1 not in pages:
+        return out
+    text = title_text(document_path, read_page)
+    for kind in sorted(cues(text)):
+        out.append({'kind': kind, 'page': 1, 'snippet': text[:120]})
     return out
 
 

@@ -207,6 +207,16 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
             return UNKNOWN, f'datasheet says {kind} but symbol pin names say {sig}'
         return kind, 'datasheet'
     signature = pin_signature(pin_names)
+    primitive = normalize(part.get('prim'))
+    # Placed functional symbols outrank a port label (a terminal named "Relay") or a package category.
+    if re.search(r'(?:^|:)MOUNTINGHOLE(?:_PAD)?$|(?:^|:)FIDUCIAL(?:_|$)', primitive):
+        return TESTPOINT, 'part-keyword'
+    if re.search(r'(?:^|:)OSCILLATOR(?::|_)|^OSCILLATOR:', primitive) or re.fullmatch(r'TCXO|VCTCXO|OCXO', normalize(part.get('value'))):
+        return IC, 'part-keyword'
+    if re.search(r'(?:^|:)SW_DIP_SPSTX?\d*', normalize(part.get('jedec'))):
+        return SWITCH, 'part-keyword'
+    if re.search(r'(?:^|:)CONN_\d+(?:X\d+)?(?:_|$)|(?:^|:)EASYC(?:_|$)', primitive):
+        return CONNECTOR, 'part-keyword'
     blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))
     ic_ref = re.match(r'^(U|M|IC)\d', ref, re.I)
     controller_pins = {a for name, pin in pin_names for a in pin_aliases(name, pin)}

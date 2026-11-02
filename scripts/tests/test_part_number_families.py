@@ -98,7 +98,7 @@ class ShortCueTests(unittest.TestCase):
         quote = 'N-Channel MOSFET Maximum Current 10 A'
         self.assertEqual(dk.verify({'kind': 'mosfet', 'page': 1, 'quote': quote}, 'x.pdf', read)['status'], 'VERIFIED')
         found = dk.candidates('x.pdf', read_page=read)
-        self.assertEqual([(c['kind'], c['snippet']) for c in found], [('mosfet', 'N-Channel MOSFET')])
+        self.assertEqual([(c['kind'], c['snippet']) for c in found], [('mosfet', 'N-Channel MOSFET Maximum Current 10 A')])
 
 
 if __name__ == '__main__':

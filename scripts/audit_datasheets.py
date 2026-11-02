@@ -72,7 +72,15 @@ def _parameter_value(value):
 
 
 def _identity_for(ref, part):
-    """Keep identity VALUE priority; use explicit PART over parameter VALUE."""
+    """An explicit native MPN groups material independently of its displayed value."""
+    provenance = part.get('mpn_provenance') or {}
+    if _text(provenance.get('raw')):
+        return provenance['raw'].strip(), 'part'
+    # Cached DBs from earlier parsers retain native fields even without provenance.
+    from parse_kicad import MPN_FIELD
+    for name, value in sorted((part.get('fields') or {}).items()):
+        if MPN_FIELD.match(name) and _text(value):
+            return value.strip(), 'part' 
     display, explicit = part.get('value'), part.get('part')
     if (_parameter_value(display) and _text(explicit)
             and explicit.strip().upper() not in {'N/A', 'NA', 'NONE', 'TBD', 'UNKNOWN'}

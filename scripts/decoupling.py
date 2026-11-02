@@ -27,7 +27,7 @@ SECTION_SCHEMA_VERSION = 4
 # Datasheet-verified device kinds (intent.device_kinds) that have no IC supply pins to bypass.
 NO_SUPPLY_KINDS = {'bridge_rectifier', 'transformer', 'connector'}
 # Netlist kinds that carry no IC supply pin (checkers.netgraph kinds).
-NO_SUPPLY_PARTS = {'inductor', 'transformer', 'ferrite', 'resistor', 'capacitor', 'fuse', 'bridge_rectifier'}
+NO_SUPPLY_PARTS = {'connector', 'testpoint', 'switch', 'jumper', 'inductor', 'transformer', 'ferrite', 'resistor', 'capacitor', 'fuse', 'bridge_rectifier'}
 REQUIREMENT_KINDS = {'connection', 'capacitance', 'rating'}
 # 组用途：普通旁路；按原厂条款不需要直接电容（如高压启动/检测脚）；片内稳压器输出电容（如 V5/VCAP）。
 # 后两类必须有对应的 connection 条款作出处。
@@ -276,7 +276,9 @@ class Inventory:
                               (r'^L\d', 'inductor'), (r'^JP\d', 'jumper')):
             if re.match(pattern, ref, re.I):
                 return kind
-        return 'unmodeled'
+        from part_words import classify
+        kind, basis = classify(ref, self.parts.get(ref, {}), len(self.nodes.get(ref, ())))
+        return kind if basis == 'part-keyword' and kind in NO_SUPPLY_PARTS else 'unmodeled'
 
     def two_terminal(self, ref):
         """A two-pin part (diode/TVS/LED/thermistor/varistor/fuse...) or a pinless symbol (mounting hole,
