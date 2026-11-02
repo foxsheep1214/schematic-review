@@ -1,0 +1,5584 @@
+{
+  "board": "antmicro--kria-k26-devboard",
+  "source": {
+    "repo": "antmicro/kria-k26-devboard",
+    "commit": "9ead4dfc5b29fa9308206ccdfe013dd8f6d93b67",
+    "schematic": "kria-k26-devboard.kicad_sch",
+    "license": "Apache-2.0",
+    "schematic_sha256": "70b4690e0c5f1185aa167575dc56b5bee5e537b62a65ba937ebd6fb47d831dcc"
+  },
+  "types": [
+    "POE_PD",
+    "ETHERNET",
+    "HSSERIAL",
+    "POWER_CONVERTER"
+  ],
+  "supplemental_types": [
+    "USB",
+    "I2C",
+    "CLOCK",
+    "DEBUG",
+    "ISOLATION",
+    "LEVEL_SHIFT",
+    "STORAGE",
+    "POWER_PROTECTION",
+    "ANALOG"
+  ],
+  "run": {
+    "db_sha256": "26c6dc339134f8b0e10ae91759553c9e2aa5bcf977dd2c391d8dad88739b4c38",
+    "review_db_sha256": "9bef56a19a24856f67fac860dcf0411f8d9d1f64127e9ad7825e0e7f03cb3123",
+    "plan_items": 1957,
+    "findings_total": 244,
+    "results_judged": 206,
+    "gate": "FAIL",
+    "sr_commit": "0c4b52a6173cf2b92739268ab0744acfac772e10",
+    "count_scope": "同版 initial/cold/hot 的非 INFO 扫描行按 (rule,detail) 去重，含 CANDIDATE，未将候选当确认缺陷；不含工具诊断。",
+    "scope_limit": "候选电路状态验证阻断；最终计划为逐对象回退计划，非完整电路覆盖审查。",
+    "results_triaged": 1957,
+    "result_counts": {
+      "INSUFFICIENT": 1751,
+      "PASS": 44,
+      "FAIL": 2,
+      "NA": 160
+    },
+    "gate_valid": false,
+    "release": "NO_GO",
+    "candidate_circuits": 37,
+    "candidate_path_completed": false,
+    "report_generated": false,
+    "report_exit_code": 2,
+    "report_status": "正式报告器拒绝REVIEW_INCOMPLETE；审查报告.md为明确标注的受限执行记录。"
+  },
+  "findings": [
+    {
+      "id": "F001",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP0_C2M_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP0_C2M_N <- J_SOM240_2.B10 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B10 只连 /Xilinx K26 SOM/GTH_DP0_C2M_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F002",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP0_C2M_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP0_C2M_P <- J_SOM240_2.B09 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B09 只连 /Xilinx K26 SOM/GTH_DP0_C2M_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F003",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP0_M2C_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP0_M2C_N <- J_SOM240_2.D10 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D10 只连 /Xilinx K26 SOM/GTH_DP0_M2C_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F004",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP0_M2C_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP0_M2C_P <- J_SOM240_2.D09 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D09 只连 /Xilinx K26 SOM/GTH_DP0_M2C_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F005",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP1_C2M_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP1_C2M_N <- J_SOM240_2.D02 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D02 只连 /Xilinx K26 SOM/GTH_DP1_C2M_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F006",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP1_C2M_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP1_C2M_P <- J_SOM240_2.D01 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D01 只连 /Xilinx K26 SOM/GTH_DP1_C2M_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F007",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP1_M2C_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP1_M2C_N <- J_SOM240_2.C08 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C08 只连 /Xilinx K26 SOM/GTH_DP1_M2C_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F008",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP1_M2C_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP1_M2C_P <- J_SOM240_2.C07 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C07 只连 /Xilinx K26 SOM/GTH_DP1_M2C_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F009",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP2_C2M_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP2_C2M_N <- J_SOM240_2.B02 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B02 只连 /Xilinx K26 SOM/GTH_DP2_C2M_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F010",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP2_C2M_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP2_C2M_P <- J_SOM240_2.B01 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B01 只连 /Xilinx K26 SOM/GTH_DP2_C2M_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F011",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP2_M2C_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP2_M2C_N <- J_SOM240_2.B06 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B06 只连 /Xilinx K26 SOM/GTH_DP2_M2C_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F012",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP2_M2C_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP2_M2C_P <- J_SOM240_2.B05 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B05 只连 /Xilinx K26 SOM/GTH_DP2_M2C_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F013",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP3_C2M_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP3_C2M_N <- J_SOM240_2.D06 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D06 只连 /Xilinx K26 SOM/GTH_DP3_C2M_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F014",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP3_C2M_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP3_C2M_P <- J_SOM240_2.D05 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D05 只连 /Xilinx K26 SOM/GTH_DP3_C2M_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F015",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP3_M2C_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP3_M2C_N <- J_SOM240_2.A04 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A04 只连 /Xilinx K26 SOM/GTH_DP3_M2C_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F016",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_DP3_M2C_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_DP3_M2C_P <- J_SOM240_2.A03 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A03 只连 /Xilinx K26 SOM/GTH_DP3_M2C_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F017",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_REFCLK0_C2M_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_REFCLK0_C2M_N <- J_SOM240_2.C04 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C04 只连 /Xilinx K26 SOM/GTH_REFCLK0_C2M_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F018",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_REFCLK0_C2M_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_REFCLK0_C2M_P <- J_SOM240_2.C03 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C03 只连 /Xilinx K26 SOM/GTH_REFCLK0_C2M_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F019",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_REFCLK1_C2M_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_REFCLK1_C2M_N <- J_SOM240_2.A08 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A08 只连 /Xilinx K26 SOM/GTH_REFCLK1_C2M_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F020",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTH_REFCLK1_C2M_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTH_REFCLK1_C2M_P <- J_SOM240_2.A07 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A07 只连 /Xilinx K26 SOM/GTH_REFCLK1_C2M_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F021",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTR_DP0_C2M_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTR_DP0_C2M_N <- J_SOM240_1.A56 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.A56=/Xilinx K26 SOM/GTR_DP0_C2M_N，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F022",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTR_DP0_C2M_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTR_DP0_C2M_P <- J_SOM240_1.A55 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.A55=/Xilinx K26 SOM/GTR_DP0_C2M_P，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F023",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTR_DP1_C2M_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTR_DP1_C2M_N <- J_SOM240_1.C56 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.C56=/Xilinx K26 SOM/GTR_DP1_C2M_N，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F024",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/GTR_DP1_C2M_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/GTR_DP1_C2M_P <- J_SOM240_1.C55 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.C55=/Xilinx K26 SOM/GTR_DP1_C2M_P，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F025",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDA03"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDA03 <- J_SOM240_1.B16 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.B16=/Xilinx K26 SOM/HDA03，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F026",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDA05"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDA05 <- J_SOM240_1.B18 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.B18=/Xilinx K26 SOM/HDA05，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F027",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDA06"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDA06 <- J_SOM240_1.C18 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.C18=/Xilinx K26 SOM/HDA06，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F028",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDA07"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDA07 <- J_SOM240_1.C19 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.C19=/Xilinx K26 SOM/HDA07，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F029",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDA08_CC"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDA08_CC <- J_SOM240_1.C20 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.C20=/Xilinx K26 SOM/HDA08_CC，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F030",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDA10"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDA10 <- J_SOM240_1.A16 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.A16=/Xilinx K26 SOM/HDA10，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F031",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDA19"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDA19 <- J_SOM240_1.C23 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.C23=/Xilinx K26 SOM/HDA19，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F032",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB00_CC"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB00_CC <- J_SOM240_2.D44 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D44 只连 /Xilinx K26 SOM/HDB00_CC，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F033",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB01"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB01 <- J_SOM240_2.D45 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D45 只连 /Xilinx K26 SOM/HDB01，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F034",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB02"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB02 <- J_SOM240_2.D46 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D46 只连 /Xilinx K26 SOM/HDB02，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F035",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB03"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB03 <- J_SOM240_2.D48 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D48 只连 /Xilinx K26 SOM/HDB03，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F036",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB04"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB04 <- J_SOM240_2.D49 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D49 只连 /Xilinx K26 SOM/HDB04，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F037",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB05"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB05 <- J_SOM240_2.D50 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D50 只连 /Xilinx K26 SOM/HDB05，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F038",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB06"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB06 <- J_SOM240_2.C46 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C46 只连 /Xilinx K26 SOM/HDB06，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F039",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB07"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB07 <- J_SOM240_2.C47 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C47 只连 /Xilinx K26 SOM/HDB07，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F040",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB08_CC"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB08_CC <- J_SOM240_2.C48 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C48 只连 /Xilinx K26 SOM/HDB08_CC，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F041",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB09"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB09 <- J_SOM240_2.C50 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C50 只连 /Xilinx K26 SOM/HDB09，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F042",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB10"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB10 <- J_SOM240_2.C51 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C51 只连 /Xilinx K26 SOM/HDB10，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F043",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB11"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB11 <- J_SOM240_2.C52 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C52 只连 /Xilinx K26 SOM/HDB11，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F044",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB12"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB12 <- J_SOM240_2.B44 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B44 只连 /Xilinx K26 SOM/HDB12，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F045",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB13"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB13 <- J_SOM240_2.B45 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B45 只连 /Xilinx K26 SOM/HDB13，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F046",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB14"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB14 <- J_SOM240_2.B46 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B46 只连 /Xilinx K26 SOM/HDB14，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F047",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB15"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB15 <- J_SOM240_2.B48 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B48 只连 /Xilinx K26 SOM/HDB15，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F048",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB16_CC"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB16_CC <- J_SOM240_2.B49 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B49 只连 /Xilinx K26 SOM/HDB16_CC，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F049",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB17"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB17 <- J_SOM240_2.B50 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B50 只连 /Xilinx K26 SOM/HDB17，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F050",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB18"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB18 <- J_SOM240_2.A46 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A46 只连 /Xilinx K26 SOM/HDB18，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F051",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB19"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB19 <- J_SOM240_2.A47 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A47 只连 /Xilinx K26 SOM/HDB19，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F052",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB20"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB20 <- J_SOM240_2.A48 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A48 只连 /Xilinx K26 SOM/HDB20，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F053",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB21"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB21 <- J_SOM240_2.A50 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A50 只连 /Xilinx K26 SOM/HDB21，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F054",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB22"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB22 <- J_SOM240_2.A51 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A51 只连 /Xilinx K26 SOM/HDB22，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F055",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDB23"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDB23 <- J_SOM240_2.A52 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A52 只连 /Xilinx K26 SOM/HDB23，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F056",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC00_CC"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC00_CC <- J_SOM240_2.D52 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D52 只连 /Xilinx K26 SOM/HDC00_CC，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F057",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC01"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC01 <- J_SOM240_2.D53 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D53 只连 /Xilinx K26 SOM/HDC01，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F058",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC02"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC02 <- J_SOM240_2.D54 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D54 只连 /Xilinx K26 SOM/HDC02，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F059",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC03"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC03 <- J_SOM240_2.D56 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D56 只连 /Xilinx K26 SOM/HDC03，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F060",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC04"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC04 <- J_SOM240_2.D57 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D57 只连 /Xilinx K26 SOM/HDC04，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F061",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC05"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC05 <- J_SOM240_2.D58 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D58 只连 /Xilinx K26 SOM/HDC05，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F062",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC06"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC06 <- J_SOM240_2.C54 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C54 只连 /Xilinx K26 SOM/HDC06，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F063",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC07"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC07 <- J_SOM240_2.C55 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C55 只连 /Xilinx K26 SOM/HDC07，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F064",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC08_CC"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC08_CC <- J_SOM240_2.C56 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C56 只连 /Xilinx K26 SOM/HDC08_CC，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F065",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC09"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC09 <- J_SOM240_2.C58 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C58 只连 /Xilinx K26 SOM/HDC09，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F066",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC10"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC10 <- J_SOM240_2.C59 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C59 只连 /Xilinx K26 SOM/HDC10，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F067",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC11"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC11 <- J_SOM240_2.C60 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C60 只连 /Xilinx K26 SOM/HDC11，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F068",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC12"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC12 <- J_SOM240_2.B52 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B52 只连 /Xilinx K26 SOM/HDC12，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F069",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC13"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC13 <- J_SOM240_2.B53 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B53 只连 /Xilinx K26 SOM/HDC13，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F070",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC14"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC14 <- J_SOM240_2.B54 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B54 只连 /Xilinx K26 SOM/HDC14，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F071",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC15"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC15 <- J_SOM240_2.B56 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B56 只连 /Xilinx K26 SOM/HDC15，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F072",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC16_CC"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC16_CC <- J_SOM240_2.B57 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B57 只连 /Xilinx K26 SOM/HDC16_CC，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F073",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC17"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC17 <- J_SOM240_2.B58 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B58 只连 /Xilinx K26 SOM/HDC17，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F074",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC18"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC18 <- J_SOM240_2.A54 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A54 只连 /Xilinx K26 SOM/HDC18，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F075",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC19"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC19 <- J_SOM240_2.A55 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A55 只连 /Xilinx K26 SOM/HDC19，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F076",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC20"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC20 <- J_SOM240_2.A56 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A56 只连 /Xilinx K26 SOM/HDC20，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F077",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC21"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC21 <- J_SOM240_2.A58 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A58 只连 /Xilinx K26 SOM/HDC21，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F078",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC22"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC22 <- J_SOM240_2.A59 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A59 只连 /Xilinx K26 SOM/HDC22，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F079",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDC23"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HDC23 <- J_SOM240_2.A60 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A60 只连 /Xilinx K26 SOM/HDC23，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F080",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPA06_CLK0_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPA06_CLK0_N <- J_SOM240_1.A07 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.A07=/Xilinx K26 SOM/HPA06_CLK0_N，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F081",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPA06_CLK0_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPA06_CLK0_P <- J_SOM240_1.A06 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.A06=/Xilinx K26 SOM/HPA06_CLK0_P，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F082",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPA10_CC_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPA10_CC_N <- J_SOM240_1.C13 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.C13=/Xilinx K26 SOM/HPA10_CC_N，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F083",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPA10_CC_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPA10_CC_P <- J_SOM240_1.C12 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.C12=/Xilinx K26 SOM/HPA10_CC_P，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F084",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPA11_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPA11_N <- J_SOM240_1.B11 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.B11=/Xilinx K26 SOM/HPA11_N，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F085",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPA11_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPA11_P <- J_SOM240_1.B10 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.B10=/Xilinx K26 SOM/HPA11_P，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F086",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPA12_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPA12_N <- J_SOM240_1.A10 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.A10=/Xilinx K26 SOM/HPA12_N，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F087",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPA12_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPA12_P <- J_SOM240_1.A09 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.A09=/Xilinx K26 SOM/HPA12_P，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F088",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPA13_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPA13_N <- J_SOM240_1.A13 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.A13=/Xilinx K26 SOM/HPA13_N，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F089",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPA13_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPA13_P <- J_SOM240_1.A12 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.A12=/Xilinx K26 SOM/HPA13_P，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F090",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPA14_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPA14_N <- J_SOM240_1.D14 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.D14=/Xilinx K26 SOM/HPA14_N，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F091",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPA14_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPA14_P <- J_SOM240_1.D13 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.D13=/Xilinx K26 SOM/HPA14_P，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F092",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB00_CC_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB00_CC_N <- J_SOM240_2.D16 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D16 只连 /Xilinx K26 SOM/HPB00_CC_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F093",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB00_CC_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB00_CC_P <- J_SOM240_2.D15 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D15 只连 /Xilinx K26 SOM/HPB00_CC_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F094",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB01_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB01_N <- J_SOM240_2.D13 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D13 只连 /Xilinx K26 SOM/HPB01_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F095",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB01_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB01_P <- J_SOM240_2.D12 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D12 只连 /Xilinx K26 SOM/HPB01_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F096",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB02_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB02_N <- J_SOM240_2.C18 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C18 只连 /Xilinx K26 SOM/HPB02_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F097",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB02_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB02_P <- J_SOM240_2.C17 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C17 只连 /Xilinx K26 SOM/HPB02_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F098",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB03_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB03_N <- J_SOM240_2.B25 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B25 只连 /Xilinx K26 SOM/HPB03_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F099",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB03_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB03_P <- J_SOM240_2.B24 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B24 只连 /Xilinx K26 SOM/HPB03_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F100",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB04_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB04_N <- J_SOM240_2.D22 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D22 只连 /Xilinx K26 SOM/HPB04_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F101",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB04_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB04_P <- J_SOM240_2.D21 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D21 只连 /Xilinx K26 SOM/HPB04_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F102",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB05_CC_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB05_CC_N <- J_SOM240_2.B19 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B19 只连 /Xilinx K26 SOM/HPB05_CC_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F103",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB05_CC_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB05_CC_P <- J_SOM240_2.B18 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B18 只连 /Xilinx K26 SOM/HPB05_CC_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F104",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB06_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB06_N <- J_SOM240_2.A21 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A21 只连 /Xilinx K26 SOM/HPB06_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F105",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB06_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB06_P <- J_SOM240_2.A20 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A20 只连 /Xilinx K26 SOM/HPB06_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F106",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB07_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB07_N <- J_SOM240_2.B16 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B16 只连 /Xilinx K26 SOM/HPB07_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F107",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB07_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB07_P <- J_SOM240_2.B15 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B15 只连 /Xilinx K26 SOM/HPB07_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F108",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB08_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB08_N <- J_SOM240_2.A15 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A15 只连 /Xilinx K26 SOM/HPB08_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F109",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB08_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB08_P <- J_SOM240_2.A14 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A14 只连 /Xilinx K26 SOM/HPB08_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F110",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB09_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB09_N <- J_SOM240_2.C12 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C12 只连 /Xilinx K26 SOM/HPB09_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F111",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB09_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB09_P <- J_SOM240_2.C11 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C11 只连 /Xilinx K26 SOM/HPB09_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F112",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB10_CC_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB10_CC_N <- J_SOM240_2.B13 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B13 只连 /Xilinx K26 SOM/HPB10_CC_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F113",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB10_CC_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB10_CC_P <- J_SOM240_2.B12 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B12 只连 /Xilinx K26 SOM/HPB10_CC_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F114",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB11_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB11_N <- J_SOM240_2.B22 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B22 只连 /Xilinx K26 SOM/HPB11_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F115",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB11_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB11_P <- J_SOM240_2.B21 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B21 只连 /Xilinx K26 SOM/HPB11_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F116",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB12_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB12_N <- J_SOM240_2.A18 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A18 只连 /Xilinx K26 SOM/HPB12_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F117",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB12_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB12_P <- J_SOM240_2.A17 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A17 只连 /Xilinx K26 SOM/HPB12_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F118",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB13_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB13_N <- J_SOM240_2.C21 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C21 只连 /Xilinx K26 SOM/HPB13_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F119",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB13_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB13_P <- J_SOM240_2.C20 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C20 只连 /Xilinx K26 SOM/HPB13_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F120",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB14_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB14_N <- J_SOM240_2.C15 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C15 只连 /Xilinx K26 SOM/HPB14_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F121",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB14_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB14_P <- J_SOM240_2.C14 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C14 只连 /Xilinx K26 SOM/HPB14_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F122",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB15_CC_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB15_CC_P <- J_SOM240_2.A11 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A11 只连 /Xilinx K26 SOM/HPB15_CC_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F123",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB16_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB16_N <- J_SOM240_2.A24 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A24 只连 /Xilinx K26 SOM/HPB16_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F124",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB16_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB16_P <- J_SOM240_2.A23 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A23 只连 /Xilinx K26 SOM/HPB16_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F125",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB17_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB17_N <- J_SOM240_2.D25 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D25 只连 /Xilinx K26 SOM/HPB17_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F126",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB17_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB17_P <- J_SOM240_2.D24 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D24 只连 /Xilinx K26 SOM/HPB17_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F127",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB19_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB19_N <- J_SOM240_2.A27 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A27 只连 /Xilinx K26 SOM/HPB19_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F128",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB19_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB19_P <- J_SOM240_2.A26 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A26 只连 /Xilinx K26 SOM/HPB19_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F129",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB_15_CC_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB_15_CC_N <- J_SOM240_2.A12 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A12 只连 /Xilinx K26 SOM/HPB_15_CC_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F130",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB_18_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB_18_N <- J_SOM240_2.C24 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C24 只连 /Xilinx K26 SOM/HPB_18_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F131",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB_18_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB_18_P <- J_SOM240_2.C23 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C23 只连 /Xilinx K26 SOM/HPB_18_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F132",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB_CLK0_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB_CLK0_N <- J_SOM240_2.D19 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D19 只连 /Xilinx K26 SOM/HPB_CLK0_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F133",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPB_CLK0_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPB_CLK0_P <- J_SOM240_2.D18 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D18 只连 /Xilinx K26 SOM/HPB_CLK0_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F134",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC00_CC_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC00_CC_N <- J_SOM240_2.D34 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D34 只连 /Xilinx K26 SOM/HPC00_CC_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F135",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC00_CC_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC00_CC_P <- J_SOM240_2.D33 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D33 只连 /Xilinx K26 SOM/HPC00_CC_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F136",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC01_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC01_N <- J_SOM240_2.D31 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D31 只连 /Xilinx K26 SOM/HPC01_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F137",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC01_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC01_P <- J_SOM240_2.D30 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D30 只连 /Xilinx K26 SOM/HPC01_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F138",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC02_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC02_N <- J_SOM240_2.D37 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D37 只连 /Xilinx K26 SOM/HPC02_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F139",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC02_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC02_P <- J_SOM240_2.D36 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D36 只连 /Xilinx K26 SOM/HPC02_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F140",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC03_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC03_N <- J_SOM240_2.A42 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A42 只连 /Xilinx K26 SOM/HPC03_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F141",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC03_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC03_P <- J_SOM240_2.A41 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A41 只连 /Xilinx K26 SOM/HPC03_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F142",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC04_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC04_N <- J_SOM240_2.D40 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D40 只连 /Xilinx K26 SOM/HPC04_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F143",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC04_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC04_P <- J_SOM240_2.D39 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D39 只连 /Xilinx K26 SOM/HPC04_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F144",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC05_CC_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC05_CC_N <- J_SOM240_2.C39 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C39 只连 /Xilinx K26 SOM/HPC05_CC_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F145",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC05_CC_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC05_CC_P <- J_SOM240_2.C38 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C38 只连 /Xilinx K26 SOM/HPC05_CC_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F146",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC06_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC06_N <- J_SOM240_2.B28 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B28 只连 /Xilinx K26 SOM/HPC06_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F147",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC06_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC06_P <- J_SOM240_2.B27 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B27 只连 /Xilinx K26 SOM/HPC06_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F148",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC07_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC07_N <- J_SOM240_2.B37 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B37 只连 /Xilinx K26 SOM/HPC07_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F149",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC07_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC07_P <- J_SOM240_2.B36 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B36 只连 /Xilinx K26 SOM/HPC07_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F150",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC08_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC08_N <- J_SOM240_2.A30 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A30 只连 /Xilinx K26 SOM/HPC08_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F151",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC08_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC08_P <- J_SOM240_2.A29 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A29 只连 /Xilinx K26 SOM/HPC08_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F152",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC09_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC09_N <- J_SOM240_2.D28 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D28 只连 /Xilinx K26 SOM/HPC09_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F153",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC09_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC09_P <- J_SOM240_2.D27 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D27 只连 /Xilinx K26 SOM/HPC09_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F154",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC10_CC_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC10_CC_N <- J_SOM240_2.C30 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C30 只连 /Xilinx K26 SOM/HPC10_CC_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F155",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC10_CC_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC10_CC_P <- J_SOM240_2.C29 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C29 只连 /Xilinx K26 SOM/HPC10_CC_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F156",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC11_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC11_N <- J_SOM240_2.C33 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C33 只连 /Xilinx K26 SOM/HPC11_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F157",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC11_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC11_P <- J_SOM240_2.C32 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C32 只连 /Xilinx K26 SOM/HPC11_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F158",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC12_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC12_N <- J_SOM240_2.C36 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C36 只连 /Xilinx K26 SOM/HPC12_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F159",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC12_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC12_P <- J_SOM240_2.C35 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C35 只连 /Xilinx K26 SOM/HPC12_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F160",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC13_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC13_N <- J_SOM240_2.B31 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B31 只连 /Xilinx K26 SOM/HPC13_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F161",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC13_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC13_P <- J_SOM240_2.B30 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B30 只连 /Xilinx K26 SOM/HPC13_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F162",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC14_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC14_N <- J_SOM240_2.A36 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A36 只连 /Xilinx K26 SOM/HPC14_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F163",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC14_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC14_P <- J_SOM240_2.A35 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A35 只连 /Xilinx K26 SOM/HPC14_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F164",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC15_CC_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC15_CC_N <- J_SOM240_2.A39 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A39 只连 /Xilinx K26 SOM/HPC15_CC_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F165",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC15_CC_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC15_CC_P <- J_SOM240_2.A38 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A38 只连 /Xilinx K26 SOM/HPC15_CC_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F166",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC16_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC16_N <- J_SOM240_2.B34 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B34 只连 /Xilinx K26 SOM/HPC16_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F167",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC16_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC16_P <- J_SOM240_2.B33 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B33 只连 /Xilinx K26 SOM/HPC16_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F168",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC17_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC17_N <- J_SOM240_2.C27 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C27 只连 /Xilinx K26 SOM/HPC17_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F169",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC17_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC17_P <- J_SOM240_2.C26 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C26 只连 /Xilinx K26 SOM/HPC17_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F170",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC18_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC18_N <- J_SOM240_2.B40 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B40 只连 /Xilinx K26 SOM/HPC18_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F171",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC18_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC18_P <- J_SOM240_2.B39 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B39 只连 /Xilinx K26 SOM/HPC18_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F172",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC19_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC19_N <- J_SOM240_2.A33 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A33 只连 /Xilinx K26 SOM/HPC19_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F173",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC19_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC19_P <- J_SOM240_2.A32 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A32 只连 /Xilinx K26 SOM/HPC19_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F174",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC_CLK0_N"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC_CLK0_N <- J_SOM240_2.C42 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C42 只连 /Xilinx K26 SOM/HPC_CLK0_N，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F175",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HPC_CLK0_P"
+      ],
+      "sr_text": "/Xilinx K26 SOM/HPC_CLK0_P <- J_SOM240_2.C41 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C41 只连 /Xilinx K26 SOM/HPC_CLK0_P，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F176",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/MIO40"
+      ],
+      "sr_text": "/Xilinx K26 SOM/MIO40 <- J_SOM240_1.B34 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.B34=/Xilinx K26 SOM/MIO40，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F177",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/MIO42"
+      ],
+      "sr_text": "/Xilinx K26 SOM/MIO42 <- J_SOM240_1.A35 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11，J_SOM240_1.A35=/Xilinx K26 SOM/MIO42，唯一贴装端点为 SoM 连接器 J_SOM240_1；网表只证明载板未使用该信号。需模块引脚功能/选用配置及原设计者意图确认是有意不用还是漏接，不能由单节点确认硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F178",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/VCCO_HDB_1"
+      ],
+      "sr_text": "/Xilinx K26 SOM/VCCO_HDB_1 <- J_SOM240_2.B59 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B59 只连 /Xilinx K26 SOM/VCCO_HDB_1，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F179",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/VCCO_HDB_2"
+      ],
+      "sr_text": "/Xilinx K26 SOM/VCCO_HDB_2 <- J_SOM240_2.B60 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B60 只连 /Xilinx K26 SOM/VCCO_HDB_2，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F180",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/VCCO_HDC_1"
+      ],
+      "sr_text": "/Xilinx K26 SOM/VCCO_HDC_1 <- J_SOM240_2.D59 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D59 只连 /Xilinx K26 SOM/VCCO_HDC_1，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F181",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/VCCO_HDC_2"
+      ],
+      "sr_text": "/Xilinx K26 SOM/VCCO_HDC_2 <- J_SOM240_2.D60 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D60 只连 /Xilinx K26 SOM/VCCO_HDC_2，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F182",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/VCCO_HPB_1"
+      ],
+      "sr_text": "/Xilinx K26 SOM/VCCO_HPB_1 <- J_SOM240_2.A44 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.A44 只连 /Xilinx K26 SOM/VCCO_HPB_1，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F183",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/VCCO_HPB_2"
+      ],
+      "sr_text": "/Xilinx K26 SOM/VCCO_HPB_2 <- J_SOM240_2.B42 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.B42 只连 /Xilinx K26 SOM/VCCO_HPB_2，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F184",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/VCCO_HPC_1"
+      ],
+      "sr_text": "/Xilinx K26 SOM/VCCO_HPC_1 <- J_SOM240_2.C44 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.C44 只连 /Xilinx K26 SOM/VCCO_HPC_1，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F185",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_2"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/VCCO_HPC_2"
+      ],
+      "sr_text": "/Xilinx K26 SOM/VCCO_HPC_2 <- J_SOM240_2.D42 (ADM6-60-01.5-L-4-2-A-TR)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "同版 XML/DNP=true，db.parts.J_SOM240_2.nc=true；J_SOM240_2.D42 只连 /Xilinx K26 SOM/VCCO_HPC_2，不装配该连接器，不构成贴装电路断路。未按 DNP 忽略是检查器对象识别错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01",
+        "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F186",
+      "sr_rule": "NET-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "/Display Port/DP_AUX_IN",
+        "/Display Port/DP_AUX_N"
+      ],
+      "sr_text": "/Display Port/DP_AUX_IN(2节点) <-> /Display Port/DP_AUX_N(4节点)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p15：U2 FIN1019 将单端 DP_AUX_IN 与差分 DP_AUX_P/DP_AUX_N 分开；db 两网经不同 U2 引脚处理，IN 和 N 是单端输入与差分负端语义，不能按编辑距离并网。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:net_name_split / _token_difference",
+        "what": "保留 IN/N、PS/PL、FPD/LPD 的完整功能词；结合器件端点/转换器两侧识别语义兄弟网，不按字符近似建议短接。原理图 p15：U2 FIN1019 将单端 DP_AUX_IN 与差分 DP_AUX_P/DP_AUX_N 分开；db 两网经不同 U2 引脚处理，IN 和 N 是单端输入与差分负端语义，不能按编辑距离并网。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F187",
+      "sr_rule": "NET-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U49",
+        "U51",
+        "U52",
+        "U54",
+        "U55"
+      ],
+      "nets": [
+        "/Power Supply/VCCOEN_PL_M2C",
+        "/Power Supply/VCCOEN_PS_M2C"
+      ],
+      "sr_text": "/Power Supply/VCCOEN_PL_M2C(3节点) <-> /Power Supply/VCCOEN_PS_M2C(4节点)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7/p11：VCCOEN_PS_M2C 接 U49.5/U51.5/U52.5，VCCOEN_PL_M2C 接 U54.5/U55.5，来自不同 SoM 信号。PS/PL 是不同供电域使能，不能合并。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:net_name_split / _token_difference",
+        "what": "保留 IN/N、PS/PL、FPD/LPD 的完整功能词；结合器件端点/转换器两侧识别语义兄弟网，不按字符近似建议短接。原理图 p7/p11：VCCOEN_PS_M2C 接 U49.5/U51.5/U52.5，VCCOEN_PL_M2C 接 U54.5/U55.5，来自不同 SoM 信号。PS/PL 是不同供电域使能，不能合并。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F188",
+      "sr_rule": "NET-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/PWRGD_FPD_M2C",
+        "/Xilinx K26 SOM/PWRGD_LPD_M2C"
+      ],
+      "sr_text": "/Xilinx K26 SOM/PWRGD_FPD_M2C(2节点) <-> /Xilinx K26 SOM/PWRGD_LPD_M2C(2节点)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p10/p11：PWRGD_FPD_M2C 与 PWRGD_LPD_M2C 是不同 SoM 电源域 Power-Good，各接独立逻辑输入；FPD/LPD 非拼写错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:net_name_split / _token_difference",
+        "what": "保留 IN/N、PS/PL、FPD/LPD 的完整功能词；结合器件端点/转换器两侧识别语义兄弟网，不按字符近似建议短接。原理图 p10/p11：PWRGD_FPD_M2C 与 PWRGD_LPD_M2C 是不同 SoM 电源域 Power-Good，各接独立逻辑输入；FPD/LPD 非拼写错误。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F189",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "D8",
+        "D9",
+        "IC1",
+        "J5",
+        "PS1"
+      ],
+      "nets": [
+        "/Power Supply/PoE/VDD_POE_IN"
+      ],
+      "sr_text": "IC1.1 (VDD) <- /Power Supply/PoE/VDD_POE_IN",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p5/p12：J5 中心抽头经 MB10S D8/D9 桥式整流到 VDD_POE_IN；IC1.1 与 PS1.3 在桥正端。供电源为外接 PoE PSE，经整流输入，不要求板内 OUT 引脚直接驱动。这里只排除无来源，不证明 PSE/PD 功率或协议合格。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p5/p12：J5 中心抽头经 MB10S D8/D9 桥式整流到 VDD_POE_IN；IC1.1 与 PS1.3 在桥正端。供电源为外接 PoE PSE，经整流输入，不要求板内 OUT 引脚直接驱动。这里只排除无来源，不证明 PSE/PD 功率或协议合格。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F190",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "D8",
+        "D9",
+        "IC1",
+        "J5",
+        "PS1"
+      ],
+      "nets": [
+        "/Power Supply/PoE/VDD_POE_IN"
+      ],
+      "sr_text": "PS1.3 (V_{IN}) <- /Power Supply/PoE/VDD_POE_IN",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p5/p12：J5 中心抽头经 MB10S D8/D9 桥式整流到 VDD_POE_IN；IC1.1 与 PS1.3 在桥正端。供电源为外接 PoE PSE，经整流输入，不要求板内 OUT 引脚直接驱动。这里只排除无来源，不证明 PSE/PD 功率或协议合格。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p5/p12：J5 中心抽头经 MB10S D8/D9 桥式整流到 VDD_POE_IN；IC1.1 与 PS1.3 在桥正端。供电源为外接 PoE PSE，经整流输入，不要求板内 OUT 引脚直接驱动。这里只排除无来源，不证明 PSE/PD 功率或协议合格。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F191",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "R33",
+        "U12"
+      ],
+      "nets": [
+        "/I2C/Vref2"
+      ],
+      "sr_text": "U12.7 (VREF_{2}) <- /I2C/Vref2",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p18：U12.7 VREF2 与 U12.8 EN 同网，经 R33 Val=200k、Tolerance=1% 接 PS_3V3；NXP PCA9306 Rev9.5 p9-10 参考接法要求该偏置电阻。不是未供电负载。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p18：U12.7 VREF2 与 U12.8 EN 同网，经 R33 Val=200k、Tolerance=1% 接 PS_3V3；NXP PCA9306 Rev9.5 p9-10 参考接法要求该偏置电阻。不是未供电负载。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F192",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U17",
+        "U52"
+      ],
+      "nets": [
+        "PS_1V2"
+      ],
+      "sr_text": "U17.18 (VCORE) <- PS_1V2",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7 / db：U52.2 SW → L6 1u/2.6A → R156 0R → PS_1V2；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p7 / db：U52.2 SW → L6 1u/2.6A → R156 0R → PS_1V2；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F193",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U30",
+        "U53"
+      ],
+      "nets": [
+        "PS_1V0"
+      ],
+      "sr_text": "U30.24 (VDD1P0) <- PS_1V0",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7 / db：U53.2 SW → L7 1u/2.5A → R157 0R → PS_1V0；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p7 / db：U53.2 SW → L7 1u/2.5A → R157 0R → PS_1V0；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F194",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U30",
+        "U50"
+      ],
+      "nets": [
+        "PS_2V5"
+      ],
+      "sr_text": "U30.3 (VDDA2P5) <- PS_2V5",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7 / db：U50.2 SW → L4 1u/2.5A → PS_2V5；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p7 / db：U50.2 SW → L4 1u/2.5A → PS_2V5；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F195",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U30",
+        "U53"
+      ],
+      "nets": [
+        "PS_1V0"
+      ],
+      "sr_text": "U30.31 (VDD1P0) <- PS_1V0",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7 / db：U53.2 SW → L7 1u/2.5A → R157 0R → PS_1V0；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p7 / db：U53.2 SW → L7 1u/2.5A → R157 0R → PS_1V0；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F196",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U30",
+        "U53"
+      ],
+      "nets": [
+        "PS_1V0"
+      ],
+      "sr_text": "U30.42 (VDD1P0) <- PS_1V0",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7 / db：U53.2 SW → L7 1u/2.5A → R157 0R → PS_1V0；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p7 / db：U53.2 SW → L7 1u/2.5A → R157 0R → PS_1V0；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F197",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U30",
+        "U53"
+      ],
+      "nets": [
+        "PS_1V0"
+      ],
+      "sr_text": "U30.6 (VDD1P0) <- PS_1V0",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7 / db：U53.2 SW → L7 1u/2.5A → R157 0R → PS_1V0；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p7 / db：U53.2 SW → L7 1u/2.5A → R157 0R → PS_1V0；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F198",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U30",
+        "U50"
+      ],
+      "nets": [
+        "PS_2V5"
+      ],
+      "sr_text": "U30.9 (VDDA2P5) <- PS_2V5",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7 / db：U50.2 SW → L4 1u/2.5A → PS_2V5；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p7 / db：U50.2 SW → L4 1u/2.5A → PS_2V5；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F199",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "C227",
+        "R148",
+        "U58"
+      ],
+      "nets": [
+        "Net-(U58-VDD)"
+      ],
+      "sr_text": "U58.8 (VDD) <- Net-(U58-VDD)",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p6：DC_MAIN_BUS → R148 Val=100R/1% → U58.8 VDD，C227 为本地旁路；LTC4358 RevA p5 VDD 说明及 p8 Figure3 给出输出经 100Ω RC 供电接法。这里只排除路径缺失，低输入电压另列待确认。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p6：DC_MAIN_BUS → R148 Val=100R/1% → U58.8 VDD，C227 为本地旁路；LTC4358 RevA p5 VDD 说明及 p8 Figure3 给出输出经 100Ω RC 供电接法。这里只排除路径缺失，低输入电压另列待确认。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F200",
+      "sr_rule": "PWR-A03",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "D8",
+        "D9",
+        "IC1",
+        "PS1"
+      ],
+      "nets": [
+        "/Power Supply/PoE/VSS_POE_IN"
+      ],
+      "sr_text": "IC1.4 (VSS) <- /Power Supply/PoE/VSS_POE_IN",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p5：IC1 TPS2378 的 VSS.4 为桥负端，RTN.5 接 GNDD 并供 PS1 初级；PS1 次级回 GND。TI TPS2378 RevC p3 Pin Functions、p14 Functional Block Diagram 区分 VSS 与 RTN 的片内热插拔开关。隔离初级回路不应强接主板 GND。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint._ground_islands / PWR-A03",
+        "what": "把 PD 热插拔开关的 VSS/RTN 及经二极管返回的理想二极管保护建为有条件返回模型；孤立参考域先提示核查，不要求隔离初级与次级短接。原理图 p5：IC1 TPS2378 的 VSS.4 为桥负端，RTN.5 接 GNDD 并供 PS1 初级；PS1 次级回 GND。TI TPS2378 RevC p3 Pin Functions、p14 Functional Block Diagram 区分 VSS 与 RTN 的片内热插拔开关。隔离初级回路不应强接主板 GND。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F201",
+      "sr_rule": "PWR-A03",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "D8",
+        "D9",
+        "IC1",
+        "PS1"
+      ],
+      "nets": [
+        "/Power Supply/PoE/VSS_POE_IN",
+        "GND"
+      ],
+      "sr_text": "/Power Supply/PoE/VSS_POE_IN ['C171.2', 'D10.A', 'D8.2', 'D9.2', 'IC1.4', 'IC1.9', 'R116.2'] 经已装配直流连接件到不了主地 GND；孤岛上 IC 地脚 ['IC1.4']，无连接器、无已知隔离器件",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p5：IC1 TPS2378 的 VSS.4 为桥负端，RTN.5 接 GNDD 并供 PS1 初级；PS1 次级回 GND。TI TPS2378 RevC p3 Pin Functions、p14 Functional Block Diagram 区分 VSS 与 RTN 的片内热插拔开关。隔离初级回路不应强接主板 GND。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint._ground_islands / PWR-A03",
+        "what": "把 PD 热插拔开关的 VSS/RTN 及经二极管返回的理想二极管保护建为有条件返回模型；孤立参考域先提示核查，不要求隔离初级与次级短接。原理图 p5：IC1 TPS2378 的 VSS.4 为桥负端，RTN.5 接 GNDD 并供 PS1 初级；PS1 次级回 GND。TI TPS2378 RevC p3 Pin Functions、p14 Functional Block Diagram 区分 VSS 与 RTN 的片内热插拔开关。隔离初级回路不应强接主板 GND。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F202",
+      "sr_rule": "PWR-A03",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "D21",
+        "D22",
+        "U58"
+      ],
+      "nets": [
+        "Net-(U58-GND)"
+      ],
+      "sr_text": "Net-(U58-GND) ['C227.2', 'C230.2', 'D21.A', 'D22.A', 'U58.7'] 经已装配直流连接件到不了主地 GND；孤岛上 IC 地脚 ['U58.7']，无连接器、无已知隔离器件",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p6/db：U58.7、D21.A、D22.A、C227.2、C230.2 为本地返回；D21.K=DC_IN、D22.K=GND。ADI LTC4358 RevA p8 Figure3 的两二极管抬地反接保护接法与此对应，直流并查集不含二极管不能证明回路不存在。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint._ground_islands / PWR-A03",
+        "what": "把 PD 热插拔开关的 VSS/RTN 及经二极管返回的理想二极管保护建为有条件返回模型；孤立参考域先提示核查，不要求隔离初级与次级短接。原理图 p6/db：U58.7、D21.A、D22.A、C227.2、C230.2 为本地返回；D21.K=DC_IN、D22.K=GND。ADI LTC4358 RevA p8 Figure3 的两二极管抬地反接保护接法与此对应，直流并查集不含二极管不能证明回路不存在。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F203",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J2",
+        "U5"
+      ],
+      "nets": [
+        "/SD 3.0 card/SD_CLK"
+      ],
+      "sr_text": "/SD 3.0 card/SD_CLK: ['J2.5', 'U5.8']；开漏/三态等合法结构须逐条排除",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "db /SD 3.0 card/SD_CLK 仅接 J2.5 和 U5.8；J2 是 MicroSD 机械插座，不是主动时钟源。原生符号将 J2.5 标成 output，检查器把连接器方向当驱动能力，不能证明两个主动输出短接。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A06",
+        "what": "驱动冲突排除无源连接器的方向标签；只比较两个已核实主动驱动，并保留对端驱动作为接口依赖。依据 J2 MPN/连接器身份及该网两个端点。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F204",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [],
+      "nets": [
+        "/Clock distribution/PS_CLK_EN",
+        "PS_3V3"
+      ],
+      "sr_text": "/Clock distribution/PS_CLK_EN: R85 上拉->PS_3V3(3.3V)",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 /Clock distribution/PS_CLK_EN: R85 上拉->PS_3V3(3.3V)；存在可见拉阻，但 SoM/时钟控制端点的保证阈值、复位电平和状态目标尚未给出。该提示合理，需结合实际模块/时钟模式确认，不能只看拉阻数值宣布合格。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F205",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "R33",
+        "U12"
+      ],
+      "nets": [
+        "/I2C/Vref2",
+        "PS_3V3"
+      ],
+      "sr_text": "/I2C/Vref2: R33 上拉->PS_3V3(3.3V)",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "U12 PCA9306 的 EN/VREF2 经 R33 Val=200k 接 PS_3V3，NXP Rev9.5 p9-10 为电平翻译偏置接法；不是独立启动/复位使能拉阻。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run RST-A01; scripts/circuit_candidates.py",
+        "what": "识别 PCA9306 EN 与 VREF2 共接的200k偏置，转入 LEVEL_SHIFT 偏置检查，不泛化为独立 STARTUP 上拉。依据 NXP PCA9306 p9-10。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F206",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [],
+      "nets": [
+        "/Xilinx K26 SOM/MIO31_SHUTDOWN",
+        "GND"
+      ],
+      "sr_text": "/Xilinx K26 SOM/MIO31_SHUTDOWN: R155 下拉->GND(0.0V)",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 /Xilinx K26 SOM/MIO31_SHUTDOWN: R155 下拉->GND(0.0V)；存在可见拉阻，但 SoM/时钟控制端点的保证阈值、复位电平和状态目标尚未给出。该提示合理，需结合实际模块/时钟模式确认，不能只看拉阻数值宣布合格。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F207",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "R158",
+        "R29",
+        "R30",
+        "R31",
+        "R32",
+        "U35"
+      ],
+      "nets": [
+        "/Camera interface/CCI0_I2C_SCL_3V3",
+        "/Camera interface/CCI0_I2C_SDA_3V3",
+        "/Camera interface/CCI1_I2C_SCL_3V3",
+        "/Camera interface/CCI1_I2C_SDA_3V3",
+        "/Power Supply/DC/DC conventers/PL_3V3_OUT"
+      ],
+      "sr_text": "PL_3V3: R158 上拉->/Power Supply/DC/DC conventers/PL_3V3_OUT(3.3V); R29 上拉->/Camera interface/CCI0_I2C_SCL_3V3(3.3V); R30 上拉->/Camera interface/CCI1_I2C_SCL_3V3(3.3V); R31 上拉->/Camera interface/CCI0_I2C_SDA_3V3(3.3V); R32 上拉->/Camera interface/CCI1_I2C_SDA_3V3(3.3V)",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "R158 Val=0R 是 PL_3V3 供电连接，R29-R32 是 CCI I2C 上拉，U35 的 OE 直接固定到该电源轨；该列表混淆轨与被上拉信号，不能把 I2C 信号当作电源轨的上拉电源。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.pulls / RST-A01",
+        "what": "上拉应定向为非供电信号→电阻→已知供电轨；0Ω 轨连接不算上拉，轨与 I2C 拉阻另一端不能逆向解释。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F208",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032"
+      ],
+      "severity": "",
+      "refs": [
+        "D2",
+        "U10",
+        "U32",
+        "U35"
+      ],
+      "nets": [
+        "PL_3V3"
+      ],
+      "sr_text": "D2 (PTVS5V0Z1USKPYL PTVS5V0Z1USKP kria-k26-devboard:PTVS5V0Z1USKP) 跨 PL_3V3；轨名提示=3.3V，型号提示=无。同网 IC 脚 U10.3(VCC)、U32.2(VDD)、U35.5(V_{CC}) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；同网其他器件 C127、C128、C129、C133、C135、C246、C247、C29、C36、C37、C38、J_SOM240_1 各按自身耐压比较；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 J3、J4：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "knowledge_gap",
+      "evidence": "D2 MPN=PTVS5V0Z1USKPYL，跨 PL_3V3/GND，同网 U10.3/U32.2/U35.5；缺该准确 TVS 的 VRWM/VBR/VC-Ipp 波形及受保护脚容限、实际端口瞬态边界。不能把型号中的 5V 当作钳位电压，也不能据3.3V名称判为过钳缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F209",
+      "sr_rule": "SIG-A03",
+      "criteria": [
+        "G04-017",
+        "G04-018"
+      ],
+      "severity": "",
+      "refs": [
+        "J_SOM240_1",
+        "R34",
+        "R35",
+        "U12"
+      ],
+      "nets": [
+        "/I2C/MIO25_I2C_SDA"
+      ],
+      "sr_text": "/I2C/MIO25_I2C_SDA: ['J_SOM240_1', 'TP62', 'U12'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p18：低侧 MIO25_I2C_SDA 接 U12.4、J_SOM240_1.C27、TP62，无载板离散上拉；高侧 U12.5 经 R35 2k2/1% 上拉 PS_3V3，SCK 高侧 R34 同值。NXP PCA9306 p9-10 为通道两侧上拉示意；缺 K26 模块内部上拉保证值、低侧电源和工作模式，不把跨有源通道的高侧上拉直接当低侧等效值，也不确认缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F210",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J12"
+      ],
+      "nets": [
+        "unconnected-(J12-SDIO_~{RESET}-Pad23)"
+      ],
+      "sr_text": "J12.23 -> unconnected-(J12-SDIO_~{RESET}-Pad23): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p16，J12.23 为 M.2 E 插座可选 SDIO/辅通道/控制脚；unconnected-(J12-SDIO_~{RESET}-Pad23) 标 NC。README 只说可选 WiFi/BT，未指定插卡型号/使用模式，须确定卡的复位、禁用、时钟和第二 PCIe lane 要求后裁决；不把可选接口悬空当硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F211",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J12"
+      ],
+      "nets": [
+        "unconnected-(J12-SUSCLK-Pad50)"
+      ],
+      "sr_text": "J12.50 -> unconnected-(J12-SUSCLK-Pad50): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p16，J12.50 为 M.2 E 插座可选 SDIO/辅通道/控制脚；unconnected-(J12-SUSCLK-Pad50) 标 NC。README 只说可选 WiFi/BT，未指定插卡型号/使用模式，须确定卡的复位、禁用、时钟和第二 PCIe lane 要求后裁决；不把可选接口悬空当硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F212",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J12"
+      ],
+      "nets": [
+        "unconnected-(J12-W_DISABLE2-Pad54)"
+      ],
+      "sr_text": "J12.54 -> unconnected-(J12-W_DISABLE2-Pad54): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p16，J12.54 为 M.2 E 插座可选 SDIO/辅通道/控制脚；unconnected-(J12-W_DISABLE2-Pad54) 标 NC。README 只说可选 WiFi/BT，未指定插卡型号/使用模式，须确定卡的复位、禁用、时钟和第二 PCIe lane 要求后裁决；不把可选接口悬空当硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F213",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J12"
+      ],
+      "nets": [
+        "unconnected-(J12-W_DISABLE1-Pad56)"
+      ],
+      "sr_text": "J12.56 -> unconnected-(J12-W_DISABLE1-Pad56): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p16，J12.56 为 M.2 E 插座可选 SDIO/辅通道/控制脚；unconnected-(J12-W_DISABLE1-Pad56) 标 NC。README 只说可选 WiFi/BT，未指定插卡型号/使用模式，须确定卡的复位、禁用、时钟和第二 PCIe lane 要求后裁决；不把可选接口悬空当硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F214",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J12"
+      ],
+      "nets": [
+        "unconnected-(J12-PET1+-Pad59)"
+      ],
+      "sr_text": "J12.59 -> unconnected-(J12-PET1+-Pad59): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p16，J12.59 为 M.2 E 插座可选 SDIO/辅通道/控制脚；unconnected-(J12-PET1+-Pad59) 标 NC。README 只说可选 WiFi/BT，未指定插卡型号/使用模式，须确定卡的复位、禁用、时钟和第二 PCIe lane 要求后裁决；不把可选接口悬空当硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F215",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J12"
+      ],
+      "nets": [
+        "unconnected-(J12-PET1--Pad61)"
+      ],
+      "sr_text": "J12.61 -> unconnected-(J12-PET1--Pad61): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p16，J12.61 为 M.2 E 插座可选 SDIO/辅通道/控制脚；unconnected-(J12-PET1--Pad61) 标 NC。README 只说可选 WiFi/BT，未指定插卡型号/使用模式，须确定卡的复位、禁用、时钟和第二 PCIe lane 要求后裁决；不把可选接口悬空当硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F216",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J12"
+      ],
+      "nets": [
+        "unconnected-(J12-REFCLK1+-Pad71)"
+      ],
+      "sr_text": "J12.71 -> unconnected-(J12-REFCLK1+-Pad71): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p16，J12.71 为 M.2 E 插座可选 SDIO/辅通道/控制脚；unconnected-(J12-REFCLK1+-Pad71) 标 NC。README 只说可选 WiFi/BT，未指定插卡型号/使用模式，须确定卡的复位、禁用、时钟和第二 PCIe lane 要求后裁决；不把可选接口悬空当硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F217",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J12"
+      ],
+      "nets": [
+        "unconnected-(J12-REFCLK1--Pad73)"
+      ],
+      "sr_text": "J12.73 -> unconnected-(J12-REFCLK1--Pad73): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p16，J12.73 为 M.2 E 插座可选 SDIO/辅通道/控制脚；unconnected-(J12-REFCLK1--Pad73) 标 NC。README 只说可选 WiFi/BT，未指定插卡型号/使用模式，须确定卡的复位、禁用、时钟和第二 PCIe lane 要求后裁决；不把可选接口悬空当硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F218",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J12"
+      ],
+      "nets": [
+        "unconnected-(J12-SDIO_CLK-Pad9)"
+      ],
+      "sr_text": "J12.9 -> unconnected-(J12-SDIO_CLK-Pad9): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p16，J12.9 为 M.2 E 插座可选 SDIO/辅通道/控制脚；unconnected-(J12-SDIO_CLK-Pad9) 标 NC。README 只说可选 WiFi/BT，未指定插卡型号/使用模式，须确定卡的复位、禁用、时钟和第二 PCIe lane 要求后裁决；不把可选接口悬空当硬缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F219",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U36"
+      ],
+      "nets": [
+        "unconnected-(U36-Pad13)"
+      ],
+      "sr_text": "U36.13 -> unconnected-(U36-Pad13): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "true_defect",
+      "evidence": "原理图 p10 未用 F 单元：U36.13 A5 标 NC，唯一节点 unconnected-(U36-Pad13)；U36.12 O5 同为未用输出。U36=74LCX07BQX，VCC.14=PS_3V3、GND.7=GND。onsemi 74LCX07/D Rev2 Aug2024 p2 DQFN 脚图确认 13 为输入，p3 Recommended Operating Conditions 注4 要求未用输入固定到有效逻辑电平，只有未用输出可开路。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-CMOS-UNUSED-IN-FLOAT",
+        "mutation": "在正确基线中将 U36.13 由 GND 断开，创建仅含 U36.13 的 pseudo NC net 并添加 no_connect_nodes；保持 U36.12 输出 NC、U36.15 DAP NC 不变。",
+        "target_rule": "NET-A07 / DEV-D05"
+      },
+      "criterion_basis": "无精确匹配的 Top50 条款；以 DEV-D05 与 onsemi 74LCX07/D p3 注4 的强制条款为判据。"
+    },
+    {
+      "id": "F220",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U39"
+      ],
+      "nets": [
+        "unconnected-(U39-ORG-Pad6)"
+      ],
+      "sr_text": "U39.6 -> unconnected-(U39-ORG-Pad6): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "knowledge_gap",
+      "evidence": "U39 MPN=93LC66BT-I/MC; U39.2=/Debug and JTAG/EECLK; U39.1=/Debug and JTAG/EECS; U39.3=/Debug and JTAG/EEDATA; U39.8=/Debug and JTAG/USB_3V3; U39.5=GND; U39.9=GND; U39.4=Net-(U39-DO); U39.7=unconnected-(U39-NC-Pad7); U39.6=unconnected-(U39-ORG-Pad6)。U39.6 标 NC；尚缺准确 93LC66BT-I/MC 手册对该脚的浮空/内部偏置条款；不拿相近 93LC66/FT4232H/其他振荡器型号代替。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F221",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U40"
+      ],
+      "nets": [
+        "unconnected-(U40-F_{SOURCE}-Pad32)"
+      ],
+      "sr_text": "U40.32 -> unconnected-(U40-F_{SOURCE}-Pad32): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "knowledge_gap",
+      "evidence": "U40 MPN=FT4232HPQ-TRAY; U40.1=/Debug and JTAG/EECLK; U40.68=/Debug and JTAG/EECS; U40.2=/Debug and JTAG/EEDATA; U40.46=/Debug and JTAG/FTDI_EEPROM_WC; U40.6=/Debug and JTAG/FTDI_TCK; U40.7=/Debug and JTAG/FTDI_TDI; U40.11=/Debug and JTAG/FTDI_TDO; U40.12=/Debug and JTAG/FTDI_TMS; U40.18=/Debug and JTAG/FTDI_UARTB_RXD; U40.17=/Debug and JTAG/FTDI_UARTB_TXD; U40.13=/Debug and JTAG/JTAG_VCCO_ON; U40.63=/Debug and JTAG/PD1_SVBUS; U40.54=/Debug and JTAG/PD_EN; U40.65=/Debug and JTAG/USBC_CC1; U40.62=/Debug and JTAG/USBC_CC2; U40.25=/Debug and JTAG/USB_1V2; U40.31=/Debug and JTAG/USB_1V2; U40.44=/Debug and JTAG/USB_1V2; U40.66=/Debug and JTAG/USB_1V2; U40.8=/Debug and JTAG/USB_1V2; U40.10=/Debug and JTAG/USB_3V3; U40.26=/Debug and JTAG/USB_3V3; U40.39=/Debug and JTAG/USB_3V3; U40.51=/Debug and JTAG/USB_3V3; U40.58=/Debug and JTAG/USB_N; U40.59=/Debug and JTAG/USB_P; U40.61=/Debug and JTAG/VCC_PD; U40.64=/Debug and JTAG/VCC_PD; U40.57=/Debug and JTAG/VCC_USB; U40.30=/Debug and JTAG/VREGIN; U40.27=/Debug and JTAG/XIN; U40.28=/Debug and JTAG/XOUT; U40.14=/Debug and JTAG/~{FTDI_LS_OE}; U40.15=/Debug and JTAG/~{FTDI_PS_POR}; U40.16=/Debug and JTAG/~{FTDI_PS_SRST}; U40.67=/Debug and JTAG/~{FTDI_PWREN}; U40.29=GND; U40.3=GND; U40.9=GND; U40.EP=GND; U40.34=Net-(U40-CDBUS0); U40.35=Net-(U40-CDBUS1); U40.60=Net-(U40-REF); U40.4=Net-(U40-~{RESET}); U40.19=unconnected-(U40-BDBUS2-Pad19); U40.20=unconnected-(U40-BDBUS3-Pad20); U40.21=unconnected-(U40-BDBUS4-Pad21); U40.22=unconnected-(U40-BDBUS5-Pad22); U40.23=unconnected-(U40-BDBUS6-Pad23); U40.24=unconnected-(U40-BDBUS7-Pad24); U40.36=unconnected-(U40-CDBUS2-Pad36); U40.37=unconnected-(U40-CDBUS3-Pad37); U40.38=unconnected-(U40-CDBUS4-Pad38); U40.40=unconnected-(U40-CDBUS5-Pad40); U40.41=unconnected-(U40-CDBUS6-Pad41); U40.42=unconnected-(U40-CDBUS7-Pad42); U40.45=unconnected-(U40-DDBUS0-Pad45); U40.47=unconnected-(U40-DDBUS2-Pad47); U40.48=unconnected-(U40-DDBUS3-Pad48); U40.49=unconnected-(U40-DDBUS4-Pad49); U40.50=unconnected-(U40-DDBUS5-Pad50); U40.52=unconnected-(U40-DDBUS6-Pad52); U40.53=unconnected-(U40-DDBUS7-Pad53); U40.32=unconnected-(U40-F_{SOURCE}-Pad32); U40.56=unconnected-(U40-GPIO0-Pad56); U40.55=unconnected-(U40-GPIO1-Pad55); U40.5=unconnected-(U40-GPIO3-Pad5); U40.33=unconnected-(U40-V_{PP}-Pad33); U40.43=unconnected-(U40-~{SUSPEND}-Pad43)。U40.32 标 NC；尚缺准确 FT4232HPQ-TRAY 手册对该脚的浮空/内部偏置条款；不拿相近 93LC66/FT4232H/其他振荡器型号代替。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F222",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "Y4"
+      ],
+      "nets": [
+        "unconnected-(Y4-EN-Pad1)"
+      ],
+      "sr_text": "Y4.1 -> unconnected-(Y4-EN-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "knowledge_gap",
+      "evidence": "Y4 MPN=ECS-2016MV-250-CN-TR; Y4.3=/USB/CLK_IN; Y4.2=GND; Y4.4=PS_3V3; Y4.1=unconnected-(Y4-EN-Pad1)。Y4.1 标 NC；尚缺准确 ECS-2016MV-250-CN-TR 手册对该脚的浮空/内部偏置条款；不拿相近 93LC66/FT4232H/其他振荡器型号代替。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F223",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "Y5"
+      ],
+      "nets": [
+        "unconnected-(Y5-EN-Pad1)"
+      ],
+      "sr_text": "Y5.1 -> unconnected-(Y5-EN-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "knowledge_gap",
+      "evidence": "Y5 MPN=ECS-2016MV-240-CN-TR; Y5.3=/USB/USB2_REFCLK; Y5.2=GND; Y5.4=PS_1V8; Y5.1=unconnected-(Y5-EN-Pad1)。Y5.1 标 NC；尚缺准确 ECS-2016MV-240-CN-TR 手册对该脚的浮空/内部偏置条款；不拿相近 93LC66/FT4232H/其他振荡器型号代替。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F224",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "Y6"
+      ],
+      "nets": [
+        "unconnected-(Y6-EN-Pad1)"
+      ],
+      "sr_text": "Y6.1 -> unconnected-(Y6-EN-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "knowledge_gap",
+      "evidence": "Y6 MPN=ECS-2016MV-250-CN-TR; Y6.3=/Ethernet/X_I; Y6.2=GND; Y6.4=PS_1V8; Y6.1=unconnected-(Y6-EN-Pad1)。Y6.1 标 NC；尚缺准确 ECS-2016MV-250-CN-TR 手册对该脚的浮空/内部偏置条款；不拿相近 93LC66/FT4232H/其他振荡器型号代替。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F225",
+      "sr_rule": "DRV-A03",
+      "criteria": [
+        "G04-010"
+      ],
+      "severity": "",
+      "refs": [
+        "Q13"
+      ],
+      "nets": [
+        "/Power Supply/DC/DC conventers/PS_1V2_OUT"
+      ],
+      "sr_text": "Q13（bjt，状态 as-built）：栅极网 /Power Supply/DC/DC conventers/PS_1V2_OUT 由 U17.25、U17.31、U17.38 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，并核上电、复位与驱动高阻时栅极状态",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7 Q13 DTC014T 为电源指示支路，基极接对应电源输出。原理图 p7 / db：U52.2 SW → L6 1u/2.6A → R156 0R → PS_1V2；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。缺少 DTC014 详细偏置特性影响 LED 状态核算，但不支持“没有驱动来源”的断言。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_switch.py:_Scan.drivers / _Scan._driver_pins / PowerSwitchChecker.cold_findings",
+        "what": "采用已核实 supervisor RESET 输出角色；区分 BJT 基极与 MOS 栅极，沿 Buck 输出电感识别电源 LED 基极偏置，不把负载电源脚当该网驱动源。原理图 p7 Q13 DTC014T 为电源指示支路，基极接对应电源输出。原理图 p7 / db：U52.2 SW → L6 1u/2.6A → R156 0R → PS_1V2；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。缺少 DTC014 详细偏置特性影响 LED 状态核算，但不支持“没有驱动来源”的断言。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F226",
+      "sr_rule": "DRV-A03",
+      "criteria": [
+        "G04-010"
+      ],
+      "severity": "",
+      "refs": [
+        "Q14"
+      ],
+      "nets": [
+        "/Power Supply/DC/DC conventers/PS_1V0_OUT"
+      ],
+      "sr_text": "Q14（bjt，状态 as-built）：栅极网 /Power Supply/DC/DC conventers/PS_1V0_OUT 由 U30.31、U30.42、U30.6 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，并核上电、复位与驱动高阻时栅极状态",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7 Q14 DTC014T 为电源指示支路，基极接对应电源输出。原理图 p7 / db：U53.2 SW → L7 1u/2.5A → R157 0R → PS_1V0；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。缺少 DTC014 详细偏置特性影响 LED 状态核算，但不支持“没有驱动来源”的断言。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_switch.py:_Scan.drivers / _Scan._driver_pins / PowerSwitchChecker.cold_findings",
+        "what": "采用已核实 supervisor RESET 输出角色；区分 BJT 基极与 MOS 栅极，沿 Buck 输出电感识别电源 LED 基极偏置，不把负载电源脚当该网驱动源。原理图 p7 Q14 DTC014T 为电源指示支路，基极接对应电源输出。原理图 p7 / db：U53.2 SW → L7 1u/2.5A → R157 0R → PS_1V0；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。缺少 DTC014 详细偏置特性影响 LED 状态核算，但不支持“没有驱动来源”的断言。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F227",
+      "sr_rule": "DRV-A03",
+      "criteria": [
+        "G04-010"
+      ],
+      "severity": "",
+      "refs": [
+        "Q15"
+      ],
+      "nets": [
+        "/Power Supply/DC/DC conventers/PL_1V2_OUT"
+      ],
+      "sr_text": "Q15（bjt，状态 as-built）：栅极网 /Power Supply/DC/DC conventers/PL_1V2_OUT 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7 Q15 DTC014T 为电源指示支路，基极接对应电源输出。原理图 p7 / db：U55.2 SW → L9 1u/2.6A → R159 0R → PL_1V2；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。缺少 DTC014 详细偏置特性影响 LED 状态核算，但不支持“没有驱动来源”的断言。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_switch.py:_Scan.drivers / _Scan._driver_pins / PowerSwitchChecker.cold_findings",
+        "what": "采用已核实 supervisor RESET 输出角色；区分 BJT 基极与 MOS 栅极，沿 Buck 输出电感识别电源 LED 基极偏置，不把负载电源脚当该网驱动源。原理图 p7 Q15 DTC014T 为电源指示支路，基极接对应电源输出。原理图 p7 / db：U55.2 SW → L9 1u/2.6A → R159 0R → PL_1V2；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。缺少 DTC014 详细偏置特性影响 LED 状态核算，但不支持“没有驱动来源”的断言。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F228",
+      "sr_rule": "DRV-A03",
+      "criteria": [
+        "G04-010"
+      ],
+      "severity": "",
+      "refs": [
+        "Q19"
+      ],
+      "nets": [
+        "/Xilinx K26 SOM/HDA20"
+      ],
+      "sr_text": "Q19（bjt，状态 as-built）：栅极网 /Xilinx K26 SOM/HDA20 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p11：Q19 基极 /Xilinx K26 SOM/HDA20 接 J_SOM240_1.C24；R178 为 DNP，复位默认状态取决于 SoM 端点。模块硬件和引脚上电模式尚缺，须确认后才能判悬空故障。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F229",
+      "sr_rule": "DRV-A03",
+      "criteria": [
+        "G04-010"
+      ],
+      "severity": "",
+      "refs": [
+        "Q8",
+        "U31"
+      ],
+      "nets": [
+        "/Reset logic/PS_RST"
+      ],
+      "sr_text": "Q8（bjt，状态 as-built）：栅极网 /Reset logic/PS_RST 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p10：Q8 基极网 /Reset logic/PS_RST 直接接 U31.1。U31 TPS3840PH30DBVR，TI SNVSB03E p3 Device Comparison Table 为推挽 active-high，p4 Pin Functions 为 RESET 输出。驱动源实际存在，不能只按符号类型漏掉 supervisor 输出。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_switch.py:_Scan.drivers / _Scan._driver_pins / PowerSwitchChecker.cold_findings",
+        "what": "采用已核实 supervisor RESET 输出角色；区分 BJT 基极与 MOS 栅极，沿 Buck 输出电感识别电源 LED 基极偏置，不把负载电源脚当该网驱动源。原理图 p10：Q8 基极网 /Reset logic/PS_RST 直接接 U31.1。U31 TPS3840PH30DBVR，TI SNVSB03E p3 Device Comparison Table 为推挽 active-high，p4 Pin Functions 为 RESET 输出。驱动源实际存在，不能只按符号类型漏掉 supervisor 输出。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F230",
+      "sr_rule": "DRV-A03",
+      "criteria": [
+        "G04-010"
+      ],
+      "severity": "",
+      "refs": [
+        "Q9",
+        "U31"
+      ],
+      "nets": [
+        "/Reset logic/PS_RST"
+      ],
+      "sr_text": "Q9（bjt，状态 as-built）：栅极网 /Reset logic/PS_RST 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+      "scan_kind": "FINDING",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p10：Q9 基极网 /Reset logic/PS_RST 直接接 U31.1。U31 TPS3840PH30DBVR，TI SNVSB03E p3 Device Comparison Table 为推挽 active-high，p4 Pin Functions 为 RESET 输出。驱动源实际存在，不能只按符号类型漏掉 supervisor 输出。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_switch.py:_Scan.drivers / _Scan._driver_pins / PowerSwitchChecker.cold_findings",
+        "what": "采用已核实 supervisor RESET 输出角色；区分 BJT 基极与 MOS 栅极，沿 Buck 输出电感识别电源 LED 基极偏置，不把负载电源脚当该网驱动源。原理图 p10：Q9 基极网 /Reset logic/PS_RST 直接接 U31.1。U31 TPS3840PH30DBVR，TI SNVSB03E p3 Device Comparison Table 为推挽 active-high，p4 Pin Functions 为 RESET 输出。驱动源实际存在，不能只按符号类型漏掉 supervisor 输出。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F231",
+      "sr_rule": "RST-A04",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U49"
+      ],
+      "nets": [
+        "/Power Supply/VCCOEN_PS_M2C"
+      ],
+      "sr_text": "U49（状态 as-built）：使能脚 U49.5 所在网 /Power Supply/VCCOEN_PS_M2C 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p7/p11，U49.5 位于 /Power Supply/VCCOEN_PS_M2C，接 SoM 输出使能；尚缺 K26 端点引脚/上电电源管理模式与复位默认状态。原理图未见载板偏置不等于模块输出悬空，需要模块资料及具体配置。 AP62301 Rev4-2 p3/p13允许EN浮空并由内部电流源自动开启，因此不能确认浮空缺陷；仍需模块控制意图与时序目标，不把合理复核候选强判误报。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F232",
+      "sr_rule": "RST-A04",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "Q9",
+        "R127",
+        "R85",
+        "U50"
+      ],
+      "nets": [
+        "Net-(U50-EN)"
+      ],
+      "sr_text": "U50（状态 as-built）：使能脚 U50.5 所在网 Net-(U50-EN) 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7/p10：U50.5 在 Net-(U50-EN)，经 R127 Val=0R 接 PS_CLK_EN；R85 1k 接 PS_3V3，Q9 集电极下拉。不是没有上拉/驱动路径。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_up.py:_Scan._enable_source; scripts/parse_kicad.py:_component",
+        "what": "保留原生 Val 并把 R127 的 0R 识别为已装配直流连接；追到 R85 上拉及 Q9 下拉后再生成 EN 无来源候选。这里只排除浮空，不替代 EN 时序/阈值核算。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F233",
+      "sr_rule": "RST-A04",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U51"
+      ],
+      "nets": [
+        "/Power Supply/VCCOEN_PS_M2C"
+      ],
+      "sr_text": "U51（状态 as-built）：使能脚 U51.5 所在网 /Power Supply/VCCOEN_PS_M2C 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p7/p11，U51.5 位于 /Power Supply/VCCOEN_PS_M2C，接 SoM 输出使能；尚缺 K26 端点引脚/上电电源管理模式与复位默认状态。原理图未见载板偏置不等于模块输出悬空，需要模块资料及具体配置。 AP62301 Rev4-2 p3/p13允许EN浮空并由内部电流源自动开启，因此不能确认浮空缺陷；仍需模块控制意图与时序目标，不把合理复核候选强判误报。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F234",
+      "sr_rule": "RST-A04",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U52"
+      ],
+      "nets": [
+        "/Power Supply/VCCOEN_PS_M2C"
+      ],
+      "sr_text": "U52（状态 as-built）：使能脚 U52.5 所在网 /Power Supply/VCCOEN_PS_M2C 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p7/p11，U52.5 位于 /Power Supply/VCCOEN_PS_M2C，接 SoM 输出使能；尚缺 K26 端点引脚/上电电源管理模式与复位默认状态。原理图未见载板偏置不等于模块输出悬空，需要模块资料及具体配置。 AP62301 Rev4-2 p3/p13允许EN浮空并由内部电流源自动开启，因此不能确认浮空缺陷；仍需模块控制意图与时序目标，不把合理复核候选强判误报。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F235",
+      "sr_rule": "RST-A04",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "Q9",
+        "R127",
+        "R85",
+        "U53"
+      ],
+      "nets": [
+        "Net-(U50-EN)"
+      ],
+      "sr_text": "U53（状态 as-built）：使能脚 U53.5 所在网 Net-(U50-EN) 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7/p10：U53.5 在 Net-(U50-EN)，经 R127 Val=0R 接 PS_CLK_EN；R85 1k 接 PS_3V3，Q9 集电极下拉。不是没有上拉/驱动路径。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_up.py:_Scan._enable_source; scripts/parse_kicad.py:_component",
+        "what": "保留原生 Val 并把 R127 的 0R 识别为已装配直流连接；追到 R85 上拉及 Q9 下拉后再生成 EN 无来源候选。这里只排除浮空，不替代 EN 时序/阈值核算。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F236",
+      "sr_rule": "RST-A04",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U54"
+      ],
+      "nets": [
+        "/Power Supply/VCCOEN_PL_M2C"
+      ],
+      "sr_text": "U54（状态 as-built）：使能脚 U54.5 所在网 /Power Supply/VCCOEN_PL_M2C 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p7/p11，U54.5 位于 /Power Supply/VCCOEN_PL_M2C，接 SoM 输出使能；尚缺 K26 端点引脚/上电电源管理模式与复位默认状态。原理图未见载板偏置不等于模块输出悬空，需要模块资料及具体配置。 AP62301 Rev4-2 p3/p13允许EN浮空并由内部电流源自动开启，因此不能确认浮空缺陷；仍需模块控制意图与时序目标，不把合理复核候选强判误报。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F237",
+      "sr_rule": "RST-A04",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U55"
+      ],
+      "nets": [
+        "/Power Supply/VCCOEN_PL_M2C"
+      ],
+      "sr_text": "U55（状态 as-built）：使能脚 U55.5 所在网 /Power Supply/VCCOEN_PL_M2C 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p7/p11，U55.5 位于 /Power Supply/VCCOEN_PL_M2C，接 SoM 输出使能；尚缺 K26 端点引脚/上电电源管理模式与复位默认状态。原理图未见载板偏置不等于模块输出悬空，需要模块资料及具体配置。 AP62301 Rev4-2 p3/p13允许EN浮空并由内部电流源自动开启，因此不能确认浮空缺陷；仍需模块控制意图与时序目标，不把合理复核候选强判误报。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F238",
+      "sr_rule": "SIG-A02",
+      "criteria": [
+        "G04-005"
+      ],
+      "severity": "",
+      "refs": [
+        "J12"
+      ],
+      "nets": [
+        "/PCIE M2 key E/GTR_DP3_M2C_C_P"
+      ],
+      "sr_text": "/PCIE M2 key E/GTR_DP3_M2C_C（电平标准未定，状态 as-built）：接收侧 /PCIE M2 key E/GTR_DP3_M2C_C_P 交流耦合后未见偏置或端接网络；若由接收端内部偏置/端接需给出资料证据",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p16：GTR_DP3_M2C_C_P/N 经 AC 耦合接 J12 的 PCIe 接收端；板上未见外置偏置不能证明终端缺失，准确 M.2 E 插卡和 SoM GTR 模式未指定，需要端点内部终端/偏置及共模资料。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F239",
+      "sr_rule": "SIG-A02",
+      "criteria": [
+        "G04-005"
+      ],
+      "severity": "",
+      "refs": [
+        "J12"
+      ],
+      "nets": [
+        "/PCIE M2 key E/GTR_DP3_M2C_C_N"
+      ],
+      "sr_text": "/PCIE M2 key E/GTR_DP3_M2C_C（电平标准未定，状态 as-built）：接收侧 /PCIE M2 key E/GTR_DP3_M2C_C_N 交流耦合后未见偏置或端接网络；若由接收端内部偏置/端接需给出资料证据",
+      "scan_kind": "CANDIDATE",
+      "first_seen": "initial",
+      "verdict": "needs_human",
+      "evidence": "原理图 p16：GTR_DP3_M2C_C_P/N 经 AC 耦合接 J12 的 PCIe 接收端；板上未见外置偏置不能证明终端缺失，准确 M.2 E 插卡和 SoM GTR 模式未指定，需要端点内部终端/偏置及共模资料。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F240",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "C86",
+        "U23"
+      ],
+      "nets": [
+        "Net-(U23-VDD_3V3)"
+      ],
+      "sr_text": "Net-(U23-VDD_3V3) (2节点): ['C86', 'U23']",
+      "scan_kind": "FINDING",
+      "first_seen": "cold",
+      "verdict": "knowledge_gap",
+      "evidence": "U23 USB3310C-CP 的 VDD_3V3 与 C86 同网；尚缺准确原厂 USB3310C 引脚供电模式手册，不能从 power_in 属性判断它是内部稳压输出还是应外接输入。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F241",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "C227",
+        "R148",
+        "U58"
+      ],
+      "nets": [
+        "Net-(U58-VDD)"
+      ],
+      "sr_text": "Net-(U58-VDD) (3节点): ['C227', 'R148', 'U58']",
+      "scan_kind": "FINDING",
+      "first_seen": "cold",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p6：DC_MAIN_BUS → R148 Val=100R/1% → U58.8 VDD，C227 为本地旁路；LTC4358 RevA p5 VDD 说明及 p8 Figure3 给出输出经 100Ω RC 供电接法。这里只排除路径缺失，低输入电压另列待确认。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p6：DC_MAIN_BUS → R148 Val=100R/1% → U58.8 VDD，C227 为本地旁路；LTC4358 RevA p5 VDD 说明及 p8 Figure3 给出输出经 100Ω RC 供电接法。这里只排除路径缺失，低输入电压另列待确认。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F242",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U53"
+      ],
+      "nets": [
+        "PS_1V0"
+      ],
+      "sr_text": "PS_1V0 (15节点): ['C105', 'C106', 'C107', 'C108', 'C109', 'C110']",
+      "scan_kind": "FINDING",
+      "first_seen": "cold",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7 / db：U53.2 SW → L7 1u/2.5A → R157 0R → PS_1V0；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p7 / db：U53.2 SW → L7 1u/2.5A → R157 0R → PS_1V0；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F243",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U52"
+      ],
+      "nets": [
+        "PS_1V2"
+      ],
+      "sr_text": "PS_1V2 (20节点): ['C40', 'C41', 'C44', 'C45', 'C48', 'C49']",
+      "scan_kind": "FINDING",
+      "first_seen": "cold",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7 / db：U52.2 SW → L6 1u/2.6A → R156 0R → PS_1V2；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p7 / db：U52.2 SW → L6 1u/2.6A → R156 0R → PS_1V2；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F244",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U50"
+      ],
+      "nets": [
+        "PS_2V5"
+      ],
+      "sr_text": "PS_2V5 (11节点): ['C102', 'C103', 'C91', 'C93', 'C97', 'C98']",
+      "scan_kind": "FINDING",
+      "first_seen": "cold",
+      "verdict": "false_alarm",
+      "evidence": "原理图 p7 / db：U50.2 SW → L4 1u/2.5A → PS_2V5；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / _resistor_fed; scripts/checkers/powertree.py",
+        "what": "在装配态图中识别 Buck SW→电感→0Ω 输出、桥式整流输入及串阻偏置供电；优先使用 XML Val/BOM Val/Tolerance，不把 POWER 引脚方向直接当作无源。原理图 p7 / db：U50.2 SW → L4 1u/2.5A → PS_2V5；AP62301 DS41958 Rev4-2 p3 为 SW 引脚功能、p2 为 Buck 参考接法。"
+      },
+      "seed": null
+    }
+  ],
+  "misses": [],
+  "summary": {
+    "true_defect": 1,
+    "false_alarm": 191,
+    "criterion_issue": 0,
+    "knowledge_gap": 7,
+    "needs_human": 45,
+    "misses": 0
+  },
+  "tooling": [
+    {
+      "id": "T01",
+      "category": "workflow_blocker",
+      "evidence": "ETHERNET-U30/LEVEL_SHIFT-U12候选states=[]；52决定合法推出37电路，带候选lint exit1：circuits.states 必须为非空字符串数组（两条）。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py:CANDIDATE_STATES; scripts/circuit_decisions.py:derive; scripts/plan_review.py:validate_intent",
+        "what": "统一候选默认状态与意图校验契约：对正常态或状态不变问题给出合法表示；不得让无额外受控工况的审查靠伪造需求才能继续。"
+      }
+    },
+    {
+      "id": "T02",
+      "category": "input_field_loss",
+      "evidence": "原生XML有Val/Tolerance：R33=200k/1%，R127=0R，R148=100R/1%；原始db只保留库Value。冷扫163颗R_…_0402阻值无法读出；导出字段经read_bom读入后仍未自动取Val。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/parse_kicad.py:_component; scripts/read_bom.py; scripts/checkers/graph.py",
+        "what": "保留原生自定义字段及来源；优先取明确电气Val并保留Tolerance/Voltage。库名不可猜值；冲突留诊断；为0R/200k/100R增加回归。"
+      }
+    },
+    {
+      "id": "T03",
+      "category": "documentation_drift",
+      "evidence": "references/results-format.md示例schema14，运行时results_model.SCHEMA_VERSION=15；首次gate不读旧版，已正式migrate14→15再校验，判决未变。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/results_model.py:SCHEMA_VERSION; references/results-format.md",
+        "what": "合并步同步文档与运行时schema，并测试版本示例的一致性。"
+      }
+    }
+  ]
+}

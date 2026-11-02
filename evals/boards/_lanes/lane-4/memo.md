@@ -1,0 +1,5 @@
+- kria-k26-devboard：DNP J_SOM240_2产生160条NET-A01；贴装SoM备用脚仍单独待确认，不一概撤回。
+- 原生Value可能是库名；先查XML Val/Tolerance。read_bom能保留字段，但检查器未必使用Val，0R/串阻会漏认。
+- ETHERNET/LEVEL_SHIFT候选states=[]可由决定器接受、却被lint拒绝；无受控需求不要编状态，记录回退范围。
+- results-format文档schema14、运行时15；用migrate_results再校验。needs_human不硬塞VENDOR_DATUM，REVIEW_INCOMPLETE阻止正式报告。
+- 未用CMOS输入NC查准确手册：U36.13有p3注4反证；SCK已有SIG-C01、晶体CL缺证据，不制造漏报。
