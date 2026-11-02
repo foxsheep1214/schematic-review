@@ -93,3 +93,9 @@
 - U6 VDDCORE为内部稳压输出、PLL经FB2/3；U3 VCC来自Q10/L3专用buck，13条无源假报警。Cout图示值不是保证min；内部LDO PWR-C04对象仍漏。
 - +5V0含Micro-B VBUS直挂55µF并接PoE buck；按物理VBUS脚追入口，勿套PD/Type-C表。V1/V2正负是PoE极性线，不是差分数据。
 - AUX未用须接VSS；D1 SMAJ24A跨PoE已证失配。U4 /EN=VDD、EN=VSS确定shutdown/体二极管模式，但是否有意禁用要问设计者，不据此报实物必坏。
+
+- solderedelectronics--gnss-gps-l86-m33-breakout-hardware-design：148+3=151项，18 PASS/10 NA/3 FAIL/120未终判；26归因=2真/4误/0准则/2知识/18待人工，3覆盖漏项；FAIL，renderer退出2，交明确执行记录。
+- K2 CR1220的1+/2-无功能名触发strict回退；负脚OUT不是有源源点。V_BCKP已声明仍漏PWR-T01/时序轨，PRO-C04仅认K3，先用before-gaps计划锁漏对象，再补rule_gap；PWR-C24时序仍未闭。
+- L86-M33官方V1.3订货表PDFp49可锁身份，p14/15的TXD1/1PPS/AADET_N为输出，原生均input；同版发布PDF天线座K?而native/BOM K1，勿把两个数据缺陷说成物理接反。
+- RX上拉3V3对VIHmax3.1V是推荐窗疑点、不是已超3.6V绝限；FORCE_ON 3.3V分压名义2.18543V；JP2闭合5V→3V3仅条件风险，未定装配不能硬指控。V_BCKP无直接C不以参考图直接判FAIL。
+- SE5218仅原厂文本可取，403/HTML/截图失败不能记PDF可用；后缀未给。F1缺条款/120 REVIEW_INCOMPLETE与原生重复任务须保留，26根因计数与自动0 FINDING/2 CANDIDATE分开。
