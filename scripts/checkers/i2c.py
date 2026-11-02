@@ -55,6 +55,8 @@ class I2CTopologyChecker(Checker):
                 if fixture:
                     continue  # no on-board bus: pull-up, address and edge-rate checks have no object
                 for rule in catalog.circuit_type('I2C').subjects:
+                    if not catalog.baseline_asks(rule, planner.intent):
+                        continue
                     item = planner.add_check(
                         rule, deepcopy(obj), key=key,
                         criterion=catalog.criterion(rule) + '；按拓扑清单保留串阻节点及跨段耦合，不把远端上拉直接并联或跨有源器件合并',

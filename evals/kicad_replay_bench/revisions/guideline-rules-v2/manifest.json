@@ -1,0 +1,15 @@
+{
+ "revision": "guideline-rules-v2",
+ "parents": {
+  "revisions/guideline-rules-v1/expected.json": "9d7972fef6718f2e99f36da392fcc129f6a567e39b5b500c004e961c1b59fe9b",
+  "revisions/guideline-rules-v1/cases.json": "76573f00f2f35883bf2a07dbda058d356b97649ce42eb2e3adf68007c4103559",
+  "revisions/guideline-rules-v1/sources.json": "c75b45f60e4f89c4d7caeca6acbf684b91b937eeaa195ff6c88cefed3198d2d0",
+  "revisions/guideline-rules-v1/manifest.json": "3955bf9854f580fa715b30d72d68bf8a994dd394fea01984a8446db371de70a3"
+ },
+ "derived_files": {
+  "revisions/guideline-rules-v2/expected.json": "a37228bff78f8b581d2147f8e6340dcc02700d73f5a4cbfcddfe2676bd649bf9",
+  "revisions/guideline-rules-v2/cases.json": "76573f00f2f35883bf2a07dbda058d356b97649ce42eb2e3adf68007c4103559",
+  "revisions/guideline-rules-v2/sources.json": "c75b45f60e4f89c4d7caeca6acbf684b91b937eeaa195ff6c88cefed3198d2d0"
+ },
+ "scope": "共用规范规则库 1.2.0 接入（2026-11-01，用户：按表实施）：G04、G05 转 active，全板加 REQ-D05、PRO-D05、PRO-D06 三项；有 I²C 总线的板子每段另加 SIG-C13、SIG-C15；只有检查数变化，其他字段不变。"
+}

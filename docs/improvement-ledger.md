@@ -9,6 +9,20 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Rule library 1.2.0 (G04, G05 active): 23 new checks, full BASIS, I²C rows follow the baseline (2026-11-01)
+
+The user approved the mapping table (“按表实施”) for the 197 rules of G04 and G05; 193 turn active, and G04-003, G04-011, G04-079 and G05-026 stay draft until their open points are decided.
+
+- 23 new checks, five of them aerospace only, and `catalog.BASIS` covering every G04 and G05 rule. Criteria added to SIG-C03, SIG-C09, CLK-C01, SIG-D11, PWR-T05 and PRO-E02; RST-T04 now also asks CAN, RS485, ISOLATION and LEVEL_SHIFT, SIG-C09 also ISOLATION.
+- Against the table: SIG-C07, SIG-C08 and the wider RST-T04 and SIG-C09 types were not added. SIG-C07 and SIG-C08 already reach other interfaces through the interface rows, and adding them per circuit put injection rows on a debug test point (test_interface_rows caught it). PRO-C08 is a circuit check on POWER_PROTECTION, not owned_parts, because it needs no new generator.
+- Found on the replay boards: `checkers/i2c.py` expanded every I²C subject without the baseline filter, so the aerospace SIG-C18 appeared on default boards. It now filters, and CIRCUIT_TYPE_MISFIT counts only the rules the baseline asks.
+- Replay contract `guideline-rules-v2`: only `plan.checks_total` moves, +3 on every board (REQ-D05, PRO-D05, PRO-D06) and +2 per I²C segment (SIG-C13, SIG-C15). The new rules have only been read against SR criteria and run on these boards; none has been judged on a real design.
+
+- Event: user:2026-11-01 (按表实施)
+- Causes: rule_missing 1, rule_not_enforced 1
+- Changed: docs/improvement-ledger.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/guideline-rules-v2, evals/kicad_replay_bench/run.py, references/architecture.md, references/check-catalog.md, references/guideline-rules.json, references/review-vocabulary.md, scripts/catalog.py, scripts/checkers/i2c.py, scripts/plan_circuits.py, scripts/tests/test_i2c_topology.py, scripts/tests/test_plan_review.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json
+- Gates: pytest 2402 passed; ASG 1023 passed; KiCad replay on contract `guideline-rules-v2` with no mismatch; `mutation/run.py --changed` 98/99 killed, the survivor M354 was stale after CIRCUIT_TYPE_MISFIT moved to the baseline-asked count and is repointed and rerun alone
+
 ## Rule library 1.0.0 (G01–G03) installed: interface circuit types, 17 new checks, full BASIS, estimate factors moved to G02 (2026-11-01)
 
 The user decided the four integration questions (“按照修改后，在运行过程中，审查点相对独立、规则明确的方式。不需要考虑修改任务有多繁杂。”, “一次做全”, “进规则库，本轮迁移”, “我不再会考虑已有的设计和审查”), said “开工” and approved the check design table (“按表写”).

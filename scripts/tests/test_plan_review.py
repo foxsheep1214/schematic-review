@@ -488,12 +488,13 @@ class ReviewPlanTests(unittest.TestCase):
             'USB': {'applicability': 'APPLICABLE', 'citation': 'synthetic USB function'}}})
         usb = sorted(x['rule'] for x in plan['checks']
                      if x.get('circuit_type') == 'USB' and x['rule'] != 'REQ-Q07')
-        self.assertEqual(usb, sorted(catalog.circuit_type('USB').subjects))
+        usb_rules = [r for r in catalog.circuit_type('USB').subjects if catalog.baseline_asks(r, {})]
+        self.assertEqual(usb, sorted(usb_rules))
         self.assertTrue(all(x['id'] == x['rule'] + '.USB' for x in plan['checks']
                             if x.get('circuit_type') == 'USB' and x['rule'] != 'REQ-Q07'))
         summary = get_feature(plan, 'USB')
         self.assertEqual(summary['role'], 'coverage_parent')
-        for rule in catalog.circuit_type('USB').subjects:
+        for rule in usb_rules:
             self.assertIn(rule, summary['criterion'])
         intent = {'schema_version': 5, 'circuits': [
             {'id': 'PORT', 'type': 'USB', 'refs': ['J1'], 'states': ['host', 'unpowered'],
@@ -502,8 +503,8 @@ class ReviewPlanTests(unittest.TestCase):
         plan = build_review_plan(sample_db(), intent)
         members = [x for x in plan['checks'] if x.get('circuit_type') == 'USB' and x['rule'] != 'REQ-Q07']
         # SIG-T04/SIG-D07/SIG-D04 与工作态无关，每电路一行；其余电路检查项两个状态各一行。
-        invariant = [r for r in catalog.circuit_type('USB').subjects if r in catalog.STATE_INVARIANT]
-        self.assertEqual(len(members), 2 * (len(catalog.circuit_type('USB').subjects) - len(invariant)) + len(invariant))
+        invariant = [r for r in usb_rules if r in catalog.STATE_INVARIANT]
+        self.assertEqual(len(members), 2 * (len(usb_rules) - len(invariant)) + len(invariant))
         self.assertEqual({x['object']['state'] for x in members if x['rule'] not in invariant}, {'host', 'unpowered'})
         self.assertFalse([x for x in members if x['rule'] in invariant and 'state' in x['object']])
         self.assertIn('intent.circuits:synthetic port definition', get_feature(plan, 'USB')['trigger'])
@@ -524,9 +525,11 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertEqual(validate_intent(intent), [])
         plan = build_review_plan(db, intent)
         members = [x for x in plan['checks'] if x.get('circuit_type') == 'LEVEL_SHIFT' and x['rule'] != 'REQ-Q07']
-        self.assertEqual(sorted({x['rule'] for x in members}), sorted(catalog.circuit_type('LEVEL_SHIFT').subjects))
-        # SIG-T04（接口方向语义）与工作态无关，两个状态只问一次。
-        self.assertEqual(len(members), 2 * len(catalog.circuit_type('LEVEL_SHIFT').subjects) - 1)
+        shift_rules = [r for r in catalog.circuit_type('LEVEL_SHIFT').subjects if catalog.baseline_asks(r, {})]
+        self.assertEqual(sorted({x['rule'] for x in members}), sorted(shift_rules))
+        # 与工作态无关的规则（如 SIG-T04 接口方向语义），两个状态只问一次。
+        invariant = [r for r in shift_rules if r in catalog.STATE_INVARIANT]
+        self.assertEqual(len(members), 2 * (len(shift_rules) - len(invariant)) + len(invariant))
 
     def test_declared_circuit_makes_package_applicable_and_conflicts_with_na(self):
         circuit = {'id': 'LDO', 'type': 'POWER_PROTECTION', 'refs': ['U1'], 'states': ['run'],
@@ -701,9 +704,9 @@ class FunctionFrameTests(unittest.TestCase):
         plan = build_review_plan(sample_db(), {'schema_version': 5, 'circuits': [circuit]})
         rules = [r for r in catalog.circuit_type('POWER_PROTECTION').subjects if catalog.baseline_asks(r, {})]
         invariant = [r for r in rules if r in catalog.STATE_INVARIANT]
-        self.assertEqual(invariant, ['PWR-T05'])
+        self.assertIn('PWR-T05', invariant)
         members = [c for c in plan['checks'] if c['object'].get('circuit') == 'IN-PROT' and c.get('circuit_type')]
-        self.assertEqual(len(members), 2 * (len(rules) - 1) + 1)
+        self.assertEqual(len(members), 2 * (len(rules) - len(invariant)) + len(invariant))
         once = [c for c in members if c['rule'] == 'PWR-T05']
         self.assertEqual([c['id'] for c in once], ['PWR-T05.IN-PROT.D1'])
         self.assertNotIn('state', once[0]['object'])
@@ -713,7 +716,7 @@ class FunctionFrameTests(unittest.TestCase):
         self.assertEqual([m['state'] for m in frame['members'] if m['rule'] == 'PWR-T05'], [None])
         self.assertEqual(len(frame['members']), len(members))
         for row in members:
-            if row['rule'] != 'PWR-T05':
+            if row['rule'] not in catalog.STATE_INVARIANT:
                 self.assertIn(row['object']['state'] + ' 时 IN-PROT（D1、Q1）', row['question'])
 
     def test_no_rail_window_is_said_so_and_no_circuit_means_no_frame(self):

@@ -13,25 +13,25 @@
 | 功能电路 | 名称 | 内容域 | 电路检查项 | 必需资料 | 检出特征（正则） |
 |---|---|---|---|---|---|
 | POWER_CONVERTER | 变换器与稳压器 | PWR | PWR-C02、PWR-C03、PWR-C04、PWR-C05、PWR-C15、PWR-C06、PWR-C18、PWR-C24 | requirements、datasheets | `(^\|[:_-])(FB\|VFB\|LX\d*\|PGOOD\|PWRGD\|VOUT\d*)([:_-]\|$)\|LDO\|BUCK\|BOOST\|DC-?DC\|PMIC` |
-| POWER_PROTECTION | 电源输入保护 | PWR | PWR-C06、DRV-C02、PRO-C01、PWR-C13、PWR-T05、ANA-T01、PWR-C23、PWR-C25 | requirements、datasheets | `FUSE\|HOT-?SWAP\|SURGE\|PART:F\d+:\|(^\|[:_-])(OVP\|UVP\|OCP\|ILIM)([:_-]\|$)\|SMBJ\|SMAJ\|SMCJ` |
-| ANALOG | 模拟前端与监测 | ANA | ANA-C01、ANA-C02、ANA-C03、ANA-T01、ANA-D01 | requirements、datasheets | `(^\|[:_-])(AIN\d*\|ADC\w*\|VREF\w*\|REFIN\|REFOUT\|OPA\w*\|INA\d*\|ISENSE\w*\|CSP\|CSN\|NTC\w*\|THERM\w*)([:_-]\|$)` |
+| POWER_PROTECTION | 电源输入保护 | PWR | PWR-C06、DRV-C02、PRO-C01、PWR-C13、PWR-T05、ANA-T01、PWR-C23、PWR-C25、PWR-C26、PRO-C04、PRO-C05、PRO-C06、PRO-C07、PRO-C08、PRO-C09、PRO-C13 | requirements、datasheets | `FUSE\|HOT-?SWAP\|SURGE\|PART:F\d+:\|(^\|[:_-])(OVP\|UVP\|OCP\|ILIM)([:_-]\|$)\|SMBJ\|SMAJ\|SMCJ` |
+| ANALOG | 模拟前端与监测 | ANA | ANA-C01、ANA-C02、ANA-C03、ANA-T01、ANA-D01、ANA-C05、ANA-C06 | requirements、datasheets | `(^\|[:_-])(AIN\d*\|ADC\w*\|VREF\w*\|REFIN\|REFOUT\|OPA\w*\|INA\d*\|ISENSE\w*\|CSP\|CSN\|NTC\w*\|THERM\w*)([:_-]\|$)` |
 | STARTUP | 上电、复位与启动 | RST | RST-C01、RST-C02、RST-T04、RST-D01 | requirements、datasheets | `RESET\|(^\|_)RST\|POR(_\|$)\|(^\|[:_-])(BOOT\w*\|STRAP\w*\|PWRON\w*)([:_-]\|$)` |
-| CLOCK | 时钟 | CLK | CLK-C01、CLK-D01、CLK-D03 | datasheets | `CLK\|CLOCK\|OSC\|XTAL\|XIN\|XOUT\|32K` |
-| I2C | I²C | SIG | SIG-C01、SIG-C07、SIG-C08、SIG-D01 | requirements、datasheets | `(^\|[:_-])(I2C\w*\|SCL\d*\|SDA\d*)([:_-]\|$)` |
-| LEVEL_SHIFT | 电平转换与跨电压域互连 | SIG | SIG-C07、SIG-C08、SIG-C09、SIG-T04 | requirements、datasheets | `TXS0\d{3}\|TXB0\d{3}\|TXU0\d{3}\|PCA9306\|NVT20\d\d\|LSF0\d{3}\|GTL2003\|FXMA\d+\|FXLA\d+\|NLSX\d+\|(SN)?74(LVC\|AVC\|AXC\|ALVC)\d*T\d+\|LEVEL_?SHIFT\|LVL_?SHIFT\|TRANSLAT\|NET:\w*_(LV\|HV)(_\|$)` |
-| SPI | SPI | SIG | SIG-D09、SIG-C07、SIG-C09 | requirements、datasheets | `\bSPI\w*\|MOSI\|MISO\|SCLK` |
-| UART | UART/RS232 | SIG | SIG-D08、SIG-T04、SIG-C07 | requirements、datasheets | `UART\|\bTXD\w*\|\bRXD\w*` |
-| CAN | CAN | SIG | SIG-C03、SIG-C04、SIG-D08、PRO-C01 | requirements、datasheets | `CANH\|CANL\|CAN_TX\|CAN_RX\|\bCAN\d*\b` |
-| RS485 | RS485 | SIG | SIG-C03、SIG-C04、SIG-D08、SIG-T04、PRO-C01 | requirements、datasheets | `RS485\|485_TX\|485_RX\|485_A\|485_B` |
-| USB | USB/Type-C | SIG | SIG-D07、SIG-D04、SIG-C05、SIG-T04 | requirements、datasheets | `USB\|VBUS\|TYPEC\|TYPE_C` |
-| ETHERNET | 以太网 | SIG | SIG-D11、SIG-C09、PRO-C01 | requirements、datasheets、platform_checklist | `ETH\|RGMII\|RMII\|SGMII\|MDIO\|\bMDI\d\|PHY` |
+| CLOCK | 时钟 | CLK | CLK-C01、CLK-D01、CLK-D03、SIG-C13、SIG-C18 | datasheets | `CLK\|CLOCK\|OSC\|XTAL\|XIN\|XOUT\|32K` |
+| I2C | I²C | SIG | SIG-C01、SIG-C07、SIG-C08、SIG-D01、SIG-C13、SIG-C18、SIG-C15 | requirements、datasheets | `(^\|[:_-])(I2C\w*\|SCL\d*\|SDA\d*)([:_-]\|$)` |
+| LEVEL_SHIFT | 电平转换与跨电压域互连 | SIG | SIG-C07、SIG-C08、SIG-C09、SIG-T04、SIG-C13、SIG-C18、RST-T04、SIG-C14 | requirements、datasheets | `TXS0\d{3}\|TXB0\d{3}\|TXU0\d{3}\|PCA9306\|NVT20\d\d\|LSF0\d{3}\|GTL2003\|FXMA\d+\|FXLA\d+\|NLSX\d+\|(SN)?74(LVC\|AVC\|AXC\|ALVC)\d*T\d+\|LEVEL_?SHIFT\|LVL_?SHIFT\|TRANSLAT\|NET:\w*_(LV\|HV)(_\|$)` |
+| SPI | SPI | SIG | SIG-D09、SIG-C07、SIG-C09、SIG-C13、SIG-C18 | requirements、datasheets | `\bSPI\w*\|MOSI\|MISO\|SCLK` |
+| UART | UART/RS232 | SIG | SIG-D08、SIG-T04、SIG-C07、SIG-C13、SIG-C18 | requirements、datasheets | `UART\|\bTXD\w*\|\bRXD\w*` |
+| CAN | CAN | SIG | SIG-C03、SIG-C04、SIG-D08、PRO-C01、SIG-C13、SIG-C18、RST-T04、SIG-C16 | requirements、datasheets | `CANH\|CANL\|CAN_TX\|CAN_RX\|\bCAN\d*\b` |
+| RS485 | RS485 | SIG | SIG-C03、SIG-C04、SIG-D08、SIG-T04、PRO-C01、SIG-C13、SIG-C18、RST-T04、SIG-C16 | requirements、datasheets | `RS485\|485_TX\|485_RX\|485_A\|485_B` |
+| USB | USB/Type-C | SIG | SIG-D07、SIG-D04、SIG-C05、SIG-T04、SIG-C13、SIG-C18 | requirements、datasheets | `USB\|VBUS\|TYPEC\|TYPE_C` |
+| ETHERNET | 以太网 | SIG | SIG-D11、SIG-C09、PRO-C01、SIG-C13、SIG-C18、SIG-C19 | requirements、datasheets、platform_checklist | `ETH\|RGMII\|RMII\|SGMII\|MDIO\|\bMDI\d\|PHY` |
 | DDR | DDR | SIG | SIG-D02、SIG-D03、SIG-C09 | requirements、datasheets、platform_checklist | `LPDDR\|DDR[2345]?\|SDRAM\|DQS\|\bZQ\b` |
 | STORAGE | eMMC/SD | SIG | SIG-D10、SIG-C07、SIG-C09 | requirements、datasheets、platform_checklist | `EMMC\|SDIO\|SDMMC\|MICROSD\|TF_CARD` |
 | RF | 射频与模组 | SIG | SIG-D12 | requirements、datasheets | `(^\|[:_-])(RF\|ANT\|WIFI\|WLAN\|LTE\|GNSS\|SIM)([:_-]\|$)` |
-| HSSERIAL | 高速串行 | SIG | SIG-D14、SIG-T01 | requirements、datasheets、platform_checklist | `PCIE\|PCI_E\|SATA\|SERDES\|USB3\|SSTX\|SSRX\|PERST\|CLKREQ` |
+| HSSERIAL | 高速串行 | SIG | SIG-D14、SIG-T01、SIG-C13、SIG-C18 | requirements、datasheets、platform_checklist | `PCIE\|PCI_E\|SATA\|SERDES\|USB3\|SSTX\|SSRX\|PERST\|CLKREQ` |
 | AV | 音视频接口 | SIG | SIG-D15、SIG-C07 | requirements、datasheets | `HDMI\|MIPI\|(^\|[:_-])(CSI\|DSI\|EDP\|LCD)\w*\|(^\|[:_-])I2S\|MCLK\|LRCK\|BCLK\|CODEC\|(^\|[:_-])(SPK\|MIC)([:_-]\|\d\|$)` |
-| ISOLATION | 隔离 | PRO | PRO-D02、PRO-C01、PRO-C03 | requirements、datasheets | `ISOLAT\|(^\|_)ISO(_\|$)\|DIGITAL_ISO` |
-| DEBUG | 调试与烧录 | SIG | SIG-D06 | datasheets | `JTAG\|SWDIO\|SWCLK\|(^\|[:_-])(SWD\|TCK\|TMS\|TDI\|TDO\|TRST\w*)([:_-]\|$)\|(^\|[:_-])(DEBUG\|DBG)` |
+| ISOLATION | 隔离 | PRO | PRO-D02、PRO-C01、PRO-C03、SIG-C13、SIG-C18、RST-T04、SIG-C09、SIG-C17 | requirements、datasheets | `ISOLAT\|(^\|_)ISO(_\|$)\|DIGITAL_ISO` |
+| DEBUG | 调试与烧录 | SIG | SIG-D06、SIG-C13、SIG-C18 | datasheets | `JTAG\|SWDIO\|SWCLK\|(^\|[:_-])(SWD\|TCK\|TMS\|TDI\|TDO\|TRST\w*)([:_-]\|$)\|(^\|[:_-])(DEBUG\|DBG)` |
 | DC_48V | −48 V 直流输入 | PWR | PWR-C17、PWR-C18、PWR-C13、PRO-C01 | requirements、datasheets | `(^\|[:_-])-?48V(_?RTN\|_?IN)?([:_-]\|$)\|VBAT_?48` |
 | AC_MAINS | 交流市电输入 | PWR | PWR-C18 | requirements、datasheets | `(^\|[:_-])(AC_?[LN]\|VAC\|MAINS)([:_-]\|$)` |
 | INDUSTRIAL_DI | 工业 24 V 数字输入 | SIG | SIG-C10 | requirements、datasheets | `(^\|[:_-])(DIN?\d+\|PLC_IN\d*)([:_-]\|$)` |
@@ -51,6 +51,12 @@
 | POWER_PROTECTION | PRO-C01 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |
 | POWER_PROTECTION | PWR-C13 | CONNECTOR_INPUT | 电路里没有连接器，也不在连接器的输入路径上 |
 | POWER_PROTECTION | PWR-T05 | SUPPLY_SWITCH | 电路里没有 D、S 都不接地的 MOSFET |
+| POWER_PROTECTION | PRO-C05 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |
+| POWER_PROTECTION | PRO-C06 | SUPPLY_SWITCH | 电路里没有 D、S 都不接地的 MOSFET |
+| POWER_PROTECTION | PRO-C08 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |
+| POWER_PROTECTION | PRO-C09 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |
+| ANALOG | ANA-C05 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
+| ANALOG | ANA-C06 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
 | POWER_PROTECTION | ANA-T01 | SENSE_ELEMENT | 电路里没有采样电阻（<1 Ω）、NTC 或接到 IC 检测脚的分压 |
 | ANALOG | ANA-C01 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
 | ANALOG | ANA-C02 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |

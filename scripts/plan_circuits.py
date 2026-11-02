@@ -475,11 +475,12 @@ class CircuitPlanning:
                 'bounds': self._frame_bounds(graph, circuit['refs']),
             }
             asked = [rule for rule in kind.subjects if rule in requirements[circuit['id']]]
-            if 2 * len(asked) < len(kind.subjects):   # proposals item 2b: the type asks almost nothing of this circuit
+            wanted = [rule for rule in kind.subjects if catalog.baseline_asks(rule, self.intent)]
+            if 2 * len(asked) < len(wanted):   # proposals item 2b: the type asks almost nothing of this circuit
                 self.diagnostics.append({
                     'code': 'CIRCUIT_TYPE_MISFIT', 'circuit': circuit['id'], 'circuit_type': kind.name, 'asked': asked,
                     'detail': '%s 按 %s 只问到 %d/%d 条电路规则：换一个类型，或不建这块电路、让器件走器件检查项' % (
-                        circuit['id'], kind.name, len(asked), len(kind.subjects))})
+                        circuit['id'], kind.name, len(asked), len(wanted))})
         for rule, obj, key, gaps, trigger in members:
             frame = frames.get(obj.get('circuit'))
             item = self._ready_check(rule, dict(obj), gaps, [trigger], key=key)

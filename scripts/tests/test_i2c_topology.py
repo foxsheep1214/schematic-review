@@ -451,8 +451,9 @@ class TopologyTests(unittest.TestCase):
     def test_plan_has_per_region_coverage_plus_package_electrical_checks(self):
         db, intent = fixture(('33R',))
         plan = build_review_plan(db, intent)
-        members = catalog.circuit_type('I2C').subjects
+        members = [r for r in catalog.circuit_type('I2C').subjects if catalog.baseline_asks(r, {})]
         new = [p for p in plan['checks'] if p['object'].get('i2c_region')]
+        self.assertNotIn('SIG-C18', {x['rule'] for x in new})   # aerospace only: not asked on the default baseline
         self.assertEqual(len(new), 2 * (1 + len(members)))
         self.assertEqual(sum(p['rule'] == 'SIG-T02' for p in new), 2)
         self.assertTrue(all(p['review_result'] is None for p in new))

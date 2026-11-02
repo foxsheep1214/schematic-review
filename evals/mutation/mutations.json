@@ -2341,7 +2341,7 @@
   "id": "M354",
   "name": "no hint when a type asks almost nothing",
   "file": "scripts/plan_circuits.py",
-  "old": "if 2 * len(asked) < len(kind.subjects):",
+  "old": "if 2 * len(asked) < len(wanted):",
   "new": "if 2 * len(asked) < 0:"
  },
  {
