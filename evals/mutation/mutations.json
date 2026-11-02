@@ -1347,15 +1347,15 @@
   "id": "M205",
   "name": "a rated power is not read",
   "file": "scripts/solve_dividers.py",
-  "old": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
-  "new": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(V)\\s*', remainder)"
+  "old": "        rating = fraction or re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
+  "new": "        rating = fraction or re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(V)\\s*', remainder)"
  },
  {
   "id": "M206",
   "name": "a rated voltage is not read",
   "file": "scripts/solve_dividers.py",
-  "old": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
-  "new": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W)\\s*', remainder)"
+  "old": "        rating = fraction or re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
+  "new": "        rating = fraction or re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W)\\s*', remainder)"
  },
  {
   "id": "M207",
@@ -1368,8 +1368,8 @@
   "id": "M208",
   "name": "milliwatts are read as watts",
   "file": "scripts/solve_dividers.py",
-  "old": "        amount = float(rating.group(2)) / (1000.0 if rating.group(3) == 'MW' else 1.0)",
-  "new": "        amount = float(rating.group(2))"
+  "old": "        amount = float(rating.group(2)) / denominator / (1000.0 if unit_rating == 'MW' else 1.0)",
+  "new": "        amount = float(rating.group(2)) / denominator"
  },
  {
   "id": "M209",
@@ -5922,6 +5922,195 @@
   "new": "if not ng.is_ground(n):"
  },
  {
+  "id": "M912",
+  "name": "declared relay switch again anchors converter",
+  "file": "scripts/circuit_candidates.py",
+  "old": "and self.converter_topology(switch):",
+  "new": ":"
+ },
+ {
+  "id": "M913",
+  "name": "rejected candidate retains members",
+  "file": "scripts/circuit_decisions.py",
+  "old": "                owner = next((k for k, m in members.items() if ref in m and decided.get(k) != 'reject'), None)",
+  "new": "                owner = next((k for k, m in members.items() if ref in m), None)"
+ },
+ {
+  "id": "M914",
+  "name": "input capacitor loses its unlimited reference allowance",
+  "file": "scripts/circuit_candidates.py",
+  "old": "SUPPLY_CAP_ROLES = frozenset({'input_capacitor', 'output_capacitor', 'decoupling', 'storage_capacitor'})",
+  "new": "SUPPLY_CAP_ROLES = frozenset({'output_capacitor', 'decoupling', 'storage_capacitor'})"
+ },
+ {
+  "id": "M915",
+  "name": "undeclared shared VIN no longer stops walks",
+  "file": "scripts/checkers/domains.py",
+  "old": "supplies = set(rails) | powertree.supply_candidates(graph, intent)",
+  "new": "supplies = set(rails)"
+ },
+ {
+  "id": "M916",
+  "name": "connector walks through its shared supply seed",
+  "file": "scripts/circuit_candidates.py",
+  "old": "            if net in self.stops:\n                caps = self.ground_caps(net)      # a converter's input rail ends the input: its capacitors are the input's, whatever their value\n            if caps or net in self.stops:",
+  "new": "            if hops and net in self.stops:\n                caps = self.ground_caps(net)\n            if caps or (hops and net in self.stops):"
+ },
+ {
+  "id": "M917",
+  "name": "isolation package unions both reference sides",
+  "file": "scripts/checkers/domains.py",
+  "old": "groups = [x['nets'] for x in side['sides']] if side['mechanism'] not in ('transformer', 'relay') else []",
+  "new": "groups = [graph.nets_of(ref)]"
+ },
+ {
+  "id": "M918",
+  "name": "megohm bleed merges domains",
+  "file": "scripts/checkers/domains.py",
+  "old": "value is None or value['kohm'] >= 1000",
+  "new": "value is None or value['kohm'] >= 1e9"
+ },
+ {
+  "id": "M919",
+  "name": "common-ground isolation objects disappear",
+  "file": "scripts/checkers/domains.py",
+  "old": "if len(touched) > 1 or ref in side_models:",
+  "new": "if len(touched) > 1:"
+ },
+ {
+  "id": "M920",
+  "name": "passive barrier gets digital isolation questions",
+  "file": "scripts/plan_circuits.py",
+  "old": "if passive_barrier and rule in",
+  "new": "if False and rule in"
+ },
+ {
+  "id": "M921",
+  "name": "AMC3311 loses its independent side model",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "(r'AMC3311[A-Z0-9/-]*', 'isolated_amplifier',",
+  "new": "(r'NEVER3311[A-Z0-9/-]*', 'isolated_amplifier',"
+ },
+ {
+  "id": "M922",
+  "name": "a ground net reference is no longer a domain alias",
+  "file": "scripts/checkers/domains.py",
+  "old": "derived != declared_label",
+  "new": "derived != declared"
+ },
+ {
+  "id": "M923",
+  "name": "duplicate ground leaves share a domain without a wire",
+  "file": "scripts/checkers/domains.py",
+  "old": "initial_labels.count(labels[net]) > 1",
+  "new": "False"
+ },
+ {
+  "id": "M924",
+  "name": "connector spanning both isolation sides loses endpoint coverage",
+  "file": "scripts/circuit_candidates.py",
+  "old": "if all(nets & set(s['nets']) for s in sides):",
+  "new": "if False:"
+ },
+ {
+  "id": "M925",
+  "name": "4k7 enable source is cut by a low-impedance threshold",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "def signal_source_peers(self, net, max_ohm=10000.0, max_hops=3):",
+  "new": "def signal_source_peers(self, net, max_ohm=1000.0, max_hops=3):"
+ },
+ {
+  "id": "M926",
+  "name": "gate source discovery borrows drivers from ground or shared rail",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "if value is None or value['kohm'] < 0 or is_ground(other) or is_rail(other):",
+  "new": "if value is None or value['kohm'] < 0:"
+ },
+ {
+  "id": "M927",
+  "name": "upstream buck storage inductor is treated as an input filter",
+  "file": "scripts/checkers/input_filter.py",
+  "old": "if storage_source:",
+  "new": "if False:"
+ },
+ {
+  "id": "M928",
+  "name": "input filter rows exist without a filter",
+  "file": "scripts/checkers/input_filter.py",
+  "old": "if not item['series_elements'] and not any(g.startswith('series-element-topology:') for g in item['gaps']):",
+  "new": "if False:"
+ },
+ {
+  "id": "M929",
+  "name": "verified load switch gets LDO dropout model",
+  "file": "scripts/checkers/power_up.py",
+  "old": "load_switch = (graph.role_kind(ref) == 'load_switch' or",
+  "new": "load_switch = (False or"
+ },
+ {
+  "id": "M930",
+  "name": "passive balun without switching energy becomes a coil load",
+  "file": "scripts/checkers/inductive_load.py",
+  "old": "if kind != pw.RELAY and ref not in self.declared and not energy_driver:",
+  "new": "if False:"
+ },
+ {
+  "id": "M931",
+  "name": "Bridged jumper again matches a protective rectifier",
+  "file": "scripts/circuit_candidates.py",
+  "old": "r'THERMISTOR|FUSE|\\bGDT\\b|SPARK'",
+  "new": "r'THERMISTOR|FUSE|BRIDGE|\\bGDT\\b|SPARK'"
+ },
+ {
+  "id": "M932",
+  "name": "AMC output pin no longer supplies its own isolated-side LDO input",
+  "file": "scripts/checkers/powertree.py",
+  "old": "if side and pin in side.get('power_outputs', []):",
+  "new": "if False and side and pin in side.get('power_outputs', []):"
+ },
+ {
+  "id": "M933",
+  "name": "gate protection zener becomes a linear regulator reference",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        return bool(gate and source and source not in self.grounds and self.ground_caps(source) and any(\n            self.graph.kind(r) == pw.ZENER and any(n in self.grounds for n in self.graph.nets_of(r) if n != gate)\n            for r in self.graph.refs_on(gate)) and self.graph.between(gate, drain, {pw.RESISTOR}))",
+  "new": "        return bool(gate and any(self.graph.kind(r) == pw.ZENER for r in self.graph.refs_on(gate)))"
+ },
+ {
+  "id": "M934",
+  "name": "walk bypass caps lose their unlimited supply-reference role",
+  "file": "scripts/circuit_candidates.py",
+  "old": "role = 'decoupling'   # a ground bypass",
+  "new": "role = 'capacitor'   # a ground bypass"
+ },
+ {
+  "id": "M935",
+  "name": "relay coil evidence counts as converter magnetics",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        return bool(net) and any(\n            self.graph.kind(r) in (pw.INDUCTOR, pw.TRANSFORMER, pw.COUPLED_INDUCTOR) for r in self.graph.refs_on(net))",
+  "new": "        return bool(net) and (net in self.winding_nets or any(\n            self.graph.kind(r) in (pw.INDUCTOR, pw.TRANSFORMER, pw.COUPLED_INDUCTOR) for r in self.graph.refs_on(net)))"
+ },
+ {
+  "id": "M936",
+  "name": "integrated SW no longer preserves transformer winding review",
+  "file": "scripts/checkers/inductive_load.py",
+  "old": "self._is_converter_node(n) for n in graph.nets_of(ref)",
+  "new": "False for n in graph.nets_of(ref)"
+ },
+ {
+  "id": "M937",
+  "name": "fractional watt rating cuts the real MCU driver path",
+  "file": "scripts/solve_dividers.py",
+  "old": "rating = fraction or re.fullmatch",
+  "new": "rating = None or re.fullmatch"
+ },
+ {
+  "id": "M938",
+  "name": "EN on a real supplied rail becomes floating when its supply pin alias is SUP",
+  "file": "scripts/checkers/power_up.py",
+  "old": "if supplied:\n            return 'supplied', supplied",
+  "new": "if False:\n            return 'supplied', supplied"
+ },
+ {
   "id": "M960",
   "name": "native assembly fields ignore Populate DNP",
   "file": "scripts/parse_kicad.py",
@@ -6002,15 +6191,15 @@
   "id": "M971",
   "name": "high-side load switches revert to LDO dropout",
   "file": "scripts/checkers/power_up.py",
-  "old": "'kind': 'load-switch' if load_switch else ('switching' if switches else 'linear'),",
+  "old": "'kind': 'load_switch' if load_switch else ('switching' if switches else 'linear'),",
   "new": "'kind': 'switching' if switches else 'linear',"
  },
  {
   "id": "M972",
   "name": "gate pulldown reaches grounded test contacts as drivers",
-  "file": "scripts/checkers/power_switch.py",
-  "old": "if other in self.grounds:\n                continue  # a gate-to-ground pull-down",
-  "new": "if False:\n                continue  # a gate-to-ground pull-down"
+  "file": "scripts/checkers/netgraph.py",
+  "old": "if value is None or value['kohm'] < 0 or is_ground(other) or is_rail(other):",
+  "new": "if value is None or value['kohm'] < 0 or is_rail(other):"
  },
  {
   "id": "M973",
@@ -6041,25 +6230,11 @@
   "new": "blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))"
  },
  {
-  "id": "M977",
-  "name": "upstream buck storage inductor becomes the downstream EMI filter",
-  "file": "scripts/checkers/input_filter.py",
-  "old": "if powertree.PowerTree(self.graph).is_switch_node(other):",
-  "new": "if False:"
- },
- {
   "id": "M978",
   "name": "PDF content order overrides actual title geometry",
   "file": "scripts/datasheet_kinds.py",
   "old": "        geometric = pdf_title_text(document_path)",
   "new": "        geometric = None"
- },
- {
-  "id": "M979",
-  "name": "RF baluns again require switched-coil clamps",
-  "file": "scripts/checkers/inductive_load.py",
-  "old": "if re.search(r'BALUN', identity, re.I) and kind in pw.WINDING_PAIRS:",
-  "new": "if False:"
  },
  {
   "id": "M980",

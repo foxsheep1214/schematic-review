@@ -9,6 +9,26 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 合并步 2A 与 2B 合并 (2026-11-02)
+
+两支并行修改在 7 个文件冲突：输入滤波、功率开关驱动源、上电使能源三处取 2A 的储能电感/≤10 kΩ 驱动源模型，保留 2B 的手册允许悬空豁免与负载开关型号判定，`kind` 统一为 `load_switch`（2B 测试同改）。
+变异表 2A（M912–M938）与 2B（M960–M999）并列；M929、M971 重锚到合并后的负载开关判定，M972 重锚到 `netgraph.signal_source_peers` 的地网排除，M977、M979 与 2A 的 M927、M930 等价故删去；2B 多余的 BALUN 预判删去。
+回放基准新建 `boards-merge2-v1`：以 2B 答案为基套用 2A 的 rf2 变化（101→99），manifest 绑定两个父约定，195/195。
+
+- Event: user:2026-11-02 (用更多的实际电路板来驱动问题的改进; 再多找一些板子…每个板子跑得细致一些)
+- Causes: judgment 1
+- Changed: scripts/checkers/input_filter.py, scripts/checkers/power_switch.py, scripts/checkers/power_up.py, scripts/checkers/inductive_load.py, scripts/tests/test_boards_merge2b_roles.py, evals/mutation/mutations.json, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/boards-merge2-v1/, evals/detection/RESULTS.md, docs/improvement-ledger.md
+- Gates: pytest 2642 passed; mutation --changed 3a3d861 全杀（M979 删后重验 M927/M929/M930/M936/M971/M972 全杀）; kicad_replay 195/195; check_ledger PASS
+
+## 候选按角色持有与拒绝后重归、隔离器件两侧模型：合并步2A (2026-11-02)
+
+变换器需拓扑证据，共享供电截止且供电电容引用不限，reject即释放后可有据add；按厂家物理针表独立建立隔离两侧，MΩ泄放不并域，共地光耦与浮置干触点仍列隔离对象；驱动源≤10kΩ总串阻与≤1Ω等势分开，上游输出电感不套输入滤波。补重复的load_switch dropout、无源RF磁件续流与Bridged误认；保留真实储能开关反例。十板冷扫303→287、已归因冷扫误报113→101，15条错误域诊断消失；两板原候选决定失败恢复为十板完整五步成功。题列真缺陷保留或仍可定位，原db/电压窗/装配不变；未知侧别和2B定类/资格残留不冒充已闭环。详见提案及同名JSON。Causes按15个机制计数，非诊断条数；共用层、SKILL与2B指定文件未改。
+
+- Event: user:2026-11-02 (用更多的实际电路板来驱动问题的改进; 再多找一些板子…每个板子跑得细致一些)
+- Causes: rule_not_enforced 5, knowledge_missing 1, knowledge_wrong 9
+- Changed: docs/improvement-ledger.md, docs/proposals/boards-merge-2a-2026-11-02.json, docs/proposals/boards-merge-2a-2026-11-02.md, evals/detection/RESULTS.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/boards-merge2a-v1/cases.json, evals/kicad_replay_bench/revisions/boards-merge2a-v1/expected.json, evals/kicad_replay_bench/revisions/boards-merge2a-v1/manifest.json, evals/kicad_replay_bench/revisions/boards-merge2a-v1/sources.json, evals/kicad_replay_bench/run.py, evals/mutation/mutations.json, references/architecture.md, references/checker-conventions.md, references/intent-format.md, scripts/checkers/domains.py, scripts/checkers/inductive_load.py, scripts/checkers/input_filter.py, scripts/checkers/isolation_sides.py, scripts/checkers/netgraph.py, scripts/checkers/power_switch.py, scripts/checkers/power_up.py, scripts/checkers/powertree.py, scripts/circuit_candidates.py, scripts/circuit_decisions.py, scripts/lint.py, scripts/plan_circuits.py, scripts/solve_dividers.py, scripts/tests/test_boards_merge2a.py, scripts/tests/test_circuit_candidates.py, scripts/tests/test_circuit_decisions.py, scripts/tests/test_domains.py, scripts/tests/test_inductive_load.py, scripts/tests/test_isolation_sides.py, scripts/tests/test_render_and_pack.py, scripts/tests/test_source_paths.py
+- Gates: pytest 2604 passed, 2 skipped; mutation --changed unit逐批32/32、116/116、53/53全杀（新增M912–M938）；seeded offline --boards-cache --compare 254位点/225自动/0错误，逐位点无退化；typical 203 DETECTED/185 FIXED/14 KNOWN_FALSE_ALARM/0未分类；KiCad replay 195/195（boards-merge2a-v1仅rf2伪输入滤波两项97→95）；detection RESULTS updated；真缺陷保留断言14条PASS；check_ledger PASS。
+
 ## 实际板合并步 2B：器件身份、脚角色与逐端点计划 (2026-11-02)
 
 20 板固定源冷扫与候选/合并链 before/after；标题只读语义区，原生 MPN/装配来源保留，端口/机械/继电器触点/磁性件/时钟/I²C/使能/未用输入/差分/驱动追源按物理语义修正；外部 SIG-C08、供电支路 PRO-C04、USB 持有保险丝、ADC 输入与 PMIC 输出分别逐对象派项。冷扫 722→662，已归因同规则同位置误报内容 193→138，不将未裁决新行算真缺陷；42 条 true_defect 归因记录（有重复）原值/位号保留，点名证据另核。完整候选合并 17/20→12/20，其余阻塞保留，不能冒称全链通过；7 块 after 成功链使用未确认的覆盖重放决定。详情、残留模式与准则问题见提案。共用层/SKILL/2A 候选持有及隔离域模型不改。

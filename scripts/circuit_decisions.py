@@ -6,10 +6,10 @@
 - accept：原样接受，可给名称 `id`，可按手册模式名加工作态（`states_add` + 定位引用）；
 - merge：几个候选合成一个功能（引用一条把它们描述成一个流程的条款）；电路候选不与跨电路候选合并；
 - split：把一个候选拆成几部分（每部分成员是该候选成员的子集，所有成员都要有去处）；
-- reject：不审这个候选（OUTSIDE_SCOPE / NOT_A_CIRCUIT / DUPLICATE_OF <电路>），成员进 REQ-Q08 复核；
-- add：生成器没找到的功能（UNRESOLVED_CANDIDATE）：只能收没有任何候选持有的器件，每颗写它所在的网；
+- reject：不审这个候选（OUTSIDE_SCOPE / NOT_A_CIRCUIT / DUPLICATE_OF <电路>），释放该候选的持有；仍被其他保留候选持有的成员不释放，其余可由后续 add 重归或进 REQ-Q08 复核；
+- add：生成器没找到的功能（UNRESOLVED_CANDIDATE）：可收没有保留候选持有的器件（先 reject 后 add，引用与逐成员 via 仍必填），每颗写它所在的网；
 - own：同一级认领打平的器件（候选文件的 shared，或决定后两块电路打平）归哪一块电路，写 `ref`、`candidate` 和定位引用。
-器件最多属于两个电路（核心器件与端点不计）。
+共享供电电容引用不限、按稳定顺序确定一个记账所有者；功率开关/电感不归两个独立功能，其余成员最多两个电路（核心器件与端点不计）。
 每颗被电路持有的器件恰好由一块电路拥有（`owned`），其余持有它的电路只引用它：归属按 `circuit_candidates.claim_rank`
 在决定后保留的电路之间判定，拒绝或合并之后由下一个认领者拥有；打平的由 own 决定裁定。
 intent.circuits 若手写，必须与决定推出的电路逐个相等（类型、成员集合、工作态、候选编号）。
@@ -20,7 +20,7 @@ import re
 import sys
 
 import catalog
-from circuit_candidates import SCHEMA_VERSION, best_claims, claim_rank
+from circuit_candidates import SCHEMA_VERSION, best_claims, claim_rank, shared_supply_refs, settle_supply_claims, EXCLUSIVE_ROLES
 from electrical_contract import LOCATOR_IDS_RE, LOCATOR_WORDS_RE, db_fingerprint, load_json
 
 DECISIONS = ('accept', 'merge', 'split', 'reject', 'add', 'own')
@@ -84,6 +84,7 @@ def _file_ownership_errors(by_id):
         if len(cids) > 1:
             errors.append(f'{ref} is owned by two candidates ({", ".join(sorted(cids))}) in circuit-candidates.json; regenerate it')
     winners = best_claims({cid: list(_claims(c).items()) for cid, c in by_id.items()})
+    winners = settle_supply_claims(winners, shared_supply_refs(by_id.values()))
     for ref, cids in sorted(winners.items()):
         want = cids if len(cids) == 1 else []
         if sorted(flagged.get(ref, [])) != want and len(flagged.get(ref, [])) <= 1:
@@ -101,7 +102,6 @@ def derive(candidates, decisions, requirement_text=None):
     the requirement each added state names; None skips that reading (the mapping is still required)."""
     by_id = {c['id']: c for c in candidates.get('candidates', [])}
     members = {cid: {m['ref']: m for m in c['members']} for cid, c in by_id.items()}
-    held = {ref for c in by_id.values() for ref in members[c['id']]}
     decided, circuits, errors, owns = {}, [], _file_ownership_errors(by_id), []
     if not isinstance(decisions, list):
         return [], ['circuit_decisions must be a list']
@@ -116,7 +116,7 @@ def derive(candidates, decisions, requirement_text=None):
         if kind == 'reject' and 'ref' in decision and 'candidate' not in decision:
             # a part no candidate holds, left out of the review on purpose: {decision: reject, ref, reason, citation}
             ref = decision.get('ref')
-            owner = next((k for k, m in members.items() if ref in m), None)
+            owner = next((k for k, m in members.items() if ref in m and decided.get(k) != 'reject'), None)
             if owner:
                 errors.append(f'reject {ref}: held by candidate {owner}; decide the candidate, not the part')
             if decision.get('reason') not in REJECT_REASONS[:2]:
@@ -222,10 +222,16 @@ def derive(candidates, decisions, requirement_text=None):
             if not refs:
                 errors.append(f'{cid}: add needs members')
             for ref in refs:
-                owner = next((k for k, m in members.items() if ref in m), None)
+                owner = next((k for k, m in members.items() if ref in m and decided.get(k) != 'reject'), None)
                 if owner:
                     errors.append(f'{cid}: {ref} is held by candidate {owner}; split or merge instead of add')
                 nets = candidates.get('unassigned_nets', {}).get(ref) or _unassigned_nets(candidates, ref)
+                if not nets:
+                    nets = []
+                    # Rejected members retain their original, net-located walk as evidence for reassignment.
+                    walks = [m['via'] for c in by_id.values() for m in c['members'] if m['ref'] == ref]
+                    nets += [n for c in by_id.values() for m in c['members'] if m['ref'] == ref for n in m.get('nets', [])]
+                    nets += [w.split(' -> ')[-2].strip() for w in walks if ' -> ' in w]
                 if not _text(via.get(ref)) or not any(net in via[ref] for net in nets):
                     errors.append(f'{cid}: add member {ref} needs a via naming a net it sits on ({", ".join(nets) or "none known"})')
             if not located(decision.get('citation')):
@@ -255,14 +261,20 @@ def derive(candidates, decisions, requirement_text=None):
         for ref in circuit['refs']:
             if ref not in circuit['anchors']:       # an anchor or endpoint is the circuit's identity, not a shared part
                 owners.setdefault(ref, []).append(circuit)
+    supplies = shared_supply_refs(by_id.values())
+    exclusive = {m['ref'] for c in by_id.values() if not c.get('cross_cutting') for m in c['members']
+                 if m.get('role') in EXCLUSIVE_ROLES}
     for ref, holders in sorted(owners.items()):
-        if len(holders) > 2:
+        functional = [c for c in holders if not c['cross_cutting']]
+        if ref in exclusive and len(functional) > 1:
+            errors.append(f'{ref} is an exclusive switch/inductor; belongs to {len(functional)} circuits')
+        elif ref not in supplies and len(holders) > 2:
             errors.append(f'{ref} belongs to {len(holders)} circuits ({", ".join(c["id"] for c in holders)}); at most two')
-    errors += _assign_owners(circuits, owns)
+    errors += _assign_owners(circuits, owns, supplies)
     return circuits, errors
 
 
-def _assign_owners(circuits, owns):
+def _assign_owners(circuits, owns, supplies=()):
     """Fill each circuit's `owned`: the best claim among the circuits the decisions kept; a tie is settled by an own
     decision naming a candidate of one of the tied circuits, with a citation a reader can open."""
     errors = []
@@ -288,6 +300,7 @@ def _assign_owners(circuits, owns):
                           f'({", ".join(circuits[i]["id"] for i in tied)})')
             continue
         winners[ref] = chosen
+    winners = settle_supply_claims(winners, supplies)
     for ref, tied in sorted(winners.items()):
         if len(tied) > 1:
             errors.append(f'{ref} is claimed equally by {", ".join(circuits[i]["id"] for i in tied)}; write an own decision '

@@ -115,11 +115,11 @@ class DomainTests(unittest.TestCase):
                                     'SGND': {'voltage_v': {'min': 0, 'max': 0}, 'domain': 'LV'}})
         self.assertEqual(section['grounds'], {'PGND': 'LV', 'SGND': 'LV'})
         self.assertEqual(section['conflicts'], [])
-        self.assertEqual(section['barriers'], [])
+        self.assertEqual({b['ref'] for b in section['barriers']}, {'T1', 'U3'})
 
     def test_a_conducting_part_across_two_declared_domains_is_a_conflict(self):
         db = flyback()
-        fixture.add(db, 'R9', '1M', [('1', '1', 'PGND'), ('2', '2', 'SGND')])
+        fixture.add(db, 'R9', '0R', [('1', '1', 'PGND'), ('2', '2', 'SGND')])
         section = derive(db)
         self.assertEqual([c['code'] for c in section['conflicts']], ['DOMAIN_MERGED'])
         self.assertEqual(section['conflicts'][0]['via'], ['R9'])
@@ -201,7 +201,7 @@ class PlanSectionTests(unittest.TestCase):
 
     def test_domain_conflicts_become_plan_diagnostics(self):
         db = flyback()
-        fixture.add(db, 'R9', '1M', [('1', '1', 'PGND'), ('2', '2', 'SGND')])
+        fixture.add(db, 'R9', '0R', [('1', '1', 'PGND'), ('2', '2', 'SGND')])
         plan = build_review_plan(db, intent_for(db))
         codes = [d['code'] for d in plan['diagnostics']]
         self.assertIn('DOMAIN_MERGED', codes)

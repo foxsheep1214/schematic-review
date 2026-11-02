@@ -52,7 +52,7 @@ def test_enable_policies_do_not_turn_load_switches_into_ldos():
     assert not [f for f in Lint(db).run() if f['rule']=='RST-A04']
     for model in ('MIC94164','TPS27S100APWPR'):
         db=rail_board(enable='gpio');db['parts']['U1']['part']=model
-        assert regulators_of(power_up.build_inventory(db))['U1']['kind']=='load-switch'
+        assert regulators_of(power_up.build_inventory(db))['U1']['kind']=='load_switch'
         plan=build_review_plan(db)
         assert not [c for c in plan['checks'] if c['rule']=='PWR-E02' and c['object'].get('ref')=='U1']
 
