@@ -76,3 +76,9 @@
 - U18.ON应派RST-T04，但PC3/TMS需查JTAGEN覆盖上拉（AVR p85），不能仅用通用复位三态断言悬空；充电器AI/TS、多脚ESD也别被主电路所有权吞掉。
 - 两份BOM都为拼接位号，按完整REF+Quantity逐行无损展开；R71在图上已贴而BOM漏列，别将所有未列件当DNP。U10.CLK是输出；SHT31.nRESET与MS5611内部双CSB是可消解候选。
 - I2C顶层power_rails须原样映到intent.i2c_topology.rails（schema2）保持context重建；EN/I2C_SEL不作总线，ADDR不作DDR，共轨LED不作任意脚负载。SC6Y手册不冒充SC6；人判与知识缺口不硬塞VENDOR_DATUM。
+
+- 2026-11-02 gorkemguven--12v-1a-isolated-flyback-smps：198项（196+2）、24归因（2真/9误/0准则/2知识/11待判）、1类隔离覆盖漏报；14格式错误、原生FAIL/NO_GO，136项仍待判，render_report退出2拒绝，交评估快照。
+- UC3844 R36=3.3kΩ违反RT≥5kΩ；R26 Value2.63k对料号2k、C12 1nF对100nF且0805/1206、C12/C13漏BOM分开保留事实；不擅猜TL431厂牌/封装后缀脚序。
+- U1自定义磁件作IC会假短接隔离地/派pinmux；官方Q2 G/D/S未进共享图，Z2应启用现有GATE_CLAMP_NOTRIP，不能把缺PRO-E02再算漏报。PRO-A04在COMP内部电流源证据下合法关闭。
+- R33跨整流母线而非RCD，320V条件2.179W且超300V；D15跨主绕组、300k低线启动0.342mA有量化疑点，但实际磁件/稳态包络未定仍needs_human。C26接母线正端不直接判接错。
+- 补分类先重审计再冷/合并；阻值+功率空格不要改原值过关。不能把REVIEW_INCOMPLETE换成虚构厂家缺参绕过渲染，原生拒绝与评估快照必须分清；50条核对嵌findings.json。
