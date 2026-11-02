@@ -82,3 +82,10 @@
 - D1 5V VRWM不覆盖推断6V；D3错链BZT52B仅确认资料错配。R8/R9标称183.88V无允许误差不判错，TR1的3A不是绝对饱和额定。
 - 被动TR1别套数字隔离器，SS电流源别套strap/复位；零脚H1–H4不是DEBUG。并联primary+内置开关模型仍须人工核，别伪造两脚磁件。
 - 最终169项、36归因（2/14/0/2/18）、Top50漏报0；348条均为NEEDS_HUMAN/未定级格式拒收，保留FAIL/未打包。20根因共享证据逐边点名，普通缺输入不升成硬故障。
+
+## antmicro--m2-smart-iot-module（2026-11-02）
+- 四脚无源晶体的接地壳脚可标power_in；plan_concrete_checks不能据任一power_in就当有源振荡器：本板Y1/Y2/Y4漏CLK-C01。
+- TLV803EF29DBZR末尾R是卷带，默认DBZ=GND1/RESET2；1.8V轨却选29门限；MIC2877-5.0固定版7脚须直连OUT，分压不能套可调版。
+- U10.EN沿200k追到10k上拉/FTDI输出；U5 V_OUT/nRF内部DEC不是缺源。FTDI/nRF跨域经串阻时，逐网直接IC端点法会漏SIG-C08。
+- DNP R45/R46决定Coral AON3.3V时49/50处置；MM8130是RF测试座，非配电支路；无独立BOM时按XML Val/MPN/DNP，不用可视化CSV冒充。
+- 586项/108条归因（5/41/0/30/32）/6覆盖漏项；原生不接NEEDS_HUMAN，剩1786拒收均由此派生，FAIL未打包，完整台账在缓存。
