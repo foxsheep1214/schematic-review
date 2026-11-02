@@ -125,6 +125,70 @@ class I2cPullupTest(unittest.TestCase):
         self.assertEqual(subjects(scans(db, 'SIG-A03')), ['SCL', 'SDA'])
 
 
+class I2cPullupWindowTest(unittest.TestCase):
+    def bus(self, rail='VCC_3V3', **pulls):
+        nets = {'SDA': ['U1.3', 'U2.3'], 'SCL': ['U1.4', 'U2.4'], rail: ['U1.1', 'U2.1'], 'GND': ['U1.2', 'U2.2']}
+        for ref in pulls:
+            nets['SDA'].append(ref + '.1')
+            nets[rail].append(ref + '.2')
+        return board(dict({'U1': 'MCU', 'U2': 'SENSOR'}, **pulls), nets,
+                     {'U1.3': 'SDA', 'U2.3': 'SDA', 'U1.4': 'SCL', 'U2.4': 'SCL'})
+
+    def test_a_typical_pullup_passes(self):
+        self.assertEqual(scans(self.bus(R1='4k7'), 'SIG-A04'), [])
+
+    def test_ten_megaohm_is_too_weak_for_any_mode(self):
+        hits = scans(self.bus(R1='10Meg'), 'SIG-A04')
+        self.assertEqual([hit['kind'] for hit in hits], ['CANDIDATE'])
+        self.assertIn('G04-017', hits[0]['detail'])
+
+    def test_upper_bound_is_the_widest_window(self):
+        self.assertEqual(scans(self.bus(R1='100k'), 'SIG-A04'), [])
+        self.assertEqual(len(scans(self.bus(R1='120k'), 'SIG-A04')), 1)
+
+    def test_one_ohm_cannot_be_pulled_low(self):
+        hits = scans(self.bus(R1='1R'), 'SIG-A04')
+        self.assertEqual(len(hits), 1)
+        self.assertIn('G04-018', hits[0]['detail'])
+
+    def test_lower_bound_scales_with_the_rail(self):
+        self.assertEqual(scans(self.bus(R1='150'), 'SIG-A04'), [])              # (3.3-0.4)/20mA = 145
+        self.assertEqual(len(scans(self.bus(R1='140'), 'SIG-A04')), 1)
+        self.assertEqual(len(scans(self.bus(rail='VCC_5V', R1='220'), 'SIG-A04')), 1)   # 230
+
+    def test_parallel_pullups_are_combined(self):
+        self.assertEqual(scans(self.bus(R1='10Meg', R2='4k7'), 'SIG-A04'), [])  # strong one sets the bus
+        self.assertEqual(len(scans(self.bus(R1='270', R2='270'), 'SIG-A04')), 1)  # 135 < 145
+
+    def test_unknown_rail_voltage_uses_the_lowest_common_bus(self):
+        self.assertEqual(scans(self.bus(rail='VCC', R1='100'), 'SIG-A04'), [])  # (1.8-0.4)/20mA = 70
+        self.assertEqual(len(scans(self.bus(rail='VCC', R1='47'), 'SIG-A04')), 1)
+
+    def test_a_series_resistor_is_not_a_pullup(self):
+        db = board({'U1': 'MCU', 'U2': 'S', 'R1': '1R', 'R2': '4k7'},
+                   {'SDA': ['U1.3', 'R1.1', 'R2.1'], 'SDA_S': ['U2.3', 'R1.2'], 'VCC_3V3': ['R2.2', 'U1.1', 'U2.1'],
+                    'GND': ['U1.2', 'U2.2']})
+        self.assertEqual(scans(db, 'SIG-A04'), [])
+
+    def test_pullup_reached_through_a_jumper_counts(self):
+        db = board({'U1': 'MCU', 'U2': 'S', 'R1': '10Meg', 'JP1': 'SolderJumper'},
+                   {'SDA': ['U1.3', 'U2.3', 'R1.1'], 'PU': ['R1.2', 'JP1.1'], 'VCC_3V3': ['JP1.2', 'U1.1', 'U2.1'],
+                    'GND': ['U1.2', 'U2.2']})
+        self.assertEqual(len(scans(db, 'SIG-A04')), 1)
+
+    def test_a_resistor_to_a_plain_signal_is_not_judged(self):
+        db = board({'U1': 'MCU', 'U2': 'S', 'R1': '10Meg'},
+                   {'SDA': ['U1.3', 'U2.3', 'R1.1'], 'SENSE': ['R1.2', 'U2.5'], 'GND': ['U1.2', 'U2.2']})
+        self.assertEqual(scans(db, 'SIG-A04'), [])
+
+    def test_an_unreadable_value_stops_the_judgement(self):
+        self.assertEqual(scans(self.bus(R1='10Meg', R2='fixme'), 'SIG-A04'), [])
+
+    def test_low_value_pullup_to_a_plus_rail_is_a_pullup_for_sig_a03(self):
+        db = self.bus(rail='+3V3', R1='1k')
+        self.assertEqual([hit for hit in scans(db, 'SIG-A03') if 'SDA' in hit['detail'].split(':')[0]], [])
+
+
 class UsbVbusBulkTest(unittest.TestCase):
     def vbus(self, net='VBUS', **caps):
         return board(dict({'J1': 'USB_C'}, **caps),

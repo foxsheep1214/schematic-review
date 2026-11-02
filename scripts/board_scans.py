@@ -10,12 +10,18 @@ import re
 
 from checkers.netgraph import is_ground, is_rail, rail_voltage
 from decoupling import parse_capacitance
-from part_words import CAPACITOR, CONNECTOR, FERRITE, IC, INDUCTOR, LED_RE, RESISTOR, TESTPOINT
+from part_words import CAPACITOR, CONNECTOR, FERRITE, IC, INDUCTOR, JUMPER, LED_RE, RESISTOR, SWITCH, TESTPOINT
 from checkers.passive_stress import rated_voltage   # BOM 值字段里写明的耐压：100nF/16V、10uF 25V、4.7u/X5R/50V
 
 POLARITY = {'+': 'plus', 'P': 'plus', 'POS': 'plus', '-': 'minus', 'N': 'minus', 'NEG': 'minus'}
 REFDES_RE = re.compile(r'^(?!.*\?)[A-Za-z][A-Za-z0-9_/+-]*?\d+[A-Za-z]?$')   # USB-C1, PS2_KBD1, PGM/DBG1 are annotated
 I2C_LINE_RE = re.compile(r'^(SDA|SCL)\d*$')
+# UM10204 §7.1：Rp_max = tr/(0.8473·Cb)，Rp_min = (Vpullup-VOL)/IOL。取最宽松的一端，超出就没有哪种模式能成立：
+# 标准模式 tr 1 µs（表 11）、Cb 只算一个脚的 10 pF；增强快速模式 IOL 20 mA、VOL 0.4 V（表 10）。
+I2C_RP_MAX_OHM = 1e-6 / (0.8473 * 10e-12)
+I2C_IOL_MAX_A = 20e-3
+I2C_VOL_V = 0.4
+I2C_DEFAULT_PULLUP_V = 1.8   # 网名读不出电压时取常用的最低总线电压，算出的下限只会偏宽
 # 只认端口本身的 VBUS；限流器之后的网（VBUS_SW 等）不累加。
 USB_VBUS_NET_RE = re.compile(r'(^|[/_.:-])(VBUS|VUSB)\d*$', re.I)
 USB_SINK_BULK_MAX_F = 100e-6
@@ -113,6 +119,22 @@ def led_current_limit(lint):
                      '恒流驱动须有资料或声明证据', ref)
 
 
+def _is_i2c_net(net):
+    return any(I2C_LINE_RE.match(token) for token in re.split(r'[^A-Z0-9]+', str(net).upper()))
+
+
+def _pull_rail(lint, net):
+    """上拉电阻远端接到的电源轨：该网本身是命名轨，或经一只跳线/开关到命名轨；否则 None。"""
+    if _named_rail(net):
+        return net
+    for ref in lint.graph.refs_on(net):
+        if lint.graph.kind(ref) in (SWITCH, JUMPER):
+            for other in lint.graph.nets_of(ref):
+                if other != net and _named_rail(other):
+                    return other
+    return None
+
+
 def _i2c_segment(lint, net):
     """The bus segment around an SDA/SCL net: nets joined by series resistors of at most 1 kOhm
     (a sensor behind 120 Ohm, PiicoDev style). Larger resistors are pull-ups, not series links."""
@@ -123,7 +145,7 @@ def _i2c_segment(lint, net):
         for ref, other in lint.graph.neighbors(current, {RESISTOR}):
             value = parse_resistor(lint.parts.get(ref, {}).get('value'))
             if (value and value['kohm'] <= 1.0 and other not in segment and not is_ground(other)
-                    and not is_rail(other) and other not in lint.pseudo):
+                    and not _pull_rail(lint, other) and other not in lint.pseudo):
                 segment.add(other)
                 queue.append(other)
     return segment
@@ -151,8 +173,7 @@ def i2c_pullups(lint):
     """SIG-A03：SDA/SCL 所在总线段上没有任何接到非地网的已装配电阻（段内串阻不算上拉）。"""
     done = set()
     for net, nodes in sorted(lint.nets.items()):
-        tokens = re.split(r'[^A-Z0-9]+', str(net).upper())
-        if net in lint.pseudo or net in done or not any(I2C_LINE_RE.match(t) for t in tokens) or len(nodes) < 2:
+        if net in lint.pseudo or net in done or not _is_i2c_net(net) or len(nodes) < 2:
             continue
         segment = _i2c_segment(lint, net)
         done |= segment
@@ -182,6 +203,41 @@ def i2c_pullups(lint):
             lint.add('SIG-A03', 'I²C 线无上拉',
                      f'{where}: {refs[:8]} 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，'
                      '否则补上拉（阻值按 SIG-C01）', refs[0], kind='CANDIDATE')
+
+
+def i2c_pullup_window(lint):
+    """SIG-A04：一段总线上全部上拉的并联值超出任何模式都成立不了的外包络（G04-017/018）。"""
+    from solve_dividers import parse_resistor
+    done = set()
+    for net, nodes in sorted(lint.nets.items()):
+        if net in lint.pseudo or net in done or not _is_i2c_net(net) or len(nodes) < 2 or _pull_rail(lint, net):
+            continue
+        segment = _i2c_segment(lint, net)
+        done |= segment
+        pulls = {}
+        for member in segment:
+            for ref, other in lint.graph.neighbors(member, {RESISTOR}):
+                rail = _pull_rail(lint, other) if other not in segment else None
+                if rail:
+                    pulls[ref] = rail
+        parsed = {ref: parse_resistor(lint.parts[ref].get('value')) for ref in pulls}
+        if not pulls or not all(parsed.values()):
+            continue
+        ohms = [value['kohm'] * 1000 for value in parsed.values()]
+        rp = 0.0 if 0 in ohms else 1 / sum(1 / value for value in ohms)
+        refs = ','.join(sorted(pulls))
+        volts = max(rail_voltage(rail) or I2C_DEFAULT_PULLUP_V for rail in pulls.values())
+        low = (volts - I2C_VOL_V) / I2C_IOL_MAX_A
+        if rp > I2C_RP_MAX_OHM:
+            lint.add('SIG-A04', 'I²C 上拉阻值超出任何模式的窗口',
+                     f'{net}: 上拉 {refs} 并联 {rp:g}Ω > {I2C_RP_MAX_OHM:.0f}Ω：Cb 只算 10pF、标准模式 tr 1µs 也不够'
+                     '（UM10204 §7.1 式 (1)、表 11；G04-017）；实际模式与总线电容按 SIG-C01 算',
+                     sorted(pulls)[0], kind='CANDIDATE')
+        elif rp < low:
+            lint.add('SIG-A04', 'I²C 上拉阻值超出任何模式的窗口',
+                     f'{net}: 上拉 {refs} 并联 {rp:g}Ω < ({volts:g}V-{I2C_VOL_V}V)/20mA={low:g}Ω：'
+                     '增强快速模式的 IOL 也拉不低（UM10204 §7.1 式 (2)、表 10；G04-018）；最弱器件 IOL 按 SIG-C01 算',
+                     sorted(pulls)[0], kind='CANDIDATE')
 
 
 def _caps_to_ground(lint, net):
@@ -277,6 +333,7 @@ def run(lint):
     capacitor_polarity(lint)
     led_current_limit(lint)
     i2c_pullups(lint)
+    i2c_pullup_window(lint)
     usb_vbus_bulk(lint)
     ldo_output_capacitor(lint)
     floating_inputs(lint)

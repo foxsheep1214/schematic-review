@@ -5514,5 +5514,75 @@
   "file": "scripts/board_scans.py",
   "old": "for ref, other in lint.graph.neighbors(net, {CAPACITOR}) if is_ground(other)]",
   "new": "for ref, other in lint.graph.neighbors(net, {CAPACITOR})]"
+ },
+ {
+  "id": "M853",
+  "name": "SIG-A04 too-weak pull-up never reported",
+  "file": "scripts/board_scans.py",
+  "old": "        if rp > I2C_RP_MAX_OHM:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M854",
+  "name": "SIG-A04 too-strong pull-up never reported",
+  "file": "scripts/board_scans.py",
+  "old": "        elif rp < low:",
+  "new": "        elif False:"
+ },
+ {
+  "id": "M855",
+  "name": "SIG-A04 takes one resistor instead of the parallel value",
+  "file": "scripts/board_scans.py",
+  "old": "1 / sum(1 / value for value in ohms)",
+  "new": "ohms[0]"
+ },
+ {
+  "id": "M856",
+  "name": "SIG-A04 upper bound uses 100 pF",
+  "file": "scripts/board_scans.py",
+  "old": "I2C_RP_MAX_OHM = 1e-6 / (0.8473 * 10e-12)",
+  "new": "I2C_RP_MAX_OHM = 1e-6 / (0.8473 * 100e-12)"
+ },
+ {
+  "id": "M857",
+  "name": "SIG-A04 lower bound uses 3 mA",
+  "file": "scripts/board_scans.py",
+  "old": "I2C_IOL_MAX_A = 20e-3",
+  "new": "I2C_IOL_MAX_A = 3e-3"
+ },
+ {
+  "id": "M858",
+  "name": "SIG-A04 unknown rail treated as 5 V",
+  "file": "scripts/board_scans.py",
+  "old": "I2C_DEFAULT_PULLUP_V = 1.8 ",
+  "new": "I2C_DEFAULT_PULLUP_V = 5.0 "
+ },
+ {
+  "id": "M859",
+  "name": "a pull-up behind a jumper is not a pull-up",
+  "file": "scripts/board_scans.py",
+  "old": "        if lint.graph.kind(ref) in (SWITCH, JUMPER):\n            for other in lint.graph.nets_of(ref):\n                if other != net and _named_rail(other):",
+  "new": "        if False:\n            for other in lint.graph.nets_of(ref):\n                if other != net and _named_rail(other):"
+ },
+ {
+  "id": "M860",
+  "name": "I2C segment crosses a low resistor into a +rail",
+  "file": "scripts/board_scans.py",
+  "old": "and not _pull_rail(lint, other) and other not in lint.pseudo):",
+  "new": "and not is_rail(other) and other not in lint.pseudo):"
+ },
+ {
+  "id": "M861",
+  "name": "SIG-A04 judges an unreadable pull-up value as absent",
+  "file": "scripts/board_scans.py",
+  "old": "if not pulls or not all(parsed.values()):",
+  "new": "parsed = {ref: value for ref, value in parsed.items() if value}\n        if not parsed:"
+ },
+ {
+  "id": "M862",
+  "name": "10Meg resistor value no longer parses",
+  "file": "scripts/solve_dividers.py",
+  "old": "    if unit == 'M':\n        remainder = re.sub(r'^EG', '', remainder)   # SPICE-style 10Meg\n",
+  "new": ""
  }
 ]

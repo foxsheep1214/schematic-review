@@ -32,6 +32,7 @@ COLD_RULE_INDEXES = {
     'NET-A04': ['nets'], 'PWR-A04': ['nets'], 'DOC-A03': ['parts'],
     'DOC-A04': ['parts'], 'DEV-A01': ['parts'], 'DEV-A02': ['parts', 'pinname'],
     'DEV-A03': ['parts', 'nets'], 'NET-A07': ['pintype'], 'SIG-A03': ['nets', 'parts'],
+    'SIG-A04': ['nets', 'parts'],
     'PWR-A07': ['nets', 'parts'],
     'SIG-A05': ['nets', 'parts'],
 }

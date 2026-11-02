@@ -291,7 +291,7 @@ def i2c_value(db):
             out = copy.deepcopy(db)
             for ref in m.refs:
                 out['parts'][ref]['value'] = value
-            yield Mutation(defect, ('SIG-C01',), m.refs, m.nets,
+            yield Mutation(defect, ('SIG-A04', 'SIG-C01'), m.refs, m.nets,
                            ','.join(m.refs) + ' -> ' + value, out)
 
 
