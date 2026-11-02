@@ -1,0 +1,1404 @@
+{
+  "board": "brainsmoke--usb2_hub",
+  "baseline": "industrial_telecom",
+  "types": [
+    "USB",
+    "POWER_PROTECTION",
+    "POWER_CONVERTER",
+    "CLOCK",
+    "STARTUP"
+  ],
+  "source": "docs/proposals/criteria-top50-examples-2026-11-02.md",
+  "criteria_sha256": "7bc94923cd6bb866c1667b187e1e7efc5c401a5857d803cf681cd489a00fa39b",
+  "entries": [
+    {
+      "number": 1,
+      "criterion": "G01-018",
+      "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+      "status": "not_applicable",
+      "evidence": "仅J5 USB正5V输入，无-48V/RTN/机壳负极输入。",
+      "sr_rules": [
+        "PWR-C17"
+      ],
+      "plan_check_ids": [],
+      "miss_id": null
+    },
+    {
+      "number": 2,
+      "criterion": "G01-019",
+      "title": "−48 V 输入的工作电压范围与耐受范围",
+      "status": "not_applicable",
+      "evidence": "无-48V工作/耐受范围对象，5V窗另在SIG-C05。",
+      "sr_rules": [
+        "PWR-C17"
+      ],
+      "plan_check_ids": [],
+      "miss_id": null
+    },
+    {
+      "number": 3,
+      "criterion": "G01-020",
+      "title": "−48 V 输入 0.1 s 中断后自恢复",
+      "status": "not_applicable",
+      "evidence": "无-48V0.1s中断合同。",
+      "sr_rules": [
+        "PWR-C18"
+      ],
+      "plan_check_ids": [
+        "PWR-C18.POWER-U1-RUN.C21",
+        "PWR-C18.POWER-U1-SHUTDOWN.C21",
+        "PWR-C18.POWER-U1-STARTUP.C21"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 4,
+      "criterion": "G01-021",
+      "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+      "status": "not_applicable",
+      "evidence": "无-48V500V浪涌场景；USB ESD另审。",
+      "sr_rules": [
+        "PRO-C01"
+      ],
+      "plan_check_ids": [
+        "PRO-C01.POWER-PROTECTION-U2-FAULT-FAULT.U2",
+        "PRO-C01.POWER-PROTECTION-U2-FAULT-RUN.U2",
+        "PRO-C01.POWER-PROTECTION-U2-FAULT-STARTUP.U2",
+        "PRO-C01.POWER-PROTECTION-U2-FAULT.U2",
+        "PRO-C01.POWER-PROTECTION-U2-RUN.U2",
+        "PRO-C01.POWER-PROTECTION-U2-STARTUP.U2",
+        "PRO-C01.POWER-PROTECTION-U3-FAULT-FAULT.U3",
+        "PRO-C01.POWER-PROTECTION-U3-FAULT-RUN.U3",
+        "PRO-C01.POWER-PROTECTION-U3-FAULT-STARTUP.U3",
+        "PRO-C01.POWER-PROTECTION-U3-FAULT.U3",
+        "PRO-C01.POWER-PROTECTION-U3-RUN.U3",
+        "PRO-C01.POWER-PROTECTION-U3-STARTUP.U3",
+        "PRO-C01.POWER-PROTECTION-U4-FAULT-FAULT.U4",
+        "PRO-C01.POWER-PROTECTION-U4-FAULT-RUN.U4",
+        "PRO-C01.POWER-PROTECTION-U4-FAULT-STARTUP.U4",
+        "PRO-C01.POWER-PROTECTION-U4-FAULT.U4",
+        "PRO-C01.POWER-PROTECTION-U4-RUN.U4",
+        "PRO-C01.POWER-PROTECTION-U4-STARTUP.U4",
+        "PRO-C01.POWER-PROTECTION-U5-FAULT-FAULT.U5",
+        "PRO-C01.POWER-PROTECTION-U5-FAULT-RUN.U5",
+        "PRO-C01.POWER-PROTECTION-U5-FAULT-STARTUP.U5",
+        "PRO-C01.POWER-PROTECTION-U5-FAULT.U5",
+        "PRO-C01.POWER-PROTECTION-U5-RUN.U5",
+        "PRO-C01.POWER-PROTECTION-U5-STARTUP.U5"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 5,
+      "criterion": "G01-022",
+      "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+      "status": "not_applicable",
+      "evidence": "无-48V Im馈电定义。",
+      "sr_rules": [
+        "PWR-C19"
+      ],
+      "plan_check_ids": [
+        "PWR-C19.BOARD"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 6,
+      "criterion": "G01-023",
+      "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+      "status": "not_applicable",
+      "evidence": "无-48V ETSI图4合闸输入；USB非附着入口50.5uF另证FAIL。",
+      "sr_rules": [
+        "PWR-C13"
+      ],
+      "plan_check_ids": [
+        "PWR-C13.POWER-PROTECTION-U2-FAULT-FAULT.J5",
+        "PWR-C13.POWER-PROTECTION-U2-FAULT-RUN.J5",
+        "PWR-C13.POWER-PROTECTION-U2-FAULT-STARTUP.J5",
+        "PWR-C13.POWER-PROTECTION-U2-FAULT.J1",
+        "PWR-C13.POWER-PROTECTION-U2-RUN.J1",
+        "PWR-C13.POWER-PROTECTION-U2-STARTUP.J1",
+        "PWR-C13.POWER-PROTECTION-U3-FAULT-FAULT.J5",
+        "PWR-C13.POWER-PROTECTION-U3-FAULT-RUN.J5",
+        "PWR-C13.POWER-PROTECTION-U3-FAULT-STARTUP.J5",
+        "PWR-C13.POWER-PROTECTION-U3-FAULT.J1",
+        "PWR-C13.POWER-PROTECTION-U3-RUN.J1",
+        "PWR-C13.POWER-PROTECTION-U3-STARTUP.J1",
+        "PWR-C13.POWER-PROTECTION-U4-FAULT-FAULT.J5",
+        "PWR-C13.POWER-PROTECTION-U4-FAULT-RUN.J5",
+        "PWR-C13.POWER-PROTECTION-U4-FAULT-STARTUP.J5",
+        "PWR-C13.POWER-PROTECTION-U4-FAULT.J1",
+        "PWR-C13.POWER-PROTECTION-U4-RUN.J1",
+        "PWR-C13.POWER-PROTECTION-U4-STARTUP.J1",
+        "PWR-C13.POWER-PROTECTION-U5-FAULT-FAULT.J5",
+        "PWR-C13.POWER-PROTECTION-U5-FAULT-RUN.J5",
+        "PWR-C13.POWER-PROTECTION-U5-FAULT-STARTUP.J5",
+        "PWR-C13.POWER-PROTECTION-U5-FAULT.J1",
+        "PWR-C13.POWER-PROTECTION-U5-RUN.J1",
+        "PWR-C13.POWER-PROTECTION-U5-STARTUP.J1"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 7,
+      "criterion": "G01-024",
+      "title": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+      "status": "not_applicable",
+      "evidence": "无AC整流母线/一周期跌落要求。",
+      "sr_rules": [
+        "PWR-C18"
+      ],
+      "plan_check_ids": [
+        "PWR-C18.POWER-U1-RUN.C21",
+        "PWR-C18.POWER-U1-SHUTDOWN.C21",
+        "PWR-C18.POWER-U1-STARTUP.C21"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 8,
+      "criterion": "G01-025",
+      "title": "交流输入较长暂降与中断后自恢复（判据 C）",
+      "status": "not_applicable",
+      "evidence": "无AC输入暂降/中断恢复场景。",
+      "sr_rules": [
+        "PWR-C18"
+      ],
+      "plan_check_ids": [
+        "PWR-C18.POWER-U1-RUN.C21",
+        "PWR-C18.POWER-U1-SHUTDOWN.C21",
+        "PWR-C18.POWER-U1-STARTUP.C21"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 9,
+      "criterion": "G01-026",
+      "title": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+      "status": "covered_needs_human",
+      "evidence": "J5直接5V→U1.38；FE1.1 p10保证推荐下限4.5V；真实源最低值/线阻/电流未给，不将例子4.25V当本板实测工况。",
+      "sr_rules": [
+        "SIG-C05"
+      ],
+      "plan_check_ids": [
+        "SIG-C05.USB-J1-ATTACHED.C13",
+        "SIG-C05.USB-J1-FAULT.C13",
+        "SIG-C05.USB-J1-UNATTACHED.C13",
+        "SIG-C05.USB-J2-ATTACHED.C14",
+        "SIG-C05.USB-J2-FAULT.C14",
+        "SIG-C05.USB-J2-UNATTACHED.C14",
+        "SIG-C05.USB-J3-ATTACHED.C15",
+        "SIG-C05.USB-J3-FAULT.C15",
+        "SIG-C05.USB-J3-UNATTACHED.C15",
+        "SIG-C05.USB-J4-ATTACHED.C16",
+        "SIG-C05.USB-J4-FAULT.C16",
+        "SIG-C05.USB-J4-UNATTACHED.C16",
+        "SIG-C05.USB-J5-ATTACHED.C10",
+        "SIG-C05.USB-J5-FAULT.C10",
+        "SIG-C05.USB-J5-UNATTACHED.C10"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 10,
+      "criterion": "G01-027",
+      "title": "USB 可用电流按实际协商档取",
+      "status": "covered_needs_human",
+      "evidence": "CC1/2各5.1k Rd至地，仅Sink身份，无Rp公告检测；全板与四路负载预算未给，AP12k限流不能当协商电流。",
+      "sr_rules": [
+        "SIG-C05"
+      ],
+      "plan_check_ids": [
+        "SIG-C05.USB-J1-ATTACHED.C13",
+        "SIG-C05.USB-J1-FAULT.C13",
+        "SIG-C05.USB-J1-UNATTACHED.C13",
+        "SIG-C05.USB-J2-ATTACHED.C14",
+        "SIG-C05.USB-J2-FAULT.C14",
+        "SIG-C05.USB-J2-UNATTACHED.C14",
+        "SIG-C05.USB-J3-ATTACHED.C15",
+        "SIG-C05.USB-J3-FAULT.C15",
+        "SIG-C05.USB-J3-UNATTACHED.C15",
+        "SIG-C05.USB-J4-ATTACHED.C16",
+        "SIG-C05.USB-J4-FAULT.C16",
+        "SIG-C05.USB-J4-UNATTACHED.C16",
+        "SIG-C05.USB-J5-ATTACHED.C10",
+        "SIG-C05.USB-J5-FAULT.C10",
+        "SIG-C05.USB-J5-UNATTACHED.C10"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 11,
+      "criterion": "G01-029",
+      "title": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+      "status": "manual_true_defect",
+      "evidence": "J5非Attached直接并C5/C6/C7/C8/C30=50uF及五只100nF，总名义50.5uF；准确C15850最低仅五只已有45uF>Type-C2.5p153 Table4-3 10uF，2019版p142同限；SIG-C05.USB-J5-UNATTACHED已存在并被人工判FAIL，不能再算整轮漏报。",
+      "sr_rules": [
+        "PWR-C13",
+        "SIG-A05",
+        "SIG-C05"
+      ],
+      "plan_check_ids": [
+        "PWR-C13.POWER-PROTECTION-U2-FAULT-FAULT.J5",
+        "PWR-C13.POWER-PROTECTION-U2-FAULT-RUN.J5",
+        "PWR-C13.POWER-PROTECTION-U2-FAULT-STARTUP.J5",
+        "PWR-C13.POWER-PROTECTION-U2-FAULT.J1",
+        "PWR-C13.POWER-PROTECTION-U2-RUN.J1",
+        "PWR-C13.POWER-PROTECTION-U2-STARTUP.J1",
+        "PWR-C13.POWER-PROTECTION-U3-FAULT-FAULT.J5",
+        "PWR-C13.POWER-PROTECTION-U3-FAULT-RUN.J5",
+        "PWR-C13.POWER-PROTECTION-U3-FAULT-STARTUP.J5",
+        "PWR-C13.POWER-PROTECTION-U3-FAULT.J1",
+        "PWR-C13.POWER-PROTECTION-U3-RUN.J1",
+        "PWR-C13.POWER-PROTECTION-U3-STARTUP.J1",
+        "PWR-C13.POWER-PROTECTION-U4-FAULT-FAULT.J5",
+        "PWR-C13.POWER-PROTECTION-U4-FAULT-RUN.J5",
+        "PWR-C13.POWER-PROTECTION-U4-FAULT-STARTUP.J5",
+        "PWR-C13.POWER-PROTECTION-U4-FAULT.J1",
+        "PWR-C13.POWER-PROTECTION-U4-RUN.J1",
+        "PWR-C13.POWER-PROTECTION-U4-STARTUP.J1",
+        "PWR-C13.POWER-PROTECTION-U5-FAULT-FAULT.J5",
+        "PWR-C13.POWER-PROTECTION-U5-FAULT-RUN.J5",
+        "PWR-C13.POWER-PROTECTION-U5-FAULT-STARTUP.J5",
+        "PWR-C13.POWER-PROTECTION-U5-FAULT.J1",
+        "PWR-C13.POWER-PROTECTION-U5-RUN.J1",
+        "PWR-C13.POWER-PROTECTION-U5-STARTUP.J1",
+        "SIG-C05.USB-J1-ATTACHED.C13",
+        "SIG-C05.USB-J1-FAULT.C13",
+        "SIG-C05.USB-J1-UNATTACHED.C13",
+        "SIG-C05.USB-J2-ATTACHED.C14",
+        "SIG-C05.USB-J2-FAULT.C14",
+        "SIG-C05.USB-J2-UNATTACHED.C14",
+        "SIG-C05.USB-J3-ATTACHED.C15",
+        "SIG-C05.USB-J3-FAULT.C15",
+        "SIG-C05.USB-J3-UNATTACHED.C15",
+        "SIG-C05.USB-J4-ATTACHED.C16",
+        "SIG-C05.USB-J4-FAULT.C16",
+        "SIG-C05.USB-J4-UNATTACHED.C16",
+        "SIG-C05.USB-J5-ATTACHED.C10",
+        "SIG-C05.USB-J5-FAULT.C10",
+        "SIG-C05.USB-J5-UNATTACHED.C10"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 12,
+      "criterion": "G01-030",
+      "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+      "status": "covered_needs_human",
+      "evidence": "VBUSM35经47k/100k/100nF，比例0.68027/tau3.197ms；FE通用数字门限映射VBUS约2.13..2.56V。该推算不保证专用检测阈值/内部去抖或40ms系统行为，SIG-D07已问。",
+      "sr_rules": [
+        "SIG-D07"
+      ],
+      "plan_check_ids": [
+        "SIG-D07.USB-J1.C13",
+        "SIG-D07.USB-J2.C14",
+        "SIG-D07.USB-J3.C15",
+        "SIG-D07.USB-J4.C16",
+        "SIG-D07.USB-J5.C10"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 13,
+      "criterion": "G01-031",
+      "title": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+      "status": "criterion_issue",
+      "evidence": "J1-J4为Type-A；G01-031只按USB触发过宽。Type-C2.5 p152 §4.4.2明确legacy默认VBUS例外，不要求A口按物理拔线归零。",
+      "sr_rules": [
+        "SIG-C05"
+      ],
+      "plan_check_ids": [
+        "SIG-C05.USB-J1-ATTACHED.C13",
+        "SIG-C05.USB-J1-FAULT.C13",
+        "SIG-C05.USB-J1-UNATTACHED.C13",
+        "SIG-C05.USB-J2-ATTACHED.C14",
+        "SIG-C05.USB-J2-FAULT.C14",
+        "SIG-C05.USB-J2-UNATTACHED.C14",
+        "SIG-C05.USB-J3-ATTACHED.C15",
+        "SIG-C05.USB-J3-FAULT.C15",
+        "SIG-C05.USB-J3-UNATTACHED.C15",
+        "SIG-C05.USB-J4-ATTACHED.C16",
+        "SIG-C05.USB-J4-FAULT.C16",
+        "SIG-C05.USB-J4-UNATTACHED.C16",
+        "SIG-C05.USB-J5-ATTACHED.C10",
+        "SIG-C05.USB-J5-FAULT.C10",
+        "SIG-C05.USB-J5-UNATTACHED.C10"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 14,
+      "criterion": "G03-003",
+      "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+      "status": "covered_needs_human",
+      "evidence": "U1内部5→3.3→1.8稳压；VD33_OUT39→C25、VREG1826→C26均10uF，名义合计10.4/10.3uF。PWR-C04已有3状态；有效C及完整稳定窗口未保证。",
+      "sr_rules": [
+        "PWR-A07",
+        "PWR-C04"
+      ],
+      "plan_check_ids": [
+        "PWR-C04.POWER-U1-RUN.U1",
+        "PWR-C04.POWER-U1-SHUTDOWN.U1",
+        "PWR-C04.POWER-U1-STARTUP.U1"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 15,
+      "criterion": "G03-004",
+      "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+      "status": "covered_needs_human",
+      "evidence": "FE1.1 pp6-7要求10uF去耦，未公布完整ESR稳定区；不能借常见LDO窗口定错或放行，PWR-C04已问。",
+      "sr_rules": [
+        "PWR-C04"
+      ],
+      "plan_check_ids": [
+        "PWR-C04.POWER-U1-RUN.U1",
+        "PWR-C04.POWER-U1-SHUTDOWN.U1",
+        "PWR-C04.POWER-U1-STARTUP.U1"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 16,
+      "criterion": "G03-016",
+      "title": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+      "status": "no_discrete_mosfet",
+      "evidence": "无外部MOS；AP内置通路启动/热保护行为应核准确器件PRO-C05/07，不凭裸MOS种子要求厂家SOA曲线。",
+      "sr_rules": [
+        "DRV-C02"
+      ],
+      "plan_check_ids": [],
+      "miss_id": null
+    },
+    {
+      "number": 17,
+      "criterion": "G03-018",
+      "title": "变换器 UVLO 开启点低于输入窗下限",
+      "status": "covered_needs_human",
+      "evidence": "AP内置UVLO，U1 VD5_IN推荐4.5..5.5V；实际源下限与负载无受控窗口，PWR-C06已展开。",
+      "sr_rules": [
+        "PWR-C06"
+      ],
+      "plan_check_ids": [
+        "PWR-C06.POWER-PROTECTION-U2-FAULT-FAULT.U2",
+        "PWR-C06.POWER-PROTECTION-U2-FAULT-RUN.U2",
+        "PWR-C06.POWER-PROTECTION-U2-FAULT-STARTUP.U2",
+        "PWR-C06.POWER-PROTECTION-U2-FAULT.U2",
+        "PWR-C06.POWER-PROTECTION-U2-RUN.U2",
+        "PWR-C06.POWER-PROTECTION-U2-STARTUP.U2",
+        "PWR-C06.POWER-PROTECTION-U3-FAULT-FAULT.U3",
+        "PWR-C06.POWER-PROTECTION-U3-FAULT-RUN.U3",
+        "PWR-C06.POWER-PROTECTION-U3-FAULT-STARTUP.U3",
+        "PWR-C06.POWER-PROTECTION-U3-FAULT.U3",
+        "PWR-C06.POWER-PROTECTION-U3-RUN.U3",
+        "PWR-C06.POWER-PROTECTION-U3-STARTUP.U3",
+        "PWR-C06.POWER-PROTECTION-U4-FAULT-FAULT.U4",
+        "PWR-C06.POWER-PROTECTION-U4-FAULT-RUN.U4",
+        "PWR-C06.POWER-PROTECTION-U4-FAULT-STARTUP.U4",
+        "PWR-C06.POWER-PROTECTION-U4-FAULT.U4",
+        "PWR-C06.POWER-PROTECTION-U4-RUN.U4",
+        "PWR-C06.POWER-PROTECTION-U4-STARTUP.U4",
+        "PWR-C06.POWER-PROTECTION-U5-FAULT-FAULT.U5",
+        "PWR-C06.POWER-PROTECTION-U5-FAULT-RUN.U5",
+        "PWR-C06.POWER-PROTECTION-U5-FAULT-STARTUP.U5",
+        "PWR-C06.POWER-PROTECTION-U5-FAULT.U5",
+        "PWR-C06.POWER-PROTECTION-U5-RUN.U5",
+        "PWR-C06.POWER-PROTECTION-U5-STARTUP.U5",
+        "PWR-C06.POWER-U1-RUN.U1",
+        "PWR-C06.POWER-U1-SHUTDOWN.U1",
+        "PWR-C06.POWER-U1-STARTUP.U1"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 18,
+      "criterion": "G03-019",
+      "title": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+      "status": "covered_needs_human",
+      "evidence": "输入线缆源阻抗和满载电流不明；PWR-C06/PWR-C01/SIG-C05已有，不因不知源阻抗直接判压降过大。",
+      "sr_rules": [
+        "PWR-C06"
+      ],
+      "plan_check_ids": [
+        "PWR-C06.POWER-PROTECTION-U2-FAULT-FAULT.U2",
+        "PWR-C06.POWER-PROTECTION-U2-FAULT-RUN.U2",
+        "PWR-C06.POWER-PROTECTION-U2-FAULT-STARTUP.U2",
+        "PWR-C06.POWER-PROTECTION-U2-FAULT.U2",
+        "PWR-C06.POWER-PROTECTION-U2-RUN.U2",
+        "PWR-C06.POWER-PROTECTION-U2-STARTUP.U2",
+        "PWR-C06.POWER-PROTECTION-U3-FAULT-FAULT.U3",
+        "PWR-C06.POWER-PROTECTION-U3-FAULT-RUN.U3",
+        "PWR-C06.POWER-PROTECTION-U3-FAULT-STARTUP.U3",
+        "PWR-C06.POWER-PROTECTION-U3-FAULT.U3",
+        "PWR-C06.POWER-PROTECTION-U3-RUN.U3",
+        "PWR-C06.POWER-PROTECTION-U3-STARTUP.U3",
+        "PWR-C06.POWER-PROTECTION-U4-FAULT-FAULT.U4",
+        "PWR-C06.POWER-PROTECTION-U4-FAULT-RUN.U4",
+        "PWR-C06.POWER-PROTECTION-U4-FAULT-STARTUP.U4",
+        "PWR-C06.POWER-PROTECTION-U4-FAULT.U4",
+        "PWR-C06.POWER-PROTECTION-U4-RUN.U4",
+        "PWR-C06.POWER-PROTECTION-U4-STARTUP.U4",
+        "PWR-C06.POWER-PROTECTION-U5-FAULT-FAULT.U5",
+        "PWR-C06.POWER-PROTECTION-U5-FAULT-RUN.U5",
+        "PWR-C06.POWER-PROTECTION-U5-FAULT-STARTUP.U5",
+        "PWR-C06.POWER-PROTECTION-U5-FAULT.U5",
+        "PWR-C06.POWER-PROTECTION-U5-RUN.U5",
+        "PWR-C06.POWER-PROTECTION-U5-STARTUP.U5",
+        "PWR-C06.POWER-U1-RUN.U1",
+        "PWR-C06.POWER-U1-SHUTDOWN.U1",
+        "PWR-C06.POWER-U1-STARTUP.U1"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 19,
+      "criterion": "G03-021",
+      "title": "软启动充电电流加启动期负载低于器件限流下限",
+      "status": "covered_needs_human",
+      "evidence": "AP控制上升与限流，四路22.1uF；需要最短上升/启动负载和公差。典型0.5ms不得当保证，PWR-C13及PRO-C07已问。",
+      "sr_rules": [
+        "PWR-D03"
+      ],
+      "plan_check_ids": [],
+      "miss_id": null
+    },
+    {
+      "number": 20,
+      "criterion": "G03-025",
+      "title": "复位门限高于各负载最低工作电压，掉电先复位",
+      "status": "covered_needs_human",
+      "evidence": "FE内置POR、XRSTJ经R9=100k/C3=100n；brownout/慢降允许窗口未给，PWR-T04已有。",
+      "sr_rules": [
+        "PWR-T04"
+      ],
+      "plan_check_ids": [
+        "PWR-T04.PRODUCTION.SUPERVISION-RAILS"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 21,
+      "criterion": "G03-028",
+      "title": "上电时序在极值时间下满足约束",
+      "status": "covered_needs_human",
+      "evidence": "U1内部稳压与PWRB/EN相依，PWR-C24及SYS-SEQUENCE已有；缺保证时序和实际要求。",
+      "sr_rules": [
+        "PWR-C24"
+      ],
+      "plan_check_ids": [
+        "PWR-C24.POWER-U1.C21"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 22,
+      "criterion": "G03-032",
+      "title": "稳压器反向电流在手册允许内或已阻断",
+      "status": "covered_needs_human",
+      "evidence": "J6原生DNP及图面叉已排外供；AP声明shutdown反向阻断、enable反向限制且A锁存。U1内部稳压/外设带电完整状态仍待核；PWR-C05/PRO-D04/SIG-C08已有。",
+      "sr_rules": [
+        "PWR-C05"
+      ],
+      "plan_check_ids": [
+        "PWR-C05.POWER-U1-RUN.C21",
+        "PWR-C05.POWER-U1-SHUTDOWN.C21",
+        "PWR-C05.POWER-U1-STARTUP.C21"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 23,
+      "criterion": "G03-037",
+      "title": "电解与钽电容不承受反压",
+      "status": "not_applicable",
+      "evidence": "全部C为非极性符号/表贴小型电容；无电解/钽反接对象，不用Device:C猜钽。",
+      "sr_rules": [
+        "DEV-C01"
+      ],
+      "plan_check_ids": [
+        "DEV-C01.C1",
+        "DEV-C01.C10",
+        "DEV-C01.C11",
+        "DEV-C01.C12",
+        "DEV-C01.C13",
+        "DEV-C01.C14",
+        "DEV-C01.C15",
+        "DEV-C01.C16",
+        "DEV-C01.C17",
+        "DEV-C01.C18",
+        "DEV-C01.C19",
+        "DEV-C01.C2",
+        "DEV-C01.C20",
+        "DEV-C01.C21",
+        "DEV-C01.C22",
+        "DEV-C01.C23",
+        "DEV-C01.C24",
+        "DEV-C01.C25",
+        "DEV-C01.C26",
+        "DEV-C01.C27",
+        "DEV-C01.C28",
+        "DEV-C01.C29",
+        "DEV-C01.C3",
+        "DEV-C01.C30",
+        "DEV-C01.C31",
+        "DEV-C01.C4",
+        "DEV-C01.C5",
+        "DEV-C01.C6",
+        "DEV-C01.C7",
+        "DEV-C01.C8",
+        "DEV-C01.C9",
+        "DEV-C01.CLOCK-Y1",
+        "DEV-C01.PIN.U1-34",
+        "DEV-C01.PIN.U1-36",
+        "DEV-C01.POWER-PROTECTION-U2",
+        "DEV-C01.POWER-PROTECTION-U3",
+        "DEV-C01.POWER-PROTECTION-U4",
+        "DEV-C01.POWER-PROTECTION-U5",
+        "DEV-C01.POWER-U1",
+        "DEV-C01.R1",
+        "DEV-C01.R10",
+        "DEV-C01.R11",
+        "DEV-C01.R12",
+        "DEV-C01.R13",
+        "DEV-C01.R14",
+        "DEV-C01.R15",
+        "DEV-C01.R16",
+        "DEV-C01.R17",
+        "DEV-C01.R18",
+        "DEV-C01.R19",
+        "DEV-C01.R2",
+        "DEV-C01.R20",
+        "DEV-C01.R21",
+        "DEV-C01.R22",
+        "DEV-C01.R23",
+        "DEV-C01.R24",
+        "DEV-C01.R25",
+        "DEV-C01.R26",
+        "DEV-C01.R27",
+        "DEV-C01.R28",
+        "DEV-C01.R29",
+        "DEV-C01.R3",
+        "DEV-C01.R30",
+        "DEV-C01.R31",
+        "DEV-C01.R32",
+        "DEV-C01.R33",
+        "DEV-C01.R4",
+        "DEV-C01.R5",
+        "DEV-C01.R6",
+        "DEV-C01.R7",
+        "DEV-C01.R8",
+        "DEV-C01.R9",
+        "DEV-C01.STARTUP-U2-EN",
+        "DEV-C01.STARTUP-U3-EN",
+        "DEV-C01.STARTUP-U4-EN",
+        "DEV-C01.STARTUP-U5-EN",
+        "DEV-C01.USB-J1",
+        "DEV-C01.USB-J2",
+        "DEV-C01.USB-J3",
+        "DEV-C01.USB-J4",
+        "DEV-C01.USB-J5"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 24,
+      "criterion": "G03-038",
+      "title": "电解与钽电容的直流加纹波峰值在降额内",
+      "status": "not_applicable_polar_cap",
+      "evidence": "无电解/钽降额对象；普通MLCC耐压/瞬态仍在DEV-C01逐颗保留。",
+      "sr_rules": [
+        "DEV-C01"
+      ],
+      "plan_check_ids": [
+        "DEV-C01.C1",
+        "DEV-C01.C10",
+        "DEV-C01.C11",
+        "DEV-C01.C12",
+        "DEV-C01.C13",
+        "DEV-C01.C14",
+        "DEV-C01.C15",
+        "DEV-C01.C16",
+        "DEV-C01.C17",
+        "DEV-C01.C18",
+        "DEV-C01.C19",
+        "DEV-C01.C2",
+        "DEV-C01.C20",
+        "DEV-C01.C21",
+        "DEV-C01.C22",
+        "DEV-C01.C23",
+        "DEV-C01.C24",
+        "DEV-C01.C25",
+        "DEV-C01.C26",
+        "DEV-C01.C27",
+        "DEV-C01.C28",
+        "DEV-C01.C29",
+        "DEV-C01.C3",
+        "DEV-C01.C30",
+        "DEV-C01.C31",
+        "DEV-C01.C4",
+        "DEV-C01.C5",
+        "DEV-C01.C6",
+        "DEV-C01.C7",
+        "DEV-C01.C8",
+        "DEV-C01.C9",
+        "DEV-C01.CLOCK-Y1",
+        "DEV-C01.PIN.U1-34",
+        "DEV-C01.PIN.U1-36",
+        "DEV-C01.POWER-PROTECTION-U2",
+        "DEV-C01.POWER-PROTECTION-U3",
+        "DEV-C01.POWER-PROTECTION-U4",
+        "DEV-C01.POWER-PROTECTION-U5",
+        "DEV-C01.POWER-U1",
+        "DEV-C01.R1",
+        "DEV-C01.R10",
+        "DEV-C01.R11",
+        "DEV-C01.R12",
+        "DEV-C01.R13",
+        "DEV-C01.R14",
+        "DEV-C01.R15",
+        "DEV-C01.R16",
+        "DEV-C01.R17",
+        "DEV-C01.R18",
+        "DEV-C01.R19",
+        "DEV-C01.R2",
+        "DEV-C01.R20",
+        "DEV-C01.R21",
+        "DEV-C01.R22",
+        "DEV-C01.R23",
+        "DEV-C01.R24",
+        "DEV-C01.R25",
+        "DEV-C01.R26",
+        "DEV-C01.R27",
+        "DEV-C01.R28",
+        "DEV-C01.R29",
+        "DEV-C01.R3",
+        "DEV-C01.R30",
+        "DEV-C01.R31",
+        "DEV-C01.R32",
+        "DEV-C01.R33",
+        "DEV-C01.R4",
+        "DEV-C01.R5",
+        "DEV-C01.R6",
+        "DEV-C01.R7",
+        "DEV-C01.R8",
+        "DEV-C01.R9",
+        "DEV-C01.STARTUP-U2-EN",
+        "DEV-C01.STARTUP-U3-EN",
+        "DEV-C01.STARTUP-U4-EN",
+        "DEV-C01.STARTUP-U5-EN",
+        "DEV-C01.USB-J1",
+        "DEV-C01.USB-J2",
+        "DEV-C01.USB-J3",
+        "DEV-C01.USB-J4",
+        "DEV-C01.USB-J5"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 25,
+      "criterion": "G03-040",
+      "title": "串联使用的电解电容有均压措施",
+      "status": "not_applicable",
+      "evidence": "无串联电解或均压电阻对象，C1/C2是晶体负载不是串联母线电解。",
+      "sr_rules": [
+        "DEV-C01"
+      ],
+      "plan_check_ids": [
+        "DEV-C01.C1",
+        "DEV-C01.C10",
+        "DEV-C01.C11",
+        "DEV-C01.C12",
+        "DEV-C01.C13",
+        "DEV-C01.C14",
+        "DEV-C01.C15",
+        "DEV-C01.C16",
+        "DEV-C01.C17",
+        "DEV-C01.C18",
+        "DEV-C01.C19",
+        "DEV-C01.C2",
+        "DEV-C01.C20",
+        "DEV-C01.C21",
+        "DEV-C01.C22",
+        "DEV-C01.C23",
+        "DEV-C01.C24",
+        "DEV-C01.C25",
+        "DEV-C01.C26",
+        "DEV-C01.C27",
+        "DEV-C01.C28",
+        "DEV-C01.C29",
+        "DEV-C01.C3",
+        "DEV-C01.C30",
+        "DEV-C01.C31",
+        "DEV-C01.C4",
+        "DEV-C01.C5",
+        "DEV-C01.C6",
+        "DEV-C01.C7",
+        "DEV-C01.C8",
+        "DEV-C01.C9",
+        "DEV-C01.CLOCK-Y1",
+        "DEV-C01.PIN.U1-34",
+        "DEV-C01.PIN.U1-36",
+        "DEV-C01.POWER-PROTECTION-U2",
+        "DEV-C01.POWER-PROTECTION-U3",
+        "DEV-C01.POWER-PROTECTION-U4",
+        "DEV-C01.POWER-PROTECTION-U5",
+        "DEV-C01.POWER-U1",
+        "DEV-C01.R1",
+        "DEV-C01.R10",
+        "DEV-C01.R11",
+        "DEV-C01.R12",
+        "DEV-C01.R13",
+        "DEV-C01.R14",
+        "DEV-C01.R15",
+        "DEV-C01.R16",
+        "DEV-C01.R17",
+        "DEV-C01.R18",
+        "DEV-C01.R19",
+        "DEV-C01.R2",
+        "DEV-C01.R20",
+        "DEV-C01.R21",
+        "DEV-C01.R22",
+        "DEV-C01.R23",
+        "DEV-C01.R24",
+        "DEV-C01.R25",
+        "DEV-C01.R26",
+        "DEV-C01.R27",
+        "DEV-C01.R28",
+        "DEV-C01.R29",
+        "DEV-C01.R3",
+        "DEV-C01.R30",
+        "DEV-C01.R31",
+        "DEV-C01.R32",
+        "DEV-C01.R33",
+        "DEV-C01.R4",
+        "DEV-C01.R5",
+        "DEV-C01.R6",
+        "DEV-C01.R7",
+        "DEV-C01.R8",
+        "DEV-C01.R9",
+        "DEV-C01.STARTUP-U2-EN",
+        "DEV-C01.STARTUP-U3-EN",
+        "DEV-C01.STARTUP-U4-EN",
+        "DEV-C01.STARTUP-U5-EN",
+        "DEV-C01.USB-J1",
+        "DEV-C01.USB-J2",
+        "DEV-C01.USB-J3",
+        "DEV-C01.USB-J4",
+        "DEV-C01.USB-J5"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 26,
+      "criterion": "G04-005",
+      "title": "输入信号不超接收端绝对最大值",
+      "status": "covered_needs_human",
+      "evidence": "OVERCURRENT由5V/12k上拉接U1；FE数字VIH上限5.5V，数据脚/失电时注入需分别核。SIG-C08已有31项，不漏整个接口。",
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "plan_check_ids": [
+        "SIG-C08.EXT-J1.NET-J1-D",
+        "SIG-C08.EXT-J1.NET-J1-D-2",
+        "SIG-C08.EXT-J2.NET-J2-D",
+        "SIG-C08.EXT-J2.NET-J2-D-2",
+        "SIG-C08.EXT-J3.NET-J3-D",
+        "SIG-C08.EXT-J3.NET-J3-D-2",
+        "SIG-C08.EXT-J4.NET-J4-D",
+        "SIG-C08.EXT-J4.NET-J4-D-2",
+        "SIG-C08.EXT-J5.5V",
+        "SIG-C08.EXT-J5.NET-J5-CC1",
+        "SIG-C08.EXT-J5.NET-J5-CC2",
+        "SIG-C08.EXT-J5.NET-J5-D-PADA6",
+        "SIG-C08.EXT-J5.NET-J5-D-PADA7",
+        "SIG-C08.EXT-J5.UNCONNECTED-J5-SBU1-PADA8",
+        "SIG-C08.EXT-J5.UNCONNECTED-J5-SBU2-PADB8",
+        "SIG-C08.IF-POWER-PROTECTION-U2-USB-J5.OVERCURRENT1",
+        "SIG-C08.IF-POWER-PROTECTION-U3-USB-J5.OVERCURRENT2",
+        "SIG-C08.IF-POWER-PROTECTION-U4-USB-J5.OVERCURRENT3",
+        "SIG-C08.IF-POWER-PROTECTION-U5-USB-J5.OVERCURRENT4",
+        "SIG-C08.IF-POWER-U1-POWER-PROTECTION-U2.OVERCURRENT1",
+        "SIG-C08.IF-POWER-U1-POWER-PROTECTION-U3.OVERCURRENT2",
+        "SIG-C08.IF-POWER-U1-POWER-PROTECTION-U4.OVERCURRENT3",
+        "SIG-C08.IF-POWER-U1-POWER-PROTECTION-U5.OVERCURRENT4",
+        "SIG-C08.IF-POWER-U1-USB-J5.OVERCURRENT1",
+        "SIG-C08.IF-POWER-U1-USB-J5.OVERCURRENT2",
+        "SIG-C08.IF-POWER-U1-USB-J5.OVERCURRENT3",
+        "SIG-C08.IF-POWER-U1-USB-J5.OVERCURRENT4",
+        "SIG-C08.LINK-STARTUP-U2-EN.USB-EN1",
+        "SIG-C08.LINK-STARTUP-U3-EN.USB-EN2",
+        "SIG-C08.LINK-STARTUP-U4-EN.USB-EN3",
+        "SIG-C08.LINK-STARTUP-U5-EN.USB-EN4"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 27,
+      "criterion": "G04-007",
+      "title": "未上电接口承受正常或故障信号不损坏",
+      "status": "covered_needs_human",
+      "evidence": "U7-U10 VBUS取可关断VUSB1-4，D线回U1；轨到轨ESD可导入掉电轨，PRO-D04/SIG-C08已有，不能以AP主电源反向阻断豁免信号注入。",
+      "sr_rules": [
+        "PRO-D04",
+        "SIG-C08"
+      ],
+      "plan_check_ids": [
+        "PRO-D04.J1",
+        "PRO-D04.J2",
+        "PRO-D04.J3",
+        "PRO-D04.J4",
+        "PRO-D04.J5",
+        "SIG-C08.EXT-J1.NET-J1-D",
+        "SIG-C08.EXT-J1.NET-J1-D-2",
+        "SIG-C08.EXT-J2.NET-J2-D",
+        "SIG-C08.EXT-J2.NET-J2-D-2",
+        "SIG-C08.EXT-J3.NET-J3-D",
+        "SIG-C08.EXT-J3.NET-J3-D-2",
+        "SIG-C08.EXT-J4.NET-J4-D",
+        "SIG-C08.EXT-J4.NET-J4-D-2",
+        "SIG-C08.EXT-J5.5V",
+        "SIG-C08.EXT-J5.NET-J5-CC1",
+        "SIG-C08.EXT-J5.NET-J5-CC2",
+        "SIG-C08.EXT-J5.NET-J5-D-PADA6",
+        "SIG-C08.EXT-J5.NET-J5-D-PADA7",
+        "SIG-C08.EXT-J5.UNCONNECTED-J5-SBU1-PADA8",
+        "SIG-C08.EXT-J5.UNCONNECTED-J5-SBU2-PADB8",
+        "SIG-C08.IF-POWER-PROTECTION-U2-USB-J5.OVERCURRENT1",
+        "SIG-C08.IF-POWER-PROTECTION-U3-USB-J5.OVERCURRENT2",
+        "SIG-C08.IF-POWER-PROTECTION-U4-USB-J5.OVERCURRENT3",
+        "SIG-C08.IF-POWER-PROTECTION-U5-USB-J5.OVERCURRENT4",
+        "SIG-C08.IF-POWER-U1-POWER-PROTECTION-U2.OVERCURRENT1",
+        "SIG-C08.IF-POWER-U1-POWER-PROTECTION-U3.OVERCURRENT2",
+        "SIG-C08.IF-POWER-U1-POWER-PROTECTION-U4.OVERCURRENT3",
+        "SIG-C08.IF-POWER-U1-POWER-PROTECTION-U5.OVERCURRENT4",
+        "SIG-C08.IF-POWER-U1-USB-J5.OVERCURRENT1",
+        "SIG-C08.IF-POWER-U1-USB-J5.OVERCURRENT2",
+        "SIG-C08.IF-POWER-U1-USB-J5.OVERCURRENT3",
+        "SIG-C08.IF-POWER-U1-USB-J5.OVERCURRENT4",
+        "SIG-C08.LINK-STARTUP-U2-EN.USB-EN1",
+        "SIG-C08.LINK-STARTUP-U3-EN.USB-EN2",
+        "SIG-C08.LINK-STARTUP-U4-EN.USB-EN3",
+        "SIG-C08.LINK-STARTUP-U5-EN.USB-EN4"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 28,
+      "criterion": "G04-009",
+      "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+      "status": "covered_needs_human",
+      "evidence": "同上，需USB数据脚Ioff/允许注入与VUSB泄放/外设状态；已有逐外部差分线SIG-C08。",
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "plan_check_ids": [
+        "SIG-C08.EXT-J1.NET-J1-D",
+        "SIG-C08.EXT-J1.NET-J1-D-2",
+        "SIG-C08.EXT-J2.NET-J2-D",
+        "SIG-C08.EXT-J2.NET-J2-D-2",
+        "SIG-C08.EXT-J3.NET-J3-D",
+        "SIG-C08.EXT-J3.NET-J3-D-2",
+        "SIG-C08.EXT-J4.NET-J4-D",
+        "SIG-C08.EXT-J4.NET-J4-D-2",
+        "SIG-C08.EXT-J5.5V",
+        "SIG-C08.EXT-J5.NET-J5-CC1",
+        "SIG-C08.EXT-J5.NET-J5-CC2",
+        "SIG-C08.EXT-J5.NET-J5-D-PADA6",
+        "SIG-C08.EXT-J5.NET-J5-D-PADA7",
+        "SIG-C08.EXT-J5.UNCONNECTED-J5-SBU1-PADA8",
+        "SIG-C08.EXT-J5.UNCONNECTED-J5-SBU2-PADB8",
+        "SIG-C08.IF-POWER-PROTECTION-U2-USB-J5.OVERCURRENT1",
+        "SIG-C08.IF-POWER-PROTECTION-U3-USB-J5.OVERCURRENT2",
+        "SIG-C08.IF-POWER-PROTECTION-U4-USB-J5.OVERCURRENT3",
+        "SIG-C08.IF-POWER-PROTECTION-U5-USB-J5.OVERCURRENT4",
+        "SIG-C08.IF-POWER-U1-POWER-PROTECTION-U2.OVERCURRENT1",
+        "SIG-C08.IF-POWER-U1-POWER-PROTECTION-U3.OVERCURRENT2",
+        "SIG-C08.IF-POWER-U1-POWER-PROTECTION-U4.OVERCURRENT3",
+        "SIG-C08.IF-POWER-U1-POWER-PROTECTION-U5.OVERCURRENT4",
+        "SIG-C08.IF-POWER-U1-USB-J5.OVERCURRENT1",
+        "SIG-C08.IF-POWER-U1-USB-J5.OVERCURRENT2",
+        "SIG-C08.IF-POWER-U1-USB-J5.OVERCURRENT3",
+        "SIG-C08.IF-POWER-U1-USB-J5.OVERCURRENT4",
+        "SIG-C08.LINK-STARTUP-U2-EN.USB-EN1",
+        "SIG-C08.LINK-STARTUP-U3-EN.USB-EN2",
+        "SIG-C08.LINK-STARTUP-U4-EN.USB-EN3",
+        "SIG-C08.LINK-STARTUP-U5-EN.USB-EN4"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 29,
+      "criterion": "G04-010",
+      "title": "上电和复位期间关键输出有确定状态",
+      "status": "covered_needs_human",
+      "evidence": "U2-U5低有效EN各100k下拉，U1复位高阻时可默认ON；PWRB4复用模式采样需要保证，RST-T04的8项已有。",
+      "sr_rules": [
+        "RST-T04"
+      ],
+      "plan_check_ids": [
+        "RST-T04.STARTUP-U2-EN-POWER-ON.U2",
+        "RST-T04.STARTUP-U2-EN-RESTART.U2",
+        "RST-T04.STARTUP-U3-EN-POWER-ON.U3",
+        "RST-T04.STARTUP-U3-EN-RESTART.U3",
+        "RST-T04.STARTUP-U4-EN-POWER-ON.U4",
+        "RST-T04.STARTUP-U4-EN-RESTART.U4",
+        "RST-T04.STARTUP-U5-EN-POWER-ON.U5",
+        "RST-T04.STARTUP-U5-EN-RESTART.U5"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 30,
+      "criterion": "G04-017",
+      "title": "I²C 上拉电阻不超上升时间决定的上限",
+      "status": "not_applicable",
+      "evidence": "无I2C SDA/SCL上拉拓扑。",
+      "sr_rules": [
+        "SIG-A04",
+        "SIG-C01"
+      ],
+      "plan_check_ids": [],
+      "miss_id": null
+    },
+    {
+      "number": 31,
+      "criterion": "G04-018",
+      "title": "I²C 上拉电阻不低于灌电流决定的下限",
+      "status": "not_applicable",
+      "evidence": "无I2C多器件灌电流对象；OVERCURRENT是单开漏标志，不套I2C时序。",
+      "sr_rules": [
+        "SIG-A04",
+        "SIG-C01"
+      ],
+      "plan_check_ids": [],
+      "miss_id": null
+    },
+    {
+      "number": 32,
+      "criterion": "G04-032",
+      "title": "CAN 总线两端端接，总阻约 60 Ω",
+      "status": "not_applicable",
+      "evidence": "无CAN总线。",
+      "sr_rules": [
+        "SIG-A06",
+        "SIG-C03"
+      ],
+      "plan_check_ids": [],
+      "miss_id": null
+    },
+    {
+      "number": 33,
+      "criterion": "G04-040",
+      "title": "隔离接口两侧的供电和地不被无意短接",
+      "status": "not_applicable",
+      "evidence": "没有隔离电源/数字隔离两侧；公共GND是预期的USB返回，不是隔离短接。",
+      "sr_rules": [
+        "PRO-A05",
+        "PRO-D02"
+      ],
+      "plan_check_ids": [],
+      "miss_id": null
+    },
+    {
+      "number": 34,
+      "criterion": "G04-041",
+      "title": "运放两个输入在最坏工况下不超共模范围",
+      "status": "not_applicable",
+      "evidence": "无运放/比较器共模输入。",
+      "sr_rules": [
+        "ANA-C01"
+      ],
+      "plan_check_ids": [],
+      "miss_id": null
+    },
+    {
+      "number": 35,
+      "criterion": "G04-054",
+      "title": "ADC 输入不超满量程和绝对最大值",
+      "status": "not_applicable",
+      "evidence": "无ADC模拟采样输入；U1 VBUSM属于专用数字检测，不冒充ADC。",
+      "sr_rules": [
+        "ANA-C03"
+      ],
+      "plan_check_ids": [],
+      "miss_id": null
+    },
+    {
+      "number": 36,
+      "criterion": "G04-078",
+      "title": "晶振负载电容与晶振规定 CL 相符",
+      "status": "covered_needs_human",
+      "evidence": "Y1 12MHz，C1=C2=12pF，外部等效6pF；片内负载不能忽略。CLK-C01两状态已问，准确晶体CL未知。",
+      "sr_rules": [
+        "CLK-A01",
+        "CLK-C01"
+      ],
+      "plan_check_ids": [
+        "CLK-C01.CLOCK-Y1-RUN.Y1",
+        "CLK-C01.CLOCK-Y1-STARTUP.Y1"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 37,
+      "criterion": "G04-079",
+      "title": "振荡器增益裕量足够起振",
+      "status": "covered_needs_human",
+      "evidence": "无Y1受控ESR/驱动功率完整手册，无FE负阻保证；CLK-C01已问，不捏造起振裕量。",
+      "sr_rules": [
+        "CLK-C01"
+      ],
+      "plan_check_ids": [
+        "CLK-C01.CLOCK-Y1-RUN.Y1",
+        "CLK-C01.CLOCK-Y1-STARTUP.Y1"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 38,
+      "criterion": "G04-082",
+      "title": "一颗晶振只驱动一个器件",
+      "status": "manual_connection_pass",
+      "evidence": "XIN仅U1.12/Y1.3/C2.1，XOUT仅U1.11/Y1.1/C1.1；晶体仅驱动一颗芯片，未并第二振荡器。这只通过本条拓扑。",
+      "sr_rules": [
+        "CLK-A02",
+        "CLK-C01"
+      ],
+      "plan_check_ids": [
+        "CLK-C01.CLOCK-Y1-RUN.Y1",
+        "CLK-C01.CLOCK-Y1-STARTUP.Y1"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 39,
+      "criterion": "G05-019",
+      "title": "每条配电支路在源侧有保护",
+      "status": "covered_needs_human",
+      "evidence": "J1..J4源侧各U2..U5 IN→OUT，J5输入上游保护待系统合同；PRO-C04原生16项，不能报告整板漏此条。FAULT信号候选多问保护链是另一个误报。",
+      "sr_rules": [
+        "PRO-C04"
+      ],
+      "plan_check_ids": [
+        "PRO-C04.J1-1.J1-1",
+        "PRO-C04.J2-1.J2-1",
+        "PRO-C04.J3-1.J3-1",
+        "PRO-C04.J4-1.J4-1",
+        "PRO-C04.J5-A4.J5-A4",
+        "PRO-C04.J5-A9.J5-A9",
+        "PRO-C04.J5-B4.J5-B4",
+        "PRO-C04.J5-B9.J5-B9",
+        "PRO-C04.POWER-PROTECTION-U2-FAULT.R14",
+        "PRO-C04.POWER-PROTECTION-U2.R13",
+        "PRO-C04.POWER-PROTECTION-U3-FAULT.R4",
+        "PRO-C04.POWER-PROTECTION-U3.R3",
+        "PRO-C04.POWER-PROTECTION-U4-FAULT.R18",
+        "PRO-C04.POWER-PROTECTION-U4.R17",
+        "PRO-C04.POWER-PROTECTION-U5-FAULT.R22",
+        "PRO-C04.POWER-PROTECTION-U5.R21"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 40,
+      "criterion": "G05-022",
+      "title": "过流动作点上限下通路器件与连接器不超额定",
+      "status": "covered_needs_human",
+      "evidence": "Rlim=12k，条件1%时拟合约1.98..2.42A；准确连续/故障耐受、R公差及连接器保证不足，DEV-C01/04已有。",
+      "sr_rules": [
+        "DEV-C01",
+        "DEV-C04"
+      ],
+      "plan_check_ids": [
+        "DEV-C01.C1",
+        "DEV-C01.C10",
+        "DEV-C01.C11",
+        "DEV-C01.C12",
+        "DEV-C01.C13",
+        "DEV-C01.C14",
+        "DEV-C01.C15",
+        "DEV-C01.C16",
+        "DEV-C01.C17",
+        "DEV-C01.C18",
+        "DEV-C01.C19",
+        "DEV-C01.C2",
+        "DEV-C01.C20",
+        "DEV-C01.C21",
+        "DEV-C01.C22",
+        "DEV-C01.C23",
+        "DEV-C01.C24",
+        "DEV-C01.C25",
+        "DEV-C01.C26",
+        "DEV-C01.C27",
+        "DEV-C01.C28",
+        "DEV-C01.C29",
+        "DEV-C01.C3",
+        "DEV-C01.C30",
+        "DEV-C01.C31",
+        "DEV-C01.C4",
+        "DEV-C01.C5",
+        "DEV-C01.C6",
+        "DEV-C01.C7",
+        "DEV-C01.C8",
+        "DEV-C01.C9",
+        "DEV-C01.CLOCK-Y1",
+        "DEV-C01.PIN.U1-34",
+        "DEV-C01.PIN.U1-36",
+        "DEV-C01.POWER-PROTECTION-U2",
+        "DEV-C01.POWER-PROTECTION-U3",
+        "DEV-C01.POWER-PROTECTION-U4",
+        "DEV-C01.POWER-PROTECTION-U5",
+        "DEV-C01.POWER-U1",
+        "DEV-C01.R1",
+        "DEV-C01.R10",
+        "DEV-C01.R11",
+        "DEV-C01.R12",
+        "DEV-C01.R13",
+        "DEV-C01.R14",
+        "DEV-C01.R15",
+        "DEV-C01.R16",
+        "DEV-C01.R17",
+        "DEV-C01.R18",
+        "DEV-C01.R19",
+        "DEV-C01.R2",
+        "DEV-C01.R20",
+        "DEV-C01.R21",
+        "DEV-C01.R22",
+        "DEV-C01.R23",
+        "DEV-C01.R24",
+        "DEV-C01.R25",
+        "DEV-C01.R26",
+        "DEV-C01.R27",
+        "DEV-C01.R28",
+        "DEV-C01.R29",
+        "DEV-C01.R3",
+        "DEV-C01.R30",
+        "DEV-C01.R31",
+        "DEV-C01.R32",
+        "DEV-C01.R33",
+        "DEV-C01.R4",
+        "DEV-C01.R5",
+        "DEV-C01.R6",
+        "DEV-C01.R7",
+        "DEV-C01.R8",
+        "DEV-C01.R9",
+        "DEV-C01.STARTUP-U2-EN",
+        "DEV-C01.STARTUP-U3-EN",
+        "DEV-C01.STARTUP-U4-EN",
+        "DEV-C01.STARTUP-U5-EN",
+        "DEV-C01.USB-J1",
+        "DEV-C01.USB-J2",
+        "DEV-C01.USB-J3",
+        "DEV-C01.USB-J4",
+        "DEV-C01.USB-J5",
+        "DEV-C04.J1",
+        "DEV-C04.J2",
+        "DEV-C04.J3",
+        "DEV-C04.J4",
+        "DEV-C04.J5"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 41,
+      "criterion": "G05-025",
+      "title": "故障电流下的动作时间短于被保护对象的耐受时间",
+      "status": "covered_needs_human",
+      "evidence": "AP限流/热关断/锁存已知，故障源阻抗/最小可动作电流与对象耐受未给，PRO-C05已有8项。",
+      "sr_rules": [
+        "PRO-C05"
+      ],
+      "plan_check_ids": [
+        "PRO-C05.POWER-PROTECTION-U2-FAULT.U2",
+        "PRO-C05.POWER-PROTECTION-U2.U2",
+        "PRO-C05.POWER-PROTECTION-U3-FAULT.U3",
+        "PRO-C05.POWER-PROTECTION-U3.U3",
+        "PRO-C05.POWER-PROTECTION-U4-FAULT.U4",
+        "PRO-C05.POWER-PROTECTION-U4.U4",
+        "PRO-C05.POWER-PROTECTION-U5-FAULT.U5",
+        "PRO-C05.POWER-PROTECTION-U5.U5"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 42,
+      "criterion": "G05-030",
+      "title": "TVS 工作电压不低于被钳节点最高工作电压",
+      "status": "miss_restored_pending",
+      "evidence": "U6-U10已核tvs但原始PRO-E02=0；多网和型号正则漏全阵列。M01通过5条rule_gaps恢复；ST p2 VRM漏电测试5.25V、VBR6V不能互换。",
+      "sr_rules": [
+        "PRO-E02"
+      ],
+      "plan_check_ids": [
+        "PRO-E02.GAP-ESD-U10.U10",
+        "PRO-E02.GAP-ESD-U6.U6",
+        "PRO-E02.GAP-ESD-U7.U7",
+        "PRO-E02.GAP-ESD-U8.U8",
+        "PRO-E02.GAP-ESD-U9.U9"
+      ],
+      "miss_id": "M01"
+    },
+    {
+      "number": 43,
+      "criterion": "G05-031",
+      "title": "TVS 钳位电压不超被保护器件绝对最大值",
+      "status": "miss_restored_pending",
+      "evidence": "同M01：ST I/O钳位12V@1A/17V@5A，与FE接收脚适用波形耐受逐端对比仍缺输入；不能将供电4V绝限当USB脚瞬态限。",
+      "sr_rules": [
+        "PRO-E02"
+      ],
+      "plan_check_ids": [
+        "PRO-E02.GAP-ESD-U10.U10",
+        "PRO-E02.GAP-ESD-U6.U6",
+        "PRO-E02.GAP-ESD-U7.U7",
+        "PRO-E02.GAP-ESD-U8.U8",
+        "PRO-E02.GAP-ESD-U9.U9"
+      ],
+      "miss_id": "M01"
+    },
+    {
+      "number": 44,
+      "criterion": "G05-032",
+      "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+      "status": "miss_restored_pending",
+      "evidence": "同M01：ST 8/20us电流钳位与IEC ESD波形不是一条能量保证，未规定系统事件/温度；补回PRO-E02后仍待核。",
+      "sr_rules": [
+        "PRO-E02"
+      ],
+      "plan_check_ids": [
+        "PRO-E02.GAP-ESD-U10.U10",
+        "PRO-E02.GAP-ESD-U6.U6",
+        "PRO-E02.GAP-ESD-U7.U7",
+        "PRO-E02.GAP-ESD-U8.U8",
+        "PRO-E02.GAP-ESD-U9.U9"
+      ],
+      "miss_id": "M01"
+    },
+    {
+      "number": 45,
+      "criterion": "G05-040",
+      "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+      "status": "no_discrete_mosfet",
+      "evidence": "AP集成功率开关无外置MOS，短路启动窗口须按该器件限定条件/内部热保护核PRO-C05/07；无裸MOS SOA对象。",
+      "sr_rules": [
+        "DRV-C02"
+      ],
+      "plan_check_ids": [],
+      "miss_id": null
+    },
+    {
+      "number": 46,
+      "criterion": "G05-041",
+      "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+      "status": "no_discrete_mosfet",
+      "evidence": "同45，热短路仍要开始温度和负载事件，不给内部MOS虚构25°C曲线。",
+      "sr_rules": [
+        "DRV-C02"
+      ],
+      "plan_check_ids": [],
+      "miss_id": null
+    },
+    {
+      "number": 47,
+      "criterion": "G05-048",
+      "title": "熔断器分断能力不小于预期短路电流",
+      "status": "not_applicable",
+      "evidence": "无熔断器；PRO-C08却因笼统前提展开，是已登记误报。上游保护不明不等于本板有一颗未审保险。",
+      "sr_rules": [
+        "PRO-C01"
+      ],
+      "plan_check_ids": [
+        "PRO-C01.POWER-PROTECTION-U2-FAULT-FAULT.U2",
+        "PRO-C01.POWER-PROTECTION-U2-FAULT-RUN.U2",
+        "PRO-C01.POWER-PROTECTION-U2-FAULT-STARTUP.U2",
+        "PRO-C01.POWER-PROTECTION-U2-FAULT.U2",
+        "PRO-C01.POWER-PROTECTION-U2-RUN.U2",
+        "PRO-C01.POWER-PROTECTION-U2-STARTUP.U2",
+        "PRO-C01.POWER-PROTECTION-U3-FAULT-FAULT.U3",
+        "PRO-C01.POWER-PROTECTION-U3-FAULT-RUN.U3",
+        "PRO-C01.POWER-PROTECTION-U3-FAULT-STARTUP.U3",
+        "PRO-C01.POWER-PROTECTION-U3-FAULT.U3",
+        "PRO-C01.POWER-PROTECTION-U3-RUN.U3",
+        "PRO-C01.POWER-PROTECTION-U3-STARTUP.U3",
+        "PRO-C01.POWER-PROTECTION-U4-FAULT-FAULT.U4",
+        "PRO-C01.POWER-PROTECTION-U4-FAULT-RUN.U4",
+        "PRO-C01.POWER-PROTECTION-U4-FAULT-STARTUP.U4",
+        "PRO-C01.POWER-PROTECTION-U4-FAULT.U4",
+        "PRO-C01.POWER-PROTECTION-U4-RUN.U4",
+        "PRO-C01.POWER-PROTECTION-U4-STARTUP.U4",
+        "PRO-C01.POWER-PROTECTION-U5-FAULT-FAULT.U5",
+        "PRO-C01.POWER-PROTECTION-U5-FAULT-RUN.U5",
+        "PRO-C01.POWER-PROTECTION-U5-FAULT-STARTUP.U5",
+        "PRO-C01.POWER-PROTECTION-U5-FAULT.U5",
+        "PRO-C01.POWER-PROTECTION-U5-RUN.U5",
+        "PRO-C01.POWER-PROTECTION-U5-STARTUP.U5"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 48,
+      "criterion": "G05-054",
+      "title": "每个对外电源接口的反接有明确处置",
+      "status": "covered_needs_human",
+      "evidence": "USB机械极性与误接/外设供入要按实际合同；J6不贴，不能当活动反接输入。PRO-D04已有5项，未见裸防反支路。",
+      "sr_rules": [
+        "PRO-D04",
+        "PWR-T05"
+      ],
+      "plan_check_ids": [
+        "PRO-D04.J1",
+        "PRO-D04.J2",
+        "PRO-D04.J3",
+        "PRO-D04.J4",
+        "PRO-D04.J5"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 49,
+      "criterion": "G05-057",
+      "title": "反接阻断之前没有单向 TVS 造成源短路",
+      "status": "covered_needs_human",
+      "evidence": "USBLC6含VBUS对地钳位，前面无独立防反器件；仅在允许逆接故障事件下需核导通/切断。USB接口是否要求该误接由产品合同给，PWR-C26/PRO-D04已有。",
+      "sr_rules": [
+        "PWR-C26"
+      ],
+      "plan_check_ids": [
+        "PWR-C26.POWER-PROTECTION-U2-FAULT.R14",
+        "PWR-C26.POWER-PROTECTION-U2.R13",
+        "PWR-C26.POWER-PROTECTION-U3-FAULT.R4",
+        "PWR-C26.POWER-PROTECTION-U3.R3",
+        "PWR-C26.POWER-PROTECTION-U4-FAULT.R18",
+        "PWR-C26.POWER-PROTECTION-U4.R17",
+        "PWR-C26.POWER-PROTECTION-U5-FAULT.R22",
+        "PWR-C26.POWER-PROTECTION-U5.R21"
+      ],
+      "miss_id": null
+    },
+    {
+      "number": 50,
+      "criterion": "G05-087",
+      "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+      "status": "not_applicable",
+      "evidence": "没有独立防反MOS和外部G/S钳位网络。",
+      "sr_rules": [
+        "PWR-T05"
+      ],
+      "plan_check_ids": [],
+      "miss_id": null
+    }
+  ],
+  "counts": {
+    "not_applicable": 18,
+    "covered_needs_human": 22,
+    "manual_true_defect": 1,
+    "criterion_issue": 1,
+    "no_discrete_mosfet": 3,
+    "not_applicable_polar_cap": 1,
+    "manual_connection_pass": 1,
+    "miss_restored_pending": 3
+  },
+  "miss_count_basis": "42/43/44是同一个多通道ESD计划模型缺口M01（5物料位点），不是3或5个独立硬件缺陷。G01-029由已有人工SIG-C05发现，不计全SR漏报。"
+}

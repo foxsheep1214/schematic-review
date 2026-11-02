@@ -111,3 +111,9 @@
 - PCA9517ATP HWSON8脚1/2/3/4/5/6/7/8=SDAA/GND/EN/SDAB/SCLB/VCCB/VCCA/SCLA，别套SO8；Toshiba未用APLL须PFIL接100n、DAOUT开路；7C有源XO规定15pF，直接47pF超规定区。
 - IC前缀TLV733和Y前缀7C须--require-ref才能恢复准确手册审计；TLV733无需Cout稳定。含VCC的多通道TVS仍要PRO-E02，不能出TRIP/NOTRIP；桥RESETN接收端还需PWR-C24。
 - schema15未定主机合同留needs_human旁账，不造完整功能PASS；本轮6失败框架已写，其余28未完成明确保留；报告valid=false只诊断，标准record索引未打包。
+
+- brainsmoke--usb2_hub：95件/301端点/5页strict；19电路/45框架，688=683+5补问；101局部判/587逐ID人工，27归因=2真+11误+1准则+4知识+9人工，FAIL/NO_GO。
+- FE1.1 VS_PLL10/VS_A25是返回地、OVCB[1..4]是输入；已给官方pins仍被native power_in/output误报。AP22652AW6的A是锁存，订货表在DS41186 p12。
+- USBLC6六网馈通阵列漏PRO-E02，先修protective_clamps的型号正则+恰两网条件；J5直接50.5uF在非Attached超10uF已证，别拿Attached100uF豁免。
+- 120uF原厂有每Hub口径，不盲判每口22.1uF；G01-031须保留传统Type-A默认VBUS例外。Wiki的ST - USBLC6-2SC6.pdf实际SC6Y，准确SC6在ST - USBLC62.pdf。
+- R8括号1%会令2K7读失败；J6原生DNP不可装回构造反灌。schema15未知合同留逐ID pending及45框架分母，资料不足0不是587项审结，原生无效报告不打包。
