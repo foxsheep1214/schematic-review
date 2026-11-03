@@ -1,0 +1,31 @@
+{
+ "revision": "boards-merge7-v1",
+ "field_changes": {
+  "rh-ad8495-thermocouple.plan.checks_total": {
+   "before": 67,
+   "after": 68
+  },
+  "rh-ad8495-thermocouple-nolog.plan.checks_total": {
+   "before": 67,
+   "after": 68
+  },
+  "rh-ad8495-thermocouple-pinmap.plan.checks_total": {
+   "before": 63,
+   "after": 64
+  }
+ },
+ "scope": [
+  "合并步 7（用户 2026-11-03 按建议执行）：电路类型名称线索把层次网名最后一个“/”之后的叶名当一个词，rh-ad8495 三例的 /02_tc_amp/VREF_2V5 命中 ANALOG，多一行 REQ-Q07.ANALOG（待确认汇总项）：67→68、67→68、63→64；不表示该基准电路已核。"
+ ],
+ "parents": {
+  "revisions/boards-merge4-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge4-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge4-v1/expected.json": "839c2262a4cb55a45a9cad130d72690d8f0a0619e81ca75a9074606eb189f5bc",
+  "revisions/boards-merge4-v1/manifest.json": "d040f337495859544e0849e17a84a49dbe8a267f3f504f4fb4894fe6a2c356bc"
+ },
+ "derived_files": {
+  "revisions/boards-merge7-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge7-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge7-v1/expected.json": "d556be72780db54bce10a756769cf60f4b1bda0b70d307829cc95e06745b06a7"
+ }
+}

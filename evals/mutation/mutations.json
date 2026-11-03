@@ -7374,8 +7374,8 @@
   "id": "M1402",
   "name": "the HOLD_UP name cue reads any HOLD (a SPI flash HOLD pin) as a hold-up rail",
   "file": "scripts/catalog.py",
-  "old": "r'HOLD_?UP|(^|[:_/-])(\\d+V\\d*_?HOLD|V_?HOLD)([:_/-]|$)'",
-  "new": "r'HOLD_?UP|(\\d+V\\d*_?HOLD|_?HOLD)([:_/-]|$)'"
+  "old": "r'HOLD_?UP|' + _LEAF + r'(\\d+V\\d*_?HOLD|V_?HOLD)([:_-]|$)'",
+  "new": "r'HOLD_?UP|' + _LEAF + r'(\\d+V\\d*_?HOLD|_?HOLD)([:_-]|$)'"
  },
  {
   "id": "M1410",
@@ -7467,5 +7467,19 @@
   "file": "scripts/lint.py",
   "old": " and not ng.is_ground(self.graph.pinname.get(far) or ''):",
   "new": ":"
+ },
+ {
+  "id": "M1430",
+  "name": "any '/' starts a name-cue word (sheet names and a pin's alternate functions hit)",
+  "file": "scripts/catalog.py",
+  "old": "_LEAF = r'(^|[:_-]|^NET:.*/(?=[^/]*$))'",
+  "new": "_LEAF = r'(^|[:_-]|/)'"
+ },
+ {
+  "id": "M1431",
+  "name": "the leaf of a hierarchical net is no name-cue word again",
+  "file": "scripts/catalog.py",
+  "old": "_LEAF = r'(^|[:_-]|^NET:.*/(?=[^/]*$))'",
+  "new": "_LEAF = r'(^|[:_-])'"
  }
 ]

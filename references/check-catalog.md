@@ -657,12 +657,12 @@
 
 | 功能电路 | 名称 | 内容域 | 电路检查项 | 必需资料 | 检出特征（正则） |
 |---|---|---|---|---|---|
-| POWER_CONVERTER | 变换器与稳压器 | PWR | PWR-C02、PWR-C03、PWR-C04、PWR-C05、PWR-C15、PWR-C06、PWR-C18、PWR-C24 | requirements、datasheets | `(^\|[:_-])(FB\|VFB\|LX\d*\|PGOOD\|PWRGD\|VOUT\d*)([:_-]\|$)\|LDO\|BUCK\|BOOST\|DC-?DC\|PMIC` |
-| POWER_PROTECTION | 电源输入保护 | PWR | PWR-C06、DRV-C02、PRO-C01、PWR-C13、PWR-T05、ANA-T01、PWR-C23、PWR-C25、PWR-C26、PRO-C04、PRO-C05、PRO-C06、PRO-C07、PRO-C08、PRO-C09、PRO-C13 | requirements、datasheets | `FUSE\|HOT-?SWAP\|SURGE\|PART:F\d+:\|(^\|[:_-])(OVP\|UVP\|OCP\|ILIM)([:_-]\|$)\|SMBJ\|SMAJ\|SMCJ` |
-| ANALOG | 模拟前端与监测 | ANA | ANA-C01、ANA-C02、ANA-C03、ANA-T01、ANA-D01、ANA-C05、ANA-C06 | requirements、datasheets | `(^\|[:_-])(AIN\d*\|ADC\w*\|VREF\w*\|REFIN\|REFOUT\|OPA\w*\|INA\d*\|ISENSE\w*\|CSP\|CSN\|NTC\w*\|THERM\w*)([:_-]\|$)` |
-| STARTUP | 上电、复位与启动 | RST | RST-C01、RST-C02、RST-T04、RST-D01 | requirements、datasheets | `RESET\|(^\|_)RST\|POR(_\|$)\|(^\|[:_-])(BOOT\w*\|STRAP\w*\|PWRON\w*)([:_-]\|$)` |
+| POWER_CONVERTER | 变换器与稳压器 | PWR | PWR-C02、PWR-C03、PWR-C04、PWR-C05、PWR-C15、PWR-C06、PWR-C18、PWR-C24 | requirements、datasheets | `(^\|[:_-]\|^NET:.*/(?=[^/]*$))(FB\|VFB\|LX\d*\|PGOOD\|PWRGD\|VOUT\d*)([:_-]\|$)\|LDO\|BUCK\|BOOST\|DC-?DC\|PMIC` |
+| POWER_PROTECTION | 电源输入保护 | PWR | PWR-C06、DRV-C02、PRO-C01、PWR-C13、PWR-T05、ANA-T01、PWR-C23、PWR-C25、PWR-C26、PRO-C04、PRO-C05、PRO-C06、PRO-C07、PRO-C08、PRO-C09、PRO-C13 | requirements、datasheets | `FUSE\|HOT-?SWAP\|SURGE\|PART:F\d+:\|(^\|[:_-]\|^NET:.*/(?=[^/]*$))(OVP\|UVP\|OCP\|ILIM)([:_-]\|$)\|SMBJ\|SMAJ\|SMCJ` |
+| ANALOG | 模拟前端与监测 | ANA | ANA-C01、ANA-C02、ANA-C03、ANA-T01、ANA-D01、ANA-C05、ANA-C06 | requirements、datasheets | `(^\|[:_-]\|^NET:.*/(?=[^/]*$))(AIN\d*\|ADC\w*\|VREF\w*\|REFIN\|REFOUT\|OPA\w*\|INA\d*\|ISENSE\w*\|CSP\|CSN\|NTC\w*\|THERM\w*)([:_-]\|$)` |
+| STARTUP | 上电、复位与启动 | RST | RST-C01、RST-C02、RST-T04、RST-D01 | requirements、datasheets | `RESET\|(^\|_)RST\|POR(_\|$)\|(^\|[:_-]\|^NET:.*/(?=[^/]*$))(BOOT\w*\|STRAP\w*\|PWRON\w*)([:_-]\|$)` |
 | CLOCK | 时钟 | CLK | CLK-C01、CLK-D01、CLK-D03、SIG-C13、SIG-C18 | datasheets | `CLK\|CLOCK\|OSC\|XTAL\|XIN\|XOUT\|32K` |
-| I2C | I²C | SIG | SIG-C01、SIG-C07、SIG-C08、SIG-D01、SIG-C13、SIG-C18、SIG-C15 | requirements、datasheets | `(^\|[:_-])(I2C\w*\|SCL\d*\|SDA\d*)([:_-]\|$)` |
+| I2C | I²C | SIG | SIG-C01、SIG-C07、SIG-C08、SIG-D01、SIG-C13、SIG-C18、SIG-C15 | requirements、datasheets | `(^\|[:_-]\|^NET:.*/(?=[^/]*$))(I2C\w*\|SCL\d*\|SDA\d*)([:_-]\|$)` |
 | LEVEL_SHIFT | 电平转换与跨电压域互连 | SIG | SIG-C07、SIG-C08、SIG-C09、SIG-T04、SIG-C13、SIG-C18、RST-T04、SIG-C14 | requirements、datasheets | `TXS0\d{3}\|TXB0\d{3}\|TXU0\d{3}\|PCA9306\|NVT20\d\d\|LSF0\d{3}\|GTL2003\|FXMA\d+\|FXLA\d+\|NLSX\d+\|(SN)?74(LVC\|AVC\|AXC\|ALVC)\d*T\d+\|LEVEL_?SHIFT\|LVL_?SHIFT\|TRANSLAT\|NET:\w*_(LV\|HV)(_\|$)` |
 | SPI | SPI | SIG | SIG-D09、SIG-C07、SIG-C09、SIG-C13、SIG-C18 | requirements、datasheets | `\bSPI\w*\|MOSI\|MISO\|SCLK` |
 | UART | UART/RS232 | SIG | SIG-D08、SIG-T04、SIG-C07、SIG-C13、SIG-C18 | requirements、datasheets | `UART\|\bTXD\w*\|\bRXD\w*` |
@@ -672,20 +672,20 @@
 | ETHERNET | 以太网 | SIG | SIG-D11、SIG-C09、PRO-C01、SIG-C13、SIG-C18、SIG-C19 | requirements、datasheets、platform_checklist | `ETH\|RGMII\|RMII\|SGMII\|MDIO\|\bMDI\d\|PHY` |
 | DDR | DDR | SIG | SIG-D02、SIG-D03、SIG-C09 | requirements、datasheets、platform_checklist | `LPDDR\|DDR[2345]?\|SDRAM\|DQS\|\bZQ\b` |
 | STORAGE | eMMC/SD | SIG | SIG-D10、SIG-C07、SIG-C09 | requirements、datasheets、platform_checklist | `EMMC\|SDIO\|SDMMC\|MICROSD\|TF_CARD` |
-| RF | 射频与模组 | SIG | SIG-D12 | requirements、datasheets | `(^\|[:_-])(RF\|ANT\|WIFI\|WLAN\|LTE\|GNSS\|SIM)([:_-]\|$)` |
+| RF | 射频与模组 | SIG | SIG-D12 | requirements、datasheets | `(^\|[:_-]\|^NET:.*/(?=[^/]*$))(RF\|ANT\|WIFI\|WLAN\|LTE\|GNSS\|SIM)([:_-]\|$)` |
 | HSSERIAL | 高速串行 | SIG | SIG-D14、SIG-T01、SIG-C13、SIG-C18 | requirements、datasheets、platform_checklist | `PCIE\|PCI_E\|SATA\|SERDES\|USB3\|SSTX\|SSRX\|PERST\|CLKREQ` |
-| AV | 音视频接口 | SIG | SIG-D15、SIG-C07 | requirements、datasheets | `HDMI\|MIPI\|(^\|[:_-])(CSI\|DSI\|EDP\|LCD)\w*\|(^\|[:_-])I2S\|MCLK\|LRCK\|BCLK\|CODEC\|(^\|[:_-])(SPK\|MIC)([:_-]\|\d\|$)` |
+| AV | 音视频接口 | SIG | SIG-D15、SIG-C07 | requirements、datasheets | `HDMI\|MIPI\|(^\|[:_-]\|^NET:.*/(?=[^/]*$))(CSI\|DSI\|EDP\|LCD)\w*\|(^\|[:_-]\|^NET:.*/(?=[^/]*$))I2S\|MCLK\|LRCK\|BCLK\|CODEC\|(^\|[:_-]\|^NET:.*/(?=[^/]*$))(SPK\|MIC)([:_-]\|\d\|$)` |
 | ISOLATION | 隔离 | PRO | PRO-D02、PRO-C01、PRO-C03、SIG-C13、SIG-C18、RST-T04、SIG-C09、SIG-C17 | requirements、datasheets | `ISOLAT\|(^\|_)ISO(_\|$)\|DIGITAL_ISO` |
-| HOLD_UP | 掉电保持 | PWR | PWR-C18、PWR-T05、PWR-C13 | requirements、datasheets | `HOLD_?UP\|(^\|[:_/-])(\d+V\d*_?HOLD\|V_?HOLD)([:_/-]\|$)` |
-| SIGNAL_PROTECTION | 信号端口保护 | PRO | PRO-C01、PRO-C05、PRO-C08 | requirements、datasheets | `(^\|[:_/-])(SIG\|IO\|DI\|AI)_?PROT\w*([:_/-]\|$)` |
+| HOLD_UP | 掉电保持 | PWR | PWR-C18、PWR-T05、PWR-C13 | requirements、datasheets | `HOLD_?UP\|(^\|[:_-]\|^NET:.*/(?=[^/]*$))(\d+V\d*_?HOLD\|V_?HOLD)([:_-]\|$)` |
+| SIGNAL_PROTECTION | 信号端口保护 | PRO | PRO-C01、PRO-C05、PRO-C08 | requirements、datasheets | `(^\|[:_-]\|^NET:.*/(?=[^/]*$))(SIG\|IO\|DI\|AI)_?PROT\w*([:_-]\|$)` |
 | DEBUG | 调试与烧录 | SIG | SIG-D06、SIG-C13、SIG-C18 | datasheets | `JTAG\|SWDIO\|SWCLK\|(^\|[:_-])(SWD\|TCK\|TMS\|TDI\|TDO\|TRST\w*)([:_-]\|$)\|(^\|[:_-])(DEBUG\|DBG)` |
-| DC_48V | −48 V 直流输入 | PWR | PWR-C17、PWR-C18、PWR-C13、PRO-C01 | requirements、datasheets | `(^\|[:_-])-?48V(_?RTN\|_?IN)?([:_-]\|$)\|VBAT_?48` |
-| DC_24V | 24 V 工业直流输入 | PWR | PWR-C27、PWR-C18、PWR-C13、PRO-C01、PWR-T05 | requirements、datasheets | `(^\|[:_-])\+?24V(_?RTN\|_?IN)?([:_-]\|$)\|VIN_?24` |
-| AC_MAINS | 交流市电输入 | PWR | PWR-C18 | requirements、datasheets | `(^\|[:_-])(AC_?[LN]\|VAC\|MAINS)([:_-]\|$)` |
+| DC_48V | −48 V 直流输入 | PWR | PWR-C17、PWR-C18、PWR-C13、PRO-C01 | requirements、datasheets | `(^\|[:_-]\|^NET:.*/(?=[^/]*$))-?48V(_?RTN\|_?IN)?([:_-]\|$)\|VBAT_?48` |
+| DC_24V | 24 V 工业直流输入 | PWR | PWR-C27、PWR-C18、PWR-C13、PRO-C01、PWR-T05 | requirements、datasheets | `(^\|[:_-]\|^NET:.*/(?=[^/]*$))\+?24V(_?RTN\|_?IN)?([:_-]\|$)\|VIN_?24` |
+| AC_MAINS | 交流市电输入 | PWR | PWR-C18 | requirements、datasheets | `(^\|[:_-]\|^NET:.*/(?=[^/]*$))(AC_?[LN]\|VAC\|MAINS)([:_-]\|$)` |
 | INDUSTRIAL_DI | 工业 24 V 数字输入 | SIG | SIG-C10 | requirements、datasheets | `(^\|[:_/-])(DIN?\d+\|PLC_IN\d*)([:_-]\|$)` |
-| POE_PD | PoE 受电端 | PWR | SIG-C11、SIG-C12、PWR-C13、PWR-C23、PRO-C03 | requirements、datasheets | `POE\|(^\|[:_-])VPORT([:_-]\|$)` |
-| VEHICLE_28V | 军车 28 V 输入 | PWR | PWR-C21、PRO-C01、PWR-T05 | requirements、datasheets | `(^\|[:_-])(28V\|VEH_?28)([:_-]\|$)` |
-| SHIP_AC | 舰船交流输入 | PWR | PWR-C22、PRO-C01 | requirements、datasheets | `(^\|[:_-])SHIP_?AC([:_-]\|$)` |
+| POE_PD | PoE 受电端 | PWR | SIG-C11、SIG-C12、PWR-C13、PWR-C23、PRO-C03 | requirements、datasheets | `POE\|(^\|[:_-]\|^NET:.*/(?=[^/]*$))VPORT([:_-]\|$)` |
+| VEHICLE_28V | 军车 28 V 输入 | PWR | PWR-C21、PRO-C01、PWR-T05 | requirements、datasheets | `(^\|[:_-]\|^NET:.*/(?=[^/]*$))(28V\|VEH_?28)([:_-]\|$)` |
+| SHIP_AC | 舰船交流输入 | PWR | PWR-C22、PRO-C01 | requirements、datasheets | `(^\|[:_-]\|^NET:.*/(?=[^/]*$))SHIP_?AC([:_-]\|$)` |
 
 下表的电路检查项只在网表上有它问的机制时生成，检查项对象取前提找到的器件；前提不成立的规则记在功能框架的 `not_asked`，报告在功能下列“未问”。网表说不清（器件类别未知、IC 没有脚名）时照问；漏问的可经 `intent.rule_gaps` 补回。
 

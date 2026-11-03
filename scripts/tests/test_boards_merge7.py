@@ -226,3 +226,27 @@ def test_drop_check_words():
     assert pc.drop_check(48.4, 10000.0, (36.0, 4e-3, '')).endswith('脚电压约 8.4 V，不高于绝限')
     assert pc.clamp_rating({'part': 'SMAJ30A'})[0] == 48.4 and pc.clamp_rating({'part': 'SMAJ300CA'}) is None
     assert pc.pin_limit({'part': 'SN65HVS883'}, 'IP7')[0] == 36.0 and pc.pin_limit({'part': 'SN65HVS882'}, 'IP7') is None
+
+
+# 5: a hierarchical net's leaf is a word for the name cues; a sheet name in the path and a pin's alternate functions are not
+def _hits(kind, *blobs):
+    import re
+    cue = re.compile(catalog.CIRCUIT_TYPE_BY_NAME[kind].pattern, re.I)
+    return [b for b in blobs if cue.search(b)]
+
+
+def test_name_cues_read_the_leaf_of_a_hierarchical_net():
+    assert _hits('I2C', 'NET:/SCL', 'NET:/nRF52840/SDA', 'NET:/CAN, RS485, UART/SCL') == [
+        'NET:/SCL', 'NET:/nRF52840/SDA', 'NET:/CAN, RS485, UART/SCL']
+    assert _hits('STARTUP', 'NET:/04_MCU/BOOT0') == ['NET:/04_MCU/BOOT0']
+    assert _hits('POWER_CONVERTER', 'NET:/Power/FB', 'NET:/VOUT') == ['NET:/Power/FB', 'NET:/VOUT']
+    assert _hits('ANALOG', 'NET:/AIN1', 'NET:/PoE/ISENSE') == ['NET:/AIN1', 'NET:/PoE/ISENSE']
+    assert _hits('HOLD_UP', 'NET:/03_Logic/24V_HOLD') == ['NET:/03_Logic/24V_HOLD']
+
+
+def test_a_sheet_name_or_a_pins_alternate_function_is_no_word():
+    assert _hits('ANALOG', 'NET:/ADC/FOO', 'NET:/AIN/IN_P') == []                 # sheets named ADC, AIN
+    assert _hits('STARTUP', 'PIN:U301.20:PB2/BOOT1', 'PIN:U4.A10:P0.29/BOOT') == []
+    assert _hits('I2C', 'PIN:U1.6:P7/SCL/D5') == []
+    assert _hits('DEBUG', 'NET:/DBG_LED', 'NET:/Debugger/FPGA_ADV') == []         # DEBUG keeps its form
+    assert _hits('DEBUG', 'NET:DBG_LED') == ['NET:DBG_LED']                      # as before, without a path
