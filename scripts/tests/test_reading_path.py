@@ -44,7 +44,8 @@ READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审
 # ① +177 B, ② +177 B 2026-11-02 boards-merge6 M01/M03/F21: checker-conventions names the CLOCK crystal, DC_24V entry and boot-strap candidate rules.
 # ① +1 B 2026-11-02 boards-merge6 M02: the INDUSTRIAL_DI name pattern takes '/' as a word boundary.
 # ① +391 B 2026-11-03 boards-merge7: the vocabulary lists the HOLD_UP and SIGNAL_PROTECTION circuit types and the FUSE_PART precondition (rule library 1.7.2).
-STEP_MAX_BYTES = {'①': 172074, '②': 158590, '③': 224_960, '④': 124_430, '⑤': 37_800}   # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。 2026-11-02 合并步 5：④ +430（verdicts-and-release.md 文档/订货一致性按有无电气后果定级）。
+# ① +136 B, ② +415 B 2026-11-03 boards-merge7: checker-conventions names the HOLD_UP and SIGNAL_PROTECTION candidate rules; the vocabulary drops the two F20 preconditions.
+STEP_MAX_BYTES = {'①': 172210, '②': 159005, '③': 224_960, '④': 124_430, '⑤': 37_800}   # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。 2026-11-02 合并步 5：④ +430（verdicts-and-release.md 文档/订货一致性按有无电气后果定级）。
 
 
 def section(text, title):

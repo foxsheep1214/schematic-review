@@ -25,11 +25,13 @@ import device_kinds
 from electrical_contract import db_fingerprint, load_json
 from checkers import REGISTRY, domains as domains_lib, netgraph as ng, powertree
 import part_words as pw
+import protective_clamps
+from solve_dividers import parse_resistor
 from board_scans import OSCILLATOR_PIN_RE
 import requirement_clarifications
 
 SCHEMA_VERSION = 2
-RULES_VERSION = '2026-11-02.6d'   # boards-merge6 M03: a passive crystal on one IC's oscillator pins is a CLOCK candidate
+RULES_VERSION = '2026-11-03.7a'   # boards-merge7: HOLD_UP and SIGNAL_PROTECTION candidates
 MAX_HOPS = 4
 ANALOG_HOPS = 2
 INPUT_HOPS = 6
@@ -61,6 +63,10 @@ DC24_PATTERN = re.compile(catalog.CIRCUIT_TYPE_BY_NAME['DC_24V'].pattern, re.I)
 CLAMP_KINDS = frozenset({pw.TVS, pw.VARISTOR})
 POWER_JACK_RE = re.compile(r'JACK[-_ ]?DC|DC[-_ ]?JACK|BARREL|POWER[-_ ]?JACK|PWR[-_ ]?JACK', re.I)   # its contacts are a supply
 WALK = 'walk'
+SIGNAL_HOPS = 3          # a port channel: up to three series parts (blocking diode, limiter, filter) to the IC pin
+SIGNAL_SERIES = frozenset({pw.RESISTOR, pw.FUSE, pw.FERRITE, pw.INDUCTOR, pw.DIODE})
+ZERO_OHM_RE = re.compile(r'^\s*0+(?:[.,]0+)?\s*(?:R|Ω|OHMS?)?(?![\d.])', re.I)   # '0R', '0 (1%)(NC)': a link
+ENTRY_LINKS = frozenset({pw.FUSE, pw.FERRITE, pw.INDUCTOR, pw.JUMPER})   # an input's low-impedance series parts
 IDENTITY_ROLES = ('anchor', 'endpoint', 'connector', 'pd_controller')   # a part's identity in a candidate, not its body
 
 
@@ -615,6 +621,144 @@ class Generator:
         hit = next((t for t in texts if DC24_PATTERN.search(t)), None)
         return f'24 V name {hit}' if hit else None
 
+    def hold_ups(self):
+        """boards-merge7 (F20): a diode from a supply rail into storage capacitors that feed a regulator is a hold-up
+        stage, not input protection: HOLD_UP-<diode>, the diode and the storage capacitors on its cathode. Not when the
+        anode is a connector contact or reaches one through series passives (reverse-polarity entry, the input's own),
+        when a second diode feeds the same storage (OR-ing, a second source), when a transistor bridges the diode (an
+        ideal-diode pair) or when the anode is a winding (a rectifier)."""
+        converters = set(self.converter_anchors)
+        for ref in sorted(self.graph.parts):
+            if not self.fitted(ref) or self.graph.kind(ref) != pw.DIODE or not self.two_terminal(ref) or ref in self.anchors:
+                continue
+            anode, cathode = (self.graph.pin2net.get(self.graph.node_named(ref, role) or '') for role in ('anode', 'cathode'))
+            if not anode or not cathode or {anode, cathode} & (self.grounds | set(self.graph.pseudo)):
+                continue
+            if not self.power_net(anode) or anode in self.winding_nets:
+                continue
+            storage = [c for c in self.ground_caps(cathode)
+                       if (parse_capacitance(self.graph.parts[c].get('value')) or 0) >= STORAGE_FARAD]
+            regulators = sorted({node.partition('.')[0] for node in self.graph.nodes_on(cathode)} & converters)
+            if not storage or not regulators:
+                continue
+            feeders = [d for d in self.graph.refs_on(cathode) if d != ref and self.graph.kind(d) == pw.DIODE
+                       and self.graph.node_named(d, 'cathode') and self.graph.pin2net.get(self.graph.node_named(d, 'cathode')) == cathode]
+            bridged = [q for q in self.graph.refs_on(anode) if q != ref and self.graph.kind(q) in (pw.MOSFET, pw.BJT)
+                       and cathode in self.graph.nets_of(q)]
+            entry = self.entry_connectors(anode)
+            if feeders or bridged or entry:
+                continue
+            cid = 'HOLD_UP-' + ref
+            self.new(cid, 'HOLD_UP', ref, self.domain_of(ref), {'input': anode, 'storage': cathode})
+            self.add(cid, ref, 'anchor', f'anchor:hold-up diode {anode} -> {cathode} feeding {",".join(regulators)}', 0)
+            for cap in storage:
+                self.add(cid, cap, 'storage_capacitor', f'storage_capacitor: on {cathode} behind {ref}', 0)
+
+    def entry_connectors(self, net, hops=3):
+        """Connectors on `net` or behind up to `hops` low-impedance series parts (fuse, PTC, ferrite, inductor, jumper),
+        never across a ground: where an input enters (a reverse-polarity diode right behind its connector)."""
+        found, seen, frontier = set(), {net}, [(net, 0)]
+        while frontier:
+            current, depth = frontier.pop()
+            found.update(c for c in self.graph.refs_on(current) if self.graph.kind(c) == pw.CONNECTOR and self.fitted(c))
+            if depth >= hops:
+                continue
+            for _, other in self.graph.neighbors(current, ENTRY_LINKS):
+                if other not in seen and other not in self.grounds:
+                    seen.add(other)
+                    frontier.append((other, depth + 1))
+        return sorted(found)
+
+    def signal_ports(self):
+        """boards-merge7 (stm32-plc DI/AI, calibration DI): a connector contact that reaches an IC pin through a series
+        resistor or PTC, with a clamp (TVS, zener, ESD channel) to ground on the way, is a signal port's protection:
+        SIGNAL_PROTECTION-<connector>, cross-cutting so it never takes a part another circuit holds. A channel whose
+        clamp or limiter another circuit already reached (a bus transceiver's TVS) or that starts on a supply is not one."""
+        held = {ref for cand in self.candidates.values() if not cand['cross_cutting'] for ref in cand['members']}
+        for connector in sorted(self.graph.parts):
+            if not self.fitted(connector) or self.graph.kind(connector) != pw.CONNECTOR or self.usb_connector(connector):
+                continue
+            found, protected = {}, {}
+            for pin, start in sorted(self.graph.pins_of(connector).items()):
+                if start in self.grounds or start in self.graph.pseudo or start in self.stops or self.power_net(start):
+                    continue
+                parts, pins = self.port_channel(connector + '.' + pin, start)
+                if not pins or held & set(parts):
+                    continue
+                found.update(parts)
+                protected.update(pins)
+            if not found:
+                continue
+            cid = 'SIGNAL_PROTECTION-' + connector
+            self.new(cid, 'SIGNAL_PROTECTION', connector, self.domain_of(connector),
+                     {f'protected{i}': net for i, (node, net) in enumerate(sorted(protected.items()))}, cross_cutting=True)
+            self.add(cid, connector, 'connector', 'anchor:signal port connector', 0)
+            for part, (hops, via, role) in sorted(found.items()):
+                self.add(cid, part, role, via, hops)
+
+    def clamps_on(self, net):
+        """Clamps from `net` to a ground: a two-terminal TVS or zener, or a protection array channel on the net."""
+        found = []
+        for ref in self.graph.refs_on(net):
+            if not self.fitted(ref) or self.graph.kind(ref) not in (pw.TVS, pw.ZENER):
+                continue
+            if self.two_terminal(ref):
+                if any(n in self.grounds for n in self.graph.nets_of(ref) if n != net):
+                    found.append(ref)
+            elif any(net in ch['nets'] and any(n in self.grounds for n in ch['return_nets'])
+                     for ch in protective_clamps.channels(ref, self.graph.parts[ref], self.graph, self.kind_intent)):
+                found.append(ref)
+        return found
+
+    def limiter(self, ref):
+        """A series part that limits current into a pin: a PTC/fuse, or a resistor above 1 Ω (a 0 Ω link limits nothing)."""
+        kind = self.graph.kind(ref)
+        if kind == pw.FUSE:
+            return True
+        if kind != pw.RESISTOR:
+            return False
+        value = self.graph.parts[ref].get('value')
+        parsed = parse_resistor(value)
+        return parsed['kohm'] * 1000 > 1 if parsed else not ZERO_OHM_RE.match(str(value or ''))
+
+    def port_channel(self, node, start):
+        """From one contact through up to SIGNAL_HOPS series parts (resistor, PTC, ferrite, forward diode) to the IC
+        signal pins past a limiter. A path counts when a clamp to ground sits on one of its nets. Returns the parts on
+        counted paths ({ref: (hops, via, role)}) and the protected pins ({node: net})."""
+        parts, pins, seen = {}, {}, {start}
+        queue = deque([(start, (), (start,), False)])
+        while queue:
+            net, path, nets, limited = queue.popleft()
+            if limited:
+                ics = [other for other in sorted(self.graph.nodes_on(net))
+                       if self.graph.kind(other.partition('.')[0]) == pw.IC and self.fitted(other.partition('.')[0])
+                       and not self.matches(SUPPLY_PIN_RE, other) and not self.matches(powertree.SUPPLY_IN_PIN_RE, other)]
+                if ics:
+                    clamps = [(i, c) for i, n in enumerate(nets) for c in self.clamps_on(n)]
+                    if clamps:
+                        trail = f'{WALK} {node}'
+                        for i, ref in enumerate(path):
+                            trail += f' -> {nets[i]} -> {ref}'
+                            kind = self.graph.kind(ref)
+                            role = ('series_limiter' if self.limiter(ref) else 'series_diode' if kind == pw.DIODE
+                                    else 'series_filter')
+                            parts.setdefault(ref, (i + 1, trail, role))
+                        for i, clamp in clamps:
+                            parts.setdefault(clamp, (i + 1, f'{WALK} {node} -> {nets[i]} -> {clamp}', 'clamp'))
+                        for other in ics:
+                            pins[other] = net
+                    continue          # an IC pin past the limiter ends the channel
+            if len(path) >= SIGNAL_HOPS:
+                continue
+            for ref, other in self.graph.neighbors(net, SIGNAL_SERIES):
+                if other in seen or other in self.grounds or other in self.stops or other in self.graph.pseudo:
+                    continue
+                if self.graph.kind(ref) == pw.DIODE and self.graph.pin2net.get(self.graph.node_named(ref, 'anode') or '') != net:
+                    continue      # a series diode passes the signal forward only
+                seen.add(other)
+                queue.append((other, path + (ref,), nets + (other,), limited or self.limiter(ref)))
+        return parts, pins
+
     def isolation(self):
         pairs = {}
         for barrier in self.domains['barriers']:
@@ -919,12 +1063,14 @@ class Generator:
         self.chain_members = {ref for cand in self.candidates.values() if cand['cross_cutting']
                               for ref, m in cand['members'].items() if m['role'] not in ('anchor', 'endpoint', 'optocoupler')}
         self.converters()
+        self.hold_ups()
         self.isolation()
         self.analog()
         self.analog_members = {ref for cand in self.candidates.values() if cand['type'] == 'ANALOG'
                                for ref, m in cand['members'].items() if ref != cand['anchor'] and m['hops'] <= 1}
         self.ports()
         self.interfaces()
+        self.signal_ports()      # after every circuit walk: a port channel takes only parts no circuit holds
         self.crystals()
         self.debug()
         self.adjudicate()

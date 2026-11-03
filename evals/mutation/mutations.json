@@ -7287,34 +7287,6 @@
   "new": "                        and False), None)"
  },
  {
-  "id": "M1321",
-  "name": "PRO-C07 eFuse rows are asked of every power-protection circuit again",
-  "file": "scripts/catalog.py",
-  "old": "    ('POWER_PROTECTION', 'PRO-C07'): 'INTEGRATED_SWITCH',\n",
-  "new": ""
- },
- {
-  "id": "M1322",
-  "name": "PWR-C23 dual-source rows are asked of every power-protection circuit again",
-  "file": "scripts/catalog.py",
-  "old": "    ('POWER_PROTECTION', 'PWR-C23'): 'MULTI_SOURCE',\n",
-  "new": ""
- },
- {
-  "id": "M1323",
-  "name": "one diode counts as an ORing of two sources",
-  "file": "scripts/plan_circuits.py",
-  "old": "for ref in anodes.values())\n        found = sorted(set(connectors if len(connectors) > 1 else [])",
-  "new": "for ref in anodes.values())\n        oring = [r for r in fitted if graph.kind(r) == DIODE]\n        found = sorted(set(connectors if len(connectors) > 1 else [])"
- },
- {
-  "id": "M1324",
-  "name": "an IC with an unverified role no longer keeps the eFuse question",
-  "file": "scripts/plan_circuits.py",
-  "old": "        unread = sorted(set(unread) | {ref for ref in ics if graph.role_kind(ref) in (None, catalog.GENERIC_IC_ROLE)})\n    elif requires == 'MULTI_SOURCE':",
-  "new": "    elif requires == 'MULTI_SOURCE':"
- },
- {
   "id": "M1325",
   "name": "a 24 V name or window alone makes a DC_24V candidate without the fuse and clamp shape",
   "file": "scripts/circuit_candidates.py",
@@ -7346,8 +7318,8 @@
   "id": "M1329",
   "name": "a passive crystal on an IC's oscillator pins builds no CLOCK candidate",
   "file": "scripts/circuit_candidates.py",
-  "old": "        self.interfaces()\n        self.crystals()\n",
-  "new": "        self.interfaces()\n"
+  "old": "        self.crystals()\n        self.debug()\n",
+  "new": "        self.debug()\n"
  },
  {
   "id": "M1330",
@@ -7404,5 +7376,54 @@
   "file": "scripts/catalog.py",
   "old": "r'HOLD_?UP|(^|[:_/-])(\\d+V\\d*_?HOLD|V_?HOLD)([:_/-]|$)'",
   "new": "r'HOLD_?UP|(\\d+V\\d*_?HOLD|_?HOLD)([:_/-]|$)'"
+ },
+ {
+  "id": "M1410",
+  "name": "a second diode ORed into the storage still makes a hold-up candidate",
+  "file": "scripts/circuit_candidates.py",
+  "old": "            if feeders or bridged or entry:\n",
+  "new": "            if bridged or entry:\n"
+ },
+ {
+  "id": "M1411",
+  "name": "a diode right behind an input connector counts as a hold-up stage",
+  "file": "scripts/circuit_candidates.py",
+  "old": "            entry = self.entry_connectors(anode)\n",
+  "new": "            entry = []\n"
+ },
+ {
+  "id": "M1412",
+  "name": "a diode with no storage behind it makes a hold-up candidate",
+  "file": "scripts/circuit_candidates.py",
+  "old": "            if not storage or not regulators:\n",
+  "new": "            if not regulators:\n"
+ },
+ {
+  "id": "M1413",
+  "name": "a signal port takes a channel another circuit already holds",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                if not pins or held & set(parts):\n",
+  "new": "                if not pins:\n"
+ },
+ {
+  "id": "M1414",
+  "name": "a 0 Ω link counts as a current limiter of a signal port",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        return parsed['kohm'] * 1000 > 1 if parsed else not ZERO_OHM_RE.match(str(value or ''))",
+  "new": "        return True"
+ },
+ {
+  "id": "M1415",
+  "name": "a signal port channel without a clamp still counts",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                    if clamps:\n",
+  "new": "                    if True:\n"
+ },
+ {
+  "id": "M1416",
+  "name": "a series diode passes a signal port channel backwards",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                if self.graph.kind(ref) == pw.DIODE and self.graph.pin2net.get(self.graph.node_named(ref, 'anode') or '') != net:\n                    continue      # a series diode passes the signal forward only\n",
+  "new": ""
  }
 ]
