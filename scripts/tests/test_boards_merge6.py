@@ -66,3 +66,48 @@ def test_isolator_enable_exemption_keeps_active_low_other_side_and_non_isolators
     assert _coupled(_iso(en2_name='~EN2')) == ['U602.10']          # active low tied high disables the outputs
     assert _coupled(_iso(en2_net='+3V3')) == ['U602.10']             # EN2 on the other side's supply
     assert _coupled(_iso(part='TPS2116')) == ['U602.10', 'U602.7']   # not a digital isolator: unchanged
+
+
+# F15: LM74910H-Q1 EN on VS with UVLO set by its own divider (SNOSDE6C typical application): no "EN without UVLO"
+def _ideal_diode(uvlo=True):
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    db = empty()
+    add(db, 'U101', 'LM74910HQRGERQ1', [('22', 'VS', 'VS_N'), ('6', 'EN', 'VS_N'), ('4', 'UVLO', 'UVLO_N' if uvlo else 'VS_N'),
+                                        ('15', 'OUT', '24V_BUS'), ('3', 'SW', 'VS_N'), ('13', 'GND', 'GND')])
+    add(db, 'J1', 'Conn_01x02', [('1', '', 'VS_N'), ('2', '', 'GND')])
+    add(db, 'C1', '10u', [('1', '', 'VS_N'), ('2', '', 'GND')])
+    if uvlo:
+        add(db, 'R105', '470k', [('1', '', 'VS_N'), ('2', '', 'UVLO_N')])
+        add(db, 'R106', '33k', [('1', '', 'UVLO_N'), ('2', '', 'GND')])
+    for ref in ('R105', 'R106'):
+        if ref in db['parts']:
+            db['parts'][ref].update(prim='Device:R', part='R')
+    return db
+
+
+def _rst_a03(db):
+    from lint import Lint
+    return [f for f in Lint(db).run() if f['rule'] == 'RST-A03']
+
+
+def test_separate_uvlo_divider_closes_en_tied_to_input():
+    from checkers.power_up import build_inventory
+    item = build_inventory(_ideal_diode())['states'][0]['regulators'][0]
+    assert item['enable_source'] == 'tied-to-input' and item['uvlo_pins'] == ['U101.4']
+    assert _rst_a03(_ideal_diode()) == []
+
+
+def test_en_tied_to_input_without_a_uvlo_divider_is_still_reported():
+    assert _rst_a03(_ideal_diode(uvlo=False))
+
+
+def test_uvlo_pin_needs_its_own_divider_and_rule_instances_agree():
+    from checkers.power_up import PowerUpChecker, build_inventory
+    db = _ideal_diode()
+    for net in ('VS_N', 'UVLO_N'):     # R105 removed: UVLO only pulled down, no turn-on point from the input
+        db['nets'][net] = [n for n in db['nets'][net] if not n.startswith('R105.')]
+    del db['parts']['R105'], db['pin2net']['R105.1'], db['pin2net']['R105.2']
+    assert _rst_a03(db)
+    assert PowerUpChecker().rule_instances('RST-A03', build_inventory(_ideal_diode())) == []
+    assert PowerUpChecker().rule_instances('RST-A03', build_inventory(db))

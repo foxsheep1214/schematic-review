@@ -25,6 +25,7 @@ FEEDBACK_PIN_RE = re.compile(r'^(FB\d*|VFB|VSENSE|VS_FB)$', re.I)
 SWITCH_PIN_RE = re.compile(r'^(SW\d*|LX\d*|LL\d*|PH\d*|HG|LG|HO|LO|BOOT\w*|V?BST\w*)$', re.I)
 POWER_PIN_RE = re.compile(r'^(VDD\w*|VCC\w*|AVDD\w*|AVCC\w*|DVDD\w*|VIN\d*|PVIN\d*|VBAT|VS)$', re.I)
 SOFTSTART_PIN_RE = re.compile(r'^(SS|SST|SSTART|SOFTSTART|TR|TRACK)$', re.I)
+UVLO_PIN_RE = re.compile(r'^(UVLO|UV|EN/UVLO|UVLO/EN|VIN_UV)$', re.I)
 GOOD_PIN_RE = re.compile(r'^(PG|PGOOD|POK|PWRGD|RESET\w*|RST\w*)$', re.I)
 MAX_RAILS = 128
 
@@ -133,6 +134,11 @@ class _Scan:
                 identity = str(graph.parts[ref].get('part') or '')
                 load_switch = (graph.role_kind(ref) == 'load_switch' or
                                re.fullmatch(r'MIC94164[A-Z0-9/-]*|TPS27S100[A-Z0-9/-]*', identity, re.I))
+                # boards-merge6 F15: a separate UVLO pin with its own divider sets the turn-on point (LM74910H-Q1 UVLO);
+                # EN tied to the input is then the datasheet's always-on hookup, not a missing UVLO
+                uvlo_pins = sorted(other for other, net in self.graph.named_pins(ref, UVLO_PIN_RE).items()
+                                   if other != node and net != enable_net
+                                   and self._enable_source(net, set(inputs.values()), ref)[0] == 'uvlo-divider')
                 found.append({
                     'id': slug(ref + '-' + enable_net),
                     'ref': ref,
@@ -142,6 +148,7 @@ class _Scan:
                     'enable_net': enable_net,
                     'enable_source': source,
                     'enable_evidence': evidence,
+                    'uvlo_pins': uvlo_pins,
                     'input_nets': sorted(set(inputs.values())),
                     'output_nets': sorted(set(outputs.values())),
                     'softstart': sorted(self.graph.named_pins(ref, SOFTSTART_PIN_RE)),
@@ -295,7 +302,7 @@ class PowerUpChecker(Checker):
                              % (item['ref'], state['id'], item['enable_node'],
                                 item['enable_net']),
                              item['ref'], kind='CANDIDATE')
-                if item['enable_source'] != 'tied-to-input':
+                if item['enable_source'] != 'tied-to-input' or item.get('uvlo_pins'):
                     continue
                 lint.add('RST-A03', self.cold_rules['RST-A03'],
                          '%s（状态 %s）：使能脚 %s 直连输入网 %s，未见 UVLO 分压或 RC 延时；'
@@ -311,7 +318,7 @@ class PowerUpChecker(Checker):
                            for load in state.get('coupled_loads', [])})
         wanted = 'unknown' if rule == 'RST-A04' else 'tied-to-input'
         return sorted({item['id'] for _, item in inv.walk(inventory, 'regulators')
-                       if item['enable_source'] == wanted})
+                       if item['enable_source'] == wanted and not (rule == 'RST-A03' and item.get('uvlo_pins'))})
 
     def binds(self, item):
         obj = item.get('object')

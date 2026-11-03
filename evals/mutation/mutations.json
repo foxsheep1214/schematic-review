@@ -7180,5 +7180,26 @@
   "file": "scripts/checkers/power_up.py",
   "old": "side.get(pin) == side.get(s.partition('.')[2])",
   "new": "side.get(s.partition('.')[2])"
+ },
+ {
+  "id": "M1306",
+  "name": "EN tied to the input is reported though a separate UVLO pin has its own divider",
+  "file": "scripts/checkers/power_up.py",
+  "old": "if item['enable_source'] != 'tied-to-input' or item.get('uvlo_pins'):",
+  "new": "if item['enable_source'] != 'tied-to-input':"
+ },
+ {
+  "id": "M1307",
+  "name": "a UVLO pin counts without a divider of its own",
+  "file": "scripts/checkers/power_up.py",
+  "old": "and self._enable_source(net, set(inputs.values()), ref)[0] == 'uvlo-divider')",
+  "new": ")"
+ },
+ {
+  "id": "M1308",
+  "name": "RST-A03 instances still list an EN closed by a separate UVLO divider",
+  "file": "scripts/checkers/power_up.py",
+  "old": "if item['enable_source'] == wanted and not (rule == 'RST-A03' and item.get('uvlo_pins'))})",
+  "new": "if item['enable_source'] == wanted})"
  }
 ]
