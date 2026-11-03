@@ -1,0 +1,1381 @@
+{
+  "board": "solderedelectronics--usb-uart-ch340c-converter-board-hardware-design",
+  "source": {
+    "repo": "SolderedElectronics/USB-UART-CH340C-converter-board-hardware-design",
+    "commit": "c50925abc7d2966ed093f87f6a86e5648d47d844",
+    "schematic": "CAD/V1.1.1/USB-UART_converter.kicad_sch",
+    "license": "TAPR-OHL-1.0"
+  },
+  "types": [
+    "USB",
+    "UART",
+    "POWER_CONVERTER",
+    "POWER_PROTECTION"
+  ],
+  "run": {
+    "db_sha256": "c1782af8a90033c4e4f36a330f6be06f52eedd39d5fa4cc248238e42a30154c9",
+    "fetched_db_sha256": "f6e6f0d6973a8bda5533b15e70ed6913198bb340c97bb92e5f052eaf1b6309f0",
+    "plan_items": 175,
+    "native_plan_items": 173,
+    "reviewer_added": 2,
+    "findings_total": 21,
+    "results_judged": 75,
+    "results_judged_definition": "PASS/FAIL/NA；100个INSUFFICIENT已逐项写明依赖但未审结",
+    "results_recorded": 175,
+    "result_counts": {
+      "NA": 20,
+      "PASS": 53,
+      "INSUFFICIENT": 100,
+      "FAIL": 2
+    },
+    "gate": "FAIL",
+    "gate_errors": 236,
+    "sr_commit": "e70e57c468be21a12d652ef58f28c79d2b6de779",
+    "cache_review": "/Users/skyfend/.cache/sr-boards/solderedelectronics--usb-uart-ch340c-converter-board-hardware-design/review",
+    "kicad_cli": "10.0.7",
+    "strict_parse": false,
+    "strict_reason": "S1.1/S1.2/S1.3无名，no-strict不是恢复完整性证明",
+    "report_kind": "invalid_gate_evaluation_snapshot_not_release",
+    "gate_error_boundary": "原生schema15只容VENDOR_DATUM/REVIEW_INCOMPLETE，本轮明确记录KNOWLEDGE_GAP/NEEDS_HUMAN而不假造厂家保证；另有拓扑条款承载、局部C类约束/数值结构和两项名义旁路readiness未闭合，所有原文保存在缓存review-gate.json。",
+    "report_sha256": "6566fb1e2e1fcc5e9e473de0a558fc3f131db0a4fba54e695051fac38db1c5a9",
+    "quality_dispositions": "/Users/skyfend/.cache/sr-boards/solderedelectronics--usb-uart-ch340c-converter-board-hardware-design/review/quality-screening-disposition.json"
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "verdict": "true_defect",
+      "sr_rule": "PWR-D02",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "U1",
+        "S1",
+        "C2"
+      ],
+      "nets": [
+        "VCC_OUT",
+        "+3V3",
+        "Net-(U1-V3)"
+      ],
+      "sr_text": "S1选3.3V时，U1的V3没有与VCC相连",
+      "evidence": "db U1.16=VCC_OUT，S1.3=+3V3，U1.4只接C2.1；WCH CH340 3C p3/5要求3V3时V3与VCC同接外部3V3。",
+      "closure": "重新设计切换：固定U1供电并给UART独立电平转换，或用有明确模式表的联动切换同时满足V3/VCC两档接法；不可永久短接V3/VCC后仍输入5V。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-CH340-V3-3V3",
+        "mutation": "以正确3.3V模式U1.4/U1.16同网为正例，将U1.4拆为只带C2的独立网，保持U1.16=3V3；同步nets/pin2net，要求PWR-D02/DEV-C05报供电模式不符",
+        "target_rule": "PWR-D02"
+      },
+      "check_ids": [
+        "PWR-D02.DECAP-AC916649426B8AD2A47B.NET-U1-V3",
+        "DEV-C05.U1"
+      ]
+    },
+    {
+      "id": "H01",
+      "verdict": "needs_human",
+      "sr_rule": "PWR-D04",
+      "criteria": [
+        "G01-017",
+        "G01-051"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U1",
+        "U2",
+        "F1",
+        "S1",
+        "K3",
+        "K4"
+      ],
+      "nets": [
+        "VUSB",
+        "+3V3",
+        "VCC_OUT"
+      ],
+      "sr_text": "输入/负载/环境及工作态尚未形成受控边界",
+      "evidence": "BOM F1仅500mA；README未给最大外供负载、USB枚举电流、线阻、环境温度、温升与热插拔电容。engineering.md的5V/0.5A算例并非承诺工况。",
+      "closure": "原设计者明确两档最大负载、源电压/限流/源阻抗、容差温度和启动/故障工作态，再代入已列方程；不用实测充当本阶段输入。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "SIG-C05.USB-K1-ATTACHED.F1",
+        "SIG-C05.USB-K1-FAULT.F1",
+        "SIG-C05.USB-K1-UNATTACHED.F1",
+        "PWR-C13.POWER-PROTECTION-K4-FAULT.K1",
+        "PWR-C13.POWER-PROTECTION-K4-RUN.K1",
+        "PWR-C13.POWER-PROTECTION-K4-STARTUP.K1",
+        "PWR-C18.POWER-CONVERTER-U2-FAULT.C4",
+        "PWR-C18.POWER-CONVERTER-U2-RUN.C4",
+        "PWR-C18.POWER-CONVERTER-U2-STARTUP.C4",
+        "PWR-C06.POWER-CONVERTER-U2-FAULT.U2",
+        "PWR-C06.POWER-CONVERTER-U2-RUN.U2",
+        "PWR-C06.POWER-CONVERTER-U2-STARTUP.U2",
+        "PWR-E02.U2-VUSB.U2-3",
+        "RST-E01.U2-3",
+        "DEV-C01.POWER-CONVERTER-U2",
+        "DEV-C01.USB-K1",
+        "PWR-C01.3V3",
+        "PWR-C01.VCC-OUT",
+        "PWR-C01.VUSB",
+        "PWR-C02.POWER-CONVERTER-U2-FAULT.C4",
+        "PWR-C02.POWER-CONVERTER-U2-RUN.C4",
+        "PWR-C02.POWER-CONVERTER-U2-STARTUP.C4",
+        "PWR-C03.POWER-CONVERTER-U2-FAULT.C4",
+        "PWR-C03.POWER-CONVERTER-U2-RUN.C4",
+        "PWR-C03.POWER-CONVERTER-U2-STARTUP.C4",
+        "PWR-C19.BOARD",
+        "PWR-D04.BOARD",
+        "DEV-C04.K1",
+        "DEV-C04.K2",
+        "DEV-C04.K3",
+        "DEV-C04.K4",
+        "DEV-C05.PIN-LED.U1-2"
+      ]
+    },
+    {
+      "id": "H02",
+      "verdict": "needs_human",
+      "sr_rule": "DEV-D01",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "+3V3"
+      ],
+      "sr_text": "U2只写SE5218系列，3V3订货变体没有锁定",
+      "evidence": "本版BOM行17 Designation=SE5218，Supplier and ref为空；Seaward 2016 p2列ALG-LF=3.3V、BLG-LF=2.8V等多档；网名只能推断目标3V3，不能证明实装。",
+      "closure": "确认并写定采购码与输出档位，按手册订货表复核。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C05.U2",
+        "DEV-D01.U2"
+      ]
+    },
+    {
+      "id": "K01",
+      "verdict": "knowledge_gap",
+      "sr_rule": "DEV-E01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "K1"
+      ],
+      "nets": [
+        "D+",
+        "D-",
+        "Net-(F1-Pad2)"
+      ],
+      "sr_text": "K1官方图纸第二列的触点编号存在歧义",
+      "evidence": "BOM K1=U262-161N-4BVC11；已取得XKB U262-16XN-4BVC11 Rev A0一页图纸（X=1为镀层选项）。右侧表第二列的DN2/DP2/CC2等标为A7/A6/A5，和左列重复，标准触点应属B侧；不能把排字歧义当作本板接反。图纸额定VBUS总3A、20VDC已读，实际载流另归H01。",
+      "closure": "补该型号勘误或可追溯的B侧触点映射，核官方视图和本端定义；不拿其他厂家SH前缀同形件代替。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D03.K1",
+        "DEV-E01.K1"
+      ]
+    },
+    {
+      "id": "K02",
+      "verdict": "knowledge_gap",
+      "sr_rule": "PRO-C08",
+      "criteria": [
+        "G05-045",
+        "G05-046",
+        "G05-047",
+        "G05-049",
+        "G05-050",
+        "G05-051",
+        "G05-052",
+        "G05-053",
+        "G05-094",
+        "G05-095",
+        "G05-096"
+      ],
+      "severity": "P1",
+      "refs": [
+        "F1"
+      ],
+      "nets": [
+        "VUSB",
+        "Net-(F1-Pad2)"
+      ],
+      "sr_text": "F1缺器件身份及时间电流、I²t、分断和恢复资料",
+      "evidence": "BOM行18只有1206FUSE-500mA，无供应商料号；1206外观和500mA不区分熔断/PTC，不知道源端短路能力和保护动作保证界。",
+      "closure": "锁定F1的准确类型/料号，补额定电压、温度曲线、动作/分断/I²t与恢复方式，并结合H01故障源边界核算。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.F1",
+        "PRO-C01.POWER-PROTECTION-K4-FAULT.F1",
+        "PRO-C01.POWER-PROTECTION-K4-RUN.F1",
+        "PRO-C01.POWER-PROTECTION-K4-STARTUP.F1",
+        "PRO-C05.POWER-PROTECTION-K4.F1",
+        "PRO-C08.POWER-PROTECTION-K4.F1",
+        "PRO-C09.POWER-PROTECTION-K4.F1",
+        "PWR-C06.POWER-PROTECTION-K4-FAULT.F1",
+        "PWR-C06.POWER-PROTECTION-K4-RUN.F1",
+        "PWR-C06.POWER-PROTECTION-K4-STARTUP.F1",
+        "DEV-C01.POWER-PROTECTION-K4",
+        "DEV-Q01.DATASHEETS"
+      ]
+    },
+    {
+      "id": "H03",
+      "verdict": "needs_human",
+      "sr_rule": "DEV-D04",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "C3",
+        "C4"
+      ],
+      "nets": [
+        "VUSB",
+        "+3V3"
+      ],
+      "sr_text": "C3/C4需把有效电容下界落实到BOM采购约束",
+      "evidence": "SE5218 p1/6要求输入输出最小1µF；BOM只有2.2µF/0603，未给介质/偏压温度保证；可反推Ceff至少45.45%标称值。不能据无数据判实际振荡。",
+      "closure": "采购约束写全工况C3/C4有效≥1µF，并选合格料或受控类别，耐压建议≥10V；核约束实际入BOM，不索取所有普通旁路手册。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C02.POWER-CONVERTER-U2",
+        "DEV-C02.POWER-PROTECTION-K4",
+        "PWR-C04.POWER-CONVERTER-U2-FAULT.U2",
+        "PWR-C04.POWER-CONVERTER-U2-RUN.U2",
+        "PWR-C04.POWER-CONVERTER-U2-STARTUP.U2",
+        "PWR-C09.DECAP-7CBB798DE4D3F412D635.VUSB",
+        "PWR-C09.DECAP-A856221E8FEC681DBA8E.3V3",
+        "DEV-D04.BOARD"
+      ]
+    },
+    {
+      "id": "K03",
+      "verdict": "knowledge_gap",
+      "sr_rule": "PWR-C05",
+      "criteria": [
+        "G03-032"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "+3V3",
+        "VUSB"
+      ],
+      "sr_text": "SE5218未给外部抬高输出时的反向电流/允许反偏边界",
+      "evidence": "SE5218 p2-6绝限、电气特性和应用说明没有VOUT>VIN的Ireverse保证；K4.4直接在OUT，C4掉电储能仍可能形成反偏。不能从片内PMOS推无条件反向阻断。",
+      "closure": "先明确K4外部供电许可，补原厂反向工作允许范围或采用有明确反向阻断保证的电路；普通掉电C4储能也按真实路径核。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-C05.POWER-CONVERTER-U2-FAULT.C4",
+        "PWR-C05.POWER-CONVERTER-U2-RUN.C4",
+        "PWR-C05.POWER-CONVERTER-U2-STARTUP.C4"
+      ]
+    },
+    {
+      "id": "H04",
+      "verdict": "needs_human",
+      "sr_rule": "PRO-D04",
+      "criteria": [
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "P1",
+      "refs": [
+        "K2",
+        "K3",
+        "K4",
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "RXD0",
+        "VCC_OUT",
+        "VUSB",
+        "+3V3"
+      ],
+      "sr_text": "外部先上电、误插及故障源边界尚未给定",
+      "evidence": "K2直连MODEM脚，K3直连UART/VCC，K4直连VUSB/+3V3；没有串行隔离/反灌阻断。不能假定外部绝不供电，也不能假定设计允许双源。",
+      "closure": "给出端口允许的供电方向、掉电先后、故障电压/电流和防误接要求，核实际批号/两端手册；未指定主机时形成定量集成条件。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-D04.K1",
+        "PRO-D04.K2",
+        "PRO-D04.K3",
+        "PRO-D04.K4",
+        "SIG-C07.IF-UART-U1-USB-K1",
+        "SIG-C07.UART-U1-ACTIVE.C1",
+        "SIG-C07.UART-U1-IDLE.C1",
+        "PRO-C04.POWER-PROTECTION-K4.C3"
+      ]
+    },
+    {
+      "id": "H05",
+      "verdict": "needs_human",
+      "sr_rule": "PRO-D03",
+      "criteria": [
+        "G04-098"
+      ],
+      "severity": "P1",
+      "refs": [
+        "K1",
+        "K2",
+        "K3",
+        "K4"
+      ],
+      "nets": [
+        "D+",
+        "D-",
+        "CTS",
+        "RXD0",
+        "VUSB",
+        "+3V3"
+      ],
+      "sr_text": "外露端口ESD/浪涌的环境与防护目标未明确",
+      "evidence": "本版网表无独立TVS/ESD；CH340 p1集成PHY并不证明系统接口ESD等级；F1只串VBUS不能限制D+/UART电压。",
+      "closure": "明确外壳/可触及端口及等级，再核芯片内建能力或追加对活线和返回有效的保护；系统试验另移交下游，不把无TVS本身定为缺陷。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-D03.K1",
+        "PRO-D03.K2",
+        "PRO-D03.K3",
+        "PRO-D03.K4"
+      ]
+    },
+    {
+      "id": "H06",
+      "verdict": "needs_human",
+      "sr_rule": "DEV-D03",
+      "criteria": [
+        "G01-013"
+      ],
+      "severity": "P1",
+      "refs": [
+        "K2",
+        "K3",
+        "K4"
+      ],
+      "nets": [
+        "DTR",
+        "RXD0",
+        "TXD0",
+        "CTS",
+        "VCC_OUT",
+        "VUSB",
+        "+3V3"
+      ],
+      "sr_text": "连接器对端视图与具体电缆尚未确认",
+      "evidence": "本端针序已核：K3 1DTR/2RXD/3TXD/4VCC/5CTS/6GND；K2 1CTS/2RTS/3DSR/4DCD/5RI/6R232；K4 1/2GND、3VUSB、4+3V3。README称standard layout却未指定对端线缆与视图。",
+      "closure": "记录实际对端定义/视图；未指定对端的用本端定量集成契约交接，不能声称通用FTDI线缆即插即用。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D03.K2",
+        "DEV-D03.K3",
+        "DEV-D03.K4"
+      ]
+    },
+    {
+      "id": "H07",
+      "verdict": "needs_human",
+      "sr_rule": "DOC-T01",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "JP1",
+        "S1"
+      ],
+      "nets": [
+        "Net-(JP1-Pad2)",
+        "VCC_OUT"
+      ],
+      "sr_text": "默认铜桥状态、开关切换瞬态及默认档需确认",
+      "evidence": "源图JP1为CONNECTED_TRACE_SLODERMASK，BOM默认装配但没有本轮PCB铜桥核查；S1符号2为公共端，缺原厂break-before-make接触次序。不得把两档互斥直接等同切换中无短接。",
+      "closure": "确认JP1默认铜桥及S1开关型式/接触次序、上电默认档；两档与带电切换分别记录。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-D01.DECOUPLING-INVENTORY",
+        "DOC-T01.AS-BUILT"
+      ]
+    },
+    {
+      "id": "H08",
+      "verdict": "needs_human",
+      "sr_rule": "REQ-D03",
+      "criteria": [
+        "G01-001",
+        "G01-002",
+        "G01-003",
+        "G01-004",
+        "G01-006",
+        "G01-007",
+        "G01-008"
+      ],
+      "severity": "P2",
+      "refs": [],
+      "nets": [],
+      "sr_text": "本轮只有用途推断，无正式可量化需求及关键功能判据",
+      "evidence": "catalog types与源README可确定用途，未提供寿命/环境/性能误差、关键功能恢复、故障容忍与验证阶段的受控需求；工业通信是用户指定审查基线，不等于原板承诺工业温度。",
+      "closure": "建立源/负载、性能、接口、关键性和验证方法的受控输入；推断内容保留推断标签，不制造已确认需求。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "SIG-C13.UART-U1.C1",
+        "SIG-C13.USB-K1.F1",
+        "SIG-D08.UART-U1-ACTIVE.C1",
+        "SIG-D08.UART-U1-IDLE.C1",
+        "DEV-C03.USB-K1",
+        "SIG-E02.D.D",
+        "SIG-T03.D.D",
+        "DOC-V02.BOARD",
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD",
+        "REQ-C01.BOARD",
+        "REQ-D02.BOARD",
+        "REQ-D03.BOARD",
+        "REQ-D04.BOARD",
+        "REQ-D05.BOARD",
+        "REQ-Q01.REQUIREMENTS",
+        "REQ-Q02.CHAINS",
+        "REQ-Q03.STATES"
+      ]
+    },
+    {
+      "id": "H09",
+      "verdict": "needs_human",
+      "sr_rule": "PWR-T04",
+      "criteria": [
+        "G03-025"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "VCC_OUT",
+        "Net-(U1-V3)"
+      ],
+      "sr_text": "U1内部POR对慢跌落/棕断/再插恢复的充分性未闭合",
+      "evidence": "CH340 p5片内POR；p8/9阈值2.4–2.8V，3V3模式最低供电3.1V且本板V3接法已有F01。无项目电源恢复要求与掉电波形，不能从内置POR直接推出全域监控完成。",
+      "closure": "先修F01，明确允许的跌落/恢复场景；按厂商保证与规定斜率/延时核有效复位，实际波形验证单独移交。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-T04.AS-BUILT.SUPERVISION-RAILS",
+        "RST-T03.SYS-SEQUENCE",
+        "PWR-C24.POWER-CONVERTER-U2.C4"
+      ]
+    },
+    {
+      "id": "H10",
+      "verdict": "needs_human",
+      "sr_rule": "RST-T04",
+      "criteria": [
+        "G04-010"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U1",
+        "D1",
+        "D2",
+        "K3"
+      ],
+      "nets": [
+        "TXD0",
+        "RXD0",
+        "DTR",
+        "RTS"
+      ],
+      "sr_text": "枚举前输出默认态和外部下载/复位用途需约定",
+      "evidence": "CH340 p5 DTR在USB配置完成前是配置输入；p8/9输出复位能力仅100/40µA；TXD上10k串LED保守需求可达0.579mA。没有外部BOOT/RESET负载及批号，不能用运行期驱动保证复位期高电平。",
+      "closure": "锁定U1批号/默认态，列USB枚举前后状态与外部负载，必要时缓冲LED或控制信号；无关键外接负载时明确集成限制。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "RST-T04.GAP-M02-UART-RESET-IO.U1"
+      ]
+    },
+    {
+      "id": "H11",
+      "verdict": "needs_human",
+      "sr_rule": "DEV-C05",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "U1",
+        "D2",
+        "R4",
+        "K3"
+      ],
+      "nets": [
+        "RXD0",
+        "VCC_OUT"
+      ],
+      "sr_text": "RXD上的LED负载需要外部发送器灌电流和输入偏置核算",
+      "evidence": "U1.3为RXD输入；D2阴极接RXD0、阳极经R4=10k到VCC_OUT。最保守LED电流≤5.5/9.5k=0.579mA；外部低态VOL与拉低能力未给，U1的4/6mA输出指标不适用输入脚。",
+      "closure": "给外部TX定量灌电流/VOL条件并与U1 VIH/VIL比较；不能拿U1 TXD能力关闭此项。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C05.PIN-LED.U1-3"
+      ]
+    },
+    {
+      "id": "K04",
+      "verdict": "knowledge_gap",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "RXD0",
+        "CTS",
+        "DSR",
+        "RI",
+        "DCD",
+        "R232"
+      ],
+      "sr_text": "CH340C实际批号对应的输入容忍与掉电Ioff保证缺失",
+      "evidence": "WCH 3C p5对批号4的CH340C/N才写5V耐受；p8基础VIO≤VCC+0.5V。BOM没有批号，现版手册不能证明2021板上实装具备同一功能，也没有泛化掉电Ioff界。",
+      "closure": "锁定批号/可替代采购范围；若允许外端先上电，取得该变体保证或用有Ioff隔离方案，逐脚核总注入。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "SIG-C08.GAP-M01-UART-OFFPOWER.U1"
+      ]
+    },
+    {
+      "id": "A01",
+      "verdict": "false_alarm",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D1",
+        "D2",
+        "D3"
+      ],
+      "nets": [
+        "Net-(D1-A)",
+        "Net-(D2-A)",
+        "Net-(D3-A)"
+      ],
+      "sr_text": "intent.device_kinds.D1: datasheet page + verbatim quote stating the device type (audit UNDECLARED)",
+      "evidence": "DEV-D02.D1/D2/D3的pin_difference已给A/K两端空差集，但required_inputs仍要求颜色LED的手册类型。按规则DEV-D02两脚快速通道及commodity-floors可独立关闭针表；额定/光学另核。",
+      "closure": "按真实对象资格和已给事实纠正，不改本轮检查器。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_board.py:plan_coverage / _two_terminal_package",
+        "what": "两脚A/K+两端封装的DEV-D02去掉无关datasheet-kind依赖；保留极性/BOM额定及真正身份冲突。"
+      },
+      "seed": null,
+      "check_ids": []
+    },
+    {
+      "id": "A02",
+      "verdict": "false_alarm",
+      "sr_rule": "PWR-C09",
+      "criteria": [
+        "G03-036"
+      ],
+      "severity": "P2",
+      "refs": [
+        "K1",
+        "K3"
+      ],
+      "nets": [
+        "Net-(F1-Pad2)",
+        "VCC_OUT"
+      ],
+      "sr_text": "按本状态器件条款分别核对直接供电/返回段的数量、容量组合及有效容量要求；串联边界另一侧电容不计本段；替代接法需适用依据，标称总量不代替保证容量",
+      "evidence": "K1的VBUS和K3的VCC触点因POWER类型触发PWR-T03/D02/C09/C10共8项；本端无源连接器不是IC，USB体电容在SIG-C05/PWR-C13已有覆盖。",
+      "closure": "按真实对象资格和已给事实纠正，不改本轮检查器。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/decoupling.py:Inventory.groups / role",
+        "what": "在未核验手册的回退路径也采用字段一致的无源连接器身份排除IC旁路；不排除源端USB入口电容总额审查。"
+      },
+      "seed": null,
+      "check_ids": []
+    },
+    {
+      "id": "A03",
+      "verdict": "false_alarm",
+      "sr_rule": "PWR-C23",
+      "criteria": [
+        "G01-049"
+      ],
+      "severity": "P2",
+      "refs": [
+        "K1",
+        "K3",
+        "K4",
+        "S1"
+      ],
+      "nets": [
+        "VUSB",
+        "+3V3",
+        "VCC_OUT"
+      ],
+      "sr_text": "PoE 与适配器等双源供电时，切换过程不超出当前电源能力，无反灌；适配器并联方式与所需隔离一致",
+      "evidence": "K1经F1到VUSB再经U2为+3V3，S1选择二者；README称输出电压。没有第二个已许可来源，K4/K3可反供的风险归PRO-D04，不能直接当独立电源。",
+      "closure": "按真实对象资格和已给事实纠正，不改本轮检查器。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:subject_precondition / plan_subjects；scripts/catalog.py:SUBJECT_REQUIRES",
+        "what": "区分端口可馈入候选与已声明独立来源；只有独立源及切换机制成立才展开PWR-C23，反供仍保留。"
+      },
+      "seed": null,
+      "check_ids": []
+    },
+    {
+      "id": "A04",
+      "verdict": "false_alarm",
+      "sr_rule": "PRO-C07",
+      "criteria": [
+        "G05-044",
+        "G05-092",
+        "G05-093"
+      ],
+      "severity": "P2",
+      "refs": [
+        "F1",
+        "U2"
+      ],
+      "nets": [
+        "VUSB",
+        "+3V3"
+      ],
+      "sr_text": "集成通路 eFuse 按手册规定条件核短路行为，超条件不得免判；过压钳位的持续过压后果与功能要求相符；要求确定掉电状态时输出有放电路径",
+      "evidence": "PRO-C07.POWER-PROTECTION-K4.C3对象起于C3/F1，板上无eFuse/load_switch；该规则描述eFuse短路/过压失效，不能把任意POWER_PROTECTION都当eFuse。",
+      "closure": "按真实对象资格和已给事实纠正，不改本轮检查器。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:subject_precondition / plan_subjects；scripts/catalog.py:SUBJECT_REQUIRES",
+        "what": "要求核验的eFuse/load_switch控制器或等价有源断流拓扑才问PRO-C07；F1仍做PRO-C08/01/05/09。"
+      },
+      "seed": null,
+      "check_ids": []
+    },
+    {
+      "id": "A05",
+      "verdict": "false_alarm",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "K1",
+        "F1",
+        "S1",
+        "K3",
+        "K4"
+      ],
+      "nets": [
+        "VUSB",
+        "VCC_OUT"
+      ],
+      "sr_text": "VCC_OUT: 板上无来源，经 ['K3.4'] 由外部供电；输入保护按 PRO 规则另核",
+      "evidence": "lint INFO称VUSB经K4.3、VCC_OUT经K3.4外部供电且板上无来源；真实K1→F1→VUSB，S1选择VUSB/+3V3→VCC_OUT。INFO本身不是设计缺陷，但来源断言错误。",
+      "closure": "按真实对象资格和已给事实纠正，不改本轮检查器。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/powertree.py:PowerTree._search / source_of",
+        "what": "沿实际F1和SPDT公共端分状态追踪源，输出触点只作未确认外部馈入候选；不把高阻/未上电路径冒充供电。"
+      },
+      "seed": null,
+      "check_ids": []
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G04-005",
+      "criteria": [
+        "G04-005",
+        "G04-007",
+        "G04-009"
+      ],
+      "sr_rule": "SIG-C08",
+      "refs": [
+        "U1",
+        "K2",
+        "K3"
+      ],
+      "nets": [
+        "RXD0",
+        "CTS",
+        "DSR",
+        "RI",
+        "DCD",
+        "R232"
+      ],
+      "why_expected": "本板UART为外部直接连接；掉电输入绝限、注入与反灌属于SIG-C08。原生UART与电路对未展开该目标规则，只有PRO-D04总故障项。补入GAP-M01后仍待批号/外部先上电工况，不能算已确认电气缺陷。",
+      "evidence": "原生173项中无SIG-C08；U1.3/RXD0直连K3.2无串阻。CH340 3C p8 VIO≤VCC+0.5V；p5/13/14仅特定批号支持防反灌。最终175项含SIG-C08.GAP-M01-UART-OFFPOWER.U1。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py:CIRCUIT_TYPES UART / SUBJECT_REQUIRES；scripts/plan_circuits.py:plan_subjects",
+        "what": "为UART外露输入/输出逐端口生成SIG-C08，枚举VCC=0、对端先供电、两档电平及批号差异；与PRO-D04用共同根因，避免重复计数。"
+      },
+      "seed": {
+        "kind": "D-UART-OFFPOWER",
+        "mutation": "在准确CH340C旧批号VIO≤VCC+0.5V的契约下，给K3.2加入独立3.3V推挽发送端，令U1 VCC处于0V状态且直连RXD0；正例用有Ioff保证的隔离器，变异旁路该隔离。必须连同供电状态/器件保证契约植入，不能只改网名。",
+        "target_rule": "SIG-C08"
+      },
+      "coverage_kind": "target_rule_not_generated",
+      "confirmed_board_defect": false
+    },
+    {
+      "id": "M02",
+      "criterion": "G04-010",
+      "sr_rule": "RST-T04",
+      "refs": [
+        "U1",
+        "D1",
+        "D2",
+        "K3"
+      ],
+      "nets": [
+        "TXD0",
+        "RXD0",
+        "DTR",
+        "RTS"
+      ],
+      "why_expected": "U1带内置POR、枚举前配置输入和外露控制输出；UART功能必须复核复位/枚举前默认态。原生无U1 STARTUP候选也无RST-T04，U2 EN链不能替代。",
+      "evidence": "CH340 3C p5 DTR枚举前为配置输入、p8/9复位时输出能力100/40µA；R3/D1在TXD0上，10k串LED且无外部BOOT/RST用途定义。补入RST-T04.GAP-M02-UART-RESET-IO.U1后为H10待确认。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py:DEVICE_ROLES / CIRCUIT_TYPES UART；scripts/circuit_candidates.py:startup候选；scripts/plan_circuits.py:subject_precondition",
+        "what": "登记USB-UART桥角色并识别内置POR/枚举前strap；UART外露控制线也生成RST-T04，明确配置前/运行/掉电，LED负载不能沿用运行驱动。"
+      },
+      "seed": null,
+      "coverage_kind": "target_rule_not_generated",
+      "confirmed_board_defect": false
+    }
+  ],
+  "summary": {
+    "true_defect": 1,
+    "false_alarm": 5,
+    "criterion_issue": 0,
+    "knowledge_gap": 4,
+    "needs_human": 11,
+    "misses": 2
+  },
+  "top50_audit": [
+    {
+      "example": 1,
+      "criterion": "G01-018",
+      "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+      "expected_rules": [
+        "PWR-C17"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无−48V/市电入口：只有USB-C低压Sink与排针。"
+    },
+    {
+      "example": 2,
+      "criterion": "G01-019",
+      "title": "−48 V 输入的工作电压范围与耐受范围",
+      "expected_rules": [
+        "PWR-C17"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无−48V/市电入口：只有USB-C低压Sink与排针。"
+    },
+    {
+      "example": 3,
+      "criterion": "G01-020",
+      "title": "−48 V 输入 0.1 s 中断后自恢复",
+      "expected_rules": [
+        "PWR-C18"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无−48V/市电入口：只有USB-C低压Sink与排针。"
+    },
+    {
+      "example": 4,
+      "criterion": "G01-021",
+      "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+      "expected_rules": [
+        "PRO-C01"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无−48V/市电入口：只有USB-C低压Sink与排针。"
+    },
+    {
+      "example": 5,
+      "criterion": "G01-022",
+      "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+      "expected_rules": [
+        "PWR-C19"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无−48V/市电入口：只有USB-C低压Sink与排针。"
+    },
+    {
+      "example": 6,
+      "criterion": "G01-023",
+      "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+      "expected_rules": [
+        "PWR-C13"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无−48V/市电入口：只有USB-C低压Sink与排针。"
+    },
+    {
+      "example": 7,
+      "criterion": "G01-024",
+      "title": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+      "expected_rules": [
+        "PWR-C18"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无−48V/市电入口：只有USB-C低压Sink与排针。"
+    },
+    {
+      "example": 8,
+      "criterion": "G01-025",
+      "title": "交流输入较长暂降与中断后自恢复（判据 C）",
+      "expected_rules": [
+        "PWR-C18"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无−48V/市电入口：只有USB-C低压Sink与排针。"
+    },
+    {
+      "example": 9,
+      "criterion": "G01-026",
+      "title": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+      "expected_rules": [
+        "SIG-C05"
+      ],
+      "status": "covered_open",
+      "coverage": "SIG-C05；H01",
+      "evidence": "K1→F1→VUSB→U2/选档U1，源/线/保险压降未定；U1 5V工作上限5.3V与USB筛查5.5V要另核，未按实际超压定缺陷。"
+    },
+    {
+      "example": 10,
+      "criterion": "G01-027",
+      "title": "USB 可用电流按实际协商档取",
+      "expected_rules": [
+        "SIG-C05"
+      ],
+      "status": "covered_open",
+      "coverage": "SIG-C05；H01",
+      "evidence": "R1/R2各5.1k为Rd，无PD/Rp电流检测；F1=500mA不等于取电授权，DTR也无4.7k配置下拉。"
+    },
+    {
+      "example": 11,
+      "criterion": "G01-029",
+      "title": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+      "expected_rules": [
+        "PWR-C13",
+        "SIG-C05"
+      ],
+      "status": "covered_open",
+      "coverage": "SIG-C05/PWR-C13；H01",
+      "evidence": "板内C1–C4全计4.6µF；演示±20%为5.52µF，低于10/100µF；F1不作限浪涌器，外接电容和实际公差仍待H01。"
+    },
+    {
+      "example": 12,
+      "criterion": "G01-030",
+      "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+      "expected_rules": [
+        "SIG-D07"
+      ],
+      "status": "covered_open",
+      "coverage": "SIG-D07/PRO-D04；H04/H09",
+      "evidence": "被动Rd USB2 Sink由VBUS供电，没有PD控制器的DET/去抖链；反供使失电不断开是外端场景，已保留H04，不凭无DET脚判违规。"
+    },
+    {
+      "example": 13,
+      "criterion": "G01-031",
+      "title": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+      "expected_rules": [
+        "SIG-C05"
+      ],
+      "status": "not_applicable",
+      "coverage": "SIG-C05",
+      "evidence": "本板用途推断固定Sink，不是Source；K3/K4反供按故障审，不凭排针存在改称USB Source。"
+    },
+    {
+      "example": 14,
+      "criterion": "G03-003",
+      "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+      "expected_rules": [
+        "PWR-C04"
+      ],
+      "status": "covered_open",
+      "coverage": "PWR-C04；H03",
+      "evidence": "U2输出C4=2.2µF，原厂有效最小1µF，需≥45.45%标称；采购约束未闭合，不声称实际振荡。"
+    },
+    {
+      "example": 15,
+      "criterion": "G03-004",
+      "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+      "expected_rules": [
+        "PWR-C04"
+      ],
+      "status": "covered_open",
+      "coverage": "PWR-C04；H03",
+      "evidence": "SE5218 p6只给最小1µF及直接连接，未给独立ESR窗口；不虚构ESR下限。"
+    },
+    {
+      "example": 16,
+      "criterion": "G03-016",
+      "title": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+      "expected_rules": [
+        "DRV-C02"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无离散MOS/热插拔恒流通路，不把LDO片内PMOS当可查分立SOA。"
+    },
+    {
+      "example": 17,
+      "criterion": "G03-018",
+      "title": "变换器 UVLO 开启点低于输入窗下限",
+      "expected_rules": [
+        "PWR-C06"
+      ],
+      "status": "covered_open",
+      "coverage": "PWR-C06；H01",
+      "evidence": "U2 EN3直连VIN1，系列推荐VIN2.8–5.5V；实际慢升/源阻抗/负载跌落未锁，内门限/能力不扩典型为保证。"
+    },
+    {
+      "example": 18,
+      "criterion": "G03-019",
+      "title": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+      "expected_rules": [
+        "PWR-C06"
+      ],
+      "status": "covered_open",
+      "coverage": "PWR-C06；H01",
+      "evidence": "无外部UVLO分压与滞回网络；输入路径F1、线阻及启动负载仍须联合，已有启动链规则。"
+    },
+    {
+      "example": 19,
+      "criterion": "G03-021",
+      "title": "软启动充电电流加启动期负载低于器件限流下限",
+      "expected_rules": [
+        "PWR-D03"
+      ],
+      "status": "not_applicable",
+      "coverage": "PWR-D03",
+      "evidence": "无可配置软启动电容/外部故障定时链，固定LDO启动电流仍在PWR-C03/PWR-C06和H01内审，不把无SS脚当漏报。"
+    },
+    {
+      "example": 20,
+      "criterion": "G03-025",
+      "title": "复位门限高于各负载最低工作电压，掉电先复位",
+      "expected_rules": [
+        "PWR-T04"
+      ],
+      "status": "covered_open",
+      "coverage": "PWR-T04；H09",
+      "evidence": "已有逐域监控检查；CH340内部POR2.4–2.8V、3V3工作下限3.1V，恢复要求/波形待定，不机械报必须外加监控。"
+    },
+    {
+      "example": 21,
+      "criterion": "G03-028",
+      "title": "上电时序在极值时间下满足约束",
+      "expected_rules": [
+        "PWR-C24"
+      ],
+      "status": "covered_open",
+      "coverage": "PWR-C24；H09",
+      "evidence": "U2 EN=VIN，无PG级联；S1选择U1供电，V3模式已F01；时序/棕断恢复仍待项目边界。"
+    },
+    {
+      "example": 22,
+      "criterion": "G03-032",
+      "title": "稳压器反向电流在手册允许内或已阻断",
+      "expected_rules": [
+        "PWR-C05"
+      ],
+      "status": "covered_open",
+      "coverage": "PWR-C05；K03/H04",
+      "evidence": "K4.4接U2.OUT且C4存能，手册未给反偏Ireverse保证；先确定外部反供许可再选阻断方案。"
+    },
+    {
+      "example": 23,
+      "criterion": "G03-037",
+      "title": "电解与钽电容不承受反压",
+      "expected_rules": [
+        "DEV-C01"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "C1–C4均无极性0603陶瓷符号，无电解/钽。"
+    },
+    {
+      "example": 24,
+      "criterion": "G03-038",
+      "title": "电解与钽电容的直流加纹波峰值在降额内",
+      "expected_rules": [
+        "DEV-C01"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无电解/钽，陶瓷耐压/采购档仍由DEV-C01/PWR-C10覆盖。"
+    },
+    {
+      "example": 25,
+      "criterion": "G03-040",
+      "title": "串联使用的电解电容有均压措施",
+      "expected_rules": [
+        "DEV-C01"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无串联电解；四电容各接单一供电/公共地。"
+    },
+    {
+      "example": 26,
+      "criterion": "G04-005",
+      "title": "输入信号不超接收端绝对最大值",
+      "expected_rules": [
+        "SIG-C08"
+      ],
+      "status": "coverage_gap",
+      "coverage": "M01 / SIG-C08",
+      "evidence": "U1 UART输入直接到K2/K3；原生无SIG-C08，已补GAP-M01；与PRO-D04总项区分目标规则覆盖。"
+    },
+    {
+      "example": 27,
+      "criterion": "G04-007",
+      "title": "未上电接口承受正常或故障信号不损坏",
+      "expected_rules": [
+        "PRO-D04",
+        "SIG-C08"
+      ],
+      "status": "coverage_gap",
+      "coverage": "M01 / SIG-C08",
+      "evidence": "外端先上电、U1.VCC=0时需按批号核VIO/Ioff；PRO-D04已有总项，M01是专项目标规则缺失。"
+    },
+    {
+      "example": 28,
+      "criterion": "G04-009",
+      "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+      "expected_rules": [
+        "SIG-C08"
+      ],
+      "status": "coverage_gap",
+      "coverage": "M01 / SIG-C08",
+      "evidence": "RXD0等无串阻，可能的片内钳位不能按新版特定批号泛化；同一M01不重复算三条漏报。"
+    },
+    {
+      "example": 29,
+      "criterion": "G04-010",
+      "title": "上电和复位期间关键输出有确定状态",
+      "expected_rules": [
+        "RST-T04"
+      ],
+      "status": "coverage_gap",
+      "coverage": "M02 / RST-T04",
+      "evidence": "U1枚举前DTR/RTS/TXD、40/100µA复位能力与LED/外部BOOT用途都应核；原生无目标规则，已补。"
+    },
+    {
+      "example": 30,
+      "criterion": "G04-017",
+      "title": "I²C 上拉电阻不超上升时间决定的上限",
+      "expected_rules": [
+        "SIG-C01"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无I2C SDA/SCL或上拉总线，TXD/RXD不是I2C。"
+    },
+    {
+      "example": 31,
+      "criterion": "G04-018",
+      "title": "I²C 上拉电阻不低于灌电流决定的下限",
+      "expected_rules": [
+        "SIG-C01"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无I2C开漏上拉和灌电流机制。"
+    },
+    {
+      "example": 32,
+      "criterion": "G04-032",
+      "title": "CAN 总线两端端接，总阻约 60 Ω",
+      "expected_rules": [
+        "SIG-C03"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无CAN H/L收发器或端接。"
+    },
+    {
+      "example": 33,
+      "criterion": "G04-040",
+      "title": "隔离接口两侧的供电和地不被无意短接",
+      "expected_rules": [
+        "PRO-D02"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无隔离器件/独立参考地，所有返回为GND。"
+    },
+    {
+      "example": 34,
+      "criterion": "G04-041",
+      "title": "运放两个输入在最坏工况下不超共模范围",
+      "expected_rules": [
+        "ANA-C01"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无运放/比较器外部模拟输入。"
+    },
+    {
+      "example": 35,
+      "criterion": "G04-054",
+      "title": "ADC 输入不超满量程和绝对最大值",
+      "expected_rules": [
+        "ANA-C03"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无ADC外部采样输入或检测分压；U2 EN是数字使能。"
+    },
+    {
+      "example": 36,
+      "criterion": "G04-078",
+      "title": "晶振负载电容与晶振规定 CL 相符",
+      "expected_rules": [
+        "CLK-C01"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "CH340C内置时钟，板无Y/X晶体和负载电容。"
+    },
+    {
+      "example": 37,
+      "criterion": "G04-079",
+      "title": "振荡器增益裕量足够起振",
+      "expected_rules": [
+        "CLK-C01"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无外置晶体起振环路，片内时钟能力按CH340C手册。"
+    },
+    {
+      "example": 38,
+      "criterion": "G04-082",
+      "title": "一颗晶振只驱动一个器件",
+      "expected_rules": [
+        "CLK-C01"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无外置晶体，不存在共享晶体端点。"
+    },
+    {
+      "example": 39,
+      "criterion": "G05-019",
+      "title": "每条配电支路在源侧有保护",
+      "expected_rules": [
+        "PRO-C04"
+      ],
+      "status": "covered_open",
+      "coverage": "PRO-C04；H04",
+      "evidence": "USB源路径的K3/K4外供支路都在F1后；外部K4馈入可能绕过F1，需许可/上游保护声明，不机械每口再装保险。"
+    },
+    {
+      "example": 40,
+      "criterion": "G05-022",
+      "title": "过流动作点上限下通路器件与连接器不超额定",
+      "expected_rules": [
+        "DEV-C01",
+        "DEV-C04"
+      ],
+      "status": "covered_open",
+      "coverage": "DEV-C01/DEV-C04；H01/K02",
+      "evidence": "F1只有500mA标签、无动作上界；K1图纸VBUS总3A不等于故障瞬态/温升已核。"
+    },
+    {
+      "example": 41,
+      "criterion": "G05-025",
+      "title": "故障电流下的动作时间短于被保护对象的耐受时间",
+      "expected_rules": [
+        "PRO-C05"
+      ],
+      "status": "covered_open",
+      "coverage": "PRO-C05；K02",
+      "evidence": "F1动作曲线/I²t、故障源电流及下游耐受未给，不能只看500mA通过。"
+    },
+    {
+      "example": 42,
+      "criterion": "G05-030",
+      "title": "TVS 工作电压不低于被钳节点最高工作电压",
+      "expected_rules": [
+        "PRO-E02"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无TVS/对地稳压保护件；ESD防护需求H05另保留，不能从无器件推选型违反。"
+    },
+    {
+      "example": 43,
+      "criterion": "G05-031",
+      "title": "TVS 钳位电压不超被保护器件绝对最大值",
+      "expected_rules": [
+        "PRO-E02"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无TVS，不存在已选TVS钳位值与被保护脚绝限比较对象。"
+    },
+    {
+      "example": 44,
+      "criterion": "G05-032",
+      "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+      "expected_rules": [
+        "PRO-E02"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无TVS脉冲功率件；端口防护目标由H05保留。"
+    },
+    {
+      "example": 45,
+      "criterion": "G05-040",
+      "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+      "expected_rules": [
+        "DRV-C02"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无离散MOS限流/短路启动通路。"
+    },
+    {
+      "example": 46,
+      "criterion": "G05-041",
+      "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+      "expected_rules": [
+        "DRV-C02"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无热态短路通路MOS，U2内部保护按LDO自身手册及H01/H02核。"
+    },
+    {
+      "example": 47,
+      "criterion": "G05-048",
+      "title": "熔断器分断能力不小于预期短路电流",
+      "expected_rules": [
+        "PRO-C01"
+      ],
+      "status": "covered_open",
+      "coverage": "PRO-C01；K02",
+      "evidence": "有F1，但未知型号/直流分断能力和源端预期短路电流；已有对应规则，不记漏报。"
+    },
+    {
+      "example": 48,
+      "criterion": "G05-054",
+      "title": "每个对外电源接口的反接有明确处置",
+      "expected_rules": [
+        "PRO-D04",
+        "PWR-T05"
+      ],
+      "status": "covered_open",
+      "coverage": "PRO-D04；H04",
+      "evidence": "USB-C机械极性固定；K3/K4推断为输出，引出端反供/误插需实际边界，规则已在四口展开。"
+    },
+    {
+      "example": 49,
+      "criterion": "G05-057",
+      "title": "反接阻断之前没有单向 TVS 造成源短路",
+      "expected_rules": [
+        "PWR-C26"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无单向TVS或串联防反器件，不能构造其位置关系。"
+    },
+    {
+      "example": 50,
+      "criterion": "G05-087",
+      "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+      "expected_rules": [
+        "PWR-T05"
+      ],
+      "status": "not_applicable",
+      "coverage": "无该物理机制",
+      "evidence": "无MOS防反接结构，也没有G/S稳压管。"
+    }
+  ],
+  "input_manifest": {
+    "board": "solderedelectronics--usb-uart-ch340c-converter-board-hardware-design",
+    "cache": "/Users/skyfend/.cache/sr-boards/solderedelectronics--usb-uart-ch340c-converter-board-hardware-design",
+    "review": "/Users/skyfend/.cache/sr-boards/solderedelectronics--usb-uart-ch340c-converter-board-hardware-design/review",
+    "files": {
+      "db.json": "c1782af8a90033c4e4f36a330f6be06f52eedd39d5fa4cc248238e42a30154c9",
+      "netlist.xml": "752ff19cc19fdbc8d0f50597ceb49a13d505dde7670470f23216615963fc5278",
+      "verification.json": "35a7935dc48523c383f82cea64d2a9d4148ddc5521c6341e7e2ce430838f3d2d",
+      "fetch.log": "af45448f089c143e5e3f973c2ab6fe5920a7015668720938f83671b41b4cd224",
+      "src/CAD/V1.1.1/USB-UART_converter.kicad_sch": "af33fd75250e1187abf95fa738722d0de7de8342cbcc4b6b01a6ce10628f9e71",
+      "src/README.md": "3e5f5573ecb774383138e816d47499670cdf341c787725b0bfd532ee878d2611",
+      "src/LICENSE.md": "ae647e302f1a8023b5f490f42c4d724fafb410bd551e6086c730d8f814f5e0fe",
+      "review/bom-original.csv": "6e8e3bbdb4dde25d2c0eca47cae9c18025ad9f89b5cb3d3c32aa8a84d73fb414",
+      "review/bom.csv": "669de6efd93d641366a751d6397627405dbc0be29789130e552135d17080cba8",
+      "review/schematic-source.pdf": "6e83d37499968b643deba00797eb48043d8316004d2e44e525660b677c676cc5",
+      "review/ds/CH340.pdf": "5cb6dc879dd59ee50464e45f9cda081fa675fbe34e443220d7d5acd2d7618967",
+      "review/ds/SE5218.pdf": "ccd9d56290f8ab6a4762ca814b22e2a3dd34b892baa0e000f5d101b46b82d1c7",
+      "review/ds/U262-161N-4BVC11.pdf": "b6f2dd5231694ce8ca1f54b62755adf1869857edb94630d9724d4adba65d04f6",
+      "review/intent.json": "fd7aa351c7056470ea556d6a2c43511fc72810ce545387c94fafa5fd594bf8c0",
+      "review/review-plan.json": "6381df2f43accd5293111216d7ffd91afd12f18651ce441c00abc46b7c7653fb",
+      "review/review-results.json": "88a846be9abf188fde4c7b21ebb6fa360dfb67e48e8decc3169c01bd4d5816ab",
+      "review/review-gate.json": "122e112248ffcdf77e3f7d3df7e91464a80ef296f4956eb4d2f5aa8a8af6e31e",
+      "review/notes.json": "9e49cef7a36eac861b2f056273d9201134eac5a2316467a15280201bdd095734",
+      "review/engineering.md": "6d18d797edccc29c5ffa2d938844fb30f3425c99b50d6061110dba35ca3657b3",
+      "review/source-review.md": "d20d41fd68d7532a14e132bfdd5d866a0673c449c0bcc2a62a9df7f39872dee9",
+      "review/quality-screening-disposition.json": "19791a16b4ec1365f695bb0584192f339727c720e9bd0435c2bcea69b435b9c4",
+      "review/审查报告.md": "6566fb1e2e1fcc5e9e473de0a558fc3f131db0a4fba54e695051fac38db1c5a9",
+      "review/top50-audit.md": "a4d30a2aa5d14e3d5e088b355c56b6216ba1558b1b90f07833079b36ebfc614a"
+    },
+    "third_party_inputs_location": "所有原始电路文件/手册/截图仅缓存，不入SR仓库",
+    "kicad_cli": "10.0.7",
+    "strict_parse": false,
+    "strict_reason": "S1.1/S1.2/S1.3无引脚名；已保留输入限制"
+  },
+  "counting": "1个已确认缺陷 + 15个共享待办 + 5类SR误判；两条NET-A01合法候选关闭不算false_alarm；2项目标规则覆盖缺口由人工补回，不是2个已确认物理缺陷。"
+}
