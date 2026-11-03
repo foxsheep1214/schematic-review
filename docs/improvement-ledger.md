@@ -10,6 +10,16 @@ count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
+## 准则库 1.7.0 入库：9 条新准则、12 条修订，挂到已有检查项 (2026-11-02)
+
+草案（下一条）经用户确认后入库：HardwareWiki 登记文件 G01 1.5、G02 1.3、G03 1.5、G04 1.2、G05 1.2 与规范正文同步，共用层重建为 1.7.0（353 条），ASG 同字节。`catalog.BASIS` 把 G02-036/038 挂到 DEV-D01、DEV-D04，G02-037/038 挂到 DOC-D01、DOC-Q01，G02-039 挂到 DEV-C01，G03-059 挂到 PWR-C15，G04-101 挂到 DEV-D02、DEV-D04，G04-102 挂到 DEV-D05、NET-A01、NET-A07，G04-103/104 挂到 SIG-C05（G04-104 另挂 NET-A07）；没有新建检查项，USB 四条的连接器类型限定靠 sr_check 文字与合并步 2B 的连接器型号判定。厂家出处核过原件：PCA9517A Rev. 4.1、RP2350 2026-01-10 构建版、ADS1299 SBAS499C、DFLS1100 DS30497 Rev. 14-2；WCH CH32V30x 评估板原理图未取得原件，登记为版次未核。
+
+- Event: user:2026-11-02 (按草案入库)
+- Causes: rule_missing 9, rule_wrong 12
+- Changed: references/shared/guideline-criteria.json, references/shared/shared-layer.md, scripts/catalog.py, references/architecture.md, evals/detection/RESULTS.md, docs/improvement-ledger.md
+- Gates: pytest 2478; mutation --changed 9ff96f8 34 全杀
+
+
 ## ASG 共用层比对只看已提交内容；SNLA290 出处已核 (2026-11-02)
 
 `test_asg_holds_the_same_shared_layer` 读 ASG 工作副本，另一会话在那里改共用层还没提交时，这条会失败；变异门的基线也跟着失败，整轮都跑不了（当天出现两次）。改为比 ASG HEAD 的文件与本仓库的共用层，同步漂移仍然拦得住；去掉 `shared_digest` 比较，字节相同时它只是重复。
