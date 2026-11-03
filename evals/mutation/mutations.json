@@ -7040,5 +7040,19 @@
   "file": "scripts/review_functions.py",
   "old": "and located(c) and PIN_SECTION_RE.search(c.get('locator') or '')",
   "new": "and located(c)"
+ },
+ {
+  "id": "M1213",
+  "name": "TPS54202 EN allow-open clause matches the wrong pin",
+  "file": "scripts/part_words.py",
+  "old": "and pin == '5' and 'EN' in aliases",
+  "new": "and pin == '6' and 'EN' in aliases"
+ },
+ {
+  "id": "M1214",
+  "name": "TMC2209 VREF allow-open clause is lost",
+  "file": "scripts/part_words.py",
+  "old": "and pin == '17' and 'VREF' in aliases",
+  "new": "and pin == '71' and 'VREF' in aliases"
  }
 ]

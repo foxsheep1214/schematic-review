@@ -381,6 +381,12 @@ def unused_input_permission(db, node):
         return 'TI TPS709 SBVS186H p3 Table5-1 / p13 §7.4: EN may float, internal 300nA pull-up'
     if re.fullmatch(r'TPS5430(?:DDA[RT]?)?', model, re.I) and pin == '5' and 'ENA' in aliases:
         return 'TI TPS5430 SLVS632L p3 Table4-1 / p9 §6.3.3: ENA may float, internal 1.5Mohm pull-up'
+    # boards-merge5: the value names the regulator when the symbol was borrowed (klippertoolboard U3 TPS54308 symbol)
+    named = {str(part.get(k) or '') for k in ('part', 'value')}
+    if any(re.fullmatch(r'TPS54202(?:DDC[RT])?', n, re.I) for n in named) and pin == '5' and 'EN' in aliases:
+        return 'TI TPS54202 p3 Pin Functions / p9 §7.3: "Float the EN pin to enable", internal pull-up current source'
+    if re.fullmatch(r'TMC2209(?:-LA)?(?:-T)?', model, re.I) and pin == '17' and 'VREF' in aliases:
+        return 'Trinamic TMC2209 Rev1.08 p53 / p79 VVREFO: VREF open settles at 1.8 V (73 % current scale); unused when GCONF.i_scale_analog=0'
     return None
 
 
