@@ -303,3 +303,40 @@ def test_lettered_isolator_sides_follow_supply_letters_not_channel_digits():
     side = isolation_sides.model(NetGraph(db), 'U103')
     assert side['mechanism'] == 'digital_isolator'
     assert [s['nets'] for s in side['sides']] == [['3V3', 'GND', 'M-CLK', 'M-MISO'], ['AGND', 'B1', 'B2', 'VEE']]
+
+
+# 7. NET-A01 honours the native no-connect flag; an MPN's /NC ordering suffix is not DNP.
+def test_native_no_connect_single_node_is_info():
+    from lint import Lint
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    db = empty()
+    add(db, 'J6', 'Conn_FFC', [('38', '', '/CSI/CSI2_CLK_N'), ('5', '', '/CSI/GPIO5'), ('1', '', 'GND')])
+    db['no_connect_nodes'] = ['J6.38']
+    found = [f for f in Lint(db).run() if f['rule'] == 'NET-A01']
+    flagged = {f['detail'].split(' <- ')[0]: f['kind'] for f in found}
+    assert flagged['/CSI/CSI2_CLK_N'] == 'INFO'
+    assert flagged['/CSI/GPIO5'] != 'INFO'   # no flag: still asked
+
+
+def test_part_number_nc_suffix_is_not_a_not_fitted_mark():
+    import parse_kicad
+    assert parse_kicad._not_part_number('IntegratedCircuits:MCP3464RT-E_NC', 'MCP3464RT-E/NC') == ''
+    assert parse_kicad._not_part_number('MCP3464RT-E_NC', 'MCP3464RT-E/NC') == ''
+    assert parse_kicad._not_part_number('10k/NC', 'RC0603FR-0710KL') == '10k/NC'
+    from parse_netlist import is_not_populated
+    assert not is_not_populated(*(parse_kicad._not_part_number(t, 'MCP3464RT-E/NC')
+                                  for t in ('IntegratedCircuits:MCP3464RT-E_NC', 'MCP3464RT-E_NC')))
+    assert is_not_populated('Device:R', parse_kicad._not_part_number('10k/NC', ''))
+
+
+def test_no_connect_flag_on_an_input_of_unknown_direction_is_still_asked():
+    from lint import Lint
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    db = empty()
+    add(db, 'U2', 'LTC4000', [('5', 'ENC', '/Charge-IC/ENABLE'), ('1', 'GND', 'GND'), ('7', 'CTS0', '/USB/CTS0')])
+    db['native_pintype'] = {'U2.5': 'passive', 'U2.1': 'power_in', 'U2.7': 'bidirectional'}
+    db['no_connect_nodes'] = ['U2.5', 'U2.7']
+    flagged = {f['detail'].split(' <- ')[0]: f['kind'] for f in Lint(db).run() if f['rule'] == 'NET-A01'}
+    assert flagged['/Charge-IC/ENABLE'] != 'INFO' and flagged['/USB/CTS0'] == 'INFO'

@@ -6879,5 +6879,26 @@
   "file": "scripts/checkers/isolation_sides.py",
   "old": "        if {lettered.get(p) for p in actual if re.fullmatch(r'(?:VCC|VDD)[AB]', names[p], re.I)} == {'A', 'B'}:\n",
   "new": "        if False:\n"
+ },
+ {
+  "id": "M1122",
+  "name": "a native no-connect flag does not soften NET-A01",
+  "file": "scripts/lint.py",
+  "old": "                if nds[0] in no_connect and (self.graph.kind(ref) in (CONNECTOR, pw.TESTPOINT)\n",
+  "new": "                if False and (self.graph.kind(ref) in (CONNECTOR, pw.TESTPOINT)\n"
+ },
+ {
+  "id": "M1123",
+  "name": "a no-connect flag softens NET-A01 on an input of unknown direction",
+  "file": "scripts/lint.py",
+  "old": "                                             or self.graph.native_pintype.get(nds[0]) in NC_OPEN_PINTYPES):\n",
+  "new": "                                             or True):\n"
+ },
+ {
+  "id": "M1124",
+  "name": "an MPN /NC ordering suffix marks the part DNP",
+  "file": "scripts/parse_kicad.py",
+  "old": "    return '' if mpn and letters(text) == letters(mpn) else text\n",
+  "new": "    return text\n"
  }
 ]

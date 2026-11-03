@@ -922,43 +922,7 @@
      "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
     }
    ],
-   "known_false_alarms": [
-    {
-     "rule": "NET-A01",
-     "match": "/USB/CTS0 <- U3.41 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/CTS3 <- U3.46 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/DCD0 <- U3.33 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/DSR0 <- U3.29 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/RI0 <- U3.32 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/RTS0 <- U3.40 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/RTS3 <- U3.45 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    }
-   ],
+   "known_false_alarms": [],
    "fixed_false_alarms": [
     {
      "rule": "PWR-A01",
@@ -1054,6 +1018,41 @@
      "rule": "PRO-E02",
      "match": "D25 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DSR2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/CTS0 <- U3.41 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/CTS3 <- U3.46 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/DCD0 <- U3.33 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/DSR0 <- U3.29 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/RI0 <- U3.32 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/RTS0 <- U3.40 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/RTS3 <- U3.45 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
     }
    ]
   },

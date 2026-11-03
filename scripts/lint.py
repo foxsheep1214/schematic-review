@@ -80,6 +80,9 @@ EN_PULL_ALERT_V = 6.0
 KICAD_UNCONNECTED_RE = re.compile(r'^unconnected-\(', re.I)
 DATASHEET_NC_PIN_RE = re.compile(r'^(N\.?C\.?|DNC|NIC|RSVD|RESERVED)(?:$|[_\-\d])', re.I)
 BIDIR_PINTYPES = {'BI', 'BIDI', 'BIDIR', 'BIDIRECTIONAL', 'IO', 'I/O', 'TRISTATE', '3STATE'}
+# Native pin types a no-connect flag may leave open without asking NET-A01 again: driven or bidirectional pins and
+# declared NC pins. Inputs and pins of unknown direction (passive, unspecified) are still asked (boards-merge4).
+NC_OPEN_PINTYPES = {'output', 'bidirectional', 'tri_state', 'open_collector', 'open_emitter', 'no_connect'}
 KICAD_AUTO_NET_RE = re.compile(r'(^|/)(Net|unconnected)-\(')   # 工具按引脚生成的网名，不是手写拼写
 NET_TIE_RE = re.compile(r'NET_?TIE', re.I)
 ISOLATOR_RE = re.compile(r'ISOLAT|\bISO\d|ISOW|ADUM|SI8[46]\d|NSI\d|CA-IS|隔离', re.I)
@@ -527,11 +530,19 @@ class Lint:
                      str(conflict), conflict['node'].partition('.')[0], kind='CANDIDATE')
 
         # NET-A01 单节点悬空网
+        no_connect = set(self.db.get('no_connect_nodes') or [])
         for n, nds in nets.items():
             if n in self.pseudo:
                 continue
             if len(nds) == 1:
                 ref = nds[0].split('.')[0]
+                if nds[0] in no_connect and (self.graph.kind(ref) in (CONNECTOR, pw.TESTPOINT)
+                                             or self.graph.native_pintype.get(nds[0]) in NC_OPEN_PINTYPES):
+                    # a native no-connect flag on a contact or a driven/bidirectional pin is the drawing saying "left
+                    # open on purpose", not a split net; whether it may stay open is the pin disposition's (DEV-D05)
+                    self.add('NET-A01', '原生 NC 标记的单节点网',
+                             f'{n} <- {nds[0]}：图上有原生 no-connect 标记，按有意不接处理；脚的处置归 DEV-D05', ref, kind='INFO')
+                    continue
                 permission = pw.unused_input_permission(self.db, nds[0])
                 if permission:
                     self.add('NET-A01', '手册允许未用输入开路', f'{nds[0]}: {permission}', ref, kind='INFO')
