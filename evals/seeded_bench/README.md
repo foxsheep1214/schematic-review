@@ -182,3 +182,18 @@ PMIC的11–33µF窗口来自ROHM BD71847AMWV Rev003 p110 Table5-36，原1.22µF
 | D-LDO-STARTUP-COVERAGE | capacitive-soil-sensor C6/U2 | SE5218 输出电容 2.2µF→1000µF；PWR-D03 |
 
 实测：旧 266 位点逐点保留，合计 272 位点/229 自动/0 错误；六个新位点自动目标均为 0。ADM2582E 位点只旁报 PWR-A03，PRO-A05 的隔离器型号表不含隔离 RS-485 收发器，记为后续修法。其余仍漏项多数要合成合同（源窗、器件保证值、需求），见合并步 5 报告的漏问表。
+
+
+## 合并步 6：工业 I/O 校准板的两个位点（2026-11-02）
+
+`boards-merge6.json` 登记 ASG 自己画的工业 I/O 校准板（RS-485/CAN/8 路 DI/4 路 DO，24 V 输入，许可 `internal`）。设计记录在
+`~/Documents/ASG-calibration/industrial-io-rs485-can/`，只读；导出的 `netlist.xml` 手工复制到 `~/.cache/sr-boards/calibration--industrial-io-rs485-can/`。
+两个位点都以未植入的原板为配对基线：
+
+| 类型 | 位点 | 网表变换 / 目标规则 |
+|---|---|---|
+| D-XTAL-LOAD（已有） | Y301 8MHz/12pF，C308/C309 | 负载电容 20 pF→1 µF；CLK-A01、CLK-C01（漏问 M03 的晶体电路） |
+| D-BOOT0-FLOAT | U301 BOOT0，R301 | 删去 BOOT0 下拉，复位采样的启动模式不定；RST-E02、NET-A01（误报 F21 的 strap 归属） |
+
+实测：旧 272 位点逐点保留，合计 274 位点/231 自动/0 错误；两个新位点在合并前后都有自动目标（CLK-A01、NET-A01）。
+漏问 M01（DC_24V）、M02（DI 网名）是电路识别缺口，不是网表缺陷，没有落种子。

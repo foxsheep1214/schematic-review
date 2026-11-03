@@ -10,6 +10,7 @@ import re
 
 import catalog
 from . import inventory as inv
+from . import isolation_sides
 from . import netgraph as ng
 import part_words as pw
 from . import powertree
@@ -24,6 +25,7 @@ FEEDBACK_PIN_RE = re.compile(r'^(FB\d*|VFB|VSENSE|VS_FB)$', re.I)
 SWITCH_PIN_RE = re.compile(r'^(SW\d*|LX\d*|LL\d*|PH\d*|HG|LG|HO|LO|BOOT\w*|V?BST\w*)$', re.I)
 POWER_PIN_RE = re.compile(r'^(VDD\w*|VCC\w*|AVDD\w*|AVCC\w*|DVDD\w*|VIN\d*|PVIN\d*|VBAT|VS)$', re.I)
 SOFTSTART_PIN_RE = re.compile(r'^(SS|SST|SSTART|SOFTSTART|TR|TRACK)$', re.I)
+UVLO_PIN_RE = re.compile(r'^(UVLO|UV|EN/UVLO|UVLO/EN|VIN_UV)$', re.I)
 GOOD_PIN_RE = re.compile(r'^(PG|PGOOD|POK|PWRGD|RESET\w*|RST\w*)$', re.I)
 MAX_RAILS = 128
 
@@ -132,6 +134,11 @@ class _Scan:
                 identity = str(graph.parts[ref].get('part') or '')
                 load_switch = (graph.role_kind(ref) == 'load_switch' or
                                re.fullmatch(r'MIC94164[A-Z0-9/-]*|TPS27S100[A-Z0-9/-]*', identity, re.I))
+                # boards-merge6 F15: a separate UVLO pin with its own divider sets the turn-on point (LM74910H-Q1 UVLO);
+                # EN tied to the input is then the datasheet's always-on hookup, not a missing UVLO
+                uvlo_pins = sorted(other for other, net in self.graph.named_pins(ref, UVLO_PIN_RE).items()
+                                   if other != node and net != enable_net
+                                   and self._enable_source(net, set(inputs.values()), ref)[0] == 'uvlo-divider')
                 found.append({
                     'id': slug(ref + '-' + enable_net),
                     'ref': ref,
@@ -141,6 +148,7 @@ class _Scan:
                     'enable_net': enable_net,
                     'enable_source': source,
                     'enable_evidence': evidence,
+                    'uvlo_pins': uvlo_pins,
                     'input_nets': sorted(set(inputs.values())),
                     'output_nets': sorted(set(outputs.values())),
                     'softstart': sorted(self.graph.named_pins(ref, SOFTSTART_PIN_RE)),
@@ -149,6 +157,28 @@ class _Scan:
                 })
         self._regulators = sorted(found, key=lambda item: item['id'])[:MAX_RAILS]
         return self._regulators
+
+    def _isolator_output_enables(self, ref, enables):
+        """Output-enable pins of a digital isolator tied to the supply of their own side (boards-merge6 F14).
+
+        TI ISO644x SLLSG01C p5 Pin Functions: "Output pins on side 1 are enabled when EN1 is high or open"; tying ENx
+        to VCCx is the datasheet hookup, there is no power-up order between them. Only an active-high name (EN, ENx,
+        VEx) on a pin whose side group (isolation_sides) also holds a supply pin on the same net qualifies."""
+        model = isolation_sides.model(self.graph, ref)
+        if not model or model['mechanism'] != 'digital_isolator':
+            return set()
+        side = {pin: s['id'] for s in model['sides'] for pin in s['pins']}
+        supplies = self._supply_inputs(ref)
+        found = set()
+        for node, net in enables.items():
+            raw = str(self.graph.pinname.get(node) or '').strip()
+            if not re.fullmatch(r'EN\d?|VE\d', raw, re.I):
+                continue     # ~EN, EN_N, ENB-bar spellings are active low: tied high they disable the outputs
+            pin = node.partition('.')[2]
+            if any(net == other and side.get(pin) and side.get(pin) == side.get(s.partition('.')[2])
+                   for s, other in supplies.items()):
+                found.add(node)
+        return found
 
     def coupled_loads(self):
         """使能/复位输入与本器件供电轨同网的负载：上电同时建立的候选。
@@ -166,8 +196,11 @@ class _Scan:
             if not supplies:
                 continue
             controls = dict(self.graph.named_pins(ref, ENABLE_PIN_RE))
+            output_enables = self._isolator_output_enables(ref, controls)
             controls.update(self.graph.named_pins(ref, RESET_IN_RE))
             for node, net in sorted(controls.items()):
+                if node in output_enables:
+                    continue
                 if net in supplies and ng.is_rail(net):
                     found.append({'id': slug(ref + '-' + node.partition('.')[2]),
                                   'ref': ref, 'node': node, 'net': net})
@@ -269,7 +302,7 @@ class PowerUpChecker(Checker):
                              % (item['ref'], state['id'], item['enable_node'],
                                 item['enable_net']),
                              item['ref'], kind='CANDIDATE')
-                if item['enable_source'] != 'tied-to-input':
+                if item['enable_source'] != 'tied-to-input' or item.get('uvlo_pins'):
                     continue
                 lint.add('RST-A03', self.cold_rules['RST-A03'],
                          '%s（状态 %s）：使能脚 %s 直连输入网 %s，未见 UVLO 分压或 RC 延时；'
@@ -285,7 +318,7 @@ class PowerUpChecker(Checker):
                            for load in state.get('coupled_loads', [])})
         wanted = 'unknown' if rule == 'RST-A04' else 'tied-to-input'
         return sorted({item['id'] for _, item in inv.walk(inventory, 'regulators')
-                       if item['enable_source'] == wanted})
+                       if item['enable_source'] == wanted and not (rule == 'RST-A03' and item.get('uvlo_pins'))})
 
     def binds(self, item):
         obj = item.get('object')

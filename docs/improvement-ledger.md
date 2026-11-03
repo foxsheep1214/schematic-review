@@ -9,6 +9,19 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 合并步 6：工业 I/O 校准板 11 条误报、3 条漏问（2026-11-02）
+
+ASG 自绘校准板的 SR 审查有 11 条误报，修了 10 条：F04 封装注释脚名、F13 SN65HVS883 DB0/DB1 可悬空、F14 隔离器 EN 接本侧电源、F15 另有 UVLO 分压时 EN 直连输入、F16 Surge Protection Device 判为 TVS、F17 efuse 按整词读、F18 高边智能开关判为负载开关、F19 输入保护只留带电脚分支且 EN 接本器件电源不成链、F20 保持电路不问 eFuse 和双源切换、F21 BOOT 下拉并入复位链。F05 没修：intent 没有 TVS 参数字段，加字段要改格式，并让工具凭人填的数字关闭 E 规则，需人定。3 条漏问全修：M01 24 V 入口出 DC_24V 候选，M02 层次网名的 DI 线索，M03 无源晶体出 CLOCK 候选。另加 2 个种子（D-XTAL-LOAD、D-BOOT0-FLOAT），自动 2/2。跟进 F16 时修了一处：同网多只裸 K 脚算一个钳位通道。
+
+校准板：冷扫非 INFO 27→19，合并非 INFO 25→19。78 块板：冷扫非 INFO 2271→2271，真缺陷定位 172/172 不变，计划 +25 行，全是多功能 BOOT 脚的 RST-E02。候选变化：去掉 18 个假的 POWER_PROTECTION/STARTUP 候选，新增 31 个 CLOCK/STARTUP.BOOT 候选。有 6 块板缓存的决定对不上新候选，重审时要重新决定。
+
+板子登记在 `evals/boards/calibration--industrial-io-rs485-can/`。字节棘轮 ① 171683、② 158590。
+
+- Event: user:2026-11-02 (再帮我执行"已识别但没做的改进")
+- Causes: knowledge_missing 4, knowledge_wrong 1, judgment 5, rule_missing 2, rule_not_enforced 2
+- Changed: scripts/board_intent.py, scripts/part_words.py, scripts/checkers/power_up.py, scripts/device_kinds.py, scripts/datasheet_kinds.py, scripts/catalog.py, scripts/plan_circuits.py, scripts/circuit_candidates.py, scripts/protective_clamps.py, scripts/tests/test_boards_merge6.py, scripts/tests/test_boards_merge6_seeds.py, scripts/tests/test_reading_path.py, references/checker-conventions.md, references/check-catalog.md, references/review-vocabulary.md, references/architecture.md, evals/mutation/mutations.json, evals/seeded_bench/mutators.py, evals/seeded_bench/run.py, evals/seeded_bench/README.md, evals/seeded_bench/boards-merge6.json, evals/boards/calibration--industrial-io-rs485-can/, evals/detection/RESULTS.md, docs/proposals/boards-merge-6-2026-11-02.md, docs/improvement-ledger.md
+- Gates: pytest 2783; mutation --changed e3be29e 295 全杀（新增 M1300–M1334）; kicad_replay 195/195; seeded 274 位点 / 自动 231 / 0 错误、无退化; check_ledger PASS; 不 push
+
 ## 合并步 5：两块新板归因、224 条漏问核对、抽查反馈三条、次要模式 7 项（2026-11-02）
 
 faderbuddy 与 singularity 补做归因（真缺陷 0/1、误报 7/10）。224 条漏问在 before 上逐条重跑：现已报出 79、仍漏 103、需人判 42，仍漏中可用网表表达的落成 6 个种子（M1200–M1205，当前自动 0，留作靶子）；终版重跑仍为 79/103/42，本步修的是误报与抽查反馈，不覆盖漏问。抽查反馈：文档/订货一致性缺陷须写有无电气后果、无则 P3；网名推定电压记“按网名推定”不给 PASS（78 板 697 行）；放宽 SIG-T04 连接门禁同时，晶体缺频率/CL 仍在 CLK-C01 要资料（25 行），加回归。次要模式做了 7 项（允许悬空 TPS54202 EN/TMC2209 VREF、电池/电池座、BOOT 自举脚、PoE 中心抽头、SPI 双模别名、未连脚单脚网、Microprocessor Crystal），78 板冷扫非 INFO -6、计划项 -71、RST-E02 114→103、REQ-Q07 588→568；带点位号、CM4/M.2 脚表、升压方向等未做，原因见提案。④ 字节棘轮 124000→124430（定级小节）。外部：ASG main 162a38e 把共用层升到 1.7.1，`test_asg_holds_the_same_shared_layer` 在本分支（不许动共用层）失败，门禁以 `SR_ASG_SHARED_ROOT` 指向 ASG 1.7.0 运行，合并前需同步共用层。gnss L86 缓存 intent 删去 K2 带理由声明（分类器已能读出电池）。

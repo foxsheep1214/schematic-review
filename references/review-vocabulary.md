@@ -35,7 +35,7 @@
 | DC_48V | −48 V 直流输入 | PWR | PWR-C17、PWR-C18、PWR-C13、PRO-C01 | requirements、datasheets | `(^\|[:_-])-?48V(_?RTN\|_?IN)?([:_-]\|$)\|VBAT_?48` |
 | DC_24V | 24 V 工业直流输入 | PWR | PWR-C27、PWR-C18、PWR-C13、PRO-C01、PWR-T05 | requirements、datasheets | `(^\|[:_-])\+?24V(_?RTN\|_?IN)?([:_-]\|$)\|VIN_?24` |
 | AC_MAINS | 交流市电输入 | PWR | PWR-C18 | requirements、datasheets | `(^\|[:_-])(AC_?[LN]\|VAC\|MAINS)([:_-]\|$)` |
-| INDUSTRIAL_DI | 工业 24 V 数字输入 | SIG | SIG-C10 | requirements、datasheets | `(^\|[:_-])(DIN?\d+\|PLC_IN\d*)([:_-]\|$)` |
+| INDUSTRIAL_DI | 工业 24 V 数字输入 | SIG | SIG-C10 | requirements、datasheets | `(^\|[:_/-])(DIN?\d+\|PLC_IN\d*)([:_-]\|$)` |
 | POE_PD | PoE 受电端 | PWR | SIG-C11、SIG-C12、PWR-C13、PWR-C23、PRO-C03 | requirements、datasheets | `POE\|(^\|[:_-])VPORT([:_-]\|$)` |
 | VEHICLE_28V | 军车 28 V 输入 | PWR | PWR-C21、PRO-C01、PWR-T05 | requirements、datasheets | `(^\|[:_-])(28V\|VEH_?28)([:_-]\|$)` |
 | SHIP_AC | 舰船交流输入 | PWR | PWR-C22、PRO-C01 | requirements、datasheets | `(^\|[:_-])SHIP_?AC([:_-]\|$)` |
@@ -59,6 +59,8 @@
 | POWER_PROTECTION | PRO-C06 | SUPPLY_SWITCH | 电路里没有 D、S 都不接地的 MOSFET |
 | POWER_PROTECTION | PRO-C08 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |
 | POWER_PROTECTION | PRO-C09 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |
+| POWER_PROTECTION | PRO-C07 | INTEGRATED_SWITCH | 电路里没有负载开关/eFuse 角色或带 ILIM/IMON/DVDT 脚的 IC |
+| POWER_PROTECTION | PWR-C23 | MULTI_SOURCE | 电路里没有第二路电源（两个连接器、阴极汇合的两只二极管或两颗通路开关） |
 | ANALOG | ANA-C05 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
 | ANALOG | ANA-C06 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
 | POWER_PROTECTION | ANA-T01 | SENSE_ELEMENT | 电路里没有采样电阻（<1 Ω）、NTC 或接到 IC 检测脚的分压 |
@@ -89,7 +91,7 @@
 | `mcu` | 微控制器与处理器 | microcontroller、microprocessor、systemonchip、mcu | ANALOG | 检测脚 |
 | `transceiver` | 总线收发器与 PHY | transceiver、ethernetphy、linedriver、busdriver | ANALOG、CAN、RS485、UART、ETHERNET、HSSERIAL | 检测脚 |
 | `isolator` | 数字隔离器 | digitalisolator、isolatedgatedriver、isolator | 不作核心器件 | — |
-| `load_switch` | 负载开关与热插拔保护 | loadswitch、hotswap、efuse、idealdiode、powerdistributionswitch、currentlimitswitch、highsideswitch | POWER_PROTECTION | — |
+| `load_switch` | 负载开关与热插拔保护 | loadswitch、hotswap、efuse、idealdiode、powerdistributionswitch、currentlimitswitch、highsideswitch、highsidesmartpower | POWER_PROTECTION | — |
 | `charger` | 电池充电器 | batterycharger、chargecontroller、chargemanagement、switchingcharger、linearcharger、chargeric | POWER_CONVERTER | — |
 | `adc_dac` | ADC 与 DAC | analogtodigital、digitaltoanalog、bitadc、bitdac、channeladc、channeldac、audiodac、audioadc、sigmadeltaadc、deltasigmaadc | ANALOG | 全部信号脚 |
 | `oscillator` | 时钟源 | crystaloscillator、clockgenerator、clockbuffer、clocksynthesizer、jittercleaner、oscillator、clockdistribution、realtimeclock、clockmultiplier | CLOCK | — |

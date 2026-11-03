@@ -1006,7 +1006,7 @@ CIRCUIT_TYPES = (
             ('PWR-C18',),
             ('requirements', 'datasheets')),
     CircuitType('INDUSTRIAL_DI', '工业 24 V 数字输入', 'SIG',
-            r'(^|[:_-])(DIN?\d+|PLC_IN\d*)([:_-]|$)',
+            r'(^|[:_/-])(DIN?\d+|PLC_IN\d*)([:_-]|$)',   # '/': hierarchical /07_DI/DI1 (boards-merge6 M02)
             ('SIG-C10',),
             ('requirements', 'datasheets')),
     CircuitType('POE_PD', 'PoE 受电端', 'PWR',
@@ -1060,7 +1060,8 @@ DEVICE_ROLES = OrderedDict([
     ('isolator', DeviceRole('数字隔离器', ('digitalisolator', 'isolatedgatedriver', 'isolator'), ())),
     # 2026-10-24 第一批补充：规则表里有检查项却没有角色能靶到的电路类型。
     ('load_switch', DeviceRole('负载开关与热插拔保护', (
-        'loadswitch', 'hotswap', 'efuse', 'idealdiode', 'powerdistributionswitch', 'currentlimitswitch', 'highsideswitch'),
+        'loadswitch', 'hotswap', 'efuse', 'idealdiode', 'powerdistributionswitch', 'currentlimitswitch', 'highsideswitch',
+        'highsidesmartpower'),
         ('POWER_PROTECTION',))),
     ('charger', DeviceRole('电池充电器', ('batterycharger', 'chargecontroller', 'chargemanagement', 'switchingcharger', 'linearcharger', 'chargeric'),
                            ('POWER_CONVERTER',))),
@@ -1175,6 +1176,9 @@ SUBJECT_PRECONDITIONS = {
     'RTC_BACKUP': '电路里没有 RTC、备份电源或电池充电机制',
     'START_PIN': '电路里没有带复位、使能、禁止或启动配置脚（RESET、EN、DIS、UVLO、BOOT、strap）的 IC',
     'RESCUE_PIN': '电路里没有 MCU，也没有带启动配置脚（BOOT、strap、MODE）的 IC：没有可烧录、可救援的器件',
+    # boards-merge6 F20: a hold-up diode with its storage (D201 → 24V_HOLD) is no eFuse and has one source
+    'INTEGRATED_SWITCH': '电路里没有负载开关/eFuse 角色或带 ILIM/IMON/DVDT 脚的 IC',
+    'MULTI_SOURCE': '电路里没有第二路电源（两个连接器、阴极汇合的两只二极管或两颗通路开关）',
 }
 # 只在某个产品基线才问的规则（共用规范的航天专用规则）：基线不符时不派、不算未问。
 BASELINE_RULES = {'REQ-C02': 'aerospace', 'PWR-C25': 'aerospace', 'SIG-C18': 'aerospace', 'PRO-C10': 'aerospace',
@@ -1196,6 +1200,8 @@ SUBJECT_REQUIRES = {
     ('POWER_PROTECTION', 'PRO-C06'): 'SUPPLY_SWITCH',
     ('POWER_PROTECTION', 'PRO-C08'): 'PROTECTION_PART',
     ('POWER_PROTECTION', 'PRO-C09'): 'PROTECTION_PART',
+    ('POWER_PROTECTION', 'PRO-C07'): 'INTEGRATED_SWITCH',
+    ('POWER_PROTECTION', 'PWR-C23'): 'MULTI_SOURCE',
     ('ANALOG', 'ANA-C05'): 'ANALOG_PIN',
     ('ANALOG', 'ANA-C06'): 'ANALOG_PIN',
     ('POWER_PROTECTION', 'ANA-T01'): 'SENSE_ELEMENT',
@@ -1377,6 +1383,7 @@ CANDIDATE_STATES = {
                                             'CLOCK', 'CAN', 'RS485', 'DDR', 'STORAGE', 'RF', 'AV',
                                             'INDUSTRIAL_DI', 'AC_MAINS', 'POE_PD', 'DC_48V', 'VEHICLE_28V', 'SHIP_AC')},
     'DEBUG': ('run',),       # 调试口的答案不随工作态变化，仍要一个态来展开检查项
+    'DC_24V': ('startup', 'run', 'fault'),   # boards-merge6 M01: an input's window, hold-up and fault, not bus idle/active
 }
 
 # A state a decision adds (states_add) must be named by a requirement (R7 acceptance 2026-10-25, user: B1 a): the

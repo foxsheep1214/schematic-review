@@ -25,10 +25,11 @@ import device_kinds
 from electrical_contract import db_fingerprint, load_json
 from checkers import REGISTRY, domains as domains_lib, netgraph as ng, powertree
 import part_words as pw
+from board_scans import OSCILLATOR_PIN_RE
 import requirement_clarifications
 
 SCHEMA_VERSION = 2
-RULES_VERSION = '2026-11-02.2a'   # a non-converter IC's switch without an inductive drain is no converter; R8: U406
+RULES_VERSION = '2026-11-02.6d'   # boards-merge6 M03: a passive crystal on one IC's oscillator pins is a CLOCK candidate
 MAX_HOPS = 4
 ANALOG_HOPS = 2
 INPUT_HOPS = 6
@@ -42,12 +43,23 @@ INTERFACE_ROLES = frozenset(name for name, role in catalog.DEVICE_ROLES.items()
 FEEDBACK_PIN_RE = re.compile(r'^(FB|VFB|COMP|FB/\w+|\w+/FB)$', re.I)
 PROTECTION_PIN_RE = re.compile(r'^(OVP|UVP|OCP|OTP|OLP|LATCH|FAULT|FLT|BO|BROWNOUT|PROT|SCP|OVLO)$', re.I)
 STARTUP_PIN_RE = re.compile(r'^(HV|VSTART|HVS|EN|ENABLE|INH|INHIBIT|UVLO|SS|SOFT_?START|RUN|DELAY|DIS|DISABLE|TRIG/DIS|PG|PGOOD|RESET|NRST|RST)$', re.I)
+BOOT_STRAP_RE = re.compile(r'^(BOOT\d*|STRAP\w*)$', re.I)
+RESET_PIN_RE = re.compile(r'^(N?RST\w*|N?RESET\w*|MR|XRES)$', re.I)
 SENSE_PIN_RE = re.compile(r'^(CS|CS[+-]|CS_?[PN]|ISNS|ISENSE|ISEN|VSNS|VSENSE|FB|NTC|TEMP|RT|ZCD|ZCD/OPP|CS/ZCD|AIN\d*|VIN_?SNS)$', re.I)
 USB_PIN_RE = re.compile(r'^(CC[12]|D[+-]|DP|DN|DM|D_P|D_N|SBU[12])$', re.I)
 DEBUG_PIN_RE = re.compile(r'^(SWDIO|SWCLK|SWO|TCK|TMS|TDI|TDO|NTRST|JTAG\w*)$', re.I)
 PROTECTIVE_RE = re.compile(r'THERMISTOR|FUSE|\bGDT\b|SPARK', re.I)   # with netgraph's NTC and varistor words
 PROTECTIVE_KINDS = device_kinds.with_flag('protective')             # fuse, tvs, bridge_rectifier, ntc, varistor
 PASS_THROUGH = frozenset({pw.BRIDGE_RECTIFIER})      # multi-pin parts the input walk passes
+# An input walk that meets one of these anchors has reached a power stage: the branch it came from carries power.
+POWER_STAGE_ROLES = CONVERTER_ROLES | {'load_switch', 'pd_controller'}
+# Parts only a power entry carries: a rectifier bridge, an inrush NTC or a varistor across the line (AC inlets reach a
+# transformer or bridge before any storage capacitor the walk can see).
+POWER_PATH_KINDS = frozenset({pw.BRIDGE_RECTIFIER, pw.NTC, pw.VARISTOR})
+SUPPLY_PIN_RE = re.compile(r'^(VDD\w*|VCC\w*|VIN\d*|PVIN\d*|VBAT|VS|VBUS|IN)$', re.I)   # a startup pin on its own supply
+DC24_PATTERN = re.compile(catalog.CIRCUIT_TYPE_BY_NAME['DC_24V'].pattern, re.I)
+CLAMP_KINDS = frozenset({pw.TVS, pw.VARISTOR})
+POWER_JACK_RE = re.compile(r'JACK[-_ ]?DC|DC[-_ ]?JACK|BARREL|POWER[-_ ]?JACK|PWR[-_ ]?JACK', re.I)   # its contacts are a supply
 WALK = 'walk'
 IDENTITY_ROLES = ('anchor', 'endpoint', 'connector', 'pd_controller')   # a part's identity in a candidate, not its body
 
@@ -498,46 +510,110 @@ class Generator:
             self.add(cid, ref, 'connector', 'anchor:input connector', 0)
             for part, (hops, via, role) in members.items():
                 self.add(cid, part, role, via, hops)
+            basis = self.dc24_basis(ref, members)
+            if basis:
+                # boards-merge6 M01: the same entry is the board's 24 V interface; it references the input protection's
+                # parts (cross-cutting) so the interface rules (PWR-C27 window, PWR-C18 hold-up, PWR-T05) are asked
+                did = 'DC_24V-' + ref
+                self.new(did, 'DC_24V', ref, self.domain_of(ref), {'storage': storage}, cross_cutting=True)
+                self.add(did, ref, 'connector', 'anchor:24 V input connector; ' + basis, 0)
+                for part, (hops, via, role) in members.items():
+                    self.add(did, part, role, via, hops)
+
+    def power_net(self, net):
+        """A supply by the netlist (powertree supply candidates, a declared or rail-named net, hierarchical prefix aside)."""
+        leaf = str(net).rsplit('/', 1)[-1].lstrip('+')
+        return net in self.supplies or self.tree.is_rail(net) or ng.is_rail(net) or ng.is_rail(leaf)
 
     def input_walk(self, connector):
-        """From the connector through series parts (two-terminal, bridges, chokes) to the first storage capacitor."""
-        members, seen, storage = {}, {}, None
-        queue = deque((net, 0, f'{WALK} {connector}.{pin}') for pin, net in sorted(self.graph.pins_of(connector).items())
+        """From the connector through series parts (two-terminal, bridges, chokes) to the first storage capacitor.
+
+        Only the connector pins that carry power keep their branch (boards-merge6 F19): a pin whose own net is a supply,
+        or whose walk reaches a storage capacitor, a stop net, a power-stage anchor (regulator, load switch), a barrier
+        (transformer) or a part only a power entry carries (bridge, inrush NTC, varistor). Signal,
+        bus and chassis pins of the same connector (CAN termination behind a jumper, DI channels, shield Y-capacitors)
+        are not its input protection."""
+        members, seen, storage, power = {}, {}, None, set()
+        group, reached = {}, {}          # pins whose branches meet through series parts are one branch
+
+        def root(pin):
+            while group.get(pin, pin) != pin:
+                pin = group[pin]
+            return pin
+
+        def join(a, b):
+            group[root(a)] = root(b)
+
+        queue = deque((net, 0, f'{WALK} {connector}.{pin}', pin) for pin, net in sorted(self.graph.pins_of(connector).items())
                       if net not in self.graph.pseudo)
-        protective = False
         while queue:
-            net, hops, path = queue.popleft()
+            net, hops, path, origin = queue.popleft()
+            if net in reached:
+                join(origin, reached[net])
             if seen.get(net, 99) <= hops or net in self.grounds:
                 continue
-            seen[net] = hops
+            seen[net], reached[net] = hops, origin
+            if not hops and (self.power_net(net) or ng.is_rail(self.pin_name(connector + '.' + origin))
+                             or POWER_JACK_RE.search(_blob(self.graph.parts.get(connector, {})))):
+                power.add(origin)
             caps = [c for c in self.ground_caps(net) if (parse_capacitance(self.graph.parts[c].get('value')) or 0) >= STORAGE_FARAD]
             if net in self.stops:
                 caps = self.ground_caps(net)      # a converter's input rail ends the input: its capacitors are the input's, whatever their value
             if caps or net in self.stops:
                 for cap in caps:
-                    members[cap] = (hops + 1, f'{path} -> {net} -> {cap}', 'storage_capacitor')
+                    members[cap] = (hops + 1, f'{path} -> {net} -> {cap}', 'storage_capacitor', origin)
                 storage = storage or net
+                power.add(origin)
                 continue
             if hops >= INPUT_HOPS:
                 continue
             for ref in self.graph.refs_on(net):
+                if ref in self.anchors and self.anchors[ref] in POWER_STAGE_ROLES:
+                    power.add(origin)
+                if ref in self.barriers or self.graph.kind(ref) in POWER_PATH_KINDS:
+                    power.add(origin)
                 if ref == connector or ref in self.anchors or ref in self.barriers or ref in members:
                     continue
                 kind = self.graph.kind(ref)
                 blob = _blob(self.graph.parts.get(ref, {}))
                 is_protective = kind in PROTECTIVE_KINDS or bool(PROTECTIVE_RE.search(blob) or pw.NTC_RE.search(blob) or pw.VARISTOR_RE.search(blob))
                 if self.two_terminal(ref):
-                    members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind)
-                    protective |= is_protective
-                    queue.append((next(n for n in self.graph.nets_of(ref) if n != net), hops + 1, f'{path} -> {net} -> {ref}'))
+                    members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind, origin)
+                    queue.append((next(n for n in self.graph.nets_of(ref) if n != net), hops + 1, f'{path} -> {net} -> {ref}', origin))
                 elif (kind in PASS_THROUGH or kind in pw.SERIES_WINDINGS
                       or (kind == pw.INDUCTOR and len(self.graph.pins_of(ref)) == 4)):
-                    members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind)
-                    protective |= is_protective
+                    members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind, origin)
                     for other in self.graph.nets_of(ref):
                         if other != net:
-                            queue.append((other, hops + 1, f'{path} -> {net} -> {ref}'))
+                            queue.append((other, hops + 1, f'{path} -> {net} -> {ref}', origin))
+        power = {root(pin) for pin in power}
+        members = {ref: m[:3] for ref, m in members.items() if root(m[3]) in power}
+        if storage is not None and not any(m[2] == 'storage_capacitor' for m in members.values()):
+            storage = None
+        protective = any(m[2] == 'protective' for m in members.values())
         return (members, storage) if protective else None
+
+    def dc24_basis(self, connector, members):
+        """Why an input entry is a 24 V industrial input, or None: its power branch holds a fuse and a clamp (TVS or
+        varistor), and a confirmed requirement declares an input_voltage window around 24 V (max 24–36 V), or the
+        connector or its contact nets carry a 24 V name. A name alone with no protection shape is no candidate."""
+        kinds = {self.graph.kind(part) for part in members}
+        if pw.FUSE not in kinds or not kinds & CLAMP_KINDS:
+            return None
+        for req in self.kind_intent.get('requirements') or []:
+            if not isinstance(req, dict) or req.get('status') == 'DEFERRED':
+                continue
+            for item in req.get('parameters') or []:
+                if not isinstance(item, dict) or item.get('name') != 'input_voltage' or item.get('unit') != 'V':
+                    continue
+                low, high = item.get('min'), item.get('max')
+                if isinstance(high, (int, float)) and 24 <= high <= 36 and (low is None or low <= 24):
+                    return f'requirement {req.get("id")} input_voltage {low}..{high} V'
+        part = self.graph.parts.get(connector, {})
+        texts = ['PART:' + ':'.join([connector] + [str(part.get(k, '')) for k in ('part', 'value', 'prim')])]
+        texts += ['NET:' + net for net in self.graph.nets_of(connector)]
+        hit = next((t for t in texts if DC24_PATTERN.search(t)), None)
+        return f'24 V name {hit}' if hit else None
 
     def isolation(self):
         pairs = {}
@@ -575,6 +651,9 @@ class Generator:
                 if self.matches(PROTECTION_PIN_RE, node):
                     ctype, label = 'POWER_PROTECTION', 'protection'
                 elif self.matches(STARTUP_PIN_RE, node):
+                    if net in self.supplies or any(self.matches(SUPPLY_PIN_RE, anchor + '.' + other)
+                                                   for other, n in self.graph.pins_of(anchor).items() if n == net and other != pin):
+                        continue  # boards-merge6 F19: EN tied straight to a supply (LM74910 EN on VS) is always-on, no chain
                     ctype, label = 'STARTUP', 'startup'
                 else:
                     continue
@@ -587,6 +666,29 @@ class Generator:
                 self.chain_walk(cid, node, net)
                 if len(cand['members']) < 2:
                     del self.candidates[cid]       # a pin tied straight to a rail is no chain
+
+    def straps(self):
+        """boards-merge6 F21: an MCU's boot straps (BOOT0, BOOT1) are sampled at reset; their pulls join the MCU's reset
+        chain (STARTUP-<mcu>.NRST), whose rows ask reset timing and the strap's forced state (RST-E02), instead of
+        standing alone as unassigned resistors. Without a reset chain the straps form STARTUP-<mcu>.BOOT."""
+        for anchor, role in sorted(self.anchors.items()):
+            if role != 'mcu':
+                continue
+            straps = [(anchor + '.' + pin, net) for pin, net in sorted(self.graph.pins_of(anchor).items())
+                      if self.matches(BOOT_STRAP_RE, anchor + '.' + pin) and net not in self.grounds
+                      and net not in self.graph.pseudo and net not in self.stops]
+            if not straps:
+                continue
+            cid = next((c['id'] for c in sorted(self.candidates.values(), key=lambda c: c['id'])
+                        if c['type'] == 'STARTUP' and c['anchor'] == anchor
+                        and self.matches(RESET_PIN_RE, c['nets'].get('pin', ''))), None)
+            if cid is None:
+                cid = f'STARTUP-{anchor}.BOOT'
+                self.new(cid, 'STARTUP', anchor, self.domain_of(anchor), {'pin': straps[0][0]}, cross_cutting=True)
+                self.add(cid, anchor, 'anchor', f'anchor:boot strap pin {straps[0][0]}', 0)
+            for index, (node, net) in enumerate(straps):
+                self.candidates[cid]['nets'][f'strap{index}'] = net
+                self.chain_walk(cid, node, net)
 
     def chain_walk(self, cid, node, start):
         owner = self.candidates[cid]['anchor']
@@ -717,6 +819,46 @@ class Generator:
                     if ref != anchor and self.fitted(ref) and self.graph.kind(ref) == pw.CONNECTOR:
                         self.add(cid, ref, 'connector', f'connector on {net} reached from {anchor}', 1)
 
+    def crystals(self):
+        """boards-merge6 M03: a passive crystal whose two ends reach the oscillator pins of one IC (directly or through
+        one series resistor) is a CLOCK circuit: the crystal, its load capacitors and series resistors. The IC stays
+        with its own circuits; a crystal on two ICs' oscillators is CLK-A02's finding, not a candidate."""
+        for ref in sorted(self.graph.parts):
+            if not self.fitted(ref) or self.graph.kind(ref) != pw.CRYSTAL or ref in self.anchors:
+                continue
+            nets = sorted({n for n in self.graph.nets_of(ref) if n not in self.grounds and n not in self.graph.pseudo})
+            if len(nets) != 2 or any(n in self.stops or ng.is_rail(n.rsplit('/', 1)[-1].lstrip('+')) for n in nets):
+                continue          # an oscillator drawn with a crystal symbol has a supply pin
+            ends, series = [], {}
+            for net in nets:
+                reach = {net: None}
+                for part, other in self.graph.neighbors(net, {pw.RESISTOR}):
+                    if self.two_terminal(part) and other not in self.grounds:
+                        reach.setdefault(other, part)
+                ics = set()
+                for near, part in reach.items():
+                    for node in self.graph.nodes_on(near):
+                        ic = node.partition('.')[0]
+                        if (ic != ref and self.graph.kind(ic) == pw.IC and self.fitted(ic)
+                                and OSCILLATOR_PIN_RE.search(self.pin_name(node).strip())):
+                            ics.add(ic)
+                            if part:
+                                series[part] = near
+                ends.append(ics)
+            common = sorted(ends[0] & ends[1])
+            if len(common) != 1:
+                continue
+            cid = 'CLOCK-' + ref
+            self.new(cid, 'CLOCK', ref, self.domain_of(ref), {'xtal_a': nets[0], 'xtal_b': nets[1]})
+            self.add(cid, ref, 'crystal', f'anchor:passive crystal on the oscillator pins of {common[0]}', 0)
+            for net in nets:
+                for cap in self.ground_caps(net):
+                    self.add(cid, cap, 'load_capacitor', f'{WALK} {ref} -> {net} -> {cap}', 1)
+            for part, near in sorted(series.items()):
+                self.add(cid, part, 'series_resistor', f'{WALK} {ref} -> {part} -> {near} ({common[0]} oscillator pin)', 1)
+                for cap in self.ground_caps(near):
+                    self.add(cid, cap, 'load_capacitor', f'{WALK} {ref} -> {part} -> {near} -> {cap}', 2)
+
     def debug(self):
         found = []
         for ref in sorted(self.graph.parts):
@@ -773,6 +915,7 @@ class Generator:
         self.prepare()
         self.inputs()            # first: the storage net it reaches is the input rail, a stop for every other walk
         self.chains()            # chains claim their parts before the converter walks, which are blocked from them
+        self.straps()
         self.chain_members = {ref for cand in self.candidates.values() if cand['cross_cutting']
                               for ref, m in cand['members'].items() if m['role'] not in ('anchor', 'endpoint', 'optocoupler')}
         self.converters()
@@ -782,6 +925,7 @@ class Generator:
                                for ref, m in cand['members'].items() if ref != cand['anchor'] and m['hops'] <= 1}
         self.ports()
         self.interfaces()
+        self.crystals()
         self.debug()
         self.adjudicate()
         shared = self.ownership()

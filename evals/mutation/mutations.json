@@ -7138,5 +7138,250 @@
   "file": "scripts/datasheet_kinds.py",
   "old": "micro(?:processor|controller)s?\\W+crystal",
   "new": "micro(?:processor|controller)s?\\W+crystalX"
+ },
+ {
+  "id": "M1300",
+  "name": "a bracketed package note on an official pin name is compared as part of the name again",
+  "file": "scripts/board_intent.py",
+  "old": "compared = PACKAGE_NOTE_RE.sub('', official) or official",
+  "new": "compared = official"
+ },
+ {
+  "id": "M1301",
+  "name": "SN65HVS883 debounce-select permission spreads to the whole SN65HVS88x family",
+  "file": "scripts/part_words.py",
+  "old": "re.fullmatch(r'SN65HVS883(?:PWPR?)?', model, re.I)",
+  "new": "re.fullmatch(r'SN65HVS88\\d(?:PWPR?)?', model, re.I)"
+ },
+ {
+  "id": "M1302",
+  "name": "SN65HVS883 debounce-select permission ignores which physical pin carries the DB name",
+  "file": "scripts/part_words.py",
+  "old": "{'1': 'DB0', '2': 'DB1'}.get(pin) in aliases",
+  "new": "aliases & {'DB0', 'DB1'}"
+ },
+ {
+  "id": "M1303",
+  "name": "an isolator output enable tied to its own side supply is a sequencing candidate again",
+  "file": "scripts/checkers/power_up.py",
+  "old": "                if node in output_enables:\n                    continue\n",
+  "new": ""
+ },
+ {
+  "id": "M1304",
+  "name": "an active-low isolator enable tied high is exempted like an active-high one",
+  "file": "scripts/checkers/power_up.py",
+  "old": "if not re.fullmatch(r'EN\\d?|VE\\d', raw, re.I):",
+  "new": "if not re.fullmatch(r'~?\\{?EN\\d?\\}?|VE\\d', raw, re.I):"
+ },
+ {
+  "id": "M1305",
+  "name": "an isolator enable on the other side's supply is exempted",
+  "file": "scripts/checkers/power_up.py",
+  "old": "side.get(pin) == side.get(s.partition('.')[2])",
+  "new": "side.get(s.partition('.')[2])"
+ },
+ {
+  "id": "M1306",
+  "name": "EN tied to the input is reported though a separate UVLO pin has its own divider",
+  "file": "scripts/checkers/power_up.py",
+  "old": "if item['enable_source'] != 'tied-to-input' or item.get('uvlo_pins'):",
+  "new": "if item['enable_source'] != 'tied-to-input':"
+ },
+ {
+  "id": "M1307",
+  "name": "a UVLO pin counts without a divider of its own",
+  "file": "scripts/checkers/power_up.py",
+  "old": "and self._enable_source(net, set(inputs.values()), ref)[0] == 'uvlo-divider')",
+  "new": ")"
+ },
+ {
+  "id": "M1308",
+  "name": "RST-A03 instances still list an EN closed by a separate UVLO divider",
+  "file": "scripts/checkers/power_up.py",
+  "old": "if item['enable_source'] == wanted and not (rule == 'RST-A03' and item.get('uvlo_pins'))})",
+  "new": "if item['enable_source'] == wanted})"
+ },
+ {
+  "id": "M1309",
+  "name": "a surge protection device title no longer names a TVS",
+  "file": "scripts/device_kinds.py",
+  "old": "                        'surgeprotectiondevice'), two_terminal=True",
+  "new": "                        ), two_terminal=True"
+ },
+ {
+  "id": "M1310",
+  "name": "a varistor titled surge protection device is also read as a TVS",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "        found.discard('tvs')             # \"surge protection device\"",
+  "new": "        pass             # \"surge protection device\""
+ },
+ {
+  "id": "M1311",
+  "name": "efuse is matched as a substring again (Resettable Fuses)",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "    if word == 'efuse':",
+  "new": "    if word == 'efuseX':"
+ },
+ {
+  "id": "M1312",
+  "name": "a high-side smart power switch title reads as a relay again",
+  "file": "scripts/catalog.py",
+  "old": "        'highsidesmartpower'),",
+  "new": "        ),"
+ },
+ {
+  "id": "M1313",
+  "name": "an input candidate keeps the signal, bus and chassis branches of its connector again",
+  "file": "scripts/circuit_candidates.py",
+  "old": "members = {ref: m[:3] for ref, m in members.items() if root(m[3]) in power}",
+  "new": "members = {ref: m[:3] for ref, m in members.items()}"
+ },
+ {
+  "id": "M1314",
+  "name": "connector pins whose branches meet through series parts are judged apart",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                join(origin, reached[net])\n",
+  "new": "                pass\n"
+ },
+ {
+  "id": "M1315",
+  "name": "an EN pin tied to its own supply builds a startup chain again",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                    if net in self.supplies or any(self.matches(SUPPLY_PIN_RE, anchor + '.' + other)",
+  "new": "                    if False and any(self.matches(SUPPLY_PIN_RE, anchor + '.' + other)"
+ },
+ {
+  "id": "M1316",
+  "name": "a bridge, inrush NTC or line varistor is no power-entry evidence",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                if ref in self.barriers or self.graph.kind(ref) in POWER_PATH_KINDS:\n                    power.add(origin)\n",
+  "new": ""
+ },
+ {
+  "id": "M1317",
+  "name": "a DC barrel jack's contacts are no supply evidence",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                             or POWER_JACK_RE.search(_blob(self.graph.parts.get(connector, {})))):",
+  "new": "                             ):"
+ },
+ {
+  "id": "M1318",
+  "name": "MCU boot strap pulls stay unassigned instead of joining the reset chain",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        self.chains()            # chains claim their parts before the converter walks, which are blocked from them\n        self.straps()\n",
+  "new": "        self.chains()            # chains claim their parts before the converter walks, which are blocked from them\n"
+ },
+ {
+  "id": "M1319",
+  "name": "a multifunction PB2/BOOT1 pin or a hierarchical /BOOT1 net gets no strap row",
+  "file": "scripts/plan_circuits.py",
+  "old": "r'(^|[_/])(BOOT\\w*|STRAP\\w*|TEST_MODE\\w*|CFG\\w*|CONFIG\\w*|MODE\\d*)(_|$)',",
+  "new": "r'(^|_)(BOOT\\w*|STRAP\\w*|TEST_MODE\\w*|CFG\\w*|CONFIG\\w*|MODE\\d*)(_|$)',"
+ },
+ {
+  "id": "M1320",
+  "name": "boot straps form their own chain even when the MCU has a reset chain",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                        and self.matches(RESET_PIN_RE, c['nets'].get('pin', ''))), None)",
+  "new": "                        and False), None)"
+ },
+ {
+  "id": "M1321",
+  "name": "PRO-C07 eFuse rows are asked of every power-protection circuit again",
+  "file": "scripts/catalog.py",
+  "old": "    ('POWER_PROTECTION', 'PRO-C07'): 'INTEGRATED_SWITCH',\n",
+  "new": ""
+ },
+ {
+  "id": "M1322",
+  "name": "PWR-C23 dual-source rows are asked of every power-protection circuit again",
+  "file": "scripts/catalog.py",
+  "old": "    ('POWER_PROTECTION', 'PWR-C23'): 'MULTI_SOURCE',\n",
+  "new": ""
+ },
+ {
+  "id": "M1323",
+  "name": "one diode counts as an ORing of two sources",
+  "file": "scripts/plan_circuits.py",
+  "old": "for ref in anodes.values())\n        found = sorted(set(connectors if len(connectors) > 1 else [])",
+  "new": "for ref in anodes.values())\n        oring = [r for r in fitted if graph.kind(r) == DIODE]\n        found = sorted(set(connectors if len(connectors) > 1 else [])"
+ },
+ {
+  "id": "M1324",
+  "name": "an IC with an unverified role no longer keeps the eFuse question",
+  "file": "scripts/plan_circuits.py",
+  "old": "        unread = sorted(set(unread) | {ref for ref in ics if graph.role_kind(ref) in (None, catalog.GENERIC_IC_ROLE)})\n    elif requires == 'MULTI_SOURCE':",
+  "new": "    elif requires == 'MULTI_SOURCE':"
+ },
+ {
+  "id": "M1325",
+  "name": "a 24 V name or window alone makes a DC_24V candidate without the fuse and clamp shape",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        if pw.FUSE not in kinds or not kinds & CLAMP_KINDS:\n            return None\n",
+  "new": ""
+ },
+ {
+  "id": "M1326",
+  "name": "any input window up to 100 V reads as a 24 V industrial input",
+  "file": "scripts/circuit_candidates.py",
+  "old": "and 24 <= high <= 36 and",
+  "new": "and 24 <= high <= 100 and"
+ },
+ {
+  "id": "M1327",
+  "name": "a 24 V connector name no longer makes the entry a DC_24V candidate",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        hit = next((t for t in texts if DC24_PATTERN.search(t)), None)",
+  "new": "        hit = None"
+ },
+ {
+  "id": "M1328",
+  "name": "DC_24V candidates fall back to the bus idle/active states",
+  "file": "scripts/catalog.py",
+  "old": "    'DC_24V': ('startup', 'run', 'fault'),",
+  "new": ""
+ },
+ {
+  "id": "M1329",
+  "name": "a passive crystal on an IC's oscillator pins builds no CLOCK candidate",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        self.interfaces()\n        self.crystals()\n",
+  "new": "        self.interfaces()\n"
+ },
+ {
+  "id": "M1330",
+  "name": "a crystal on two ICs' oscillators becomes a CLOCK candidate",
+  "file": "scripts/circuit_candidates.py",
+  "old": "            if len(common) != 1:\n                continue\n            cid = 'CLOCK-' + ref",
+  "new": "            if not common:\n                continue\n            cid = 'CLOCK-' + ref"
+ },
+ {
+  "id": "M1331",
+  "name": "a crystal end through a series resistor no longer reaches the oscillator pin",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                    if self.two_terminal(part) and other not in self.grounds:\n                        reach.setdefault(other, part)",
+  "new": "                    pass"
+ },
+ {
+  "id": "M1332",
+  "name": "a crystal with only one end on an oscillator pin builds a CLOCK candidate",
+  "file": "scripts/circuit_candidates.py",
+  "old": "            common = sorted(ends[0] & ends[1])",
+  "new": "            common = sorted(ends[0] | ends[1])"
+ },
+ {
+  "id": "M1333",
+  "name": "a hierarchical /07_DI/DI1 net raises no industrial DI name hint",
+  "file": "scripts/catalog.py",
+  "old": "r'(^|[:_/-])(DIN?\\d+|PLC_IN\\d*)([:_-]|$)',",
+  "new": "r'(^|[:_-])(DIN?\\d+|PLC_IN\\d*)([:_-]|$)',"
+ },
+ {
+  "id": "M1334",
+  "name": "bare K cathode pins of one TVS split into one channel each",
+  "file": "scripts/protective_clamps.py",
+  "old": "else 'K:' + actual[p] if name.upper() == 'K' else p",
+  "new": "else p"
  }
 ]
