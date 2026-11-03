@@ -232,7 +232,8 @@ def main():
                   else json.loads((args.cache / 'manifest.json').read_text(encoding='utf-8')))
         if args.boards_cache:
             manifest = {'boards': []}
-            for name in ('boards-merge1.json', 'boards-merge2b.json', 'boards-merge3.json', 'boards-merge4.json'):
+            for name in ('boards-merge1.json', 'boards-merge2b.json', 'boards-merge3.json', 'boards-merge4.json',
+                         'boards-merge5.json'):
                 manifest['boards'].extend(json.loads((HERE / name).read_text(encoding='utf-8'))['boards'])
             from parse_kicad import build
             from parse_netlist import integrity_problems

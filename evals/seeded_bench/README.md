@@ -166,3 +166,19 @@ PMIC的11–33µF窗口来自ROHM BD71847AMWV Rev003 p110 Table5-36，原1.22µF
 - hdmi-mipi J6.38（D-NC-FLAG-REMOVED）：去掉 FFC 空脚的原生 no-connect 标记，目标 NET-A01 重新报出；配对基线里该脚只有 INFO。
 
 实测：旧 262 位点逐点保留、自动目标 227→229（新增 bias/NC 两位点），合计 266 位点/229 自动/0 错误；两个 no-PASS 位点只算 guard 通过，不算自动检出。
+
+
+## 合并步 5：224 条漏问核对后仍漏的六个位点（2026-11-02）
+
+`boards-merge5.json` 登记六块已归因板的来源。合并步 5 在当前 SR 上把 224 条漏问逐条重跑，仍漏且能用网表表达的挑出六类各落一个位点，全部用原板作配对基线，登记为**当前漏报**（目标规则自动 0）：
+
+| 类型 | 位点 | 网表变换 / 目标规则 |
+|---|---|---|
+| D-HBRIDGE-RESET-UNSAFE | faderbuddy U2 DRV8837 | nSLEEP、IN1 接 VCC，IN2 接地：MCU 复位期间 H 桥仍驱动电机；RST-T04 |
+| D-ISO-BRIDGE | kicad-pmod_rs485 U1 ADM2582E | 已贴 0R 跨 GND 与隔离侧 /GND3；PRO-D02、PRO-A05 |
+| D-ISO-BRIDGE | 12v-1a-isolated-flyback U1 变压器 | 已贴 0R 跨次级 GND 与初级返回 /E；PRO-D02 |
+| D-MCU-ADC-DIVIDER | esp32-industrial-io R18 | 0–10 V 输入分压下臂 10K→100K；ANA-C03 |
+| D-REVERSE-PMOS-DS | leviathanext Q1 | 防反接 PMOS 漏源对调；PWR-T05 |
+| D-LDO-STARTUP-COVERAGE | capacitive-soil-sensor C6/U2 | SE5218 输出电容 2.2µF→1000µF；PWR-D03 |
+
+实测：旧 266 位点逐点保留，合计 272 位点/229 自动/0 错误；六个新位点自动目标均为 0。ADM2582E 位点只旁报 PWR-A03，PRO-A05 的隔离器型号表不含隔离 RS-485 收发器，记为后续修法。其余仍漏项多数要合成合同（源窗、器件保证值、需求），见合并步 5 报告的漏问表。

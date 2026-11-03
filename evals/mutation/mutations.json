@@ -6949,5 +6949,47 @@
   "file": "evals/seeded_bench/mutators.py",
   "old": "out['no_connect_nodes'] = [n for n in out['no_connect_nodes'] if n != 'J6.38']",
   "new": "out['no_connect_nodes'] = list(out['no_connect_nodes'])"
+ },
+ {
+  "id": "M1200",
+  "name": "merge5 H-bridge seed leaves IN2 on its net",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out['pin2net'].update({'U2.7': 'VCC', 'U2.6': 'VCC', 'U2.5': 'GND'})",
+  "new": "out['pin2net'].update({'U2.7': 'VCC', 'U2.6': 'VCC'})"
+ },
+ {
+  "id": "M1201",
+  "name": "merge5 bridge part is unfitted",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "'nc': False, 'original_value': '0R', 'fields': {}}",
+  "new": "'nc': True, 'original_value': '0R', 'fields': {}}"
+ },
+ {
+  "id": "M1202",
+  "name": "merge5 bridge second end lands on the first net",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out['pin2net'][ref + '.1'], out['pin2net'][ref + '.2'] = a, b",
+  "new": "out['pin2net'][ref + '.1'], out['pin2net'][ref + '.2'] = a, a"
+ },
+ {
+  "id": "M1203",
+  "name": "merge5 ADC seed keeps the 10K bottom leg",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out['parts']['R18'].update(value='100K', original_value='100K')",
+  "new": "out['parts']['R18'].update(original_value='100K')"
+ },
+ {
+  "id": "M1204",
+  "name": "merge5 PMOS seed does not swap D/S",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out['pin2net']['Q1.2'], out['pin2net']['Q1.3'] = pins['Q1.3'], pins['Q1.2']",
+  "new": "out['pin2net']['Q1.2'], out['pin2net']['Q1.3'] = pins['Q1.2'], pins['Q1.3']"
+ },
+ {
+  "id": "M1205",
+  "name": "merge5 LDO startup seed keeps the original capacitor",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out['parts']['C6'].update(value='1000uF', original_value='1000uF')",
+  "new": "out['parts']['C6'].update(original_value='1000uF')"
  }
 ]

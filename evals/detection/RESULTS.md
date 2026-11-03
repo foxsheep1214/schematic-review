@@ -455,9 +455,9 @@
 
 | 输入 | SHA256 |
 |---|---|
-| seeded results.json | `ee2eba450156285a0e849e65efd4c8e656ae1862cd36bf12032f4ada8e322b32` |
+| seeded results.json | `99df1b54efd118c9993c3db266c2b960f79ae37440890a3c4b419c658cb5ab94` |
 | typical results.json | `075a5d9177878c7ca4858671f1dc9de9d20a71926b1f17df64931340d33ed066` |
-| KiCad replay results.json | `99a561c6d348713adda74b30274e2d03c65114b4bc60664e233182fb94fcb2ea` |
+| KiCad replay results.json | `32cffebbc9ffbe03d6a4c1e08c83b092b08199c552006a1141ac33a7913892c1` |
 | known_defects.json | `35c824bfdcb2f967bba1ee843d94969c53c153ad1ad2434cdf345405e6c90452` |
 | catalog.py | `8f1d9a2fd11493e4ccf062f7c403b1ec840a7988c9f7e951c18df5520c6ee84d` |
 | guideline-criteria.json | `985b136ac0b3bc43b925bb748ae6866faafefea2bce5be5b5d822b4e6fe0ad3e` |
