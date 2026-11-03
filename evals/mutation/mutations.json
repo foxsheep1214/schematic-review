@@ -6795,5 +6795,40 @@
   "file": "scripts/checkers/powertree.py",
   "old": "            found = self.source_of(other) or feed.source_of(other)\n",
   "new": "            found = {'source': other, 'path': []}\n"
+ },
+ {
+  "id": "M1110",
+  "name": "a PMIC output port from the family pin table is no source",
+  "file": "scripts/checkers/powertree.py",
+  "old": "                if pw.supply_port(part, graph.pinname.get(node), pin, 'outputs'):\n",
+  "new": "                if False:\n"
+ },
+ {
+  "id": "M1111",
+  "name": "a grounded PMIC output port is reported as a grounded supply pin",
+  "file": "scripts/lint.py",
+  "old": "                if pw.supply_port(self.parts.get(ref, {}), pn, node.partition('.')[2], 'outputs'):\n",
+  "new": "                if False:\n"
+ },
+ {
+  "id": "M1112",
+  "name": "PMIC output ports get no per-output PWR-C04",
+  "file": "scripts/plan_circuits.py",
+  "old": "            family = pw.supply_ports(connector_graph.parts[ref])\n",
+  "new": "            family = None\n"
+ },
+ {
+  "id": "M1113",
+  "name": "family switch/feedback ports do not satisfy the preconditions",
+  "file": "scripts/plan_circuits.py",
+  "old": "                if pw.supply_port(graph.parts.get(ref), names.get(ref + '.' + pin), pin, which)\n",
+  "new": "                if False\n"
+ },
+ {
+  "id": "M1114",
+  "name": "a TOPSwitch valued TOP227 on a TOP204 symbol is not the family",
+  "file": "scripts/part_words.py",
+  "old": "    for key in ('part', 'value'):\n        model = str((part or {}).get(key) or '')\n",
+  "new": "    for key in ('value',):\n        model = str((part or {}).get(key) or '')\n"
  }
 ]

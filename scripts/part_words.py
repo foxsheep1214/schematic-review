@@ -114,6 +114,39 @@ def official_pin_types(part):
     return None
 
 
+# Supply ports of multi-output PMICs and integrated off-line switches, from the exact family's pin table (boards-merge4):
+# the switch pins (to the storage inductor or the transformer), the output ports (each its own supply node) and the
+# feedback/control pins. Names compare through pin_aliases; an unknown family has no ports here.
+SUPPLY_PORT_RULES = (
+    (r'TPS6502[0-3][A-Z0-9]*',
+     {'switch': ('L1', 'L2', 'L3'), 'outputs': ('VDCDC1', 'VDCDC2', 'VDCDC3', 'VLDO1', 'VLDO2', 'VRTC'),
+      'feedback': ('VDCDC1', 'VDCDC2', 'VDCDC3')},
+     'TI TPS65023 SLVS670 Terminal Functions: L1/L2/L3 switch pins, VDCDC1-3 converter output sense, VLDO1/2 and VRTC '
+     'outputs'),
+    (r'TOP2(?:0[0-4]|1[0-4]|2[1-7])[A-Z0-9-]*',
+     {'switch': ('D', 'DRAIN'), 'outputs': (), 'feedback': ('C', 'CONTROL')},
+     'Power Integrations TOPSwitch-II TOP221-227 / TOPSwitch TOP200-204 Pin Functional Description: DRAIN = integrated '
+     'MOSFET drain, CONTROL = feedback and supply input, SOURCE = MOSFET source and return'),
+)
+
+
+def supply_ports(part):
+    """{'switch', 'outputs', 'feedback': names, 'citation'} for an exact PMIC/integrated-switch family, else None. The part
+    number or the value may name it (a TOP204 symbol valued TOP227 is still the family)."""
+    for key in ('part', 'value'):
+        model = str((part or {}).get(key) or '')
+        for pattern, ports, citation in SUPPLY_PORT_RULES:
+            if re.fullmatch(pattern, model, re.I):
+                return dict(ports, citation=citation)
+    return None
+
+
+def supply_port(part, name, pin, which):
+    """The pin plays the port `which` ('switch', 'outputs', 'feedback') in its family's table."""
+    ports = supply_ports(part)
+    return bool(ports) and any(alias in ports[which] for alias in pin_aliases(name, pin))
+
+
 OVERBAR_RE = re.compile(r'^~\{(.+)\}$')
 INDEX_SUFFIX_RE = re.compile(r'^(.*?[A-Z])[_-]?(\d+)$')
 

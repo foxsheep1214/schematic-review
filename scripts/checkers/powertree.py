@@ -200,6 +200,15 @@ class PowerTree:
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'isolated device output pin; verify upstream power: ' + side['citation'],
                             'side': next(s['id'] for s in side['sides'] if pin in s['pins'])}
+                if pw.supply_port(part, graph.pinname.get(node), pin, 'outputs'):
+                    return {'source': node, 'path': list(reversed(path)),
+                            'basis': 'output port of the exact family pin table; verify upstream power: '
+                                     + pw.supply_ports(part)['citation']}
+                if (path and graph.kind(path[-1]) == pw.INDUCTOR and pw.supply_port(part, graph.pinname.get(node), pin, 'switch')
+                        and self._via_storage_inductor(ref, path)):
+                    return {'source': node, 'path': list(reversed(path)),
+                            'basis': 'switch port via storage inductor (exact family pin table); verify FB target and '
+                                     'upstream power: ' + pw.supply_ports(part)['citation']}
                 sense_only = (re.fullmatch(r'SIC437[A-Z0-9/-]*', str(part.get('part', '')), re.I)
                               and pin == '18')  # SiC437 pin18 VOUT senses the output; SW delivers energy
                 output_name = pw.name_matches(SOURCE_PIN_RE, graph.pinname.get(node), pin) and not sense_only

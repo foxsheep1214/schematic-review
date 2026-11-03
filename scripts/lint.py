@@ -624,6 +624,11 @@ class Lint:
                 # VIPer22A VDD tied to the source ground: the device's own supply pin is shorted to its return.
                 # Other power_in names (REGIN of an unused internal LDO) may be grounded by the datasheet.
                 supply = bool(SUPPLY_PIN_RE.match(plain) or re.match(r'^V', plain, re.I))
+                if pw.supply_port(self.parts.get(ref, {}), pn, node.partition('.')[2], 'outputs'):
+                    self.add('PWR-A02', '输出端口接地',
+                             f'{node} ({pn}) <- {n}：按 {pw.supply_ports(self.parts.get(ref, {}))["citation"]} 这是输出端口，'
+                             '不是供电脚；接地是未用处置，按手册核该路未用时的接法', ref, kind='CANDIDATE')
+                    continue
                 if not supply and not re.search(r'IN|REG|PWR|SUPPLY|BAT|BUS', plain, re.I):
                     continue   # opaque pin names (TC78H660 "A") carry no supply claim to check
                 self.add('PWR-A02', '电源脚落在地网',

@@ -152,3 +152,59 @@ def test_a_resistor_to_an_undriven_net_is_no_weak_drive():
     add(db, 'C64', '100n', [('1', '', 'NOWHERE'), ('2', '', 'GND')])
     rows = [f for f in Lint(db).run() if f['rule'] == 'PWR-A02' and 'U19.7' in f['detail']]
     assert rows and rows[0]['kind'] == 'FINDING'
+
+
+# 4. Multi-output PMIC and integrated off-line switch ports (TPS65023 L1-L3/VDCDCx/VRTC, TOPSwitch DRAIN/CONTROL).
+def _pmic_board():
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    db = empty()
+    add(db, 'U2', 'TPS65023BRSBT', [('6', 'VINDCDC1', 'VBUS'), ('7', 'L1', '/L1'), ('9', 'VDCDC1', '+1V0'),
+                                    ('16', 'VRTC', '/VRTC'), ('20', 'VLDO1', 'GND'), ('8', 'PGND1', 'GND')])
+    add(db, 'L1', '2.2uH', [('1', '', '/L1'), ('2', '', '+1V0')])
+    add(db, 'C26', '22uF', [('1', '', '+1V0'), ('2', '', 'GND')])
+    add(db, 'C23', '1uF', [('1', '', '/VRTC'), ('2', '', 'GND')])
+    add(db, 'U1', 'FPGA', [('F8', 'VCCINT', '+1V0'), ('A1', 'GND', 'GND')])
+    add(db, 'J1', 'USB', [('1', 'VBUS', 'VBUS'), ('2', 'GND', 'GND')])
+    db['native_pintype'] = {'U2.16': 'power_in', 'U2.20': 'power_in', 'U2.6': 'power_in', 'U2.9': 'passive',
+                            'U2.7': 'passive', 'U1.F8': 'power_in', 'U2.8': 'power_in'}
+    return db
+
+
+def test_pmic_output_ports_are_sources_and_switch_pins_feed_their_inductor():
+    from checkers.netgraph import NetGraph
+    from checkers.powertree import PowerTree
+    tree = PowerTree(NetGraph(_pmic_board()))
+    assert 'exact family pin table' in tree.source_of('+1V0')['basis']
+    assert tree.source_of('/VRTC')['source'] == 'U2.16'
+
+
+def test_pmic_rails_are_driven_and_a_grounded_output_port_is_only_a_candidate():
+    from lint import Lint
+    found = Lint(_pmic_board()).run()
+    assert not [f for f in found if f['rule'] in ('PWR-A01', 'PWR-A02') and f['kind'] == 'FINDING'
+                and ('+1V0' in f['detail'] or '/VRTC' in f['detail'])]
+    grounded = [f for f in found if f['rule'] == 'PWR-A02' and 'U2.20' in f['detail']]
+    assert grounded and grounded[0]['kind'] == 'CANDIDATE' and '输出端口' in grounded[0]['detail']
+
+
+def test_each_pmic_output_gets_its_own_output_capacitor_question():
+    from plan_review import build_review_plan
+    rows = [c for c in build_review_plan(_pmic_board())['checks'] if c['rule'] == 'PWR-C04']
+    assert {'U2.9', 'U2.16'} <= {r['object'].get('node') for r in rows}
+    assert 'U2.20' not in {r['object'].get('node') for r in rows}   # a grounded port is no supply node
+
+
+def test_topswitch_drain_and_control_satisfy_switch_and_feedback_preconditions():
+    from checkers.netgraph import NetGraph
+    from plan_circuits import subject_precondition
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    db = empty()
+    add(db, 'U1', 'TOP204YAI', [('1', 'C', 'CTRL'), ('2', 'S', 'GND'), ('3', 'D', 'DRAIN')])
+    db['parts']['U1']['value'] = 'TOPSWITCH 12V'   # the part number names the family when the value does not
+    graph = NetGraph(db)
+    assert subject_precondition(graph, db['pinname'], 'SWITCH_PIN', ['U1'], [])[0] == ['U1']
+    assert subject_precondition(graph, db['pinname'], 'FEEDBACK_PIN', ['U1'], [])[0] == ['U1']
+    db['parts']['U1'].update(part='GENERIC3', value='GENERIC3')
+    assert subject_precondition(NetGraph(db), db['pinname'], 'SWITCH_PIN', ['U1'], [])[0] == []
