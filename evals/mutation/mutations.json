@@ -7383,5 +7383,26 @@
   "file": "scripts/protective_clamps.py",
   "old": "else 'K:' + actual[p] if name.upper() == 'K' else p",
   "new": "else p"
+ },
+ {
+  "id": "M1400",
+  "name": "the PPTC precondition of SIGNAL_PROTECTION PRO-C08 takes any resistor as a PPTC",
+  "file": "scripts/plan_circuits.py",
+  "old": "found = [ref for ref in fitted if graph.kind(ref) == FUSE or (graph.kind(ref) == RESISTOR and PTC_RE.search(text_of(ref)))]",
+  "new": "found = [ref for ref in fitted if graph.kind(ref) in (FUSE, RESISTOR)]"
+ },
+ {
+  "id": "M1401",
+  "name": "SIGNAL_PROTECTION asks the fuse/PPTC check of a resistor-only port",
+  "file": "scripts/catalog.py",
+  "old": "    ('SIGNAL_PROTECTION', 'PRO-C08'): 'FUSE_PART',\n",
+  "new": ""
+ },
+ {
+  "id": "M1402",
+  "name": "the HOLD_UP name cue reads any HOLD (a SPI flash HOLD pin) as a hold-up rail",
+  "file": "scripts/catalog.py",
+  "old": "r'HOLD_?UP|(^|[:_/-])(\\d+V\\d*_?HOLD|V_?HOLD)([:_/-]|$)'",
+  "new": "r'HOLD_?UP|(\\d+V\\d*_?HOLD|_?HOLD)([:_/-]|$)'"
  }
 ]

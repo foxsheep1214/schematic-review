@@ -356,6 +356,8 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
         found = sorted(set(connectors if len(connectors) > 1 else []) | set(switches if len(switches) > 1 else [])
                        | set(oring) | ({r for r in ics if graph.role_kind(r) == 'pd_controller'} if connectors else set()))
         unread = sorted(set(unread) | {ref for ref in ics if graph.role_kind(ref) in (None, catalog.GENERIC_IC_ROLE)})
+    elif requires == 'FUSE_PART':   # boards-merge7: PRO-C08 asks of a fuse or PPTC, not of a series resistor
+        found = [ref for ref in fitted if graph.kind(ref) == FUSE or (graph.kind(ref) == RESISTOR and PTC_RE.search(text_of(ref)))]
     elif requires == 'PASSIVE_CRYSTAL':
         found = [r for r in fitted if graph.kind(r) == CRYSTAL]
     elif requires == 'RTC_BACKUP':

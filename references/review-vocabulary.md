@@ -31,6 +31,8 @@
 | HSSERIAL | 高速串行 | SIG | SIG-D14、SIG-T01、SIG-C13、SIG-C18 | requirements、datasheets、platform_checklist | `PCIE\|PCI_E\|SATA\|SERDES\|USB3\|SSTX\|SSRX\|PERST\|CLKREQ` |
 | AV | 音视频接口 | SIG | SIG-D15、SIG-C07 | requirements、datasheets | `HDMI\|MIPI\|(^\|[:_-])(CSI\|DSI\|EDP\|LCD)\w*\|(^\|[:_-])I2S\|MCLK\|LRCK\|BCLK\|CODEC\|(^\|[:_-])(SPK\|MIC)([:_-]\|\d\|$)` |
 | ISOLATION | 隔离 | PRO | PRO-D02、PRO-C01、PRO-C03、SIG-C13、SIG-C18、RST-T04、SIG-C09、SIG-C17 | requirements、datasheets | `ISOLAT\|(^\|_)ISO(_\|$)\|DIGITAL_ISO` |
+| HOLD_UP | 掉电保持 | PWR | PWR-C18、PWR-T05、PWR-C13 | requirements、datasheets | `HOLD_?UP\|(^\|[:_/-])(\d+V\d*_?HOLD\|V_?HOLD)([:_/-]\|$)` |
+| SIGNAL_PROTECTION | 信号端口保护 | PRO | PRO-C01、PRO-C05、PRO-C08 | requirements、datasheets | `(^\|[:_/-])(SIG\|IO\|DI\|AI)_?PROT\w*([:_/-]\|$)` |
 | DEBUG | 调试与烧录 | SIG | SIG-D06、SIG-C13、SIG-C18 | datasheets | `JTAG\|SWDIO\|SWCLK\|(^\|[:_-])(SWD\|TCK\|TMS\|TDI\|TDO\|TRST\w*)([:_-]\|$)\|(^\|[:_-])(DEBUG\|DBG)` |
 | DC_48V | −48 V 直流输入 | PWR | PWR-C17、PWR-C18、PWR-C13、PRO-C01 | requirements、datasheets | `(^\|[:_-])-?48V(_?RTN\|_?IN)?([:_-]\|$)\|VBAT_?48` |
 | DC_24V | 24 V 工业直流输入 | PWR | PWR-C27、PWR-C18、PWR-C13、PRO-C01、PWR-T05 | requirements、datasheets | `(^\|[:_-])\+?24V(_?RTN\|_?IN)?([:_-]\|$)\|VIN_?24` |
@@ -61,6 +63,7 @@
 | POWER_PROTECTION | PRO-C09 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |
 | POWER_PROTECTION | PRO-C07 | INTEGRATED_SWITCH | 电路里没有负载开关/eFuse 角色或带 ILIM/IMON/DVDT 脚的 IC |
 | POWER_PROTECTION | PWR-C23 | MULTI_SOURCE | 电路里没有第二路电源（两个连接器、阴极汇合的两只二极管或两颗通路开关） |
+| SIGNAL_PROTECTION | PRO-C08 | FUSE_PART | 电路里没有保险丝或 PPTC |
 | ANALOG | ANA-C05 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
 | ANALOG | ANA-C06 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
 | POWER_PROTECTION | ANA-T01 | SENSE_ELEMENT | 电路里没有采样电阻（<1 Ω）、NTC 或接到 IC 检测脚的分压 |

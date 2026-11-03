@@ -988,6 +988,17 @@ CIRCUIT_TYPES = (
             r'ISOLAT|(^|_)ISO(_|$)|DIGITAL_ISO',
             ('PRO-D02', 'PRO-C01', 'PRO-C03', 'SIG-C13', 'SIG-C18', 'RST-T04', 'SIG-C09', 'SIG-C17'),
             ('requirements', 'datasheets')),
+    # boards-merge7 (user 2026-11-03 按建议执行): a hold-up diode with its storage ahead of a regulator, and a signal port's
+    # series limiter plus clamp, are circuits of their own. Their owned parts get DEV-C01/DEV-C02 rows (stress, the
+    # diode's reverse voltage and current, the capacitor's voltage and ripple); the clamp window is PRO-E02 per device.
+    CircuitType('HOLD_UP', '掉电保持', 'PWR',
+            r'HOLD_?UP|(^|[:_/-])(\d+V\d*_?HOLD|V_?HOLD)([:_/-]|$)',
+            ('PWR-C18', 'PWR-T05', 'PWR-C13'),
+            ('requirements', 'datasheets')),
+    CircuitType('SIGNAL_PROTECTION', '信号端口保护', 'PRO',
+            r'(^|[:_/-])(SIG|IO|DI|AI)_?PROT\w*([:_/-]|$)',
+            ('PRO-C01', 'PRO-C05', 'PRO-C08'),
+            ('requirements', 'datasheets')),
     CircuitType('DEBUG', '调试与烧录', 'SIG',
             r'JTAG|SWDIO|SWCLK|(^|[:_-])(SWD|TCK|TMS|TDI|TDO|TRST\w*)([:_-]|$)|(^|[:_-])(DEBUG|DBG)',
             ('SIG-D06', 'SIG-C13', 'SIG-C18'),
@@ -1179,6 +1190,7 @@ SUBJECT_PRECONDITIONS = {
     # boards-merge6 F20: a hold-up diode with its storage (D201 → 24V_HOLD) is no eFuse and has one source
     'INTEGRATED_SWITCH': '电路里没有负载开关/eFuse 角色或带 ILIM/IMON/DVDT 脚的 IC',
     'MULTI_SOURCE': '电路里没有第二路电源（两个连接器、阴极汇合的两只二极管或两颗通路开关）',
+    'FUSE_PART': '电路里没有保险丝或 PPTC',
 }
 # 只在某个产品基线才问的规则（共用规范的航天专用规则）：基线不符时不派、不算未问。
 BASELINE_RULES = {'REQ-C02': 'aerospace', 'PWR-C25': 'aerospace', 'SIG-C18': 'aerospace', 'PRO-C10': 'aerospace',
@@ -1202,6 +1214,7 @@ SUBJECT_REQUIRES = {
     ('POWER_PROTECTION', 'PRO-C09'): 'PROTECTION_PART',
     ('POWER_PROTECTION', 'PRO-C07'): 'INTEGRATED_SWITCH',
     ('POWER_PROTECTION', 'PWR-C23'): 'MULTI_SOURCE',
+    ('SIGNAL_PROTECTION', 'PRO-C08'): 'FUSE_PART',
     ('ANALOG', 'ANA-C05'): 'ANALOG_PIN',
     ('ANALOG', 'ANA-C06'): 'ANALOG_PIN',
     ('POWER_PROTECTION', 'ANA-T01'): 'SENSE_ELEMENT',
@@ -1378,6 +1391,8 @@ CANDIDATE_STATES = {
     'USB': ('unattached', 'attached', 'fault'),
     'ANALOG': ('run', 'fault'),
     'ISOLATION': ('run',),
+    'HOLD_UP': ('startup', 'run', 'power-down'),   # boards-merge7: charging the storage, conducting, holding up
+    'SIGNAL_PROTECTION': ('run', 'fault'),          # boards-merge7: the working signal, and the port surge or ESD event
     'STARTUP': ('power-on', 'restart'),
     **{name: ('idle', 'active') for name in ('I2C', 'SPI', 'UART', 'HSSERIAL', 'LEVEL_SHIFT', 'ETHERNET',
                                             'CLOCK', 'CAN', 'RS485', 'DDR', 'STORAGE', 'RF', 'AV',
@@ -1431,6 +1446,8 @@ FRAME_QUESTIONS = {
     'HSSERIAL': '高速链路的耦合、映射、边带与差分连通是否按规范',
     'AV': '音视频接口的通道映射、电平与时钟来源、电平匹配是否成立',
     'ISOLATION': '隔离带跨接归属、防护协调与隔离器件工作资格是否成立',
+    'HOLD_UP': '输入中断时储能能否把下游保持到需求的中断时长（到下游欠压门限为止），保持二极管的反向电压与正向电流、储能电容的耐压与纹波电流、充电浪涌是否都成立',
+    'SIGNAL_PROTECTION': '钳位器件窗口对被保护脚绝限、串联限流元件的脉冲功率与压降、PTC/电阻在浪涌下的 I²t 是否都成立',
     'DEBUG': '调试接口电气引出、串阻与 ESD 是否满足烧录/调试要求',
     'DC_48V': '−48 V 输入的极性、电压范围、中断恢复、浪涌耐受与合闸浪涌是否满足接口要求',
     'DC_24V': '24 V 输入的极性、电压范围、中断恢复、浪涌耐受与合闸浪涌是否满足接口要求',
