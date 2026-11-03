@@ -105,3 +105,9 @@
 - RAK原厂角色补齐会自动出现STARTUP，不能把未填输入当RST-T04漏报；ADC满量程已有ANA-C03，漏的是高阻分压采样建立ANA-C02(4.7M∥10M/100n→τ0.320s)。
 - U4是XC6220不是库名AP2112，Q1正常OR方向及D1逻辑极性不继承旧errata；D1准确料号IFmax10mA对BOM25mA是规格错误，厂家1A/2K对KiCad1K/2A留装配映射待核。
 - 两项USB机制缺口须分开：MCP73831 p18热插拔过压要求与电池常供CH340E后VBUS断开检测；schema15五类承载及其他条款/清单错误如实FAIL，逐项对账不等于valid/pack/release。
+
+- 2026-11-02 antmicro--sdi-mipi-bridge-hw：509项／201归因（2真、8误、0准则、28知识、163待确认）／2目标覆盖缺口；53PASS+25NA、429未定，门禁FAIL。
+- I2C库存context漏power_rails：同库重建pullups.rail_basis由declared退回name-hint，摘要漂移并连锁49对象校验；先保存独立diff，不编辑清单或略过摘要。
+- CrossLink AUX直接3.3V而CORE经MAX8902B的UVLO/LDO，须核p30顺序；R89实际DNP。USER_SCL/SDA网名反于D1/K2专用脚，J4为I2S却标I2C。
+- LB_CONT浮空、BYP→OUT与105Ω VCO滤波均是合法手册接法；BGA不能枚举数字1–80，Microprocessor Crystal不是MCU，备用I2C触点/上拉岛不等于活动总线。
+- FPGA配置期RST-T04与BYP软启动PWR-D03须单列覆盖；schema15不能承载NEEDS_HUMAN时如实FAIL，未完成条款/绑定也要披露。4份本地PDF与U1/U2在线章节分开记，不以网页可读冒充本地全文。
