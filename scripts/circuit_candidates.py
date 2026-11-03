@@ -28,7 +28,7 @@ import part_words as pw
 import requirement_clarifications
 
 SCHEMA_VERSION = 2
-RULES_VERSION = '2026-11-02.6b'   # boards-merge6 F21: an MCU's boot straps join its reset chain
+RULES_VERSION = '2026-11-02.6c'   # boards-merge6 M01: a fused, clamped 24 V entry is also a DC_24V candidate
 MAX_HOPS = 4
 ANALOG_HOPS = 2
 INPUT_HOPS = 6
@@ -56,6 +56,8 @@ POWER_STAGE_ROLES = CONVERTER_ROLES | {'load_switch', 'pd_controller'}
 # transformer or bridge before any storage capacitor the walk can see).
 POWER_PATH_KINDS = frozenset({pw.BRIDGE_RECTIFIER, pw.NTC, pw.VARISTOR})
 SUPPLY_PIN_RE = re.compile(r'^(VDD\w*|VCC\w*|VIN\d*|PVIN\d*|VBAT|VS|VBUS|IN)$', re.I)   # a startup pin on its own supply
+DC24_PATTERN = re.compile(catalog.CIRCUIT_TYPE_BY_NAME['DC_24V'].pattern, re.I)
+CLAMP_KINDS = frozenset({pw.TVS, pw.VARISTOR})
 POWER_JACK_RE = re.compile(r'JACK[-_ ]?DC|DC[-_ ]?JACK|BARREL|POWER[-_ ]?JACK|PWR[-_ ]?JACK', re.I)   # its contacts are a supply
 WALK = 'walk'
 IDENTITY_ROLES = ('anchor', 'endpoint', 'connector', 'pd_controller')   # a part's identity in a candidate, not its body
@@ -507,6 +509,15 @@ class Generator:
             self.add(cid, ref, 'connector', 'anchor:input connector', 0)
             for part, (hops, via, role) in members.items():
                 self.add(cid, part, role, via, hops)
+            basis = self.dc24_basis(ref, members)
+            if basis:
+                # boards-merge6 M01: the same entry is the board's 24 V interface; it references the input protection's
+                # parts (cross-cutting) so the interface rules (PWR-C27 window, PWR-C18 hold-up, PWR-T05) are asked
+                did = 'DC_24V-' + ref
+                self.new(did, 'DC_24V', ref, self.domain_of(ref), {'storage': storage}, cross_cutting=True)
+                self.add(did, ref, 'connector', 'anchor:24 V input connector; ' + basis, 0)
+                for part, (hops, via, role) in members.items():
+                    self.add(did, part, role, via, hops)
 
     def power_net(self, net):
         """A supply by the netlist (powertree supply candidates, a declared or rail-named net, hierarchical prefix aside)."""
@@ -580,6 +591,28 @@ class Generator:
             storage = None
         protective = any(m[2] == 'protective' for m in members.values())
         return (members, storage) if protective else None
+
+    def dc24_basis(self, connector, members):
+        """Why an input entry is a 24 V industrial input, or None: its power branch holds a fuse and a clamp (TVS or
+        varistor), and a confirmed requirement declares an input_voltage window around 24 V (max 24–36 V), or the
+        connector or its contact nets carry a 24 V name. A name alone with no protection shape is no candidate."""
+        kinds = {self.graph.kind(part) for part in members}
+        if pw.FUSE not in kinds or not kinds & CLAMP_KINDS:
+            return None
+        for req in self.kind_intent.get('requirements') or []:
+            if not isinstance(req, dict) or req.get('status') == 'DEFERRED':
+                continue
+            for item in req.get('parameters') or []:
+                if not isinstance(item, dict) or item.get('name') != 'input_voltage' or item.get('unit') != 'V':
+                    continue
+                low, high = item.get('min'), item.get('max')
+                if isinstance(high, (int, float)) and 24 <= high <= 36 and (low is None or low <= 24):
+                    return f'requirement {req.get("id")} input_voltage {low}..{high} V'
+        part = self.graph.parts.get(connector, {})
+        texts = ['PART:' + ':'.join([connector] + [str(part.get(k, '')) for k in ('part', 'value', 'prim')])]
+        texts += ['NET:' + net for net in self.graph.nets_of(connector)]
+        hit = next((t for t in texts if DC24_PATTERN.search(t)), None)
+        return f'24 V name {hit}' if hit else None
 
     def isolation(self):
         pairs = {}

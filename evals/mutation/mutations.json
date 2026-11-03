@@ -7313,5 +7313,33 @@
   "file": "scripts/plan_circuits.py",
   "old": "        unread = sorted(set(unread) | {ref for ref in ics if graph.role_kind(ref) in (None, catalog.GENERIC_IC_ROLE)})\n    elif requires == 'MULTI_SOURCE':",
   "new": "    elif requires == 'MULTI_SOURCE':"
+ },
+ {
+  "id": "M1325",
+  "name": "a 24 V name or window alone makes a DC_24V candidate without the fuse and clamp shape",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        if pw.FUSE not in kinds or not kinds & CLAMP_KINDS:\n            return None\n",
+  "new": ""
+ },
+ {
+  "id": "M1326",
+  "name": "any input window up to 100 V reads as a 24 V industrial input",
+  "file": "scripts/circuit_candidates.py",
+  "old": "and 24 <= high <= 36 and",
+  "new": "and 24 <= high <= 100 and"
+ },
+ {
+  "id": "M1327",
+  "name": "a 24 V connector name no longer makes the entry a DC_24V candidate",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        hit = next((t for t in texts if DC24_PATTERN.search(t)), None)",
+  "new": "        hit = None"
+ },
+ {
+  "id": "M1328",
+  "name": "DC_24V candidates fall back to the bus idle/active states",
+  "file": "scripts/catalog.py",
+  "old": "    'DC_24V': ('startup', 'run', 'fault'),",
+  "new": ""
  }
 ]

@@ -308,3 +308,32 @@ def test_holdup_circuit_frame_lists_efuse_and_dual_source_as_not_asked():
     plan = plan_of(_holdup(), 'POWER_PROTECTION', ['D201', 'C201'])
     assert asked(plan, 'PRO-C07') == [] and asked(plan, 'PWR-C23') == []
     assert not_asked(plan)['PRO-C07'] == 'INTEGRATED_SWITCH' and not_asked(plan)['PWR-C23'] == 'MULTI_SOURCE'
+
+
+# M01: the fused, clamped 24 V entry is a DC_24V candidate by the requirement's input window or by its 24 V name
+REQ_24V = [{'id': 'IIO-002', 'status': 'CONFIRMED', 'categories': ['INPUT_RANGE'], 'interpretation': '24 V input',
+            'parameters': [{'name': 'input_voltage', 'unit': 'V', 'min': 20.4, 'max': 28.8}]}]
+
+
+def test_dc24_candidate_from_the_declared_input_window():
+    import catalog
+    found = _io_candidates(requirements=REQ_24V)
+    dc = found['DC_24V-J101']
+    assert dc['cross_cutting'] and _refs(dc) == ['F101', 'J101', 'RV101'] and 'IIO-002' in dc['members'][1]['via']
+    assert dc['states'] == list(catalog.CANDIDATE_STATES['DC_24V']) == ['startup', 'run', 'fault']
+    assert 'POWER_PROTECTION-J101' in found                # the protection candidate stays; DC_24V only references
+    assert 'DC_24V-J601' not in found                      # field power without a fuse: not the 24 V entry shape
+
+
+def test_dc24_candidate_needs_a_window_or_a_name_and_the_fuse_clamp_shape():
+    assert not any(k.startswith('DC_24V') for k in _io_candidates())
+    db = _io_board()
+    db['parts']['J101']['value'] = '24V_IN'
+    assert 'DC_24V-J101' in _io_candidates(db)
+    for node in ('RV101.1', 'RV101.2'):                                          # no clamp left on the branch
+        db['nets'][db['pin2net'].pop(node)].remove(node)
+    del db['parts']['RV101']
+    found = _io_candidates(db, requirements=REQ_24V)
+    assert 'DC_24V-J101' not in found
+    wide = [dict(REQ_24V[0], parameters=[{'name': 'input_voltage', 'unit': 'V', 'min': 9, 'max': 60}])]
+    assert 'DC_24V-J101' not in _io_candidates(requirements=wide)

@@ -1383,6 +1383,7 @@ CANDIDATE_STATES = {
                                             'CLOCK', 'CAN', 'RS485', 'DDR', 'STORAGE', 'RF', 'AV',
                                             'INDUSTRIAL_DI', 'AC_MAINS', 'POE_PD', 'DC_48V', 'VEHICLE_28V', 'SHIP_AC')},
     'DEBUG': ('run',),       # 调试口的答案不随工作态变化，仍要一个态来展开检查项
+    'DC_24V': ('startup', 'run', 'fault'),   # boards-merge6 M01: an input's window, hold-up and fault, not bus idle/active
 }
 
 # A state a decision adds (states_add) must be named by a requirement (R7 acceptance 2026-10-25, user: B1 a): the
