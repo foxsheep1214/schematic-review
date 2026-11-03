@@ -117,3 +117,9 @@
 - ADXL345四线SPI的SDA/SCL别名仍误建I2C；热敏ANALOG默认ref误选U1，真实U5.10/11须补ANA-C03。U2内部5VOUT/UVLO、D7阵列与U3集成OCP计时亦须补对象。
 - 同版XLS保留Comment列、只映射Designator→Reference；Q3 JSM7788已在原生Alt里，不当未经注明错采购。自定义Q3焊盘1=S组/2=G/3=D组，勿按三个逻辑脚指控缺物理脚。
 - JP3未知会污染无关阻容预判，可枚举开/闭；JP1/JP2三脚切桥不能一个closed短三脚。R38“120 100mW”保真，不硬改值消告警；缺受控工况/对端不造VENDOR_DATUM或PASS。
+
+- tinkerforge--evse-bricklet：499项（498+1补查），41 PASS/33 NA/425未闭；29观察=0真/7误/0准则/8知识/14待定；1覆盖漏项，valid=true/NO_GO，renderer退出2交执行记录。
+- 隔离属性必须独立于regulator角色：PEM1-S12-D12-S 1/2输入、5/6/7输出；错误合域会派生4冲突并漏PRO-D02。MAX14850 A/B侧不能按通道号1/2切分。
+- HCPL2731双LED/达林顿不能用单通道opto模板；AQH光输入SSR没有本体线圈，OPA171双电源无GND脚，不能为去耦组造return脚。TPS709 EN可浮、A5950 LSS接地+OCLSEL开路允许。
+- merge-plan带回的7个PRO-E02+1个DRV-A03有function_id却不进members；按全部checks对账并逐ID补判边，不只照框架循环。NA依据要列表、开放key全局唯一。
+- AC反馈LED VR=5V、PEM1每路min5mA、ADC Rth39.172k均需实际边界；230Vrms/249k与钳位额定电流只作条件算例。网页PDF取证不冒充本地全文，SMF4L13CA多厂候选不替实贴保证。
