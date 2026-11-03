@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 准则库修订草案：86 块实板的准则空白与适用范围（2026-11-02）
+
+只出草案，不入库：14 条 criterion_issue 逐条裁决（准则确有问题 9 条，其中 USB 七条同根因：G01-026/029/030/031 出处是 Type-C/PD，却按 USB 大类套到 Standard-A/Micro-B；另有 G03-005 缺 Cff 承接、G04-091 千兆建议写成通用禁止。检查器误用 1 条；G05-030～034 拆开判，只改 G05-031；REQ-D03 两条归工具；SIG-D10 词表范围需要人判）。201 条真缺陷中 142 条 criteria 为空，按性质聚类后起草新准则 9 条（G02-036～039、G03-059、G04-101～104）。修订 12 条（字段级 39 处），建议库版本 1.7.0。补丁套到登记表副本后汇编、check 通过（353 条）。224 条漏问都有准则引用，全部是“准则存在、SR 没落实”，清单交 SR。知识缺口按器件聚合出前 30 个资料待收集型号。共用层、HardwareWiki、scripts、SKILL.md 未改。Causes 按机制计，不按条数。
+
+- Event: user:2026-11-02 (把这个86块板子上找到的问题，在规则库、ASG和SR技能中进行改进)
+- Causes: rule_missing 9, knowledge_wrong 5
+- Changed: docs/proposals/criteria-from-boards-2026-11-02.md, docs/proposals/criteria-from-boards-2026-11-02.json, docs/improvement-ledger.md
+- Gates: guideline_criteria build+check（副本，1.7.0，353 条）PASS; check_ledger PASS; 未跑 pytest（无代码改动）; 不 push。
+
 ## 合并步 3：物理脚表、通道与未知边界（2026-11-02）
 
 20 块点名板冷扫 454→546、原归因可匹配误报 158→107；总数增加包含 82 条 TVS 通道提示及 59 条脚名差异候选，不是新增已证实缺陷。60 条真缺陷仍报出或逐器件可定位；18/20 完整候选链，另两板保留原决定缺口。官方脚表贯通、按通道钳位、铜与采购分离、未知应力及 override、参数歧义、晶体/串阻 I/O、机械/卡座/方向与磁件得到回归覆盖；补齐信号变压器 TVS 和共享母线误当吸收器的边界。新增 4 个种子，旧 258 位点/225 自动目标均保留，总 262/227。Causes 按 18 个独立机制计：4 个既有要求未贯通、2 个知识缺项、12 个错误模型，非发现条数。详情与逐板/逐规则证据见提案及同名 JSON。
