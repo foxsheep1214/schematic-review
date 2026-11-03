@@ -81,3 +81,18 @@ def test_poe_centre_taps_are_not_a_differential_pair():
                       'U1.3': 'TXP', 'U1.4': 'TXN'}}
     scan = _Scan(db, {'fitted': list(db['parts'])}, {}, set())
     assert [p[1] for p in scan._pairs()] == ['/ETH_TXP']
+
+
+# 4e: an SPI-wired dual-mode sensor (CS driven by the MCU) does not build an I2C bus from its SDA/SCL aliases
+def _adxl(cs_net):
+    nets = {'ASDI': ['U1.13', 'U5.28'], 'ASCL': ['U1.14', 'U5.26'], cs_net: ['U1.7'] + (['U5.19'] if cs_net == 'ACS' else ['C1.1'])}
+    return {'parts': {'U1': {'value': 'ADXL345'}, 'U5': {'value': 'STM32'}, 'C1': {'value': '100n'}}, 'nets': nets,
+            'pin2net': {n: k for k, v in nets.items() for n in v},
+            'pinname': {'U1.13': 'SDA/SDI/SDIO', 'U1.14': 'SCL/SCLK', 'U1.7': '~{CS}', 'U5.28': 'PB15', 'U5.26': 'PB13',
+                        'U5.19': 'PB1'}}
+
+
+def test_spi_wired_sensor_aliases_build_no_i2c_bus():
+    from i2c_topology import Inventory
+    assert [b for b in Inventory(_adxl('ACS'), {}).seeds()[0] if b['origin'] == 'name-hint'] == []
+    assert [b for b in Inventory(_adxl('+3V3'), {}).seeds()[0] if b['origin'] == 'name-hint']   # CS tied high: I2C

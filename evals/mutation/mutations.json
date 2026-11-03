@@ -7103,5 +7103,19 @@
   "file": "scripts/checkers/diff_levels.py",
   "old": "for r in self.graph.refs_on(net) for n in '123456789'):",
   "new": "for r in self.graph.refs_on(net) for n in ''):"
+ },
+ {
+  "id": "M1220",
+  "name": "SPI-wired sensor aliases build an I2C bus again",
+  "file": "scripts/i2c_topology.py",
+  "old": "                                                    if not self.spi_wired(n)]:",
+  "new": "                                                    ]:"
+ },
+ {
+  "id": "M1221",
+  "name": "a CS tied to a rail still counts as SPI",
+  "file": "scripts/i2c_topology.py",
+  "old": "and net and not self.rail(net) and any(",
+  "new": "and net and any("
  }
 ]
