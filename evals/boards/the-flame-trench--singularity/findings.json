@@ -1,0 +1,437 @@
+{
+ "board": "the-flame-trench--singularity",
+ "source": {
+  "repo": "the-flame-trench/Singularity",
+  "commit": "014e988f0bd17f941b7d84c4c0fb01382921b9bf",
+  "schematic": "ECAM/Singularity ISSUE_PROTO_B_v04/OBC-1.kicad_sch",
+  "license": "CERN-OHL-S-2.0"
+ },
+ "types": [
+  "CAN",
+  "STORAGE",
+  "POWER_CONVERTER",
+  "DEBUG"
+ ],
+ "run": {
+  "db_sha256": "447dba30866de6ba5eac63150f83f0e8cf4a6ceb23ac952e29f3af2106df9cde",
+  "plan_items": 612,
+  "findings_total": 17,
+  "results_judged": 0,
+  "gate": "not_run",
+  "sr_commit": "1cd885b09105527966420a063d72acad67c65d35",
+  "review_directory": "/Users/skyfend/.cache/sr-boards/the-flame-trench--singularity/review",
+  "replay_directory": "/Users/skyfend/.cache/sr-boards/_merge5/newboards/the-flame-trench--singularity",
+  "note": "合并步 5 本会话完成：原生 XML（--no-strict，31 个测试点脚无名）→资料取证（5/9 份手册可用）→device_kinds 12 颗→候选 8 个、决定 16 条推出 14 块电路→候选扫描→合并计划 612 项。逐项判定未写 schema 15 台账，门禁记 not_run；用途按 README 推断，未接受航天合规主张。"
+ },
+ "findings": [
+  {
+   "id": "F01",
+   "sr_rule": "NET-A01",
+   "criteria": [
+    "G04-102"
+   ],
+   "severity": "—",
+   "refs": [
+    "U11"
+   ],
+   "nets": [],
+   "sr_text": "U11（TMS570LS1227 ZWT）141 个单节点网：AD1IN*/N2HET*/EMIF_*/MIBSPI* 等未用球没有 NC 标记",
+   "verdict": "false_alarm",
+   "evidence": "SPNS192B p138：“Internal pullup/pulldown allows unused I/O pins to be left unconnected”；115 个 BI、26 个 OUT。逐脚 CANDIDATE 淹没了真正要问的少数专用脚（见 F02）。",
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/lint.py:NET-A01；器件级允许悬空条款库",
+    "what": "MCU 通用 I/O 在手册声明内部上下拉可悬空时按器件条款降 INFO，只把 ADREFHI/ADREFLO、KELVIN_GND、nERROR、FLTP 等专用脚留作 CANDIDATE。"
+   },
+   "seed": null
+  },
+  {
+   "id": "F02",
+   "sr_rule": "NET-A01",
+   "criteria": [
+    "G04-102"
+   ],
+   "severity": "待定",
+   "refs": [
+    "U11"
+   ],
+   "nets": [
+    "unconnected-(U11A-ADREFHI-PadV15)",
+    "unconnected-(U11A-ADREFLO-PadV16)",
+    "unconnected-(U11B-nERROR)"
+   ],
+   "sr_text": "U11 ADREFHI/ADREFLO、nERROR 悬空",
+   "verdict": "needs_human",
+   "evidence": "ADC 未用（全部 AD1IN 悬空），VCCAD=OBC_3V3、VSSAD=GND；p45 只给 VADREFHI 在 VSSAD..VCCAD 之间，未写未用时处置。nERROR 是 ESM 外部错误输出，README 强调高可靠，悬空丢失硬件错误信号——是需求取舍，不是电气错误。KELVIN_GND 悬空符合 p62 Note B，FLTP1/2 悬空符合 p38 端子表（Flash test pads）。",
+   "proposed_fix": null,
+   "seed": null
+  },
+  {
+   "id": "F03",
+   "sr_rule": "NET-A01",
+   "criteria": [
+    "G04-102"
+   ],
+   "severity": "—",
+   "refs": [
+    "U4",
+    "U5",
+    "U6"
+   ],
+   "nets": [
+    "unconnected-(U4-Vref-Pad5)"
+   ],
+   "sr_text": "U4/U5/U6.5 Vref 未连接且没有 NC 标记",
+   "verdict": "false_alarm",
+   "evidence": "SN65HVD230M Vref 是 VCC/2 参考输出（SGLS356 引脚说明），原生脚型 OUT；未用输出悬空合法。",
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/lint.py:NET-A01",
+    "what": "原生/官方脚型为 output 的单节点网即使没有 NC 标记也降 INFO（与合并步 4 第 7 项对齐）。"
+   },
+   "seed": null
+  },
+  {
+   "id": "F04",
+   "sr_rule": "NET-A01",
+   "criteria": [
+    "G04-102"
+   ],
+   "severity": "待定",
+   "refs": [
+    "U8"
+   ],
+   "nets": [
+    "unconnected-(U8A-nWP/IO2-PadC4)"
+   ],
+   "sr_text": "U8.C4 nWP/IO2 未连接",
+   "verdict": "knowledge_gap",
+   "evidence": "S70FL01GS 手册未能抽文本（evidence/U8.pdf 无文本层，acquisition SSL 失败）；FL-S 系列 WP# 是否有内部上拉需原文核。",
+   "proposed_fix": null,
+   "seed": null
+  },
+  {
+   "id": "F05",
+   "sr_rule": "NET-A02",
+   "criteria": [],
+   "severity": "—",
+   "refs": [
+    "U4",
+    "U5",
+    "U6",
+    "U3",
+    "U11"
+   ],
+   "nets": [
+    "/CAN_XCVR_PL/CAN_PL_R",
+    "/CAN_XCVR_PL/CAN_PL_Rs",
+    "/Power/OBC_1V25_P_PG",
+    "/Power/OBC_1V25_R_PG",
+    "/TMS570_uC/JTAG_RTCK",
+    "/TMS570_uC/JTAG_TCK"
+   ],
+   "sr_text": "5 对相似网名：CAN_PL_R↔CAN_PL_Rs（三张收发器子图）、OBC_1V25_P_PG↔_R_PG、JTAG_RTCK↔JTAG_TCK",
+   "verdict": "false_alarm",
+   "evidence": "都是本应分开的两个信号：R=接收输出、Rs=斜率控制；P/R 两路 PG；RTCK/TCK 是 JTAG 的两个标准信号。三张收发器子图复用 CAN_PL_* 标签只是层次内局部名。",
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/lint.py:NET-A02",
+    "what": "Rs/R、RTCK/TCK 这类协议既定信号对和 _P_/_R_ 冗余对加入兄弟名豁免。"
+   },
+   "seed": null
+  },
+  {
+   "id": "F06",
+   "sr_rule": "PWR-A02",
+   "criteria": [],
+   "severity": "—",
+   "refs": [
+    "U10",
+    "C25"
+   ],
+   "nets": [
+    "OBC_RTC_Vbackup"
+   ],
+   "sr_text": "U10.1 (Vbackup) <- OBC_RTC_Vbackup 无驱动",
+   "verdict": "false_alarm",
+   "evidence": "C25 值“100uAH-1V8-4.4x3mm_LIon_batt”是 TDK CeraCharge 可充电固态电池（C25.txt p1 BCT1812M101AG），由 RV-3032 内部涓流充电；电池被位号 C 归成电容，追源不认它。",
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/part_words.py / device_kinds 分类",
+    "what": "值或描述含 batt/µAh/mAh/CeraCharge 的两端件归电池，作为电源端；与次要模式“电池座 1+/2- 作电源”同修。"
+   },
+   "seed": null
+  },
+  {
+   "id": "F07",
+   "sr_rule": "NET-A06",
+   "criteria": [],
+   "severity": "—",
+   "refs": [
+    "U1",
+    "U2",
+    "U3"
+   ],
+   "nets": [
+    "GND"
+   ],
+   "sr_text": "GND: U1.6、U2.6、U3.17 多个输出同网",
+   "verdict": "false_alarm",
+   "evidence": "U1/U2.6 是 TPS62850 PG 开漏输出，SLUSDM0N p13“If the power-good output is not used, TI recommends to tie to GND or leave open”；U3.17 是 LTC4353 裸焊盘，符号脚型标 OUT（符号错，无电气后果）。",
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/lint.py:NET-A06",
+    "what": "开漏 PG 接地按器件条款排除；EP/GND_PAD 的 OUT 脚型改走 DEV-D02 符号问题，不算多驱动。"
+   },
+   "seed": null
+  },
+  {
+   "id": "F08",
+   "sr_rule": "RST-A03",
+   "criteria": [],
+   "severity": "—",
+   "refs": [
+    "U1",
+    "U2"
+   ],
+   "nets": [
+    "OBC_3V3"
+   ],
+   "sr_text": "U1/U2 使能脚直连输入网 OBC_3V3，未见 UVLO 分压",
+   "verdict": "false_alarm",
+   "evidence": "TPS62850x-Q1 有内部 UVLO（SLUSDM0N 电气特性），EN 接 VIN 是手册允许用法；输入为外部 3V3 冗余源，没有慢升需求。",
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/checkers/power_up.py",
+    "what": "器件有内部 UVLO 且输入轨没有慢升/欠压需求时降 INFO，不列候选。"
+   },
+   "seed": null
+  },
+  {
+   "id": "F09",
+   "sr_rule": "RST-A06",
+   "criteria": [],
+   "severity": "—",
+   "refs": [
+    "U9",
+    "U11"
+   ],
+   "nets": [
+    "/Supervisor/SPVSR_nRST"
+   ],
+   "sr_text": "U9.6 复位输出未接到任何复位输入（仅接到 U11.W7）",
+   "verdict": "false_alarm",
+   "evidence": "U11.W7 脚名 NPORRST——TMS570 上电复位输入（SPNS192B 端子表 nPORRST）；检查器的复位输入名表不认 nPORRST。",
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/checkers/supervision.py 复位输入名",
+    "what": "复位输入名加入 nPORRST/NPORRST/PORRST。"
+   },
+   "seed": null
+  },
+  {
+   "id": "F10",
+   "sr_rule": "PWR-A06",
+   "criteria": [],
+   "severity": "待定",
+   "refs": [
+    "U3"
+   ],
+   "nets": [
+    "OBC_1V25",
+    "OBC_1V25_P",
+    "OBC_1V25_R"
+   ],
+   "sr_text": "OBC_1V25* 未见监测点",
+   "verdict": "needs_human",
+   "evidence": "U3 nONST1/2 给出两路 PG（/Power/OBC_1V25_P_PG、_R_PG），核心轨是否需要独立监测由需求定。",
+   "proposed_fix": null,
+   "seed": null
+  },
+  {
+   "id": "F11",
+   "sr_rule": "CLK-D01",
+   "criteria": [],
+   "severity": "P1",
+   "refs": [
+    "X2",
+    "U11"
+   ],
+   "nets": [
+    "/TMS570_uC/uC_OSC_IN"
+   ],
+   "sr_text": "TCXO-X2 有源时钟的输出幅度/电源域是否满足负载要求（计划项）",
+   "verdict": "true_defect",
+   "evidence": "X2=IQD LFTCXO075797，X2.txt：Output Clipped Sine，0.8 V pk-pk min，负载 10kΩ//10pF；X2.3 直连 U11.K1 OSCIN，无隔直电容。SPNS192B p62 §6.6.1.1：外部振荡源须为“toggling 0 V to 3.3 V”的 3.3 V 时钟信号。条款偏离成立；起振是否实际失败未经样机证实（证据 B）。",
+   "proposed_fix": null,
+   "seed": null
+  },
+  {
+   "id": "F12",
+   "sr_rule": "CLK-C01",
+   "criteria": [
+    "G04-078"
+   ],
+   "severity": "—",
+   "refs": [
+    "X2",
+    "U10"
+   ],
+   "nets": [],
+   "sr_text": "TCXO-X2、RTC 按准确晶体料号核对 CL/ESR/驱动功率",
+   "verdict": "false_alarm",
+   "evidence": "X2 是有源 TCXO、U10 是内置晶体的 RTC 模块，没有外部无源晶体；CL/ESR/驱动功率问题不适用，应只问 CLK-D01。",
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/plan_circuits.py:subject_precondition",
+    "what": "CLK-C01 要求电路里有无源晶体成员；有源振荡器/模块只派 CLK-D01/CLK-D03。"
+   },
+   "seed": null
+  },
+  {
+   "id": "F13",
+   "sr_rule": "PRO-C07",
+   "criteria": [
+    "G05-044"
+   ],
+   "severity": "—",
+   "refs": [
+    "U3",
+    "Q1",
+    "Q2"
+   ],
+   "nets": [
+    "OBC_1V25"
+   ],
+   "sr_text": "ORING-1V25 的 eFuse 短路行为；PWR-C26/PWR-T05 防反接",
+   "verdict": "false_alarm",
+   "evidence": "U3 LTC4353 是理想二极管 OR 控制器，Q1/Q2 做两路 1V25 的 OR，不是 eFuse，也不是输入防反接；PWR-C23 双源切换才是该问的。",
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/plan_circuits.py:subject_precondition",
+    "what": "POWER_PROTECTION 电路按核心器件角色（ideal diode/OR vs eFuse vs 反接保护）选模板。"
+   },
+   "seed": null
+  },
+  {
+   "id": "F14",
+   "sr_rule": "SIG-C08",
+   "criteria": [
+    "G04-005"
+   ],
+   "severity": "—",
+   "refs": [
+    "J1"
+   ],
+   "nets": [
+    "OBC_3V3",
+    "PAYLOAD_3V3",
+    "PAYLOAD_5V"
+   ],
+   "sr_text": "EXT-J1 的 OBC_3V3/PAYLOAD_3V3/PAYLOAD_5V 信号脚在本板掉电、外设先上电时的注入",
+   "verdict": "false_alarm",
+   "evidence": "这三张网是电源（README：board powered by 3V3 external supply、designated 5V input rail），不是信号脚；电源反灌归 PWR-C23/PRO-D04。",
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/interfaces.py:InterfacePlanning",
+    "what": "连接器上已声明/识别为电源轨的脚不派信号注入 SIG-C08。"
+   },
+   "seed": null
+  },
+  {
+   "id": "F15",
+   "sr_rule": "PWR-C04",
+   "criteria": [
+    "G03-003",
+    "G03-004"
+   ],
+   "severity": "待定",
+   "refs": [
+    "U1",
+    "U2",
+    "C10",
+    "C12",
+    "C11",
+    "C13"
+   ],
+   "nets": [
+    "OBC_1V25_P",
+    "OBC_1V25_R"
+   ],
+   "sr_text": "POWER_CONVERTER-U1/U2 输出电容稳定窗",
+   "verdict": "needs_human",
+   "evidence": "COMP/FSET 接 VIN 选 comp setting 2，SLUSDM0N Table 8-1 要求 1V≤Vout<3.3V 最小有效 Cout 18 µF；本地 C10+C12=2×10µF 0603/10V 名义 20 µF，−10% 公差即 18 µF，再计 1.25 V 直流偏压已低于下限。需要准确 MLCC 的 DC-bias 曲线才能判，不能按名义值放行。",
+   "proposed_fix": null,
+   "seed": null
+  },
+  {
+   "id": "F16",
+   "sr_rule": "CLK-D03",
+   "criteria": [],
+   "severity": "待定",
+   "refs": [
+    "U10",
+    "C25"
+   ],
+   "nets": [
+    "OBC_RTC_Vbackup"
+   ],
+   "sr_text": "RTC 备份电池充电电压",
+   "verdict": "knowledge_gap",
+   "evidence": "C25.txt p3：CeraCharge 推荐 ≤1.6 V 工作、最大充电 1.8 V；RV-3032 涓流档位手册未取得（下载超时），是否落在 1.6 V 内无法核。",
+   "proposed_fix": null,
+   "seed": null
+  },
+  {
+   "id": "F17",
+   "sr_rule": "DEV-D02",
+   "criteria": [
+    "G04-101"
+   ],
+   "severity": "—",
+   "refs": [
+    "U3",
+    "U7",
+    "Q1",
+    "Q2"
+   ],
+   "nets": [],
+   "sr_text": "U3/U7/U8/Q1/Q2 资料缺失",
+   "verdict": "knowledge_gap",
+   "evidence": "LTC4353、CY15B108QI、S70FL01GS、MGSF1N02L 手册均未取得（acquisition.json：超时/SSL/403），器件角色只能按标题声明，脚表未核。",
+   "proposed_fix": null,
+   "seed": null
+  }
+ ],
+ "misses": [
+  {
+   "id": "M01",
+   "criterion": "G03-028",
+   "sr_rule": "CLK-D03",
+   "refs": [
+    "U10",
+    "C25",
+    "R26"
+   ],
+   "nets": [
+    "OBC_RTC_Vbackup"
+   ],
+   "why_expected": "RTC 带可充电备份电池（C25 CeraCharge）时应问充电电压/电流与反向电流；当前计划只有 CLK-C01/CLK-D01，没有 CLK-D03。",
+   "evidence": "U10.1 Vbackup=OBC_RTC_Vbackup=C25+C24+R26；C25.txt p3 推荐充电 1.6 V；电池被分类成电容，RTC 电路由审查员 add 决定建成。",
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/plan_circuits.py；scripts/part_words.py 电池识别",
+    "what": "RTC 器件的 Vbackup 网上有电池/超级电容时派 CLK-D03；电池需先被识别为电源端（F06）。"
+   },
+   "seed": null
+  }
+ ],
+ "summary": {
+  "true_defect": 1,
+  "false_alarm": 10,
+  "criterion_issue": 0,
+  "knowledge_gap": 3,
+  "needs_human": 3,
+  "misses": 1
+ }
+}

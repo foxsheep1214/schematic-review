@@ -141,3 +141,5 @@
 - BM64 VDD_IO21明确不外接，EAN内有4.7k下拉、P2_0内上拉要计入；R10/C64复位1ms不证明棕断满足Fig5-8，MFB/SYS_PWR启动意图另核。四只1u音频AC耦合须独立C08，不能以共地/派生电源关闭。
 - IC4实例Value A/采购B频率400/1400k冲突已证；另一目录USB BOM120件、64共号/23原始字符串差异不可混入BT，read_bom不保留Value须对源CSV；C10/17 footprint名不单独证实际MPN，Vishay4.4A是typ升温/降L条件。
 - schema15保留206 pending与18框架范围，421条校验错误、报告仅诊断；资料不足0不等于审完。Top50三处补问并留seed，现有入口PRO-C04/棕断PWR-T04/外部C08别重复算漏报；临时预览/CSV均放/tmp/codex-work/tpa3116d2-lane1。
+
+- scottbez1--faderbuddy（合并步 5 补做）：32件/242项；DRV8837 作 motor_driver 进 POWER_CONVERTER，PWR-C04/C14 套稳压模板是误报；RST-T04/PRO-C05 仍只有 rule_gaps 行，判“已报出”时排除 GAP- 行。
