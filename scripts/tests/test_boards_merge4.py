@@ -208,3 +208,52 @@ def test_topswitch_drain_and_control_satisfy_switch_and_feedback_preconditions()
     assert subject_precondition(graph, db['pinname'], 'FEEDBACK_PIN', ['U1'], [])[0] == ['U1']
     db['parts']['U1'].update(part='GENERIC3', value='GENERIC3')
     assert subject_precondition(NetGraph(db), db['pinname'], 'SWITCH_PIN', ['U1'], [])[0] == []
+
+
+# 5. Isolated DC/DC modules keep two sides; their grounds are never merged (PEM1-S, B0505S, URB, ULT).
+def _module(part, pins):
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    db = empty()
+    add(db, 'U102', part, pins)
+    return db
+
+
+def test_dual_output_module_sides_and_outputs_from_pin_names():
+    from checkers.netgraph import NetGraph
+    from checkers import isolation_sides
+    db = _module('PEM1-S12-D12-S', [('1', 'VIN', 'VIN12'), ('2', 'GND', 'GND'), ('5', '-Vo', '-12V'), ('6', '0V', 'AGND'),
+                                     ('7', '+Vo', '+12V')])
+    side = isolation_sides.model(NetGraph(db), 'U102')
+    assert side['mechanism'] == 'isolated_dcdc' and side['resolved']
+    assert [s['nets'] for s in side['sides']] == [['GND', 'VIN12'], ['+12V', '-12V', 'AGND']]
+    assert side['power_outputs'] == ['5', '7']
+
+
+def test_single_output_module_minus_vout_is_a_return():
+    from checkers.netgraph import NetGraph
+    from checkers import isolation_sides
+    from checkers.powertree import PowerTree
+    db = _module('B0505S-3WR2', [('1', '+Vin', '+5V'), ('2', '-Vin', 'GND'), ('4', '-Vout', 'GND_ISO'), ('6', '+Vout', '+5V_ISO')])
+    side = isolation_sides.model(NetGraph(db), 'U102')
+    assert side['power_outputs'] == ['6']
+    assert PowerTree(NetGraph(db)).source_of('+5V_ISO')['source'] == 'U102.6'
+
+
+def test_module_grounds_stay_two_domains():
+    from checkers.netgraph import NetGraph
+    from checkers import domains
+    db = _module('MORNSUN-URB2405YMD-6WR3', [('2', 'Vin', 'VIN24'), ('1', 'GND', 'PGND'), ('4', '0V', 'GND'), ('3', '+Vo', '+5V')])
+    assert not domains.conducts(NetGraph(db), 'U102')
+    db['parts']['U102'].update(part='LM7805', value='LM7805', prim='LM7805')
+    from checkers import isolation_sides
+    assert isolation_sides.model(NetGraph(db), 'U102') is None   # a regulator is not a module by its pin names
+
+
+def test_module_pin_names_with_subscripts_are_read():
+    from checkers.netgraph import NetGraph
+    from checkers import isolation_sides
+    db = _module('PDQE30-Q48-S5-D', [('1', 'CTRL', 'POE_ACTIVE'), ('2', 'GND', 'GNDD'), ('3', 'V_{IN}', 'VDD_POE_IN'),
+                                      ('4', 'V_{O}', 'VO5V'), ('5', 'TRIM', 'TRIM'), ('6', '0V', 'GND')])
+    side = isolation_sides.model(NetGraph(db), 'U102')
+    assert side['sides'][0]['nets'] == ['GNDD', 'POE_ACTIVE', 'VDD_POE_IN'] and side['power_outputs'] == ['4']

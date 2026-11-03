@@ -6830,5 +6830,26 @@
   "file": "scripts/part_words.py",
   "old": "    for key in ('part', 'value'):\n        model = str((part or {}).get(key) or '')\n",
   "new": "    for key in ('value',):\n        model = str((part or {}).get(key) or '')\n"
+ },
+ {
+  "id": "M1115",
+  "name": "an isolated DC/DC module is not modelled from its pin names",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "    if groups is None and ISOLATED_MODULE_RE.match(mpn) and (sides := _module_sides(names, actual)):\n",
+  "new": "    if False:\n"
+ },
+ {
+  "id": "M1116",
+  "name": "-Vout of a single-output module counts as a power output",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "             or (common and named(MODULE_NEGATIVE_OUT_RE, p))]",
+  "new": "             or named(MODULE_NEGATIVE_OUT_RE, p)]"
+ },
+ {
+  "id": "M1117",
+  "name": "module pin names are read without their subscript spelling",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "    spelled = {p: pw.pin_aliases(names[p]) or (names[p],) for p in actual}\n",
+  "new": "    spelled = {p: (names[p],) for p in actual}\n"
  }
 ]
