@@ -6746,5 +6746,33 @@
   "file": "scripts/checkers/passive_stress.py",
   "old": "        if bom.get('power_unread') and not parsed.get('power_w'):\n",
   "new": "        if False:\n"
+ },
+ {
+  "id": "M1102",
+  "name": "a ground-named divider midpoint is fixed at 0 V",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if _ground_name(net) and not self.midpoint(net):\n",
+  "new": "        if _ground_name(net):\n"
+ },
+ {
+  "id": "M1103",
+  "name": "an IC return pin does not keep a ground real",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "                    or ng.is_ground(name)):\n                return False\n            continue\n",
+  "new": "                    or ng.is_ground(name)) and False:\n                return False\n            continue\n"
+ },
+ {
+  "id": "M1104",
+  "name": "one resistor to ground alone makes a midpoint",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "    return to_ground and to_other\n",
+  "new": "    return to_ground\n"
+ },
+ {
+  "id": "M1105",
+  "name": "a divider midpoint becomes a reference domain",
+  "file": "scripts/checkers/domains.py",
+  "old": "        if not zero and passive_stress.midpoint_ground(graph, net):\n",
+  "new": "        if False:\n"
  }
 ]

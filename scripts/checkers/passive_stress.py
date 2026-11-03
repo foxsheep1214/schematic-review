@@ -82,6 +82,41 @@ def ground_name(net):
 _ground_name = ground_name
 
 
+def midpoint_ground(graph, net):
+    """A ground-named net that is a divider midpoint (VGND, GNDA as a half supply, boards-merge4): no IC return or
+    supply pin and no connector contact on it, one fitted resistor (> 1 ohm) to another ground and one to a non-ground
+    net. Its potential is set by the divider or the op-amp, never 0 V; a finite resistor to GND is no bond (KCL)."""
+    if graph is None or net in graph.pseudo or not ground_name(net):
+        return False
+    to_ground = to_other = False
+    for node in graph.nodes_on(net):
+        ref, _, pin = node.partition('.')
+        if not graph.is_fitted(ref):
+            continue
+        kind = graph.kind(ref)
+        if kind == pw.CONNECTOR:
+            return False
+        if kind == pw.IC:
+            name = graph.pinname.get(node, '')
+            role = ((graph.db.get('devices') or {}).get(ref, {}).get('pins', {}).get(pin, {}) or {}).get('role')
+            if (role in ('return', 'power') or graph.native_pintype.get(node) in POWER_PINTYPES
+                    or ng.is_ground(name)):
+                return False
+            continue
+        ends = graph.nets_of(ref)
+        if kind != pw.RESISTOR or len(ends) != 2:
+            continue
+        parsed = parse_resistor_noted(graph.parts.get(ref, {}).get('value'))
+        if not parsed or parsed['kohm'] * 1000 <= 1:
+            continue
+        other = ends[0] if ends[1] == net else ends[1]
+        if ground_name(other):
+            to_ground = True
+        elif other not in graph.pseudo:
+            to_other = True
+    return to_ground and to_other
+
+
 def _declared_rails(intent):
     """{net: ((min, max), domain)}；domain 取 power_rails.<net>.domain，未声明为 None。"""
     rails = {}
@@ -98,14 +133,19 @@ class _Bounds:
 
     def __init__(self, graph, rails):
         self.graph, self.rails = graph, rails
-        self._cluster, self._ic = {}, {}
+        self._cluster, self._ic, self._midpoint = {}, {}, {}
 
     def _fixed(self, net):
         if net in self.rails:
             return self.rails[net][0]
-        if _ground_name(net):
+        if _ground_name(net) and not self.midpoint(net):
             return (0.0, 0.0)
         return None
+
+    def midpoint(self, net):
+        if net not in self._midpoint:
+            self._midpoint[net] = midpoint_ground(self.graph, net)
+        return self._midpoint[net]
 
     def domain(self, net):
         """参考地分区：声明的 domain 优先；GND/AGND 等通用地名同属 GND 域，其余地名（P_GND、PORT_GND）
@@ -114,6 +154,8 @@ class _Bounds:
             declared = self.rails[net][1]
             if declared or self.rails[net][0] != (0.0, 0.0):
                 return declared
+        if self.midpoint(net):
+            return None           # a divider midpoint named like a ground is a node, not a reference
         if ng.is_ground(net):
             return 'GND'          # 通用地名沿用旧行为：视为同一参考
         return pw.normalize(net) if _ground_name(net) else None
@@ -692,7 +734,7 @@ def rail_gaps(plan):
 def ground_domains(db, intent):
     """{参考地分区: [地网]}：本预判按 0 V 处理的全部网及其参考地分区，供审查者核对与改正 domain。"""
     nets = set((db or {}).get('nets') or {})
-    bounds = _Bounds(None, _declared_rails(intent))
+    bounds = _Bounds(ng.NetGraph(db) if db else None, _declared_rails(intent))
     found = {}
     for net in sorted(nets):
         if bounds._fixed(net) == (0.0, 0.0):
