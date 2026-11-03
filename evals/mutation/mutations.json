@@ -6935,5 +6935,19 @@
   "file": "scripts/checkers/isolation_sides.py",
   "old": "|CA-IS\\d|MAX1485\\d)', mpn)",
   "new": "|CA-IS\\d)', mpn)"
+ },
+ {
+  "id": "M1130",
+  "name": "merge4 no-PASS guard accepts a PASS proposal",
+  "file": "evals/seeded_bench/run.py",
+  "old": "if not rows or any(c.get('proposal', {}).get('result') == 'PASS' for c in rows):",
+  "new": "if not rows:"
+ },
+ {
+  "id": "M1131",
+  "name": "NC-flag seed keeps the native no-connect flag",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out['no_connect_nodes'] = [n for n in out['no_connect_nodes'] if n != 'J6.38']",
+  "new": "out['no_connect_nodes'] = list(out['no_connect_nodes'])"
  }
 ]

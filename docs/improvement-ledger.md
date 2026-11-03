@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 合并步 4：分数功率、地名中点、弱驱动、端口语义、隔离模块、通道、NC 与功能 ID（2026-11-02）
+
+22 块点名板冷扫非 INFO 1020→967、已归因误报 327→274（crazyflie 48→24、hdmi-mipi 18→2、anthc 8→4 等），NET-A01 258→237、PWR-A02 92→66、PWR-A01 37→31；DRV-A03 +1 与 leviathan DRV-C02 14→22 是双 MOS 按通道拆出的应问项。54 条已归因真缺陷全部仍报出或可定位，14 条自动检出全保留；全量计划未绑定功能检查项 413→0。新增 4 个种子（分数功率/地名中点 no-PASS guard、偏置电阻删除、NC 标记删除），旧 262 位点逐点保留，总 266/229/0 错误。第 9 项次要模式与连接器级允许悬空表未做，见提案。Causes 按 9 个独立机制计（8 项 + MAX14850 补充），非发现条数。
+
+- Event: user:2026-11-02 (把这个86块板子上找到的问题，在规则库、ASG和SR技能中进行改进)
+- Causes: rule_not_enforced 2, knowledge_missing 3, knowledge_wrong 4
+- Changed: docs/improvement-ledger.md, docs/proposals/boards-merge-4-2026-11-02.md, evals/detection/RESULTS.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/boards-merge4-v1/cases.json, evals/kicad_replay_bench/revisions/boards-merge4-v1/expected.json, evals/kicad_replay_bench/revisions/boards-merge4-v1/manifest.json, evals/kicad_replay_bench/revisions/boards-merge4-v1/sources.json, evals/kicad_replay_bench/run.py, evals/mutation/mutations.json, evals/seeded_bench/README.md, evals/seeded_bench/boards-merge4.json, evals/seeded_bench/mutators.py, evals/seeded_bench/run.py, evals/typical_circuits/cases.json, references/architecture.md, scripts/checkers/domains.py, scripts/checkers/isolation_sides.py, scripts/checkers/passive_stress.py, scripts/checkers/planutil.py, scripts/checkers/power_switch.py, scripts/checkers/powertree.py, scripts/decoupling.py, scripts/lint.py, scripts/parse_kicad.py, scripts/part_words.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/tests/test_boards_merge4.py
+- Gates: pytest 2730 passed, 1 skipped; mutation --changed 5d19609 --tier unit 逐提交 35/47/89/193/199/206/214/256/276 全杀，最终 292 全杀（M1100–M1131，M1109 等价删去）; kicad_replay boards-merge4-v1 195/195; typical 216 DETECTED/197 FIXED/7 KNOWN; seeded 266/229/0 错误，旧 262 位点逐点无退化; detection 已更新; check_ledger PASS; 共用层/SKILL 字节差 0；不 push。
+
 ## 合并步 3：物理脚表、通道与未知边界（2026-11-02）
 
 20 块点名板冷扫 454→546、原归因可匹配误报 158→107；总数增加包含 82 条 TVS 通道提示及 59 条脚名差异候选，不是新增已证实缺陷。60 条真缺陷仍报出或逐器件可定位；18/20 完整候选链，另两板保留原决定缺口。官方脚表贯通、按通道钳位、铜与采购分离、未知应力及 override、参数歧义、晶体/串阻 I/O、机械/卡座/方向与磁件得到回归覆盖；补齐信号变压器 TVS 和共享母线误当吸收器的边界。新增 4 个种子，旧 258 位点/225 自动目标均保留，总 262/227。Causes 按 18 个独立机制计：4 个既有要求未贯通、2 个知识缺项、12 个错误模型，非发现条数。详情与逐板/逐规则证据见提案及同名 JSON。

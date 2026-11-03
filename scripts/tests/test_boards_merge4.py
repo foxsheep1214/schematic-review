@@ -2,6 +2,7 @@
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+ROOT = Path(__file__).resolve().parents[2]
 from checkers import passive_stress
 import test_passive_stress as tps
 
@@ -386,3 +387,31 @@ def test_max14850_is_a_two_sided_isolator_by_identity():
     db = empty()
     add(db, 'U103', 'MAX14850', [('1', 'VCCA', '3V3'), ('8', 'GNDA', 'GND'), ('16', 'VCCB', 'VEE'), ('9', 'GNDB', 'AGND')])
     assert isolation_sides.model(NetGraph(db), 'U103')['resolved']
+
+
+def test_seed_guard_no_pass_rejects_a_pass_and_a_missing_row():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('merge4_seed_runner', ROOT / 'evals/seeded_bench/run.py')
+    runner = importlib.util.module_from_spec(spec); spec.loader.exec_module(runner)
+    c = {'guard_no_pass': ['R29']}
+    assert runner.contract_guards(c, [])[1]
+    row = {'rule': 'DEV-C01', 'object': {'ref': 'R29'}, 'proposal': {'result': 'PASS'}}
+    assert runner.contract_guards(c, [row])[1]
+    row['proposal'] = {'result': None, 'calc': {'bom_power': 'unread'}}
+    assert not runner.contract_guards(c, [row])[1]
+    assert 'boards-merge4.json' in (ROOT / 'evals/seeded_bench/run.py').read_text()
+
+
+def test_nc_flag_seed_drops_only_the_flag():
+    import copy
+    sys.path.insert(0, str(ROOT / 'evals/seeded_bench'))
+    import mutators
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    db = empty()
+    add(db, 'J6', 'FFC', [('38', '', '/CSI/CSI2_CLK_N')])
+    db['no_connect_nodes'] = ['J6.38']
+    before = copy.deepcopy(db)
+    found = [m for m in mutators.board_mutations(db) if m.defect == 'D-NC-FLAG-REMOVED']
+    assert len(found) == 1 and db == before
+    assert found[0].db['no_connect_nodes'] == [] and found[0].baseline['no_connect_nodes'] == ['J6.38']

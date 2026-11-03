@@ -1,0 +1,41 @@
+{
+ "note": "Four controlled probes for boards-merge4 items 1/2/3/7; source artifacts remain read-only in the board cache. Synthetic windows are stated per probe; prompts are not hardware verdicts.",
+ "boards": [
+  {
+   "id": "fossasia--pslab-hardware",
+   "source": {
+    "repo": "fossasia/pslab-hardware",
+    "commit": "404aae216963ea0708e15bb84bde670a94ad3d83",
+    "schematic": "schematics/PSLab.kicad_sch",
+    "license": "Apache-2.0"
+   }
+  },
+  {
+   "id": "loudifier--openrefmic",
+   "source": {
+    "repo": "loudifier/OpenRefMic",
+    "commit": "ebad37fdb329a2c298d88f56ba57f945369cebdc",
+    "schematic": "preamplifier/ref_mic/ref_mic.kicad_sch",
+    "license": "MIT"
+   }
+  },
+  {
+   "id": "sparkfun--sparkfun_gnssdo",
+   "source": {
+    "repo": "sparkfun/SparkFun_GNSSDO",
+    "commit": "ae355fce6102a1ea69501edc98e5d240f0495b3a",
+    "schematic": "Hardware/GNSSDO_Plus/SparkPNT_GNSSDO_Plus.kicad_sch",
+    "license": "CC-BY-SA-4.0"
+   }
+  },
+  {
+   "id": "antmicro--hdmi-mipi-bridge",
+   "source": {
+    "repo": "antmicro/hdmi-mipi-bridge",
+    "commit": "6c683289a3191ee6c92cf4f9065ca9b6cb2c0784",
+    "schematic": "antmicro-hdmi-mipi-bridge-hw.kicad_sch",
+    "license": "Apache-2.0"
+   }
+  }
+ ]
+}

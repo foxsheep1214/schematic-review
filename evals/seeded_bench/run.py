@@ -91,6 +91,11 @@ def contract_guards(contract, checks):
             errors.append(ref + ': unknown supply must have a located unknown proposal')
         if rows and not any('power_rails.' in str(c.get('proposal', {}).get('bases', [])) + (c.get('proposal', {}).get('note') or '') for c in rows):
             errors.append(ref + ': unknown supply dependency is missing')
+    for ref in contract.get('guard_no_pass', []):
+        rows = [c for c in checks if c['rule']=='DEV-C01' and c.get('object', {}).get('ref')==ref]
+        observations[ref] = [c.get('proposal') for c in rows]
+        if not rows or any(c.get('proposal', {}).get('result') == 'PASS' for c in rows):
+            errors.append(ref + ': the written rating must not pre-judge PASS')
     wanted = contract.get('min_channel_rows')
     if wanted:
         rows = [c for c in checks if c['rule']==wanted['rule'] and c.get('object', {}).get('ref')==wanted['ref']]
@@ -227,7 +232,7 @@ def main():
                   else json.loads((args.cache / 'manifest.json').read_text(encoding='utf-8')))
         if args.boards_cache:
             manifest = {'boards': []}
-            for name in ('boards-merge1.json', 'boards-merge2b.json', 'boards-merge3.json'):
+            for name in ('boards-merge1.json', 'boards-merge2b.json', 'boards-merge3.json', 'boards-merge4.json'):
                 manifest['boards'].extend(json.loads((HERE / name).read_text(encoding='utf-8'))['boards'])
             from parse_kicad import build
             from parse_netlist import integrity_problems
