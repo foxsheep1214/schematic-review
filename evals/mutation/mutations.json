@@ -7222,5 +7222,12 @@
   "file": "scripts/datasheet_kinds.py",
   "old": "    if word == 'efuse':",
   "new": "    if word == 'efuseX':"
+ },
+ {
+  "id": "M1312",
+  "name": "a high-side smart power switch title reads as a relay again",
+  "file": "scripts/catalog.py",
+  "old": "        'highsidesmartpower'),",
+  "new": "        ),"
  }
 ]

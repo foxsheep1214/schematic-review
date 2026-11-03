@@ -1060,7 +1060,8 @@ DEVICE_ROLES = OrderedDict([
     ('isolator', DeviceRole('数字隔离器', ('digitalisolator', 'isolatedgatedriver', 'isolator'), ())),
     # 2026-10-24 第一批补充：规则表里有检查项却没有角色能靶到的电路类型。
     ('load_switch', DeviceRole('负载开关与热插拔保护', (
-        'loadswitch', 'hotswap', 'efuse', 'idealdiode', 'powerdistributionswitch', 'currentlimitswitch', 'highsideswitch'),
+        'loadswitch', 'hotswap', 'efuse', 'idealdiode', 'powerdistributionswitch', 'currentlimitswitch', 'highsideswitch',
+        'highsidesmartpower'),
         ('POWER_PROTECTION',))),
     ('charger', DeviceRole('电池充电器', ('batterycharger', 'chargecontroller', 'chargemanagement', 'switchingcharger', 'linearcharger', 'chargeric'),
                            ('POWER_CONVERTER',))),

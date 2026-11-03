@@ -128,3 +128,8 @@ def test_efuse_is_read_as_a_word():
     assert 'load_switch' in dk.cues('TPS2660x 60-V, 2-A Industrial eFuse')
     assert 'load_switch' in dk.cues('TPS25947 e-Fuse with reverse current blocking')
 
+
+def test_high_side_smart_power_relay_is_a_load_switch_photomos_stays_a_relay():
+    import datasheet_kinds as dk
+    assert dk.cues('Quad high-side smart power solid-state relay in QFN48L 8x6 mm package') == {'load_switch'}
+    assert dk.cues('PhotoMOS solid state relay') == {'relay'}

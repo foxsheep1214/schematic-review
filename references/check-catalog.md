@@ -734,7 +734,7 @@
 | `mcu` | 微控制器与处理器 | microcontroller、microprocessor、systemonchip、mcu | ANALOG | 检测脚 |
 | `transceiver` | 总线收发器与 PHY | transceiver、ethernetphy、linedriver、busdriver | ANALOG、CAN、RS485、UART、ETHERNET、HSSERIAL | 检测脚 |
 | `isolator` | 数字隔离器 | digitalisolator、isolatedgatedriver、isolator | 不作核心器件 | — |
-| `load_switch` | 负载开关与热插拔保护 | loadswitch、hotswap、efuse、idealdiode、powerdistributionswitch、currentlimitswitch、highsideswitch | POWER_PROTECTION | — |
+| `load_switch` | 负载开关与热插拔保护 | loadswitch、hotswap、efuse、idealdiode、powerdistributionswitch、currentlimitswitch、highsideswitch、highsidesmartpower | POWER_PROTECTION | — |
 | `charger` | 电池充电器 | batterycharger、chargecontroller、chargemanagement、switchingcharger、linearcharger、chargeric | POWER_CONVERTER | — |
 | `adc_dac` | ADC 与 DAC | analogtodigital、digitaltoanalog、bitadc、bitdac、channeladc、channeldac、audiodac、audioadc、sigmadeltaadc、deltasigmaadc | ANALOG | 全部信号脚 |
 | `oscillator` | 时钟源 | crystaloscillator、clockgenerator、clockbuffer、clocksynthesizer、jittercleaner、oscillator、clockdistribution、realtimeclock、clockmultiplier | CLOCK | — |
