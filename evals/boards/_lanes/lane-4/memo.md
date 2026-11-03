@@ -111,3 +111,9 @@
 - U3.2/R8.2只到D6.K未回OUT DC -是公共阳极2的接线错误；L2=3A串全5A输出；D1 KBL值配KBPC1实例封装是真冲突。TI LP=1K2A3REF、onsemi LP=1REF2A3K，资料矛盾不等于所有实贴接反。
 - 光耦官方针义已填devices仍未进匿名脚库存；普通PC817的5mA保证不能借PC8171的0.5mA。CONTROL到47uF隔68Ω，零直接容量清单≠缺去耦；R6跨LED，R7才串联。
 - optocouplers schema2/results15；全NA交流/模拟接口框架仍被F1索数值条款（2错误）。DIN0207不是工业DI，AC/DC正负不是差分；保留质量提示，勿为出报告改缺口类别。
+
+- bondus--klippertoolboard：572项/114完成/458未终判；43观察=1真/16误/0准则/4知识/22待人工，5覆盖漏问；FAIL/valid=false，renderer退出2，交明确执行记录。
+- STM32F103 R27=2.2k违背DS5319 Rev20 PDFp73 Table45脚注2的1.5k；TPS54202 EN开路、TMC2209 VREF开路是合法状态，BOOT6是自举供电。
+- ADXL345四线SPI的SDA/SCL别名仍误建I2C；热敏ANALOG默认ref误选U1，真实U5.10/11须补ANA-C03。U2内部5VOUT/UVLO、D7阵列与U3集成OCP计时亦须补对象。
+- 同版XLS保留Comment列、只映射Designator→Reference；Q3 JSM7788已在原生Alt里，不当未经注明错采购。自定义Q3焊盘1=S组/2=G/3=D组，勿按三个逻辑脚指控缺物理脚。
+- JP3未知会污染无关阻容预判，可枚举开/闭；JP1/JP2三脚切桥不能一个closed短三脚。R38“120 100mW”保真，不硬改值消告警；缺受控工况/对端不造VENDOR_DATUM或PASS。
