@@ -7376,5 +7376,12 @@
   "file": "scripts/catalog.py",
   "old": "r'(^|[:_/-])(DIN?\\d+|PLC_IN\\d*)([:_-]|$)',",
   "new": "r'(^|[:_-])(DIN?\\d+|PLC_IN\\d*)([:_-]|$)',"
+ },
+ {
+  "id": "M1334",
+  "name": "bare K cathode pins of one TVS split into one channel each",
+  "file": "scripts/protective_clamps.py",
+  "old": "else 'K:' + actual[p] if name.upper() == 'K' else p",
+  "new": "else p"
  }
 ]

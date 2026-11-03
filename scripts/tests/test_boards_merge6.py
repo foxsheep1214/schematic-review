@@ -373,3 +373,22 @@ def test_industrial_di_name_hint_reads_hierarchical_nets():
     assert _feature_hits(db, pattern) == ['NET:/07_DI/DI1']
     db['nets'] = {'/07_DI/CE_F': ['U601.24', 'R2.1'], '/SDCARD/DI': ['U5.2', 'J5.2']}
     assert _feature_hits(db, pattern) == []
+
+
+def test_tvs_with_several_bare_k_pins_is_one_channel():
+    from test_inductive_load import add
+    from test_boards_merge2b_roles import empty
+    import protective_clamps as pc
+    db = empty()
+    add(db, 'D1', 'TVS3300DRVR', [('1', 'A', 'GND'), ('2', 'A', 'GND'), ('3', 'A', 'GND'),
+                                  ('4', 'K', '24V_BUS'), ('5', 'K', '24V_BUS'), ('6', 'K', '24V_BUS')])
+    add(db, 'J1', 'CONN_01X01', [('1', '', '24V_BUS')])
+    db['device_kinds'] = {'D1': {'kind': 'tvs', 'citation': 'TI TVS3300 p1'}}
+    cs = pc.channels('D1', db['parts']['D1'], NetGraph(db))
+    assert [c['pins'] for c in cs] == [['4', '5', '6']] and cs[0]['return_pins'] == ['1', '2', '3']
+    add(db, 'D2', 'TVS2', [('1', 'A', 'GND'), ('2', 'K1', 'L1'), ('3', 'K2', 'L2')])
+    db['device_kinds']['D2'] = {'kind': 'tvs', 'citation': 'synthetic'}
+    assert len(pc.channels('D2', db['parts']['D2'], NetGraph(db))) == 2
+    add(db, 'D3', 'NUP2105L', [('1', 'K', 'CAN_L'), ('2', 'K', 'CAN_H'), ('3', 'A', 'GND')])
+    db['device_kinds']['D3'] = {'kind': 'tvs', 'citation': 'synthetic'}
+    assert sorted(c['nets'] for c in pc.channels('D3', db['parts']['D3'], NetGraph(db))) == [['CAN_H'], ['CAN_L']]

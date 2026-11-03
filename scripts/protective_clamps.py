@@ -99,7 +99,10 @@ def channels(ref, part, graph, intent=None):
         for p in actual:
             name = graph.pinname.get(ref + '.' + p, '')
             if p not in returns and re.fullmatch(r'(?:I/?O|D)\d+(?:[+-])?|K\d*|A\d+', name, re.I):
-                grouped.setdefault(name if re.match(r'(?:I/?O|D)', name, re.I) else p, []).append(p)
+                # boards-merge6 F06: bare K pins on one net (TVS3300 K on 4/5/6) are one cathode, one channel;
+                # bare K pins on different nets (NUP2105L CAN_H/CAN_L) stay separate channels
+                key = name if re.match(r'(?:I/?O|D)', name, re.I) else 'K:' + actual[p] if name.upper() == 'K' else p
+                grouped.setdefault(key, []).append(p)
         if returns and grouped:
             groups = tuple(tuple(ps) for ps in grouped.values())
             source = (graph.db.get('device_kinds') or {}).get(ref, {}).get('citation', '')
