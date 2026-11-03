@@ -40,3 +40,29 @@ def test_sn65hvs883_debounce_select_may_be_open():
     assert pw.unused_input_permission(one_pin('U601', 'SN65HVS883PWPR', '3', 'DB1'), 'U601.3') is None   # name on the wrong pin
     assert pw.unused_input_permission(one_pin('U601', 'SN65HVS882', '2', 'DB1'), 'U601.2') is None       # another model
 
+
+# F14: ISO6441 EN1/EN2 tied to VCC1/VCC2 is the datasheet hookup (TI ISO644x SLLSG01C p5: enabled when ENx is high or open)
+def _iso(en2_name='EN2', en2_net='+5V_ISO', part='ISO6441FDWR'):
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    db = empty()
+    add(db, 'U602', part, [('1', 'VCC1', '+3V3'), ('2', 'GND1', 'GND'), ('7', 'EN1', '+3V3'), ('3', 'INA', 'TX'),
+                           ('16', 'VCC2', '+5V_ISO'), ('15', 'GND2', 'FGND'), ('10', en2_name, en2_net), ('14', 'OUTA', 'TX_ISO')])
+    add(db, 'C1', 'C', [('1', '', '+3V3'), ('2', '', 'GND')])
+    add(db, 'C2', 'C', [('1', '', '+5V_ISO'), ('2', '', 'FGND')])
+    return db
+
+
+def _coupled(db):
+    from checkers.power_up import build_inventory
+    return [x['node'] for s in build_inventory(db)['states'] for x in s['coupled_loads']]
+
+
+def test_isolator_output_enable_tied_to_its_own_side_supply_is_not_a_sequencing_candidate():
+    assert _coupled(_iso()) == []
+
+
+def test_isolator_enable_exemption_keeps_active_low_other_side_and_non_isolators():
+    assert _coupled(_iso(en2_name='~EN2')) == ['U602.10']          # active low tied high disables the outputs
+    assert _coupled(_iso(en2_net='+3V3')) == ['U602.10']             # EN2 on the other side's supply
+    assert _coupled(_iso(part='TPS2116')) == ['U602.10', 'U602.7']   # not a digital isolator: unchanged

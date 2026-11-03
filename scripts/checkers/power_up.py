@@ -10,6 +10,7 @@ import re
 
 import catalog
 from . import inventory as inv
+from . import isolation_sides
 from . import netgraph as ng
 import part_words as pw
 from . import powertree
@@ -150,6 +151,28 @@ class _Scan:
         self._regulators = sorted(found, key=lambda item: item['id'])[:MAX_RAILS]
         return self._regulators
 
+    def _isolator_output_enables(self, ref, enables):
+        """Output-enable pins of a digital isolator tied to the supply of their own side (boards-merge6 F14).
+
+        TI ISO644x SLLSG01C p5 Pin Functions: "Output pins on side 1 are enabled when EN1 is high or open"; tying ENx
+        to VCCx is the datasheet hookup, there is no power-up order between them. Only an active-high name (EN, ENx,
+        VEx) on a pin whose side group (isolation_sides) also holds a supply pin on the same net qualifies."""
+        model = isolation_sides.model(self.graph, ref)
+        if not model or model['mechanism'] != 'digital_isolator':
+            return set()
+        side = {pin: s['id'] for s in model['sides'] for pin in s['pins']}
+        supplies = self._supply_inputs(ref)
+        found = set()
+        for node, net in enables.items():
+            raw = str(self.graph.pinname.get(node) or '').strip()
+            if not re.fullmatch(r'EN\d?|VE\d', raw, re.I):
+                continue     # ~EN, EN_N, ENB-bar spellings are active low: tied high they disable the outputs
+            pin = node.partition('.')[2]
+            if any(net == other and side.get(pin) and side.get(pin) == side.get(s.partition('.')[2])
+                   for s, other in supplies.items()):
+                found.add(node)
+        return found
+
     def coupled_loads(self):
         """使能/复位输入与本器件供电轨同网的负载：上电同时建立的候选。
 
@@ -166,8 +189,11 @@ class _Scan:
             if not supplies:
                 continue
             controls = dict(self.graph.named_pins(ref, ENABLE_PIN_RE))
+            output_enables = self._isolator_output_enables(ref, controls)
             controls.update(self.graph.named_pins(ref, RESET_IN_RE))
             for node, net in sorted(controls.items()):
+                if node in output_enables:
+                    continue
                 if net in supplies and ng.is_rail(net):
                     found.append({'id': slug(ref + '-' + node.partition('.')[2]),
                                   'ref': ref, 'node': node, 'net': net})

@@ -7159,5 +7159,26 @@
   "file": "scripts/part_words.py",
   "old": "{'1': 'DB0', '2': 'DB1'}.get(pin) in aliases",
   "new": "aliases & {'DB0', 'DB1'}"
+ },
+ {
+  "id": "M1303",
+  "name": "an isolator output enable tied to its own side supply is a sequencing candidate again",
+  "file": "scripts/checkers/power_up.py",
+  "old": "                if node in output_enables:\n                    continue\n",
+  "new": ""
+ },
+ {
+  "id": "M1304",
+  "name": "an active-low isolator enable tied high is exempted like an active-high one",
+  "file": "scripts/checkers/power_up.py",
+  "old": "if not re.fullmatch(r'EN\\d?|VE\\d', raw, re.I):",
+  "new": "if not re.fullmatch(r'~?\\{?EN\\d?\\}?|VE\\d', raw, re.I):"
+ },
+ {
+  "id": "M1305",
+  "name": "an isolator enable on the other side's supply is exempted",
+  "file": "scripts/checkers/power_up.py",
+  "old": "side.get(pin) == side.get(s.partition('.')[2])",
+  "new": "side.get(s.partition('.')[2])"
  }
 ]
