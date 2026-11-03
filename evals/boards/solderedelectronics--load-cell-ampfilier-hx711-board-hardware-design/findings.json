@@ -1,0 +1,1638 @@
+{
+  "board": "solderedelectronics--load-cell-ampfilier-hx711-board-hardware-design",
+  "source": {
+    "repo": "SolderedElectronics/Load-cell-ampfilier-HX711-board-hardware-design",
+    "commit": "3440ad0996cce887954f5af0fb2dc2d8b4fc5d51",
+    "schematic": "CAD/V1.1.1/HX711.kicad_sch",
+    "license": "TAPR-OHL-1.0"
+  },
+  "types": [
+    "ANALOG",
+    "POWER_CONVERTER"
+  ],
+  "run": {
+    "db_sha256": "2080c531ee25d56b963ce758569b48dfd9a63192e2d333ee7e9be0c1f057f426",
+    "fetched_db_sha256": "8c5464716c477de154266888cef90ac81b8eaa7c56f04701f468c1968a88da96",
+    "plan_items": 83,
+    "plan_items_before_reviewer_gaps": 76,
+    "reviewer_added": 7,
+    "findings_total": 26,
+    "results_judged": 83,
+    "results_resolved": 33,
+    "results_unresolved": 50,
+    "gate": "FAIL",
+    "gate_record_valid": true,
+    "release": "NO_GO",
+    "sr_commit": "b06afd6d7bff05263d0b7ff57682240930114412",
+    "cache_review": "/Users/skyfend/.cache/sr-boards/solderedelectronics--load-cell-ampfilier-hx711-board-hardware-design/review",
+    "render_exit_code": 2,
+    "report_kind": "execution_record_renderer_refused",
+    "counting": "三条FINDING/CANDIDATE排除+一条错误INFO事实+22个原生开放根因；misses为6个覆盖漏项，不等同板缺陷。"
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "unconnected-(U1-XO-Pad13)",
+        "GND"
+      ],
+      "sr_text": "unconnected-(U1-XO-Pad13) <- U1.13 (HX711，脚名 XO) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "false_alarm",
+      "evidence": "U1.14 XI→GND选择片内振荡；U1.13 XO单节点；AVIA HX711 V2.0 p2 Table1 pin13明确unused NC，p4 Clock Source确认XI=0。当前库XO为IN是模式盲点；电气故障已排除，图面NC改善不等于硬件坏。本条原文是合法待确认候选，误报统计表示经审查排除，不要求冷扫无条件不报。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run (NET-A01 branch)",
+        "what": "保持未知脚/真实悬空输入候选；允许消费绑定输入与原厂页码的“模式下允许未用NC脚”处置，U1.XI=GND时XO不作为缺驱动输入。不能仅按XO名称全局豁免。NET-A01保留无NC图面提示但不升级为电气缺陷。",
+        "basis": "AVIA HX711 V2.0 p2 pin13/14; p4 Clock Source Options"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.UNCONNECTED-4f4cde"
+      ],
+      "origin": "lint:CANDIDATE"
+    },
+    {
+      "id": "F02",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "unconnected-(U1-XO-Pad13)",
+        "GND"
+      ],
+      "sr_text": "unconnected-(U1-XO-Pad13): ['U1.13']",
+      "verdict": "false_alarm",
+      "evidence": "U1.14 XI→GND选择片内振荡；U1.13 XO单节点；AVIA HX711 V2.0 p2 Table1 pin13明确unused NC，p4 Clock Source确认XI=0。当前库XO为IN是模式盲点；电气故障已排除，图面NC改善不等于硬件坏。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run (NET-A06 branch)",
+        "what": "保持未知脚/真实悬空输入候选；允许消费绑定输入与原厂页码的“模式下允许未用NC脚”处置，U1.XI=GND时XO不作为缺驱动输入。不能仅按XO名称全局豁免。NET-A01保留无NC图面提示但不升级为电气缺陷。",
+        "basis": "AVIA HX711 V2.0 p2 pin13/14; p4 Clock Source Options"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A06.UNCONNECTED-6f970d"
+      ],
+      "origin": "lint:CANDIDATE"
+    },
+    {
+      "id": "F03",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "unconnected-(U1-XO-Pad13)",
+        "GND"
+      ],
+      "sr_text": "U1.13 -> unconnected-(U1-XO-Pad13): 输入脚所在网只有该节点",
+      "verdict": "false_alarm",
+      "evidence": "U1.14 XI→GND选择片内振荡；U1.13 XO单节点；AVIA HX711 V2.0 p2 Table1 pin13明确unused NC，p4 Clock Source确认XI=0。当前库XO为IN是模式盲点；电气故障已排除，图面NC改善不等于硬件坏。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/board_scans.py:floating_inputs",
+        "what": "保持未知脚/真实悬空输入候选；允许消费绑定输入与原厂页码的“模式下允许未用NC脚”处置，U1.XI=GND时XO不作为缺驱动输入。不能仅按XO名称全局豁免。NET-A01保留无NC图面提示但不升级为电气缺陷。",
+        "basis": "AVIA HX711 V2.0 p2 pin13/14; p4 Clock Source Options"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.U1-13-3a1d0c"
+      ],
+      "origin": "lint:FINDING"
+    },
+    {
+      "id": "F04",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "INFO",
+      "refs": [
+        "U1",
+        "Q1",
+        "R5",
+        "K1",
+        "K3"
+      ],
+      "nets": [
+        "VCC",
+        "Net-(Q1-C)",
+        "Net-(C1-Pad2)"
+      ],
+      "sr_text": "Net-(Q1-C): 板上无来源，经 ['K1.5', 'R5'] 由外部供电；输入保护按 PRO 规则另核",
+      "verdict": "false_alarm",
+      "evidence": "K3.3→VCC→Q1.2(E)，U1.2(BASE)→Q1.1(B)，Q1.3(C)→U1.3 AVDD，再经R5到K1.5；HX711 p1 Fig1/p4明确外置PNP调节。K1.5是桥激励输出，feed_paths把可达连接器先当外部源，方向/控制未建模。本条仅INFO，单独计入已核错误事实，未当作电气FINDING。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/powertree.py:PowerTree.source_of/_search",
+        "what": "经已核PNP端子与控制角色定位串联调节的上游来源；在方向未定前保留来源未定，不将外接负载连接器直接断言为输入源。连接器源/负载方向必须由受控声明或原厂拓扑支持。",
+        "basis": "HX711 p1 Fig1,p4 Power Supply Options; db Q1.E/B/C path"
+      },
+      "seed": null,
+      "check_ids": [],
+      "origin": "lint:INFO-corrected-fact"
+    },
+    {
+      "id": "F05",
+      "sr_rule": "ANA-C01",
+      "criteria": [
+        "G02-017",
+        "G04-041",
+        "G04-042",
+        "G04-054"
+      ],
+      "severity": "P1",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "K1",
+        "K2",
+        "K3",
+        "Q1",
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "U1"
+      ],
+      "nets": [
+        "Net-(U1-INNA-)",
+        "Net-(U1-INNB-)",
+        "Net-(U1-INPA+)",
+        "Net-(U1-INPB+)"
+      ],
+      "sr_text": "K1/K2外部桥的电阻、满载灵敏度、共模、线缆、精度和选通增益未给。已算A通道R1+R2=200Ω、C4=100nF，差分RC=20µs、fc=7957.75Hz；AVDD标称4.29878V时A128/A64/B32满量程分别±16.792/33.584/67.168mV，共模1.2..2.99878V。不能用这些典型值证明未知传感器和故障输入满足范围。",
+      "verdict": "needs_human",
+      "evidence": "HX711 p3 Table2,p4 input/gain; db R1/R2/C4/K1/K2。K1/K2外部桥的电阻、满载灵敏度、共模、线缆、精度和选通增益未给。已算A通道R1+R2=200Ω、C4=100nF，差分RC=20µs、fc=7957.75Hz；AVDD标称4.29878V时A128/A64/B32满量程分别±16.792/33.584/67.168mV，共模1.2..2.99878V。不能用这些典型值证明未知传感器和故障输入满足范围。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "ANA-C01.GAP-HX-COMMON.U1",
+        "ANA-C03.GAP-HX-FULLSCALE.U1",
+        "ANA-T01.ANALOG-U1-FAULT.U1",
+        "ANA-T01.ANALOG-U1-RUN.U1",
+        "DEV-C03.ANALOG-U1"
+      ],
+      "origin": "native-open:FN-ANALOG-U1/MEASUREMENT-ANALOG-U1"
+    },
+    {
+      "id": "F06",
+      "sr_rule": "DEV-C01",
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-016",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022",
+        "G05-040",
+        "G05-041",
+        "G05-042",
+        "G05-043"
+      ],
+      "severity": "P1",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "Q1",
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "U1"
+      ],
+      "nets": [
+        "Net-(Q1-B)"
+      ],
+      "sr_text": "Q1/R5承受外部桥负载，但桥最小电阻、VCC实际输入窗、环境温度和短路源限制未给；R5=10Ω不能当限流保证。R3/R4标称分压电流152.44µA、耗散0.4648/0.1905mW已算，不能据此放行Q1热/SOA和R5故障功耗。未知条件下不声称实物过热。",
+      "verdict": "needs_human",
+      "evidence": "db Q1/R3/R4/R5; HX711 p4; MMBT4403 p2/3。Q1/R5承受外部桥负载，但桥最小电阻、VCC实际输入窗、环境温度和短路源限制未给；R5=10Ω不能当限流保证。R3/R4标称分压电流152.44µA、耗散0.4648/0.1905mW已算，不能据此放行Q1热/SOA和R5故障功耗。未知条件下不声称实物过热。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C01.ANALOG-U1",
+        "DEV-C05.Q1",
+        "DEV-C05.U1",
+        "DRV-C02.Q1-NET-Q1-B.Q1-1"
+      ],
+      "origin": "native-open:FN-ANALOG-U1/LOAD_STRESS-ANALOG-U1"
+    },
+    {
+      "id": "F07",
+      "sr_rule": "DEV-C02",
+      "criteria": [
+        "G03-003",
+        "G03-004",
+        "G03-010",
+        "G03-036",
+        "G03-039"
+      ],
+      "severity": "P1",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "Q1",
+        "R5",
+        "U1"
+      ],
+      "nets": [
+        "Net-(C1-Pad2)",
+        "Net-(Q1-C)"
+      ],
+      "sr_text": "AVDD直接段无电容，C1=100nF/C2=10µF均在R5=10Ω之后。AVIA p6 Fig4把10µF直接跨AVDD/GND；V2.0未给此串联阻抗下的稳定负载/C/ESR窗口。不能把R5后电容当直接去耦，也不能仅凭偏离典型图确认振荡。",
+      "verdict": "knowledge_gap",
+      "evidence": "db U1.3/Q1.3/R5/C1/C2; HX711 p1 Fig1,p4,p6 Fig4。AVDD直接段无电容，C1=100nF/C2=10µF均在R5=10Ω之后。AVIA p6 Fig4把10µF直接跨AVDD/GND；V2.0未给此串联阻抗下的稳定负载/C/ESR窗口。不能把R5后电容当直接去耦，也不能仅凭偏离典型图确认振荡。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C02.ANALOG-U1",
+        "PWR-C04.GAP-HX-REG-COUT.U1",
+        "PWR-C09.DECAP-77893A8D1D2EFAB9B7E9.NET-Q1-C",
+        "PWR-D02.DECAP-77893A8D1D2EFAB9B7E9.NET-Q1-C"
+      ],
+      "origin": "native-open:FN-ANALOG-U1/COUT-ANALOG-U1"
+    },
+    {
+      "id": "F08",
+      "sr_rule": "DEV-D01",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "Q1"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "BOM仅MMBT4403，没有厂商和完整订货码。Diodes手册可作为同型号引脚和能力候选，不能证明实装供应来源及全温hFE/功耗档；没有确认矛盾。",
+      "verdict": "needs_human",
+      "evidence": "source-bom.csv row13; Diodes DS30058 p1 ordering。BOM仅MMBT4403，没有厂商和完整订货码。Diodes手册可作为同型号引脚和能力候选，不能证明实装供应来源及全温hFE/功耗档；没有确认矛盾。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D01.Q1"
+      ],
+      "origin": "native-open:FN-ANALOG-U1/Q_VENDOR-ANALOG-U1"
+    },
+    {
+      "id": "F09",
+      "sr_rule": "DEV-E01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "K1",
+        "K2",
+        "K3"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "K1/K2/K3只给HEADER_MALE_5X1/2X1/4X1泛称，没有受控采购系列和独立针1/顶视图；板端电气针序已分别追踪，准确实物针号映射仍需受控资料。",
+      "verdict": "needs_human",
+      "evidence": "source-bom.csv K1; source-schematic.pdf p1; db K1；source-bom.csv K2; source-schematic.pdf p1; db K2；source-bom.csv K3; source-schematic.pdf p1; db K3。K1/K2/K3只给HEADER_MALE_5X1/2X1/4X1泛称，没有受控采购系列和独立针1/顶视图；板端电气针序已分别追踪，准确实物针号映射仍需受控资料。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-E01.K1",
+        "DEV-E01.K2",
+        "DEV-E01.K3"
+      ],
+      "origin": "native-open:FN-ANALOG-U1/HEADERS-ANALOG-U1"
+    },
+    {
+      "id": "F10",
+      "sr_rule": "PRO-C04",
+      "criteria": [
+        "G05-019",
+        "G05-020"
+      ],
+      "severity": "P1",
+      "refs": [
+        "K1",
+        "Q1",
+        "R5"
+      ],
+      "nets": [
+        "Net-(C1-Pad2)",
+        "Net-(Q1-C)"
+      ],
+      "sr_text": "AVDD→R5(10Ω)→K1.5为外接桥配电支路，板上无保险/eFuse；上游限流、桥线束耐受和允许安全失效未给。不能仅以无保护件断言缺陷，也不能让R5无条件承担短路保护。",
+      "verdict": "needs_human",
+      "evidence": "db Q1.3→R5.1/2→K1.5; source-schematic.pdf p1。AVDD→R5(10Ω)→K1.5为外接桥配电支路，板上无保险/eFuse；上游限流、桥线束耐受和允许安全失效未给。不能仅以无保护件断言缺陷，也不能让R5无条件承担短路保护。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-C04.GAP-HX-BRANCH.Q1"
+      ],
+      "origin": "native-open:FN-ANALOG-U1/BRANCH-ANALOG-U1"
+    },
+    {
+      "id": "F11",
+      "sr_rule": "PWR-C02",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "Q1",
+        "R3",
+        "R4",
+        "U1"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "Net-(U1-VFB)"
+      ],
+      "sr_text": "R3=20k/R4=8.2k，AVDD=VBG*(1+R3/R4)。用p3典型VBG=1.25V算4.298780V；即使基准无误差，仅假设两电阻±5%时为4.008420..4.619705V。手册未给VBG min/max与温漂保证，且产品VCC下限/目标输出未确认；4.299V不是全温保证，3.3V不能维持此调节目标，但没有证据表明本板承诺3.3V稳压。",
+      "verdict": "knowledge_gap",
+      "evidence": "HX711 p3 VBG typ,p4 formula/headroom; db R3/R4。R3=20k/R4=8.2k，AVDD=VBG*(1+R3/R4)。用p3典型VBG=1.25V算4.298780V；即使基准无误差，仅假设两电阻±5%时为4.008420..4.619705V。手册未给VBG min/max与温漂保证，且产品VCC下限/目标输出未确认；4.299V不是全温保证，3.3V不能维持此调节目标，但没有证据表明本板承诺3.3V稳压。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-C02.GAP-HX-REG-SET.U1",
+        "PWR-E01.U1-4"
+      ],
+      "origin": "native-open:FN-ANALOG-U1/VBG-ANALOG-U1"
+    },
+    {
+      "id": "F12",
+      "sr_rule": "PWR-C05",
+      "criteria": [
+        "G03-032"
+      ],
+      "severity": "P1",
+      "refs": [
+        "C2",
+        "Q1",
+        "R5",
+        "U1"
+      ],
+      "nets": [
+        "Net-(C1-Pad2)",
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "C2可经R5回到AVDD，Q1.C→B→U1.BASE构成潜在反向放电路径；VCC快速塌陷和K1外部反向供电条件未定义，不能假定Q1截止等于所有反向电流被阻断；HX711 V2.0没有给该稳压段反向注入保证。",
+      "verdict": "knowledge_gap",
+      "evidence": "db Q1.1/2/3,R5,C2; HX711 p2/p4。C2可经R5回到AVDD，Q1.C→B→U1.BASE构成潜在反向放电路径；VCC快速塌陷和K1外部反向供电条件未定义，不能假定Q1截止等于所有反向电流被阻断；HX711 V2.0没有给该稳压段反向注入保证。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-C05.GAP-HX-REG-REVERSE.U1"
+      ],
+      "origin": "native-open:FN-ANALOG-U1/REVERSE-ANALOG-U1"
+    },
+    {
+      "id": "F13",
+      "sr_rule": "RST-T04",
+      "criteria": [
+        "G04-010"
+      ],
+      "severity": "P1",
+      "refs": [
+        "K3",
+        "U1"
+      ],
+      "nets": [
+        "Net-(U1-PD_SCK)"
+      ],
+      "sr_text": "K3.1直连U1.11 PD_SCK且无外部上/下拉；手册p5高电平持续超过60µs会关掉ADC和桥激励。外部主机复位/高阻行为未给，不能证明缺拉阻就是实物故障，亦不能默认上电SCK为低。",
+      "verdict": "needs_human",
+      "evidence": "db K3.1/U1.11; HX711 p4 serial,p5 reset。K3.1直连U1.11 PD_SCK且无外部上/下拉；手册p5高电平持续超过60µs会关掉ADC和桥激励。外部主机复位/高阻行为未给，不能证明缺拉阻就是实物故障，亦不能默认上电SCK为低。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "RST-T04.GAP-HX-DEFAULT.U1"
+      ],
+      "origin": "native-open:FN-ANALOG-U1/DEFAULT-ANALOG-U1"
+    },
+    {
+      "id": "F14",
+      "sr_rule": "DEV-C04",
+      "criteria": [
+        "G01-013",
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G04-098",
+        "G05-007",
+        "G05-022",
+        "G05-054"
+      ],
+      "severity": "P1",
+      "refs": [
+        "K1"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "K1板端针序为桥激励输出及A通道差分输入；1/4地、5激励、2/3信号；未给对端受控针表、允许线缆/地偏差、接触电流和带电插拔/反接/故障/ESD条件。图上无专用TVS或防反器件；这不是在未定义环境下已证实的缺保护。",
+      "verdict": "needs_human",
+      "evidence": "db K1 physical nodes; source-schematic.pdf p1; HX711 p2..5。K1板端针序为桥激励输出及A通道差分输入；1/4地、5激励、2/3信号；未给对端受控针表、允许线缆/地偏差、接触电流和带电插拔/反接/故障/ESD条件。图上无专用TVS或防反器件；这不是在未定义环境下已证实的缺保护。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C04.K1",
+        "DEV-D03.K1",
+        "PRO-D03.K1",
+        "PRO-D04.K1"
+      ],
+      "origin": "native-open:FN-EXT-K1/EXT_K1-EXT-K1"
+    },
+    {
+      "id": "F15",
+      "sr_rule": "DEV-C04",
+      "criteria": [
+        "G01-013",
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G04-098",
+        "G05-007",
+        "G05-022",
+        "G05-054"
+      ],
+      "severity": "P1",
+      "refs": [
+        "K2"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "K2板端针序为B差分输入；1负、2正，直接到U1.9/10，无本地偏置/串阻；未给对端受控针表、允许线缆/地偏差、接触电流和带电插拔/反接/故障/ESD条件。图上无专用TVS或防反器件；这不是在未定义环境下已证实的缺保护。",
+      "verdict": "needs_human",
+      "evidence": "db K2 physical nodes; source-schematic.pdf p1; HX711 p2..5。K2板端针序为B差分输入；1负、2正，直接到U1.9/10，无本地偏置/串阻；未给对端受控针表、允许线缆/地偏差、接触电流和带电插拔/反接/故障/ESD条件。图上无专用TVS或防反器件；这不是在未定义环境下已证实的缺保护。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C04.K2",
+        "DEV-D03.K2",
+        "PRO-D03.K2",
+        "PRO-D04.K2"
+      ],
+      "origin": "native-open:FN-EXT-K2/EXT_K2-EXT-K2"
+    },
+    {
+      "id": "F16",
+      "sr_rule": "DEV-C04",
+      "criteria": [
+        "G01-013",
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G04-098",
+        "G05-007",
+        "G05-022",
+        "G05-054"
+      ],
+      "severity": "P1",
+      "refs": [
+        "K3"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "K3板端针序为主机串行/供电；1SCK、2DOUT、3VCC、4GND；未给对端受控针表、允许线缆/地偏差、接触电流和带电插拔/反接/故障/ESD条件。图上无专用TVS或防反器件；这不是在未定义环境下已证实的缺保护。",
+      "verdict": "needs_human",
+      "evidence": "db K3 physical nodes; source-schematic.pdf p1; HX711 p2..5。K3板端针序为主机串行/供电；1SCK、2DOUT、3VCC、4GND；未给对端受控针表、允许线缆/地偏差、接触电流和带电插拔/反接/故障/ESD条件。图上无专用TVS或防反器件；这不是在未定义环境下已证实的缺保护。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C04.K3",
+        "DEV-D03.K3",
+        "PRO-D03.K3",
+        "PRO-D04.K3"
+      ],
+      "origin": "native-open:FN-EXT-K3/EXT_K3-EXT-K3"
+    },
+    {
+      "id": "F17",
+      "sr_rule": "PWR-T04",
+      "criteria": [
+        "G03-025"
+      ],
+      "severity": "P1",
+      "refs": [
+        "K1",
+        "K2",
+        "K3",
+        "Q1",
+        "U1"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "只有HX711内部上电复位，p5未给POR/棕断门限/迟滞和慢爬升保证；没有受控产品电源监控要求。已确认无外部监控器，但不能按模板强制增加，也不能用内部POR存在证明所有低压状态受控。",
+      "verdict": "needs_human",
+      "evidence": "HX711 p5 Reset; db.parts; intake.md。只有HX711内部上电复位，p5未给POR/棕断门限/迟滞和慢爬升保证；没有受控产品电源监控要求。已确认无外部监控器，但不能按模板强制增加，也不能用内部POR存在证明所有低压状态受控。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-T04.V1-1-1.SUPERVISION-RAILS"
+      ],
+      "origin": "native-open:FN-SYS-MONITOR/MONITOR-SYS-MONITOR"
+    },
+    {
+      "id": "F18",
+      "sr_rule": "PWR-C01",
+      "criteria": [
+        "G01-010",
+        "G01-022",
+        "G03-001",
+        "G03-002",
+        "G03-042",
+        "G03-043"
+      ],
+      "severity": "P1",
+      "refs": [
+        "K1",
+        "K2",
+        "K3",
+        "Q1",
+        "U1"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "K3.3为实际外部电源，Q1供AVDD及R5后的桥。HX711 p3模拟1.4mA/数字0.1mA仅典型值；未给桥最小电阻、主机可供电流和VCC实际窗，不能独立完成源端与分支的最大电流/功率预算。",
+      "verdict": "needs_human",
+      "evidence": "HX711 p3 currents; db VCC/Q1/R5/K1; intake.md。K3.3为实际外部电源，Q1供AVDD及R5后的桥。HX711 p3模拟1.4mA/数字0.1mA仅典型值；未给桥最小电阻、主机可供电流和VCC实际窗，不能独立完成源端与分支的最大电流/功率预算。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-C01.NET-Q1-C",
+        "PWR-C01.VCC",
+        "PWR-C19.BOARD"
+      ],
+      "origin": "native-open:FN-SYS-POWER/BUDGET-SYS-POWER"
+    },
+    {
+      "id": "F19",
+      "sr_rule": "RST-T03",
+      "criteria": [
+        "G03-024",
+        "G03-030",
+        "G03-047",
+        "G05-062",
+        "G05-091"
+      ],
+      "severity": "P1",
+      "refs": [
+        "K1",
+        "K2",
+        "K3",
+        "Q1",
+        "U1"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "VSUP与DVDD同VCC，AVDD由U1+Q1生成，正常无需编造两个独立电源的固定排序；慢爬升、快速掉电、外部主机先带电和K1外供的允许状态未定义，故完整恢复尚不能判定。",
+      "verdict": "needs_human",
+      "evidence": "db U1.1/3/16,Q1,K1/K3; HX711 p4/p5。VSUP与DVDD同VCC，AVDD由U1+Q1生成，正常无需编造两个独立电源的固定排序；慢爬升、快速掉电、外部主机先带电和K1外供的允许状态未定义，故完整恢复尚不能判定。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "RST-T03.SYS-SEQUENCE"
+      ],
+      "origin": "native-open:FN-SYS-SEQUENCE/SEQUENCE-SYS-SEQUENCE"
+    },
+    {
+      "id": "F20",
+      "sr_rule": "DEV-D04",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "Q1"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "原BOM未写普通阻容耐压/温度/公差与Q1厂商，未发现自相矛盾。反推C1/C2/C5/C6在所声明0..5.5V窗口按片状陶瓷I级80%电压系数需≥6.875V，常规25V候选可实现；这是采购约束待写，不是已证实贴了低耐压电容，也不是缺常规件厂家数据。",
+      "verdict": "needs_human",
+      "evidence": "source-bom.csv; commodity-floors MLCC; evidence.md BOM constraints。原BOM未写普通阻容耐压/温度/公差与Q1厂商，未发现自相矛盾。反推C1/C2/C5/C6在所声明0..5.5V窗口按片状陶瓷I级80%电压系数需≥6.875V，常规25V候选可实现；这是采购约束待写，不是已证实贴了低耐压电容，也不是缺常规件厂家数据。 未把常规件缺料号等同缺厂家数据；这是未受控采购边界，需写规格任务。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D04.BOARD"
+      ],
+      "origin": "native-open:FN-BOARD-INPUT/BOM_CONTROL-BOARD-INPUT"
+    },
+    {
+      "id": "F21",
+      "sr_rule": "DEV-Q01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U1",
+        "Q1"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "已阅读HX711完整9页及MMBT4403 p1..4，官方物理脚已核；HX711没有给VBG保证误差、稳压C/ESR和掉电注入边界，Q1供货来源未锁定。资料覆盖审计AVAILABLE=2不表示这些参数齐全；未检出另有适用errata的证据，不宣称穷尽厂商未公开资料。",
+      "verdict": "needs_human",
+      "evidence": "HX711 p1..9; MMBT4403 DS30058 p1..4; datasheet-audit.json。已阅读HX711完整9页及MMBT4403 p1..4，官方物理脚已核；HX711没有给VBG保证误差、稳压C/ESR和掉电注入边界，Q1供货来源未锁定。资料覆盖审计AVAILABLE=2不表示这些参数齐全；未检出另有适用errata的证据，不宣称穷尽厂商未公开资料。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-Q01.DATASHEETS"
+      ],
+      "origin": "native-open:FN-BOARD-INPUT/AUDIT-BOARD-INPUT"
+    },
+    {
+      "id": "F22",
+      "sr_rule": "DOC-D02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U1",
+        "R3",
+        "R4",
+        "C3",
+        "K1",
+        "K2",
+        "K3"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "K3可触达VCC/GND/SCK/DOUT，K1可触达桥输入/激励；AVDD、VBG和VFB仅元件脚可探测，没有受控测试/校准点要求。不能在未知夹具/测量需求下判测试节点充分。",
+      "verdict": "needs_human",
+      "evidence": "source-schematic.pdf p1 K1/K2/K3 and U1/R3/R4/C3。K3可触达VCC/GND/SCK/DOUT，K1可触达桥输入/激励；AVDD、VBG和VFB仅元件脚可探测，没有受控测试/校准点要求。不能在未知夹具/测量需求下判测试节点充分。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DOC-D02.BOARD"
+      ],
+      "origin": "native-open:FN-BOARD-INPUT/TESTABILITY-BOARD-INPUT"
+    },
+    {
+      "id": "F23",
+      "sr_rule": "PRO-D05",
+      "criteria": [
+        "G05-001",
+        "G05-002",
+        "G05-003",
+        "G05-004",
+        "G05-005",
+        "G05-007",
+        "G05-008",
+        "G05-009",
+        "G05-010",
+        "G05-011",
+        "G05-012",
+        "G05-013",
+        "G05-014",
+        "G05-015",
+        "G05-016",
+        "G05-017",
+        "G05-028",
+        "G05-029",
+        "G05-035"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U1",
+        "Q1",
+        "R3",
+        "R4",
+        "R5",
+        "K1",
+        "K2",
+        "K3"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "已枚举Q1 C-E短路使AVDD逼近VCC、R3开路/R4短路导致调节失控、R5开路使桥失励、K1/K2短路与主机先带电路径；缺产品允许的安全失效/故障事件与上游限能，不能完成传播时间/严重度协调或假造完整FMEA。",
+      "verdict": "needs_human",
+      "evidence": "db Q1/R3/R4/R5/U1/K1/K2/K3; evidence.md fault matrix。已枚举Q1 C-E短路使AVDD逼近VCC、R3开路/R4短路导致调节失控、R5开路使桥失励、K1/K2短路与主机先带电路径；缺产品允许的安全失效/故障事件与上游限能，不能完成传播时间/严重度协调或假造完整FMEA。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-D05.BOARD",
+        "REQ-D05.BOARD"
+      ],
+      "origin": "native-open:FN-BOARD-INPUT/FMEA-BOARD-INPUT"
+    },
+    {
+      "id": "F24",
+      "sr_rule": "PWR-D04",
+      "criteria": [
+        "G01-001",
+        "G01-002",
+        "G01-003",
+        "G01-004",
+        "G01-006",
+        "G01-007",
+        "G01-008",
+        "G01-011",
+        "G01-012",
+        "G01-017",
+        "G01-051",
+        "G02-018",
+        "G02-030",
+        "G03-041",
+        "G04-014",
+        "G04-015",
+        "G04-050",
+        "G04-063",
+        "G04-065",
+        "G04-072",
+        "G04-077",
+        "G04-100",
+        "G05-018",
+        "G05-023",
+        "G05-097"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U1",
+        "K3"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "固定仓库无受控产品需求或输入工况表；README只能推断称重用途。VCC最大/最小及测量点、瞬态、源阻抗、温度、桥负载、精度和验证阶段未确认，手册允许包络不能冒充项目规格。",
+      "verdict": "needs_human",
+      "evidence": "README About Product; intake.md; intent requirements=[]。固定仓库无受控产品需求或输入工况表；README只能推断称重用途。VCC最大/最小及测量点、瞬态、源阻抗、温度、桥负载、精度和验证阶段未确认，手册允许包络不能冒充项目规格。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-D04.BOARD",
+        "REQ-D02.BOARD",
+        "REQ-D03.BOARD",
+        "REQ-D04.BOARD"
+      ],
+      "origin": "native-open:FN-BOARD-INPUT/INPUT-BOARD-INPUT"
+    },
+    {
+      "id": "F25",
+      "sr_rule": "REQ-C01",
+      "criteria": [
+        "G02-001",
+        "G02-003",
+        "G02-004",
+        "G02-005",
+        "G02-006",
+        "G02-008",
+        "G02-009",
+        "G02-010",
+        "G02-011",
+        "G02-012",
+        "G02-013",
+        "G02-014",
+        "G02-015",
+        "G02-016",
+        "G02-019",
+        "G02-020",
+        "G02-021",
+        "G02-022",
+        "G02-023",
+        "G02-024",
+        "G02-025",
+        "G02-029",
+        "G02-032",
+        "G02-033"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U1",
+        "Q1",
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "C4"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "已独立复算反馈目标、输入/激励RC、ADC名义量程和分压功耗；基准/电阻误差、实际输入/负载/温度仍未形成保证角点，故不能把示例估算记作本板最坏条件计算全通过。",
+      "verdict": "needs_human",
+      "evidence": "evidence.md calculations; HX711 p3/p4; source-bom.csv R1..R5。已独立复算反馈目标、输入/激励RC、ADC名义量程和分压功耗；基准/电阻误差、实际输入/负载/温度仍未形成保证角点，故不能把示例估算记作本板最坏条件计算全通过。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "REQ-C01.BOARD"
+      ],
+      "origin": "native-open:FN-BOARD-INPUT/CALC_REVIEW-BOARD-INPUT"
+    },
+    {
+      "id": "F26",
+      "sr_rule": "REQ-Q07",
+      "criteria": [
+        "G02-002"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U1",
+        "Q1"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "VCC"
+      ],
+      "sr_text": "ANALOG候选确有ADC/PGA却因INNA/INPA别名过滤只问ANA-T01；POWER_CONVERTER目录标签虽保留但内置稳压无候选。7个rule_gaps补了独立审查对象，未把原生成覆盖不足改称已完整通过。",
+      "verdict": "needs_human",
+      "evidence": "review-plan-before-gap.json not_asked; intent.rule_gaps; circuit-candidates.json。ANALOG候选确有ADC/PGA却因INNA/INPA别名过滤只问ANA-T01；POWER_CONVERTER目录标签虽保留但内置稳压无候选。7个rule_gaps补了独立审查对象，未把原生成覆盖不足改称已完整通过。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "REQ-Q07.POWER-CONVERTER"
+      ],
+      "origin": "native-open:FN-BOARD-INPUT/COVERAGE-BOARD-INPUT"
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G04-041",
+      "criteria": [
+        "G04-041"
+      ],
+      "sr_rule": "ANA-C01",
+      "refs": [
+        "U1",
+        "R1",
+        "R2",
+        "K1",
+        "K2"
+      ],
+      "nets": [
+        "Net-(U1-INNA-)",
+        "Net-(U1-INPA+)",
+        "Net-(U1-INNB-)",
+        "Net-(U1-INPB+)"
+      ],
+      "why_expected": "已核adc_dac及片内PGA必须问共模/直流范围，不能由别名过滤掉。",
+      "evidence": "原计划FN-ANALOG-U1.not_asked把ANA-C01标无ADC脚；HX711 p2 pin7..10，p3共模AGND+1.2..AVDD-1.3。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:subject_precondition ANALOG_PIN / ANALOG_NAME_RE",
+        "what": "已核adc_dac角色应保持ADC/PGA问题；补INNA/INPA/INNB/INPB别名并用官方脚表区分通道，不能只把VBG/数字脚也当模拟输入。",
+        "basis": "原计划FN-ANALOG-U1.not_asked把ANA-C01标无ADC脚；HX711 p2 pin7..10，p3共模AGND+1.2..AVDD-1.3。"
+      },
+      "seed": {
+        "kind": "D-ADC-PIN-ALIAS-CM",
+        "mutation": "在有adc_dac核验的合成ADC网表把AINP/AINN改为INPA+/INNA-及B通道别名，连接不变；应仍生成ANA-C01逐通道项。",
+        "target_rule": "ANA-C01",
+        "expected": "coverage_only; no defect verdict without external input contract"
+      },
+      "kind": "coverage_miss",
+      "disposition": "已由intent.rule_gaps补审；不声称已确认电气缺陷"
+    },
+    {
+      "id": "M02",
+      "criterion": "G04-054",
+      "criteria": [
+        "G04-054"
+      ],
+      "sr_rule": "ANA-C03",
+      "refs": [
+        "U1",
+        "K1",
+        "K2",
+        "C4"
+      ],
+      "nets": [
+        "Net-(U1-INNA-)",
+        "Net-(U1-INPA+)",
+        "Net-(U1-INNB-)",
+        "Net-(U1-INPB+)"
+      ],
+      "why_expected": "A128/A64/B32满量程及输入故障应逐通道核，原计划没有实例。",
+      "evidence": "原计划ANA-C03 not_asked无ADC脚；HX711 p3 ±0.5AVDD/GAIN,p4 Table3; 本板K2直9/10、K1经100Ω至7/8。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:subject_precondition ANALOG_PIN",
+        "what": "与ANA-C01共用角色识别修复，但必须分别生成ANA-C03并保留A/B和可选增益；量程/绝限/建立时间不得混用。",
+        "basis": "原计划ANA-C03 not_asked无ADC脚；HX711 p3 ±0.5AVDD/GAIN,p4 Table3; 本板K2直9/10、K1经100Ω至7/8。"
+      },
+      "seed": {
+        "kind": "D-ADC-PIN-ALIAS-FSR",
+        "mutation": "同一adc_dac合成输入网表改成HX711通道别名，保留A/B连接，核ANA-C03不会消失；另绑定外部输入和FSR契约后才做过量程FAIL变异。",
+        "target_rule": "ANA-C03",
+        "expected": "coverage_only"
+      },
+      "kind": "coverage_miss",
+      "disposition": "已由intent.rule_gaps补审；不声称已确认电气缺陷"
+    },
+    {
+      "id": "M03",
+      "criterion": "G03-003",
+      "criteria": [
+        "G03-003",
+        "G03-004"
+      ],
+      "sr_rule": "PWR-C04",
+      "refs": [
+        "U1",
+        "Q1",
+        "R5",
+        "C1",
+        "C2"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "Net-(C1-Pad2)"
+      ],
+      "why_expected": "ADC含内置稳压/外置PNP时仍应问输出电容与ESR，不由器件单一主角色屏蔽。",
+      "evidence": "Q1.E=VCC、B=U1.BASE、C=AVDD、R3/R4反馈；C1/C2在10Ω之后。HX711 p1/p4/p6 Fig4；原生只有ANALOG候选及去耦项，无PWR-C04。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:Generator.prepare/converters/regulator_outputs; scripts/plan_circuits.py:subject_precondition FEEDBACK_PIN",
+        "what": "保留已核ADC主角色，同时按原厂有据复合调节拓扑形成稳压功能或独立机制对象并展开PWR-C04；不把R5后电容算直接Cout，不盲接收假自锚变换器。",
+        "basis": "Q1.E=VCC、B=U1.BASE、C=AVDD、R3/R4反馈；C1/C2在10Ω之后。HX711 p1/p4/p6 Fig4；原生只有ANALOG候选及去耦项，无PWR-C04。"
+      },
+      "seed": {
+        "kind": "D-INTEGRATED-REG-COUT-BOUNDARY",
+        "mutation": "在有外置PNP+BASE/AVDD/VFB声明的合成ADC稳压网表，将Cout从AVDD直连改为串10Ω之后；检查PWR-C04仍生成并定位串联边界。",
+        "target_rule": "PWR-C04",
+        "expected": "coverage_only; failing stability verdict requires independently bound C/ESR contract"
+      },
+      "kind": "coverage_miss",
+      "disposition": "已由intent.rule_gaps补审；不声称已确认电气缺陷"
+    },
+    {
+      "id": "M04",
+      "criterion": "G03-032",
+      "criteria": [
+        "G03-032"
+      ],
+      "sr_rule": "PWR-C05",
+      "refs": [
+        "U1",
+        "Q1",
+        "R5",
+        "C2"
+      ],
+      "nets": [
+        "VCC",
+        "Net-(Q1-C)",
+        "Net-(C1-Pad2)"
+      ],
+      "why_expected": "集成稳压在VCC塌陷时也应独立核反向电流额定，SYS恢复不能替代。",
+      "evidence": "原计划无PWR-C05；C2经R5至AVDD，Q1集电极/基极与BASE存在潜在返回路径；HX711 p4供电结构未给反向注入保证。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:Generator.converters; scripts/plan_circuits.py:CircuitPlanning.plan_circuit_types",
+        "what": "由同一复合稳压对象展开反向电流项，引用真实PNP/内部控制路径及状态；不得把MOS体二极管模板套PNP。",
+        "basis": "原计划无PWR-C05；C2经R5至AVDD，Q1集电极/基极与BASE存在潜在返回路径；HX711 p4供电结构未给反向注入保证。"
+      },
+      "seed": null,
+      "kind": "coverage_miss",
+      "disposition": "已由intent.rule_gaps补审；不声称已确认电气缺陷"
+    },
+    {
+      "id": "M05",
+      "criterion": "G05-019",
+      "criteria": [
+        "G05-019"
+      ],
+      "sr_rule": "PRO-C04",
+      "refs": [
+        "Q1",
+        "R5",
+        "K1"
+      ],
+      "nets": [
+        "Net-(Q1-C)",
+        "Net-(C1-Pad2)"
+      ],
+      "why_expected": "先枚举真实对外供电支路再问源端保护，即使没有保护件。",
+      "evidence": "Q1.3→R5.1/2(10Ω)→K1.5→外部桥；原计划只有PRO-D03/D04接口无PRO-C04；上游限能未定义，不据无保险直接判FAIL。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:subject_precondition PROTECTION_PART; scripts/interfaces.py:Deriver/derive",
+        "what": "为已核输出电源接口枚举源→连接器支路，主动核外部源保护覆盖；避免只有发现FUSE/TVS才展开保护链。",
+        "basis": "Q1.3→R5.1/2(10Ω)→K1.5→外部桥；原计划只有PRO-D03/D04接口无PRO-C04；上游限能未定义，不据无保险直接判FAIL。"
+      },
+      "seed": {
+        "kind": "D-BRIDGE-EXCITATION-BRANCH",
+        "mutation": "在合成外置PNP模拟电源上加10Ω到桥激励排针，省略本地保护件；应生成PRO-C04支路项，是否FAIL须另绑上游限能与线束耐受。",
+        "target_rule": "PRO-C04",
+        "expected": "coverage_only"
+      },
+      "kind": "coverage_miss",
+      "disposition": "已由intent.rule_gaps补审；不声称已确认电气缺陷"
+    },
+    {
+      "id": "M06",
+      "criterion": "G04-010",
+      "criteria": [
+        "G04-010"
+      ],
+      "sr_rule": "RST-T04",
+      "refs": [
+        "U1",
+        "K3"
+      ],
+      "nets": [
+        "Net-(U1-PD_SCK)"
+      ],
+      "why_expected": "外接主机复位/高阻时PD_SCK是改变供电的关键控制，不能因无本板MCU或无EN名字漏掉。",
+      "evidence": "K3.1直U1.11无拉阻；HX711 p5保持高>60µs令ADC与桥激励掉电。原计划无STARTUP候选/RST-T04。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:START_NAME_RE/subject_precondition START_PIN; scripts/circuit_candidates.py:Generator.chains",
+        "what": "允许有据的复用时钟/掉电控制角色，按连接器外部主机状态问默认态；避免把所有SCK/SPI脚都误作电源控制。",
+        "basis": "K3.1直U1.11无拉阻；HX711 p5保持高>60µs令ADC与桥激励掉电。原计划无STARTUP候选/RST-T04。"
+      },
+      "seed": {
+        "kind": "D-PD-SCK-SAFE-DEFAULT",
+        "mutation": "合成HX711专用串行/掉电控制网连到外部主机排针并移除偏置，声明其power-down控制语义；核RST-T04产生。要判缺陷另给主机复位高阻且系统要求桥保持供电的契约。",
+        "target_rule": "RST-T04",
+        "expected": "coverage_only"
+      },
+      "kind": "coverage_miss",
+      "disposition": "已由intent.rule_gaps补审；不声称已确认电气缺陷"
+    }
+  ],
+  "summary": {
+    "true_defect": 0,
+    "false_alarm": 4,
+    "criterion_issue": 0,
+    "knowledge_gap": 3,
+    "needs_human": 19,
+    "misses": 6
+  },
+  "top50_crosscheck": [
+    {
+      "index": 1,
+      "criterion": "G01-018",
+      "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+      "expected_rules": [
+        "PWR-C17"
+      ],
+      "status": "机制不适用",
+      "evidence": "K3.3为低压VCC输入；无−48V输入/回线或ETSI工况声明，未套ETSI数字。"
+    },
+    {
+      "index": 2,
+      "criterion": "G01-019",
+      "title": "−48 V 输入的工作电压范围与耐受范围",
+      "expected_rules": [
+        "PWR-C17"
+      ],
+      "status": "机制不适用",
+      "evidence": "K3.3为低压VCC输入；无−48V输入/回线或ETSI工况声明，未套ETSI数字。"
+    },
+    {
+      "index": 3,
+      "criterion": "G01-020",
+      "title": "−48 V 输入 0.1 s 中断后自恢复",
+      "expected_rules": [
+        "PWR-C18"
+      ],
+      "status": "机制不适用",
+      "evidence": "K3.3为低压VCC输入；无−48V输入/回线或ETSI工况声明，未套ETSI数字。"
+    },
+    {
+      "index": 4,
+      "criterion": "G01-021",
+      "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+      "expected_rules": [
+        "PRO-C01"
+      ],
+      "status": "机制不适用",
+      "evidence": "K3.3为低压VCC输入；无−48V输入/回线或ETSI工况声明，未套ETSI数字。"
+    },
+    {
+      "index": 5,
+      "criterion": "G01-022",
+      "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+      "expected_rules": [
+        "PWR-C19"
+      ],
+      "status": "机制不适用",
+      "evidence": "K3.3为低压VCC输入；无−48V输入/回线或ETSI工况声明，未套ETSI数字。"
+    },
+    {
+      "index": 6,
+      "criterion": "G01-023",
+      "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+      "expected_rules": [
+        "PWR-C13"
+      ],
+      "status": "机制不适用",
+      "evidence": "K3.3为低压VCC输入；无−48V输入/回线或ETSI工况声明，未套ETSI数字。"
+    },
+    {
+      "index": 7,
+      "criterion": "G01-024",
+      "title": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+      "expected_rules": [
+        "PWR-C18"
+      ],
+      "status": "机制不适用",
+      "evidence": "无交流市电入口/整流/保持供电需求。"
+    },
+    {
+      "index": 8,
+      "criterion": "G01-025",
+      "title": "交流输入较长暂降与中断后自恢复（判据 C）",
+      "expected_rules": [
+        "PWR-C18"
+      ],
+      "status": "机制不适用",
+      "evidence": "无交流市电入口/整流/保持供电需求。"
+    },
+    {
+      "index": 9,
+      "criterion": "G01-026",
+      "title": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+      "expected_rules": [
+        "SIG-C05"
+      ],
+      "status": "机制不适用",
+      "evidence": "K3为4针电源+专用SCK/DOUT，不是USB；无VBUS/CC或Type-C角色。"
+    },
+    {
+      "index": 10,
+      "criterion": "G01-027",
+      "title": "USB 可用电流按实际协商档取",
+      "expected_rules": [
+        "SIG-C05"
+      ],
+      "status": "机制不适用",
+      "evidence": "K3为4针电源+专用SCK/DOUT，不是USB；无VBUS/CC或Type-C角色。"
+    },
+    {
+      "index": 11,
+      "criterion": "G01-029",
+      "title": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+      "expected_rules": [
+        "PWR-C13",
+        "SIG-C05"
+      ],
+      "status": "机制不适用",
+      "evidence": "K3为4针电源+专用SCK/DOUT，不是USB；无VBUS/CC或Type-C角色。"
+    },
+    {
+      "index": 12,
+      "criterion": "G01-030",
+      "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+      "expected_rules": [
+        "SIG-D07"
+      ],
+      "status": "机制不适用",
+      "evidence": "K3为4针电源+专用SCK/DOUT，不是USB；无VBUS/CC或Type-C角色。"
+    },
+    {
+      "index": 13,
+      "criterion": "G01-031",
+      "title": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+      "expected_rules": [
+        "SIG-C05"
+      ],
+      "status": "机制不适用",
+      "evidence": "K3为4针电源+专用SCK/DOUT，不是USB；无VBUS/CC或Type-C角色。"
+    },
+    {
+      "index": 14,
+      "criterion": "G03-003",
+      "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+      "expected_rules": [
+        "PWR-C04"
+      ],
+      "status": "覆盖漏项 M03；已补查，资料未闭",
+      "evidence": "U1.3 AVDD→R5=10Ω→C1=100n/C2=10u；直接段0F。HX711 p6 Fig4直接10u，不给R5后C/ESR稳定窗。PWR-C09/D02只核去耦，不能替代PWR-C04补偿资格。"
+    },
+    {
+      "index": 15,
+      "criterion": "G03-004",
+      "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+      "expected_rules": [
+        "PWR-C04"
+      ],
+      "status": "覆盖漏项 M03；已补查，资料未闭",
+      "evidence": "U1.3 AVDD→R5=10Ω→C1=100n/C2=10u；直接段0F。HX711 p6 Fig4直接10u，不给R5后C/ESR稳定窗。PWR-C09/D02只核去耦，不能替代PWR-C04补偿资格。"
+    },
+    {
+      "index": 16,
+      "criterion": "G03-016",
+      "title": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+      "expected_rules": [
+        "DRV-C02"
+      ],
+      "status": "机制不适用",
+      "evidence": "Q1为PNP串联调节管，没有MOSFET；DRV-C02.Q1保留实际BJT线性区应力，不套MOSFET SOA数值。"
+    },
+    {
+      "index": 17,
+      "criterion": "G03-018",
+      "title": "变换器 UVLO 开启点低于输入窗下限",
+      "expected_rules": [
+        "PWR-C06"
+      ],
+      "status": "输入条件待定，未确认本例机制",
+      "evidence": "U1无UVLO/EN分压脚，p2为VSUP/BASE/AVDD/VFB。最小工作电压/源压降由DEV-C05、PWR-C02补查、PWR-D04和SYS恢复保留；不能强造UVLO滞回数值。"
+    },
+    {
+      "index": 18,
+      "criterion": "G03-019",
+      "title": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+      "expected_rules": [
+        "PWR-C06"
+      ],
+      "status": "输入条件待定，未确认本例机制",
+      "evidence": "U1无UVLO/EN分压脚，p2为VSUP/BASE/AVDD/VFB。最小工作电压/源压降由DEV-C05、PWR-C02补查、PWR-D04和SYS恢复保留；不能强造UVLO滞回数值。"
+    },
+    {
+      "index": 19,
+      "criterion": "G03-021",
+      "title": "软启动充电电流加启动期负载低于器件限流下限",
+      "expected_rules": [
+        "PWR-D03"
+      ],
+      "status": "无所列同步变换器/软启动配置机制",
+      "evidence": "无SS脚/电感/MOS；U1+外置PNP启动充C2与桥负载并入LOAD_STRESS/BUDGET/COUT；未把10u充电流忽略或冒充有限流保证。"
+    },
+    {
+      "index": 20,
+      "criterion": "G03-025",
+      "title": "复位门限高于各负载最低工作电压，掉电先复位",
+      "expected_rules": [
+        "PWR-T04"
+      ],
+      "status": "已有对象，未闭",
+      "evidence": "PWR-T04.SUPERVISION-RAILS已生成；HX711 p5 POR存在但无阈值保证，未凭无外部监控器报缺陷。"
+    },
+    {
+      "index": 21,
+      "criterion": "G03-028",
+      "title": "上电时序在极值时间下满足约束",
+      "expected_rules": [
+        "PWR-C24"
+      ],
+      "status": "已有系统恢复审查，无独立多轨排序反例",
+      "evidence": "VSUP/DVDD同VCC，AVDD为内部控制派生轨；RST-T03已问慢爬升/掉电，p4/p5无独立CORE/IO顺序表。"
+    },
+    {
+      "index": 22,
+      "criterion": "G03-032",
+      "title": "稳压器反向电流在手册允许内或已阻断",
+      "expected_rules": [
+        "PWR-C05"
+      ],
+      "status": "覆盖漏项 M04；已补查，资料未闭",
+      "evidence": "C2=10u经R5到AVDD；Q1.C/B/U1.BASE反向路径与VCC先掉电。未生成PWR-C05，虽有SYS恢复也不核反向电流额定。"
+    },
+    {
+      "index": 23,
+      "criterion": "G03-037",
+      "title": "电解与钽电容不承受反压",
+      "expected_rules": [
+        "DEV-C01"
+      ],
+      "status": "机制不适用",
+      "evidence": "C1..C6为无极性0603/1206C符号；无电解/钽标识、无串联电容栈。普通电容耐压作为MLCC采购约束审，不冒用电解/钽条款。"
+    },
+    {
+      "index": 24,
+      "criterion": "G03-038",
+      "title": "电解与钽电容的直流加纹波峰值在降额内",
+      "expected_rules": [
+        "DEV-C01"
+      ],
+      "status": "机制不适用",
+      "evidence": "C1..C6为无极性0603/1206C符号；无电解/钽标识、无串联电容栈。普通电容耐压作为MLCC采购约束审，不冒用电解/钽条款。"
+    },
+    {
+      "index": 25,
+      "criterion": "G03-040",
+      "title": "串联使用的电解电容有均压措施",
+      "expected_rules": [
+        "DEV-C01"
+      ],
+      "status": "机制不适用",
+      "evidence": "C1..C6为无极性0603/1206C符号；无电解/钽标识、无串联电容栈。普通电容耐压作为MLCC采购约束审，不冒用电解/钽条款。"
+    },
+    {
+      "index": 26,
+      "criterion": "G04-005",
+      "title": "输入信号不超接收端绝对最大值",
+      "expected_rules": [
+        "SIG-C08"
+      ],
+      "status": "已有接口保护对象，边界未闭",
+      "evidence": "K1.2/3经100Ω至U1.8/7；K2.1/2直U1.9/10；K3.1/2直SCK/DOUT。PRO-D04.K1/K2/K3明确覆盖外部先上电、输入过压与反灌，虽无独立SIG-C08实例，不重复记同机制漏报；主机和注入保证未给。"
+    },
+    {
+      "index": 27,
+      "criterion": "G04-007",
+      "title": "未上电接口承受正常或故障信号不损坏",
+      "expected_rules": [
+        "PRO-D04",
+        "SIG-C08"
+      ],
+      "status": "已有接口保护对象，边界未闭",
+      "evidence": "K1.2/3经100Ω至U1.8/7；K2.1/2直U1.9/10；K3.1/2直SCK/DOUT。PRO-D04.K1/K2/K3明确覆盖外部先上电、输入过压与反灌，虽无独立SIG-C08实例，不重复记同机制漏报；主机和注入保证未给。"
+    },
+    {
+      "index": 28,
+      "criterion": "G04-009",
+      "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+      "expected_rules": [
+        "SIG-C08"
+      ],
+      "status": "已有接口保护对象，边界未闭",
+      "evidence": "K1.2/3经100Ω至U1.8/7；K2.1/2直U1.9/10；K3.1/2直SCK/DOUT。PRO-D04.K1/K2/K3明确覆盖外部先上电、输入过压与反灌，虽无独立SIG-C08实例，不重复记同机制漏报；主机和注入保证未给。"
+    },
+    {
+      "index": 29,
+      "criterion": "G04-010",
+      "title": "上电和复位期间关键输出有确定状态",
+      "expected_rules": [
+        "RST-T04"
+      ],
+      "status": "覆盖漏项 M06；已补查",
+      "evidence": "K3.1→U1.11 PD_SCK无上下拉；HX711 p5高>60us关ADC和桥激励；无RST-T04原生项。"
+    },
+    {
+      "index": 30,
+      "criterion": "G04-017",
+      "title": "I²C 上拉电阻不超上升时间决定的上限",
+      "expected_rules": [
+        "SIG-C01"
+      ],
+      "status": "机制不适用",
+      "evidence": "U1专用时钟+数据接口，不是I2C；没有SDA/SCL或开漏双向上拉网络。"
+    },
+    {
+      "index": 31,
+      "criterion": "G04-018",
+      "title": "I²C 上拉电阻不低于灌电流决定的下限",
+      "expected_rules": [
+        "SIG-C01"
+      ],
+      "status": "机制不适用",
+      "evidence": "U1专用时钟+数据接口，不是I2C；没有SDA/SCL或开漏双向上拉网络。"
+    },
+    {
+      "index": 32,
+      "criterion": "G04-032",
+      "title": "CAN 总线两端端接，总阻约 60 Ω",
+      "expected_rules": [
+        "SIG-C03"
+      ],
+      "status": "机制不适用",
+      "evidence": "无CAN收发器/CANH/L，K1/K2为低电平模拟输入，不套60Ω端接。"
+    },
+    {
+      "index": 33,
+      "criterion": "G04-040",
+      "title": "隔离接口两侧的供电和地不被无意短接",
+      "expected_rules": [
+        "PRO-D02"
+      ],
+      "status": "机制不适用",
+      "evidence": "单一GND；无隔离器/光耦/变压器和隔离需求，不能将非隔离称重板报隔离短路。"
+    },
+    {
+      "index": 34,
+      "criterion": "G04-041",
+      "title": "运放两个输入在最坏工况下不超共模范围",
+      "expected_rules": [
+        "ANA-C01"
+      ],
+      "status": "覆盖漏项 M01；已补查",
+      "evidence": "核验U1=adc_dac；p3规定PGA共模AGND+1.2..AVDD-1.3，实际INNA-/INPA+/INNB-/INPB+未被ANALOG_PIN识别。"
+    },
+    {
+      "index": 35,
+      "criterion": "G04-054",
+      "title": "ADC 输入不超满量程和绝对最大值",
+      "expected_rules": [
+        "ANA-C03"
+      ],
+      "status": "覆盖漏项 M02；已补查",
+      "evidence": "p3 FSR=±0.5AVDD/GAIN；A128/A64/B32、K1/K2全存在，但原计划not_asked称无ADC脚。"
+    },
+    {
+      "index": 36,
+      "criterion": "G04-078",
+      "title": "晶振负载电容与晶振规定 CL 相符",
+      "expected_rules": [
+        "CLK-C01"
+      ],
+      "status": "机制不适用",
+      "evidence": "U1.14 XI硬接GND启用片内振荡；XO未接。全板无晶体/晶振或负载电容，不把C4差分滤波电容当晶振负载。"
+    },
+    {
+      "index": 37,
+      "criterion": "G04-079",
+      "title": "振荡器增益裕量足够起振",
+      "expected_rules": [
+        "CLK-C01"
+      ],
+      "status": "机制不适用",
+      "evidence": "U1.14 XI硬接GND启用片内振荡；XO未接。全板无晶体/晶振或负载电容，不把C4差分滤波电容当晶振负载。"
+    },
+    {
+      "index": 38,
+      "criterion": "G04-082",
+      "title": "一颗晶振只驱动一个器件",
+      "expected_rules": [
+        "CLK-C01"
+      ],
+      "status": "机制不适用",
+      "evidence": "U1.14 XI硬接GND启用片内振荡；XO未接。全板无晶体/晶振或负载电容，不把C4差分滤波电容当晶振负载。"
+    },
+    {
+      "index": 39,
+      "criterion": "G05-019",
+      "title": "每条配电支路在源侧有保护",
+      "expected_rules": [
+        "PRO-C04"
+      ],
+      "status": "覆盖漏项 M05；已补查",
+      "evidence": "AVDD→R5=10Ω→K1.5桥激励输出有实际外接配电支路；无保护件使PROTECTION_PART筛选无对象，需先问源端限能而非直接断言无保护即缺陷。"
+    },
+    {
+      "index": 40,
+      "criterion": "G05-022",
+      "title": "过流动作点上限下通路器件与连接器不超额定",
+      "expected_rules": [
+        "DEV-C01",
+        "DEV-C04"
+      ],
+      "status": "已有DEV-C01/C04及支路补查，未闭",
+      "evidence": "无显式过流阈值器件，不能套不存在限流电阻公式；K1桥电流/源限能/Q1及R5/排针耐受未定义。"
+    },
+    {
+      "index": 41,
+      "criterion": "G05-025",
+      "title": "故障电流下的动作时间短于被保护对象的耐受时间",
+      "expected_rules": [
+        "PRO-C05"
+      ],
+      "status": "机制不适用",
+      "evidence": "板上无保险/eFuse保护动作链；支路源端条件已由M05/PRO-C04登记，未虚构熔断动作时间或独立PRO-C05故障。"
+    },
+    {
+      "index": 42,
+      "criterion": "G05-030",
+      "title": "TVS 工作电压不低于被钳节点最高工作电压",
+      "expected_rules": [
+        "PRO-E02"
+      ],
+      "status": "机制不适用",
+      "evidence": "无TVS/齐纳钳位器件；对外保护需求由PRO-D03/D04问，不能将没有TVS当成已违反TVS器件窗口。"
+    },
+    {
+      "index": 43,
+      "criterion": "G05-031",
+      "title": "TVS 钳位电压不超被保护器件绝对最大值",
+      "expected_rules": [
+        "PRO-E02"
+      ],
+      "status": "机制不适用",
+      "evidence": "无TVS/齐纳钳位器件；对外保护需求由PRO-D03/D04问，不能将没有TVS当成已违反TVS器件窗口。"
+    },
+    {
+      "index": 44,
+      "criterion": "G05-032",
+      "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+      "expected_rules": [
+        "PRO-E02"
+      ],
+      "status": "机制不适用",
+      "evidence": "无TVS/齐纳钳位器件；对外保护需求由PRO-D03/D04问，不能将没有TVS当成已违反TVS器件窗口。"
+    },
+    {
+      "index": 45,
+      "criterion": "G05-040",
+      "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+      "expected_rules": [
+        "DRV-C02"
+      ],
+      "status": "机制不适用",
+      "evidence": "没有MOSFET；外置PNP短路线性应力由实际DRV-C02/Q1和M05保留，不套MOSFET热SOA例。"
+    },
+    {
+      "index": 46,
+      "criterion": "G05-041",
+      "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+      "expected_rules": [
+        "DRV-C02"
+      ],
+      "status": "机制不适用",
+      "evidence": "没有MOSFET；外置PNP短路线性应力由实际DRV-C02/Q1和M05保留，不套MOSFET热SOA例。"
+    },
+    {
+      "index": 47,
+      "criterion": "G05-048",
+      "title": "熔断器分断能力不小于预期短路电流",
+      "expected_rules": [
+        "PRO-C01"
+      ],
+      "status": "机制不适用",
+      "evidence": "无熔断器，源端短路限制未给；无可核分断能力器件。源限能覆盖缺口见M05。"
+    },
+    {
+      "index": 48,
+      "criterion": "G05-054",
+      "title": "每个对外电源接口的反接有明确处置",
+      "expected_rules": [
+        "PRO-D04",
+        "PWR-T05"
+      ],
+      "status": "已有对象，未闭",
+      "evidence": "K3.3/4为电源输入无防反件；PRO-D04.K3已经问反接事件。是否要求防反取决允许的系统接线/源能量，未确认真缺陷。"
+    },
+    {
+      "index": 49,
+      "criterion": "G05-057",
+      "title": "反接阻断之前没有单向 TVS 造成源短路",
+      "expected_rules": [
+        "PWR-C26"
+      ],
+      "status": "机制不适用",
+      "evidence": "无单向TVS或防反件，不存在TVS在阻断之前的正向短路回路。"
+    },
+    {
+      "index": 50,
+      "criterion": "G05-087",
+      "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+      "expected_rules": [
+        "PWR-T05"
+      ],
+      "status": "机制不适用",
+      "evidence": "Q1为PNP稳压管，不是MOS防反；无体二极管防反拓扑。"
+    }
+  ],
+  "additional_coverage": {
+    "rule": "PWR-C02",
+    "intent_gap": "HX-REG-SET",
+    "note": "额外补查调节目标/压差；PWR-E01原本已问分压。PWR-C02无当前BASIS准则映射，不虚造Top50准则，不计入6条Top50漏项。"
+  },
+  "limitations": [
+    "没有受控产品需求；用途和类型由任务/catalog/README推断",
+    "知识缺口/需人工边界在原生schema15不能当作电气结论，保留REVIEW_INCOMPLETE以避免伪造VENDOR_DATUM或PASS；renderer拒绝正式报告",
+    "种子仅检查对象覆盖；缺少故障/厂家保证契约时不宣称可复现电气FAIL",
+    "常规电容额定按可订购分支反推BOM约束，不把缺无源料号当厂商数据缺口"
+  ]
+}

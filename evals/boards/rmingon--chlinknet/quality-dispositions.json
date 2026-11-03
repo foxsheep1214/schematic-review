@@ -1,0 +1,2750 @@
+{
+  "scope": "ADVISORY_PATTERN_SCREENING_ONLY",
+  "candidate_count": 78,
+  "flagged_check_count": 204,
+  "dispositions": {
+    "REVIEWED_CROSS_OBJECT_DEPENDENCY": 4,
+    "RETAIN_OPEN_LEDGER_QUALITY": 72,
+    "REVIEWED_PATTERN_FALSE_POSITIVE": 1,
+    "REVIEWED_SHARED_DECISIVE_CLAUSE": 1
+  },
+  "items": [
+    {
+      "id": "Q001",
+      "candidate": {
+        "code": "CONDITION_REF_OUTSIDE_FUNCTION",
+        "function_id": "FN-CLOCK-Y1",
+        "key": "LIMIT-1",
+        "refs": [
+          "U28"
+        ],
+        "items": [],
+        "message": "FN-CLOCK-Y1/conditions[LIMIT-1] is about U28, which FN-CLOCK-Y1 does not judge (objects.refs and its member rows); a shared part's clause may live here, check that the function that judges U28 cites it",
+        "check_ids": []
+      },
+      "review_disposition": "REVIEWED_CROSS_OBJECT_DEPENDENCY",
+      "reason": "U28为C1/C2/Y1所接的有源HSE驱动端，所引HSE窗口真实关联；Y1身份/CL/ESR仍未闭。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q002",
+      "candidate": {
+        "code": "CONDITION_REF_OUTSIDE_FUNCTION",
+        "function_id": "FN-DEBUG-MCU",
+        "key": "LIMIT-1",
+        "refs": [
+          "U28"
+        ],
+        "items": [],
+        "message": "FN-DEBUG-MCU/conditions[LIMIT-1] is about U28, which FN-DEBUG-MCU does not judge (objects.refs and its member rows); a shared part's clause may live here, check that the function that judges U28 cites it",
+        "check_ids": []
+      },
+      "review_disposition": "REVIEWED_CROSS_OBJECT_DEPENDENCY",
+      "reason": "U28是J2信号实际接收/驱动端，供电窗口属于受端约束；未据此证明外探头全窗口兼容。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q003",
+      "candidate": {
+        "code": "CONDITION_REF_OUTSIDE_FUNCTION",
+        "function_id": "FN-EXT-J1",
+        "key": "LIMIT-1",
+        "refs": [
+          "U28"
+        ],
+        "items": [],
+        "message": "FN-EXT-J1/conditions[LIMIT-1] is about U28, which FN-EXT-J1 does not judge (objects.refs and its member rows); a shared part's clause may live here, check that the function that judges U28 cites it",
+        "check_ids": []
+      },
+      "review_disposition": "REVIEWED_CROSS_OBJECT_DEPENDENCY",
+      "reason": "U28供电窗口是USB输入经U3后端的上下游约束，不能单凭它证明Micro-B输入合同或U3压差，已保持OPEN。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q004",
+      "candidate": {
+        "code": "CONDITION_REF_OUTSIDE_FUNCTION",
+        "function_id": "FN-USB-J1",
+        "key": "LIMIT-1",
+        "refs": [
+          "U4"
+        ],
+        "items": [],
+        "message": "FN-USB-J1/conditions[LIMIT-1] is about U4, which FN-USB-J1 does not judge (objects.refs and its member rows); a shared part's clause may live here, check that the function that judges U4 cites it",
+        "check_ids": []
+      },
+      "review_disposition": "REVIEWED_CROSS_OBJECT_DEPENDENCY",
+      "reason": "U4是Micro-B D+/D−实际接收端，3.3V供电条件用于本体边界；没有将该值当J1 VBUS范围。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q005",
+      "candidate": {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-BOARD-EVIDENCE-ASSEMBLY",
+          "W-POWER-CONVERTER-U3-ASSEMBLY",
+          "W-STARTUP-MCU-ASSEMBLY",
+          "W-UART-U4-ASSEMBLY"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "db.json <ref>→<ref>/<ref>、<ref>→<ref>/<ref>，#脚<ref>、#脚<ref>，符号均Jumper_#_Open；无BOM或桥接选项表。网表只证明开放绘图，不能代表成品默认桥接。",
+        "message": "4 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q006",
+      "candidate": {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-BOARD-EVIDENCE-DECAP",
+          "W-CLOCK-Y1-DECAP",
+          "W-POWER-CONVERTER-U3-DECAP",
+          "W-STARTUP-MCU-DECAP",
+          "W-UART-U4-DECAP",
+          "W-USB-J1-DECAP"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "<ref>在<ref>/<ref>；<ref>/<ref>/<ref>/<ref>共在<ref>/<ref>；只有<ref>=#nF。<ref>与.#已短接<ref>，符合CH# V#C p#/p#的#V模式。无法由同网电容和占位值证明每个",
+        "message": "6 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q007",
+      "candidate": {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-BOARD-EVIDENCE-ESD",
+          "W-DEBUG-MCU-ESD",
+          "W-ETHERNET-PORT-ESD",
+          "W-EXT-J1-ESD",
+          "W-EXT-J2-ESD",
+          "W-EXT-J3-ESD",
+          "W-USB-J1-ESD"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "<ref>.<ref>/D−直接到<ref>/#；<ref>的UART/SWD/NRST直连<ref>；板上没有独立TVS、保险丝或电源开关。无产品ESD等级和线缆环境，不能从缺TVS直接推实物不合格。",
+        "message": "7 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q008",
+      "candidate": {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-BOARD-EVIDENCE-INPUT",
+          "W-EXT-J1-INPUT",
+          "W-EXT-J2-INPUT",
+          "W-EXT-J3-INPUT",
+          "W-SYS-POWER-INPUT"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "<ref>=<ref>；<ref>与<ref>=<ref>，均无串联阻断。未提供外部电源/探头、线缆、最大负载、浪涌和故障源。分析窗#–#V与#–#V仅条件，不是受控需求。",
+        "message": "5 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q009",
+      "candidate": {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-BOARD-EVIDENCE-PHY",
+          "W-ETHERNET-PORT-PHY",
+          "W-IF-ETHERNET-PORT-STARTUP-MCU-PHY"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "<ref>/#/#/#分别到<ref>$#/#/#/#；HY p#给#/#BaseTX、#CT:#、OCL≥#uH@#mA，隔离#Vrms；WCH V# §#.#和官方p#参考说明#M PHY可直连磁件，但§#.#仅列MAC的SMI/RMI",
+        "message": "3 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q010",
+      "candidate": {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-BOARD-EVIDENCE-SCOPE",
+          "W-UART-U4-SCOPE",
+          "W-USB-J1-SCOPE"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "源README仅用于推断以太网开发/USB串口调试用途，catalog类型为ETHERNET/USB/DEBUG；没有受控量化需求、温度/寿命/异常合同、FMEA或历史改版。不能把README的RMII/#MHz/#V-PoE描述当电气事实",
+        "message": "3 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q011",
+      "candidate": {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-CLOCK-Y1-STRESS",
+          "W-DEBUG-MCU-STRESS",
+          "W-ETHERNET-PORT-STRESS",
+          "W-POWER-CONVERTER-U3-STRESS",
+          "W-STARTUP-MCU-STRESS",
+          "W-UART-U4-STRESS",
+          "W-USB-J1-STRESS"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "<ref>=#k，在假定±#%且<ref>≤#V时Rmin=#Ω，I≤#mA，P≤#mW；不使用LED典型VF可得此保守上界。<ref>/<ref>的振荡幅度、<ref>/<ref>阻值、外接端口电压/环境未定，无法扩展为全板应力通过。",
+        "message": "7 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q012",
+      "candidate": {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-DEBUG-MCU-PINOUT",
+          "W-ETHERNET-PORT-PINOUT",
+          "W-EXT-J1-PINOUT",
+          "W-EXT-J2-PINOUT",
+          "W-EXT-J3-PINOUT",
+          "W-IF-DEBUG-MCU-STARTUP-MCU-PINOUT",
+          "W-IF-DEBUG-MCU-UART-U4-PINOUT",
+          "W-USB-J1-PINOUT"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "<ref>封装名指向Amphenol #、<ref>指向JST BM#B-SRSS-TB但值为Conn_#x#、<ref>为泛称排针；本轮未取得装配BOM和准确连接器图纸。网表针序能列出，不能证明实物采购和对端针序。",
+        "message": "8 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q013",
+      "candidate": {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-DEBUG-MCU-UART",
+          "W-IF-DEBUG-MCU-STARTUP-MCU-UART",
+          "W-IF-DEBUG-MCU-UART-U4-UART",
+          "W-IF-STARTUP-MCU-UART-U4-UART",
+          "W-IF-UART-U4-USB-J1-UART",
+          "W-UART-U4-UART"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "<ref> TXD→<ref>→<ref> PA# USART#_RX；<ref> PA# USART#_TX→<ref>→<ref>。两端正常稳态同<ref>，方向正确；WCH CH# §#仅#℃，本板温度/速率、外接探头先供电条件未给。",
+        "message": "6 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q014",
+      "candidate": {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-DEBUG-MCU-UNUSED",
+          "W-STARTUP-MCU-UNUSED",
+          "W-UART-U4-UNUSED",
+          "W-USB-J1-UNUSED"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "网表中该脚独占网络且不在no_connect_nodes；这是需要确认的绘图处置，不能把单节点直接等同电气错误。",
+        "message": "4 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q015",
+      "candidate": {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-EXT-J1-REVERSE",
+          "W-EXT-J2-REVERSE",
+          "W-EXT-J3-REVERSE",
+          "W-POWER-CONVERTER-U3-REVERSE",
+          "W-USB-J1-REVERSE"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "<ref>/<ref>同<ref>；外部可直接抬高<ref>及<ref>/V#，<ref>未供电时<ref>通过<ref>到<ref>。未限定接口供电方向或外设带电状态。TI LM# p# §#.#只给特定大电容/短路例，不是任意反灌保证。",
+        "message": "5 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q016",
+      "candidate": {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-POWER-CONVERTER-U3-RESET",
+          "W-STARTUP-MCU-RESET",
+          "W-SYS-MONITOR-RESET",
+          "W-SYS-SEQUENCE-RESET"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "<ref> NRST仅接<ref>；WCH V# PDF p#-#给内部POR/PDR、p#-# Table#-#给NRST内部#–#k上拉。故无外置复位IC/上拉并非缺陷；欠压阈值、掉电速率和允许恢复策略仍未由任务给定。",
+        "message": "4 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q017",
+      "candidate": {
+        "code": "DUPLICATE_WORK_ITEMS",
+        "task_ids": [
+          "W-STARTUP-MCU-GPIO",
+          "W-SYS-PINMAP-GPIO"
+        ],
+        "check_ids": [],
+        "field": "next_action",
+        "template": "<ref>=PB#和<ref>=PA#均直接接<ref>；没有串阻，若任一被置推挽高则直接短路。引脚复用可以保持输入，因此不能仅凭硬接地定为必然电气缺陷。BOOT默认见<ref>/<ref>，固件/启动状态未提供。",
+        "message": "2 work items share one next_action once designators and numbers are masked; one method applied to several objects is one item with several refs."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q018",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-C01.C3"
+        ],
+        "expected_refs": [
+          "C3",
+          "J1"
+        ],
+        "observed_refs": [
+          "C1",
+          "C2",
+          "R1",
+          "R2",
+          "R54"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q019",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-C01.C4"
+        ],
+        "expected_refs": [
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "U3"
+        ],
+        "observed_refs": [
+          "C1",
+          "C2",
+          "R1",
+          "R2",
+          "R54"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q020",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-C01.C5"
+        ],
+        "expected_refs": [
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "U3"
+        ],
+        "observed_refs": [
+          "C1",
+          "C2",
+          "R1",
+          "R2",
+          "R54"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q021",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-C01.C6"
+        ],
+        "expected_refs": [
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "U3"
+        ],
+        "observed_refs": [
+          "C1",
+          "C2",
+          "R1",
+          "R2",
+          "R54"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q022",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-C01.C7"
+        ],
+        "expected_refs": [
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "U3"
+        ],
+        "observed_refs": [
+          "C1",
+          "C2",
+          "R1",
+          "R2",
+          "R54"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q023",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-C01.POWER-CONVERTER-U3"
+        ],
+        "expected_refs": [
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "U3"
+        ],
+        "observed_refs": [
+          "C1",
+          "C2",
+          "R1",
+          "R2",
+          "R54"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q024",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-C01.STARTUP-MCU"
+        ],
+        "expected_refs": [
+          "JP1",
+          "JP2",
+          "U28"
+        ],
+        "observed_refs": [
+          "C1",
+          "C2",
+          "R1",
+          "R2",
+          "R54"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q025",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-C01.UART-U4"
+        ],
+        "expected_refs": [
+          "U4"
+        ],
+        "observed_refs": [
+          "C1",
+          "C2",
+          "R1",
+          "R2",
+          "R54"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q026",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-C01.USB-J1"
+        ],
+        "expected_refs": [
+          "C3",
+          "J1"
+        ],
+        "observed_refs": [
+          "C1",
+          "C2",
+          "R1",
+          "R2",
+          "R54"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q027",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-C02.CLOCK-Y1"
+        ],
+        "expected_refs": [
+          "C1",
+          "C2",
+          "Y1"
+        ],
+        "observed_refs": [
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "U4"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "decap"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q028",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-C05.PIN-LED.U28-33"
+        ],
+        "expected_refs": [
+          "D25",
+          "JP1",
+          "JP2",
+          "U28"
+        ],
+        "observed_refs": [
+          "C1",
+          "C2",
+          "R1",
+          "R2",
+          "R54"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q029",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-C05.U28"
+        ],
+        "expected_refs": [
+          "JP1",
+          "JP2",
+          "U28"
+        ],
+        "observed_refs": [
+          "C1",
+          "C2",
+          "R1",
+          "R2",
+          "R54"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q030",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-C05.U4"
+        ],
+        "expected_refs": [
+          "U4"
+        ],
+        "observed_refs": [
+          "C1",
+          "C2",
+          "R1",
+          "R2",
+          "R54"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q031",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "DEV-E01.J3"
+        ],
+        "expected_refs": [
+          "J3",
+          "R1",
+          "R2",
+          "U1"
+        ],
+        "observed_refs": [
+          "J1",
+          "J2",
+          "U28",
+          "U4"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "esd"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q032",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "PRO-C01.ETHERNET-PORT-RUN.J3"
+        ],
+        "expected_refs": [
+          "J3",
+          "R1",
+          "R2",
+          "U1"
+        ],
+        "observed_refs": [
+          "J1",
+          "J2",
+          "U28",
+          "U4"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "esd"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q033",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "PWR-C09.DECAP-AFD1770A43FC72E03D81.3V3"
+        ],
+        "expected_refs": [
+          "JP1",
+          "JP2",
+          "U28"
+        ],
+        "observed_refs": [
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "U4"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "decap"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q034",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "PWR-C10.DECAP-AFD1770A43FC72E03D81.3V3"
+        ],
+        "expected_refs": [
+          "JP1",
+          "JP2",
+          "U28"
+        ],
+        "observed_refs": [
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "U4"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "decap"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q035",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "PWR-C18.POWER-CONVERTER-U3-FAULT.C4"
+        ],
+        "expected_refs": [
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "U3"
+        ],
+        "observed_refs": [
+          "J2",
+          "U28"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "reset"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q036",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "PWR-C18.POWER-CONVERTER-U3-RUN.C4"
+        ],
+        "expected_refs": [
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "U3"
+        ],
+        "observed_refs": [
+          "J2",
+          "U28"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "reset"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q037",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "PWR-C18.POWER-CONVERTER-U3-STARTUP.C4"
+        ],
+        "expected_refs": [
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "U3"
+        ],
+        "observed_refs": [
+          "J2",
+          "U28"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "reset"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q038",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "PWR-C24.POWER-CONVERTER-U3.C4"
+        ],
+        "expected_refs": [
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "U3"
+        ],
+        "observed_refs": [
+          "J2",
+          "U28"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "reset"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q039",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "PWR-D02.DECAP-AFD1770A43FC72E03D81.3V3"
+        ],
+        "expected_refs": [
+          "JP1",
+          "JP2",
+          "U28"
+        ],
+        "observed_refs": [
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "U4"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "decap"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q040",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "SIG-C13.DEBUG-MCU.D25"
+        ],
+        "expected_refs": [
+          "D25",
+          "J2",
+          "R54"
+        ],
+        "observed_refs": [
+          "U28",
+          "U4"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "uart"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q041",
+      "candidate": {
+        "code": "REFERENCED_OBJECT_OUTSIDE_SCOPE",
+        "check_ids": [
+          "SIG-D06.DEBUG-MCU-RUN.D25"
+        ],
+        "expected_refs": [
+          "D25",
+          "J2",
+          "R54"
+        ],
+        "observed_refs": [
+          "U28",
+          "U4"
+        ],
+        "message": "Check the source and dependency: explicit refs do not overlap the declared scope."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [
+        "uart"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q042",
+      "candidate": {
+        "code": "REF_GLUED_TO_VALUE",
+        "check_ids": [],
+        "task_ids": [],
+        "function_ids": [
+          "FN-UART-U4"
+        ],
+        "field": "open[UART-U4-UNUSED].decides[5].rationale",
+        "refs": [
+          "R2"
+        ],
+        "message": "A reference designator runs straight into a number (R12100°C); separate them so the designator and the value both stay readable."
+      },
+      "review_disposition": "REVIEWED_PATTERN_FALSE_POSITIVE",
+      "reason": "实际文本为CH340的R232功能脚名，模式名被解析成R2位号粘数值；网表R2确实另存在但此处不是其阻值。未改原厂脚名来消提示。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q043",
+      "candidate": {
+        "code": "REUSED_IMPACT_ACROSS_SCOPES",
+        "field": "open[].severity.consequence",
+        "check_ids": [
+          "CLK-C01.CLOCK-Y1-RUN.C1",
+          "DEV-C01.C1",
+          "DEV-C01.C2",
+          "DEV-C01.C3",
+          "DEV-C01.C4",
+          "DEV-C01.C5",
+          "DEV-C01.C6",
+          "DEV-C01.C7",
+          "DEV-C01.CLOCK-Y1",
+          "DEV-C01.DEBUG-MCU",
+          "DEV-C01.ETHERNET-PORT",
+          "DEV-C01.POWER-CONVERTER-U3",
+          "DEV-C01.R1",
+          "DEV-C01.R2",
+          "DEV-C01.R54",
+          "DEV-C01.STARTUP-MCU",
+          "DEV-C01.UART-U4",
+          "DEV-C01.USB-J1",
+          "DEV-C02.CLOCK-Y1",
+          "DEV-C02.POWER-CONVERTER-U3",
+          "DEV-C02.USB-J1",
+          "DEV-C04.J1",
+          "DEV-C04.J2",
+          "DEV-C04.J3",
+          "DEV-C05.PIN-LED.U28-33",
+          "DEV-C05.U28",
+          "DEV-C05.U3",
+          "DEV-C05.U4",
+          "DEV-D01.U3",
+          "DEV-D02.J1",
+          "DEV-D02.J2",
+          "DEV-D02.J3",
+          "DEV-D02.U1",
+          "DEV-D02.U4",
+          "DEV-D03.J1",
+          "DEV-D03.J2",
+          "DEV-D03.J3",
+          "DEV-D04.BOARD",
+          "DEV-D05.J1",
+          "DEV-D05.J2",
+          "DEV-D05.J3",
+          "DEV-D05.U1",
+          "DEV-D05.U28",
+          "DEV-D05.U4",
+          "DEV-E01.J1",
+          "DEV-E01.J2",
+          "DEV-E01.J3",
+          "DEV-Q01.DATASHEETS",
+          "DOC-D02.BOARD",
+          "DOC-T01.BOARD",
+          "DOC-V02.BOARD",
+          "NET-A01.UNCONNECTED-072dcc",
+          "NET-A01.UNCONNECTED-093722",
+          "NET-A01.UNCONNECTED-0a1db1",
+          "NET-A01.UNCONNECTED-0a5ba9",
+          "NET-A01.UNCONNECTED-116bfe",
+          "NET-A01.UNCONNECTED-1b661f",
+          "NET-A01.UNCONNECTED-2b6eff",
+          "NET-A01.UNCONNECTED-351a40",
+          "NET-A01.UNCONNECTED-3c6fb8",
+          "NET-A01.UNCONNECTED-41589e",
+          "NET-A01.UNCONNECTED-4211c5",
+          "NET-A01.UNCONNECTED-43c5af",
+          "NET-A01.UNCONNECTED-467965",
+          "NET-A01.UNCONNECTED-551e12",
+          "NET-A01.UNCONNECTED-5e792e",
+          "NET-A01.UNCONNECTED-613a7e",
+          "NET-A01.UNCONNECTED-6bc534",
+          "NET-A01.UNCONNECTED-6c269b",
+          "NET-A01.UNCONNECTED-6ca4d2",
+          "NET-A01.UNCONNECTED-77bccc",
+          "NET-A01.UNCONNECTED-80d7dd",
+          "NET-A01.UNCONNECTED-836a42",
+          "NET-A01.UNCONNECTED-8f017e",
+          "NET-A01.UNCONNECTED-92476b",
+          "NET-A01.UNCONNECTED-9bd90f",
+          "NET-A01.UNCONNECTED-9be83a",
+          "NET-A01.UNCONNECTED-9d796a",
+          "NET-A01.UNCONNECTED-9f82bb",
+          "NET-A01.UNCONNECTED-a48bb6",
+          "NET-A01.UNCONNECTED-ada63d",
+          "NET-A01.UNCONNECTED-bb7d28",
+          "NET-A01.UNCONNECTED-bf0c73",
+          "NET-A01.UNCONNECTED-c0c9cc",
+          "NET-A01.UNCONNECTED-c3a704",
+          "NET-A01.UNCONNECTED-cad3f7",
+          "NET-A01.UNCONNECTED-d2cfec",
+          "NET-A01.UNCONNECTED-d81be7",
+          "NET-A01.UNCONNECTED-d9d7cc",
+          "NET-A01.UNCONNECTED-db5efc",
+          "NET-A01.UNCONNECTED-e97b64",
+          "NET-A01.UNCONNECTED-eb87dd",
+          "NET-A01.UNCONNECTED-f170ba",
+          "NET-A01.UNCONNECTED-fa5120",
+          "NET-A01.UNCONNECTED-fe70dc",
+          "NET-A01.UNCONNECTED-ff9eb6",
+          "PRO-C01.ETHERNET-PORT-RUN.J3",
+          "PRO-D03.J1",
+          "PRO-D03.J2",
+          "PRO-D03.J3",
+          "PRO-D04.J1",
+          "PRO-D04.J2",
+          "PRO-D04.J3",
+          "PRO-D05.BOARD",
+          "PRO-D06.BOARD",
+          "PWR-C01.3V3",
+          "PWR-C01.5V",
+          "PWR-C02.POWER-CONVERTER-U3-FAULT.C4",
+          "PWR-C02.POWER-CONVERTER-U3-RUN.C4",
+          "PWR-C02.POWER-CONVERTER-U3-STARTUP.C4",
+          "PWR-C03.POWER-CONVERTER-U3-FAULT.C4",
+          "PWR-C03.POWER-CONVERTER-U3-RUN.C4",
+          "PWR-C03.POWER-CONVERTER-U3-STARTUP.C4",
+          "PWR-C04.POWER-CONVERTER-U3-FAULT.U3",
+          "PWR-C04.POWER-CONVERTER-U3-RUN.U3",
+          "PWR-C04.POWER-CONVERTER-U3-STARTUP.U3",
+          "PWR-C05.POWER-CONVERTER-U3-FAULT.C4",
+          "PWR-C05.POWER-CONVERTER-U3-RUN.C4",
+          "PWR-C05.POWER-CONVERTER-U3-STARTUP.C4",
+          "PWR-C09.DECAP-18EA511401C658364ABE.5V",
+          "PWR-C09.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-C09.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-C09.DECAP-AFD1770A43FC72E03D81.3V3",
+          "PWR-C10.DECAP-18EA511401C658364ABE.5V",
+          "PWR-C10.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-C10.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-C10.DECAP-AFD1770A43FC72E03D81.3V3",
+          "PWR-C15.POWER-CONVERTER-U3-FAULT.U3",
+          "PWR-C15.POWER-CONVERTER-U3-RUN.U3",
+          "PWR-C15.POWER-CONVERTER-U3-STARTUP.U3",
+          "PWR-C18.POWER-CONVERTER-U3-FAULT.C4",
+          "PWR-C18.POWER-CONVERTER-U3-RUN.C4",
+          "PWR-C18.POWER-CONVERTER-U3-STARTUP.C4",
+          "PWR-C19.BOARD",
+          "PWR-C24.POWER-CONVERTER-U3.C4",
+          "PWR-D01.DECOUPLING-INVENTORY",
+          "PWR-D02.DECAP-18EA511401C658364ABE.5V",
+          "PWR-D02.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-D02.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-D02.DECAP-AFD1770A43FC72E03D81.3V3",
+          "PWR-D04.BOARD",
+          "PWR-T03.DECAP-18EA511401C658364ABE.5V",
+          "PWR-T03.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-T03.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-T03.DECAP-AFD1770A43FC72E03D81.3V3",
+          "PWR-T04.AS-BUILT.SUPERVISION-RAILS",
+          "REQ-C01.BOARD",
+          "REQ-D02.BOARD",
+          "REQ-D03.BOARD",
+          "REQ-D04.BOARD",
+          "REQ-D05.BOARD",
+          "REQ-Q01.REQUIREMENTS",
+          "REQ-Q02.CHAINS",
+          "REQ-Q03.STATES",
+          "REQ-Q08.BOARD",
+          "RST-C01.STARTUP-MCU-RUN.U28",
+          "RST-C02.STARTUP-MCU-RUN.U28",
+          "RST-D01.STARTUP-MCU-RUN.U28",
+          "RST-E02.U28-28",
+          "RST-E02.U28-60",
+          "RST-T03.SYS-SEQUENCE",
+          "RST-T04.STARTUP-MCU-RUN.U28",
+          "SIG-C05.USB-J1-ATTACHED.C3",
+          "SIG-C05.USB-J1-FAULT.C3",
+          "SIG-C05.USB-J1-UNATTACHED.C3",
+          "SIG-C07.IF-DEBUG-MCU-STARTUP-MCU",
+          "SIG-C07.IF-DEBUG-MCU-UART-U4",
+          "SIG-C07.IF-ETHERNET-PORT-STARTUP-MCU",
+          "SIG-C07.IF-STARTUP-MCU-UART-U4",
+          "SIG-C07.IF-UART-U4-USB-J1",
+          "SIG-C07.UART-U4-RUN.U4",
+          "SIG-C09.ETHERNET-PORT-RUN.J3",
+          "SIG-C13.CLOCK-Y1.C1",
+          "SIG-C13.DEBUG-MCU.D25",
+          "SIG-C13.ETHERNET-PORT.J3",
+          "SIG-C13.UART-U4.U4",
+          "SIG-C13.USB-J1.C3",
+          "SIG-C19.ETHERNET-PORT.J3",
+          "SIG-D06.DEBUG-MCU-RUN.D25",
+          "SIG-D07.USB-J1.C3",
+          "SIG-D08.UART-U4-RUN.U4",
+          "SIG-D11.ETHERNET-PORT-RUN.J3",
+          "SIG-D13.SYS-PINMAP",
+          "SIG-E02.D.D",
+          "SIG-E02.RD.RD-P",
+          "SIG-E02.TD.TD-P",
+          "SIG-T03.D.D",
+          "SIG-T03.RD.RD-P",
+          "SIG-T03.TD.TD-P",
+          "SIG-T04.IF-DEBUG-MCU-STARTUP-MCU",
+          "SIG-T04.IF-DEBUG-MCU-UART-U4"
+        ],
+        "message": "Different criteria share identical impact text; trace each consequence path or state how the shared analysis applies to each criterion."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认原生影响文字偏概括，不能独立支持每个物理后果。仅作未闭审查的潜在等级，已确认缺陷另有P1/P2独立后果；未用脚/文档/批次命名已按LOCAL_OR_DATA分开，其他待确认不升级为已证损坏。保持质量欠账和NO_GO。",
+      "dependency_groups": [
+        "assembly",
+        "clock",
+        "decap",
+        "esd",
+        "gpio",
+        "input",
+        "ldo",
+        "lot",
+        "phy",
+        "pinout",
+        "reset",
+        "reverse",
+        "scope",
+        "stress",
+        "thermal",
+        "uart",
+        "unused"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q044",
+      "candidate": {
+        "code": "REUSED_RATIONALE_ACROSS_SCOPES",
+        "check_ids": [
+          "SIG-E02.V.V",
+          "SIG-T01.V",
+          "SIG-T03.V.V"
+        ],
+        "message": "Different scopes reuse identical reasoning; verify each criterion or document the shared proof."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认台账多项共用物理根组说明，包含所列对象之外的背景或计算，不能据其视作每个对象已算完。逐项实际object、criteria、state在plan-judgements.json中；这些条目继续INSUFFICIENT，归因只统计根问题，不豁免跨范围提示。维护者接续时须将论据收窄到每个对象，而非改为PASS。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q045",
+      "candidate": {
+        "code": "TEMPLATED_DESIGN_OPTION_REASON",
+        "field": "design_option.reason",
+        "template": "该项首先需要确定阻容与端口实际工况；直接代选器件或假设实际工作状态会改变本板设计，不能冒充审查事实。",
+        "check_ids": [
+          "DEV-C01.C1",
+          "DEV-C01.C2",
+          "DEV-C01.C3",
+          "DEV-C01.C4",
+          "DEV-C01.C5",
+          "DEV-C01.C6",
+          "DEV-C01.C7",
+          "DEV-C01.CLOCK-Y1",
+          "DEV-C01.DEBUG-MCU",
+          "DEV-C01.ETHERNET-PORT",
+          "DEV-C01.POWER-CONVERTER-U3",
+          "DEV-C01.R1",
+          "DEV-C01.R2",
+          "DEV-C01.R54",
+          "DEV-C01.STARTUP-MCU",
+          "DEV-C01.UART-U4",
+          "DEV-C01.USB-J1",
+          "DEV-C05.PIN-LED.U28-33",
+          "DEV-C05.U28",
+          "DEV-C05.U4"
+        ],
+        "task_ids": [
+          "W-CLOCK-Y1-STRESS",
+          "W-DEBUG-MCU-STRESS",
+          "W-ETHERNET-PORT-STRESS",
+          "W-POWER-CONVERTER-U3-STRESS",
+          "W-STARTUP-MCU-STRESS",
+          "W-UART-U4-STRESS",
+          "W-USB-J1-STRESS"
+        ],
+        "message": "7 tasks decline a schematic change with the same sentence; state per task why no part change, value change or added circuit removes the gap, or propose one."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q046",
+      "candidate": {
+        "code": "TEMPLATED_DESIGN_OPTION_REASON",
+        "field": "design_option.reason",
+        "template": "该项首先需要确定C3–C6 数值与实际旁路用途；直接代选器件或假设实际工作状态会改变本板设计，不能冒充审查事实。",
+        "check_ids": [
+          "DEV-C02.CLOCK-Y1",
+          "DEV-C02.POWER-CONVERTER-U3",
+          "DEV-C02.USB-J1",
+          "PWR-C09.DECAP-18EA511401C658364ABE.5V",
+          "PWR-C09.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-C09.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-C09.DECAP-AFD1770A43FC72E03D81.3V3",
+          "PWR-C10.DECAP-18EA511401C658364ABE.5V",
+          "PWR-C10.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-C10.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-C10.DECAP-AFD1770A43FC72E03D81.3V3",
+          "PWR-D01.DECOUPLING-INVENTORY",
+          "PWR-D02.DECAP-18EA511401C658364ABE.5V",
+          "PWR-D02.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-D02.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-D02.DECAP-AFD1770A43FC72E03D81.3V3"
+        ],
+        "task_ids": [
+          "W-BOARD-EVIDENCE-DECAP",
+          "W-CLOCK-Y1-DECAP",
+          "W-POWER-CONVERTER-U3-DECAP",
+          "W-STARTUP-MCU-DECAP",
+          "W-UART-U4-DECAP",
+          "W-USB-J1-DECAP"
+        ],
+        "message": "6 tasks decline a schematic change with the same sentence; state per task why no part change, value change or added circuit removes the gap, or propose one."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "decap"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q047",
+      "candidate": {
+        "code": "TEMPLATED_DESIGN_OPTION_REASON",
+        "field": "design_option.reason",
+        "template": "该项首先需要确定J1/J2/J3 输入合同和负载边界；直接代选器件或假设实际工作状态会改变本板设计，不能冒充审查事实。",
+        "check_ids": [
+          "DEV-C04.J1",
+          "DEV-C04.J2",
+          "DEV-C04.J3",
+          "PWR-C01.3V3",
+          "PWR-C01.5V",
+          "PWR-C19.BOARD",
+          "PWR-D04.BOARD"
+        ],
+        "task_ids": [
+          "W-BOARD-EVIDENCE-INPUT",
+          "W-EXT-J1-INPUT",
+          "W-EXT-J2-INPUT",
+          "W-EXT-J3-INPUT",
+          "W-SYS-POWER-INPUT"
+        ],
+        "message": "5 tasks decline a schematic change with the same sentence; state per task why no part change, value change or added circuit removes the gap, or propose one."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "input"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q048",
+      "candidate": {
+        "code": "TEMPLATED_DESIGN_OPTION_REASON",
+        "field": "design_option.reason",
+        "template": "该项首先需要确定实际连接器型号与针表；直接代选器件或假设实际工作状态会改变本板设计，不能冒充审查事实。",
+        "check_ids": [
+          "DEV-D02.J1",
+          "DEV-D02.J2",
+          "DEV-D02.J3",
+          "DEV-D02.U1",
+          "DEV-D03.J1",
+          "DEV-D03.J2",
+          "DEV-D03.J3",
+          "DEV-D05.J1",
+          "DEV-D05.J2",
+          "DEV-D05.J3",
+          "DEV-D05.U1",
+          "SIG-T04.IF-DEBUG-MCU-STARTUP-MCU",
+          "SIG-T04.IF-DEBUG-MCU-UART-U4"
+        ],
+        "task_ids": [
+          "W-DEBUG-MCU-PINOUT",
+          "W-ETHERNET-PORT-PINOUT",
+          "W-EXT-J1-PINOUT",
+          "W-EXT-J2-PINOUT",
+          "W-EXT-J3-PINOUT",
+          "W-IF-DEBUG-MCU-STARTUP-MCU-PINOUT",
+          "W-IF-DEBUG-MCU-UART-U4-PINOUT",
+          "W-USB-J1-PINOUT"
+        ],
+        "message": "8 tasks decline a schematic change with the same sentence; state per task why no part change, value change or added circuit removes the gap, or propose one."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "pinout"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q049",
+      "candidate": {
+        "code": "TEMPLATED_DESIGN_OPTION_REASON",
+        "field": "design_option.reason",
+        "template": "该项首先需要确定用途推断不能替代产品需求；直接代选器件或假设实际工作状态会改变本板设计，不能冒充审查事实。",
+        "check_ids": [
+          "DEV-D04.BOARD",
+          "DEV-Q01.DATASHEETS",
+          "DOC-D02.BOARD",
+          "DOC-V02.BOARD",
+          "REQ-C01.BOARD",
+          "REQ-D02.BOARD",
+          "REQ-D03.BOARD",
+          "REQ-D04.BOARD",
+          "REQ-D05.BOARD",
+          "REQ-Q01.REQUIREMENTS",
+          "REQ-Q02.CHAINS",
+          "REQ-Q03.STATES",
+          "REQ-Q08.BOARD",
+          "SIG-C13.UART-U4.U4",
+          "SIG-C13.USB-J1.C3"
+        ],
+        "task_ids": [
+          "W-BOARD-EVIDENCE-SCOPE",
+          "W-UART-U4-SCOPE",
+          "W-USB-J1-SCOPE"
+        ],
+        "message": "3 tasks decline a schematic change with the same sentence; state per task why no part change, value change or added circuit removes the gap, or propose one."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "scope"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q050",
+      "candidate": {
+        "code": "TEMPLATED_DESIGN_OPTION_REASON",
+        "field": "design_option.reason",
+        "template": "该项首先需要确定对外接口的异常与ESD等级未定义；直接代选器件或假设实际工作状态会改变本板设计，不能冒充审查事实。",
+        "check_ids": [
+          "DEV-E01.J1",
+          "DEV-E01.J2",
+          "DEV-E01.J3",
+          "PRO-C01.ETHERNET-PORT-RUN.J3",
+          "PRO-D03.J1",
+          "PRO-D03.J2",
+          "PRO-D03.J3",
+          "PRO-D05.BOARD",
+          "PRO-D06.BOARD",
+          "SIG-D07.USB-J1.C3",
+          "SIG-E02.D.D",
+          "SIG-T03.D.D"
+        ],
+        "task_ids": [
+          "W-BOARD-EVIDENCE-ESD",
+          "W-DEBUG-MCU-ESD",
+          "W-ETHERNET-PORT-ESD",
+          "W-EXT-J1-ESD",
+          "W-EXT-J2-ESD",
+          "W-EXT-J3-ESD",
+          "W-USB-J1-ESD"
+        ],
+        "message": "7 tasks decline a schematic change with the same sentence; state per task why no part change, value change or added circuit removes the gap, or propose one."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "esd"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q051",
+      "candidate": {
+        "code": "TEMPLATED_DESIGN_OPTION_REASON",
+        "field": "design_option.reason",
+        "template": "该项首先需要确定JP1/JP2 与贴装配置未给定；直接代选器件或假设实际工作状态会改变本板设计，不能冒充审查事实。",
+        "check_ids": [
+          "DOC-T01.BOARD",
+          "PWR-T03.DECAP-18EA511401C658364ABE.5V",
+          "PWR-T03.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-T03.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-T03.DECAP-AFD1770A43FC72E03D81.3V3",
+          "RST-C01.STARTUP-MCU-RUN.U28",
+          "RST-D01.STARTUP-MCU-RUN.U28",
+          "RST-E02.U28-28",
+          "RST-E02.U28-60"
+        ],
+        "task_ids": [
+          "W-BOARD-EVIDENCE-ASSEMBLY",
+          "W-POWER-CONVERTER-U3-ASSEMBLY",
+          "W-STARTUP-MCU-ASSEMBLY",
+          "W-UART-U4-ASSEMBLY"
+        ],
+        "message": "4 tasks decline a schematic change with the same sentence; state per task why no part change, value change or added circuit removes the gap, or propose one."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "assembly"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q052",
+      "candidate": {
+        "code": "TEMPLATED_DESIGN_OPTION_REASON",
+        "field": "design_option.reason",
+        "template": "该项首先需要确定单节点未用脚处置；直接代选器件或假设实际工作状态会改变本板设计，不能冒充审查事实。",
+        "check_ids": [
+          "NET-A01.UNCONNECTED-072dcc",
+          "NET-A01.UNCONNECTED-093722",
+          "NET-A01.UNCONNECTED-0a1db1",
+          "NET-A01.UNCONNECTED-0a5ba9",
+          "NET-A01.UNCONNECTED-116bfe",
+          "NET-A01.UNCONNECTED-1b661f",
+          "NET-A01.UNCONNECTED-2b6eff",
+          "NET-A01.UNCONNECTED-351a40",
+          "NET-A01.UNCONNECTED-3c6fb8",
+          "NET-A01.UNCONNECTED-41589e",
+          "NET-A01.UNCONNECTED-4211c5",
+          "NET-A01.UNCONNECTED-43c5af",
+          "NET-A01.UNCONNECTED-467965",
+          "NET-A01.UNCONNECTED-551e12",
+          "NET-A01.UNCONNECTED-5e792e",
+          "NET-A01.UNCONNECTED-613a7e",
+          "NET-A01.UNCONNECTED-6bc534",
+          "NET-A01.UNCONNECTED-6c269b",
+          "NET-A01.UNCONNECTED-6ca4d2",
+          "NET-A01.UNCONNECTED-77bccc",
+          "NET-A01.UNCONNECTED-80d7dd",
+          "NET-A01.UNCONNECTED-836a42",
+          "NET-A01.UNCONNECTED-8f017e",
+          "NET-A01.UNCONNECTED-92476b",
+          "NET-A01.UNCONNECTED-9bd90f",
+          "NET-A01.UNCONNECTED-9be83a",
+          "NET-A01.UNCONNECTED-9d796a",
+          "NET-A01.UNCONNECTED-9f82bb",
+          "NET-A01.UNCONNECTED-a48bb6",
+          "NET-A01.UNCONNECTED-ada63d",
+          "NET-A01.UNCONNECTED-bb7d28",
+          "NET-A01.UNCONNECTED-bf0c73",
+          "NET-A01.UNCONNECTED-c0c9cc",
+          "NET-A01.UNCONNECTED-c3a704",
+          "NET-A01.UNCONNECTED-cad3f7",
+          "NET-A01.UNCONNECTED-d2cfec",
+          "NET-A01.UNCONNECTED-d81be7",
+          "NET-A01.UNCONNECTED-d9d7cc",
+          "NET-A01.UNCONNECTED-db5efc",
+          "NET-A01.UNCONNECTED-e97b64",
+          "NET-A01.UNCONNECTED-eb87dd",
+          "NET-A01.UNCONNECTED-f170ba",
+          "NET-A01.UNCONNECTED-fa5120",
+          "NET-A01.UNCONNECTED-fe70dc",
+          "NET-A01.UNCONNECTED-ff9eb6"
+        ],
+        "task_ids": [
+          "W-DEBUG-MCU-UNUSED",
+          "W-STARTUP-MCU-UNUSED",
+          "W-UART-U4-UNUSED",
+          "W-USB-J1-UNUSED"
+        ],
+        "message": "4 tasks decline a schematic change with the same sentence; state per task why no part change, value change or added circuit removes the gap, or propose one."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "unused"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q053",
+      "candidate": {
+        "code": "TEMPLATED_DESIGN_OPTION_REASON",
+        "field": "design_option.reason",
+        "template": "该项首先需要确定外部先供电与反灌边界；直接代选器件或假设实际工作状态会改变本板设计，不能冒充审查事实。",
+        "check_ids": [
+          "PRO-D04.J1",
+          "PRO-D04.J2",
+          "PRO-D04.J3",
+          "PWR-C05.POWER-CONVERTER-U3-FAULT.C4",
+          "PWR-C05.POWER-CONVERTER-U3-RUN.C4",
+          "PWR-C05.POWER-CONVERTER-U3-STARTUP.C4",
+          "SIG-C05.USB-J1-ATTACHED.C3",
+          "SIG-C05.USB-J1-FAULT.C3",
+          "SIG-C05.USB-J1-UNATTACHED.C3"
+        ],
+        "task_ids": [
+          "W-EXT-J1-REVERSE",
+          "W-EXT-J2-REVERSE",
+          "W-EXT-J3-REVERSE",
+          "W-POWER-CONVERTER-U3-REVERSE",
+          "W-USB-J1-REVERSE"
+        ],
+        "message": "5 tasks decline a schematic change with the same sentence; state per task why no part change, value change or added circuit removes the gap, or propose one."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "reverse"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q054",
+      "candidate": {
+        "code": "TEMPLATED_DESIGN_OPTION_REASON",
+        "field": "design_option.reason",
+        "template": "该项首先需要确定复位/掉电与监控策略；直接代选器件或假设实际工作状态会改变本板设计，不能冒充审查事实。",
+        "check_ids": [
+          "PWR-C18.POWER-CONVERTER-U3-FAULT.C4",
+          "PWR-C18.POWER-CONVERTER-U3-RUN.C4",
+          "PWR-C18.POWER-CONVERTER-U3-STARTUP.C4",
+          "PWR-C24.POWER-CONVERTER-U3.C4",
+          "PWR-T04.AS-BUILT.SUPERVISION-RAILS",
+          "RST-C02.STARTUP-MCU-RUN.U28",
+          "RST-T03.SYS-SEQUENCE"
+        ],
+        "task_ids": [
+          "W-POWER-CONVERTER-U3-RESET",
+          "W-STARTUP-MCU-RESET",
+          "W-SYS-MONITOR-RESET",
+          "W-SYS-SEQUENCE-RESET"
+        ],
+        "message": "4 tasks decline a schematic change with the same sentence; state per task why no part change, value change or added circuit removes the gap, or propose one."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "reset"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q055",
+      "candidate": {
+        "code": "TEMPLATED_DESIGN_OPTION_REASON",
+        "field": "design_option.reason",
+        "template": "该项首先需要确定UART 与调试口逻辑/时序全窗口；直接代选器件或假设实际工作状态会改变本板设计，不能冒充审查事实。",
+        "check_ids": [
+          "SIG-C07.IF-DEBUG-MCU-STARTUP-MCU",
+          "SIG-C07.IF-DEBUG-MCU-UART-U4",
+          "SIG-C07.IF-STARTUP-MCU-UART-U4",
+          "SIG-C07.IF-UART-U4-USB-J1",
+          "SIG-C07.UART-U4-RUN.U4",
+          "SIG-C13.DEBUG-MCU.D25",
+          "SIG-D06.DEBUG-MCU-RUN.D25",
+          "SIG-D08.UART-U4-RUN.U4"
+        ],
+        "task_ids": [
+          "W-DEBUG-MCU-UART",
+          "W-IF-DEBUG-MCU-STARTUP-MCU-UART",
+          "W-IF-DEBUG-MCU-UART-U4-UART",
+          "W-IF-STARTUP-MCU-UART-U4-UART",
+          "W-IF-UART-U4-USB-J1-UART",
+          "W-UART-U4-UART"
+        ],
+        "message": "6 tasks decline a schematic change with the same sentence; state per task why no part change, value change or added circuit removes the gap, or propose one."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "uart"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q056",
+      "candidate": {
+        "code": "TEMPLATED_DESIGN_OPTION_REASON",
+        "field": "design_option.reason",
+        "template": "该项首先需要确定片内10M PHY 与HY931147C保证兼容边界；直接代选器件或假设实际工作状态会改变本板设计，不能冒充审查事实。",
+        "check_ids": [
+          "SIG-C07.IF-ETHERNET-PORT-STARTUP-MCU",
+          "SIG-C09.ETHERNET-PORT-RUN.J3",
+          "SIG-C13.ETHERNET-PORT.J3",
+          "SIG-C19.ETHERNET-PORT.J3",
+          "SIG-D11.ETHERNET-PORT-RUN.J3",
+          "SIG-E02.RD.RD-P",
+          "SIG-E02.TD.TD-P",
+          "SIG-T03.RD.RD-P",
+          "SIG-T03.TD.TD-P"
+        ],
+        "task_ids": [
+          "W-BOARD-EVIDENCE-PHY",
+          "W-ETHERNET-PORT-PHY",
+          "W-IF-ETHERNET-PORT-STARTUP-MCU-PHY"
+        ],
+        "message": "3 tasks decline a schematic change with the same sentence; state per task why no part change, value change or added circuit removes the gap, or propose one."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "phy"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q057",
+      "candidate": {
+        "code": "TEMPLATED_PASS_RATIONALE",
+        "check_ids": [
+          "NET-A06.UNCONNECTED-294eab",
+          "NET-A06.UNCONNECTED-35edc9",
+          "NET-A06.UNCONNECTED-4ca148",
+          "NET-A06.UNCONNECTED-528a05",
+          "NET-A06.UNCONNECTED-e7aa6d",
+          "NET-A07.U4-10-430108",
+          "NET-A07.U4-11-e45b23",
+          "NET-A07.U4-12-4efdac",
+          "NET-A07.U4-15-882a3f",
+          "NET-A07.U4-9-3b21fb"
+        ],
+        "template": "U4仅使用TXD/RXD；WCH CH340 V3C PDF p4明确未用I/O可悬空，p4 R232内置下拉；所报MODEM/R232单节点为合法未用结构",
+        "message": "10 PASS rows asking 2 different questions rest on one paragraph; write for each criterion what was compared and against what"
+      },
+      "review_disposition": "REVIEWED_SHARED_DECISIVE_CLAUSE",
+      "reason": "逐脚复核U4.9 CTS#/.10 DSR#/.11 RI#/.12 DCD#/.15 R232，仅使用TXD/RXD；同一PDFp4允许未用I/O悬空及R232片内下拉，同时反驳输入-only与输入悬空两个电气提示。NET-A01未标NC的独立绘图问题仍保留45条。",
+      "dependency_groups": [],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q058",
+      "candidate": {
+        "code": "TEMPLATED_WORK_ITEM_REASON",
+        "field": "reason",
+        "template": "列出的对象尚不能证明满足其实际功能或规定工作窗口；潜在后果以该功能范围为限。",
+        "check_ids": [
+          "CLK-C01.CLOCK-Y1-RUN.C1",
+          "DEV-C01.C1",
+          "DEV-C01.C2",
+          "DEV-C01.C3",
+          "DEV-C01.C4",
+          "DEV-C01.C5",
+          "DEV-C01.C6",
+          "DEV-C01.C7",
+          "DEV-C01.CLOCK-Y1",
+          "DEV-C01.DEBUG-MCU",
+          "DEV-C01.ETHERNET-PORT",
+          "DEV-C01.POWER-CONVERTER-U3",
+          "DEV-C01.R1",
+          "DEV-C01.R2",
+          "DEV-C01.R54",
+          "DEV-C01.STARTUP-MCU",
+          "DEV-C01.UART-U4",
+          "DEV-C01.USB-J1",
+          "DEV-C02.CLOCK-Y1",
+          "DEV-C02.POWER-CONVERTER-U3",
+          "DEV-C02.USB-J1",
+          "DEV-C04.J1",
+          "DEV-C04.J2",
+          "DEV-C04.J3",
+          "DEV-C05.PIN-LED.U28-33",
+          "DEV-C05.U28",
+          "DEV-C05.U3",
+          "DEV-C05.U4",
+          "DEV-D01.U3",
+          "DEV-D02.J1",
+          "DEV-D02.J2",
+          "DEV-D02.J3",
+          "DEV-D02.U1",
+          "DEV-D02.U4",
+          "DEV-D03.J1",
+          "DEV-D03.J2",
+          "DEV-D03.J3",
+          "DEV-D04.BOARD",
+          "DEV-D05.J1",
+          "DEV-D05.J2",
+          "DEV-D05.J3",
+          "DEV-D05.U1",
+          "DEV-D05.U28",
+          "DEV-D05.U4",
+          "DEV-E01.J1",
+          "DEV-E01.J2",
+          "DEV-E01.J3",
+          "DEV-Q01.DATASHEETS",
+          "DOC-D02.BOARD",
+          "DOC-T01.BOARD",
+          "DOC-V02.BOARD",
+          "NET-A01.UNCONNECTED-072dcc",
+          "NET-A01.UNCONNECTED-093722",
+          "NET-A01.UNCONNECTED-0a1db1",
+          "NET-A01.UNCONNECTED-0a5ba9",
+          "NET-A01.UNCONNECTED-116bfe",
+          "NET-A01.UNCONNECTED-1b661f",
+          "NET-A01.UNCONNECTED-2b6eff",
+          "NET-A01.UNCONNECTED-351a40",
+          "NET-A01.UNCONNECTED-3c6fb8",
+          "NET-A01.UNCONNECTED-41589e",
+          "NET-A01.UNCONNECTED-4211c5",
+          "NET-A01.UNCONNECTED-43c5af",
+          "NET-A01.UNCONNECTED-467965",
+          "NET-A01.UNCONNECTED-551e12",
+          "NET-A01.UNCONNECTED-5e792e",
+          "NET-A01.UNCONNECTED-613a7e",
+          "NET-A01.UNCONNECTED-6bc534",
+          "NET-A01.UNCONNECTED-6c269b",
+          "NET-A01.UNCONNECTED-6ca4d2",
+          "NET-A01.UNCONNECTED-77bccc",
+          "NET-A01.UNCONNECTED-80d7dd",
+          "NET-A01.UNCONNECTED-836a42",
+          "NET-A01.UNCONNECTED-8f017e",
+          "NET-A01.UNCONNECTED-92476b",
+          "NET-A01.UNCONNECTED-9bd90f",
+          "NET-A01.UNCONNECTED-9be83a",
+          "NET-A01.UNCONNECTED-9d796a",
+          "NET-A01.UNCONNECTED-9f82bb",
+          "NET-A01.UNCONNECTED-a48bb6",
+          "NET-A01.UNCONNECTED-ada63d",
+          "NET-A01.UNCONNECTED-bb7d28",
+          "NET-A01.UNCONNECTED-bf0c73",
+          "NET-A01.UNCONNECTED-c0c9cc",
+          "NET-A01.UNCONNECTED-c3a704",
+          "NET-A01.UNCONNECTED-cad3f7",
+          "NET-A01.UNCONNECTED-d2cfec",
+          "NET-A01.UNCONNECTED-d81be7",
+          "NET-A01.UNCONNECTED-d9d7cc",
+          "NET-A01.UNCONNECTED-db5efc",
+          "NET-A01.UNCONNECTED-e97b64",
+          "NET-A01.UNCONNECTED-eb87dd",
+          "NET-A01.UNCONNECTED-f170ba",
+          "NET-A01.UNCONNECTED-fa5120",
+          "NET-A01.UNCONNECTED-fe70dc",
+          "NET-A01.UNCONNECTED-ff9eb6",
+          "PRO-C01.ETHERNET-PORT-RUN.J3",
+          "PRO-D03.J1",
+          "PRO-D03.J2",
+          "PRO-D03.J3",
+          "PRO-D04.J1",
+          "PRO-D04.J2",
+          "PRO-D04.J3",
+          "PRO-D05.BOARD",
+          "PRO-D06.BOARD",
+          "PWR-C01.3V3",
+          "PWR-C01.5V",
+          "PWR-C02.POWER-CONVERTER-U3-FAULT.C4",
+          "PWR-C02.POWER-CONVERTER-U3-RUN.C4",
+          "PWR-C02.POWER-CONVERTER-U3-STARTUP.C4",
+          "PWR-C03.POWER-CONVERTER-U3-FAULT.C4",
+          "PWR-C03.POWER-CONVERTER-U3-RUN.C4",
+          "PWR-C03.POWER-CONVERTER-U3-STARTUP.C4",
+          "PWR-C04.POWER-CONVERTER-U3-FAULT.U3",
+          "PWR-C04.POWER-CONVERTER-U3-RUN.U3",
+          "PWR-C04.POWER-CONVERTER-U3-STARTUP.U3",
+          "PWR-C05.POWER-CONVERTER-U3-FAULT.C4",
+          "PWR-C05.POWER-CONVERTER-U3-RUN.C4",
+          "PWR-C05.POWER-CONVERTER-U3-STARTUP.C4",
+          "PWR-C09.DECAP-18EA511401C658364ABE.5V",
+          "PWR-C09.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-C09.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-C09.DECAP-AFD1770A43FC72E03D81.3V3",
+          "PWR-C10.DECAP-18EA511401C658364ABE.5V",
+          "PWR-C10.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-C10.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-C10.DECAP-AFD1770A43FC72E03D81.3V3",
+          "PWR-C15.POWER-CONVERTER-U3-FAULT.U3",
+          "PWR-C15.POWER-CONVERTER-U3-RUN.U3",
+          "PWR-C15.POWER-CONVERTER-U3-STARTUP.U3",
+          "PWR-C18.POWER-CONVERTER-U3-FAULT.C4",
+          "PWR-C18.POWER-CONVERTER-U3-RUN.C4",
+          "PWR-C18.POWER-CONVERTER-U3-STARTUP.C4",
+          "PWR-C19.BOARD",
+          "PWR-C24.POWER-CONVERTER-U3.C4",
+          "PWR-D01.DECOUPLING-INVENTORY",
+          "PWR-D02.DECAP-18EA511401C658364ABE.5V",
+          "PWR-D02.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-D02.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-D02.DECAP-AFD1770A43FC72E03D81.3V3",
+          "PWR-D04.BOARD",
+          "PWR-T03.DECAP-18EA511401C658364ABE.5V",
+          "PWR-T03.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-T03.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-T03.DECAP-AFD1770A43FC72E03D81.3V3",
+          "PWR-T04.AS-BUILT.SUPERVISION-RAILS",
+          "REQ-C01.BOARD",
+          "REQ-D02.BOARD",
+          "REQ-D03.BOARD",
+          "REQ-D04.BOARD",
+          "REQ-D05.BOARD",
+          "REQ-Q01.REQUIREMENTS",
+          "REQ-Q02.CHAINS",
+          "REQ-Q03.STATES",
+          "REQ-Q08.BOARD",
+          "RST-C01.STARTUP-MCU-RUN.U28",
+          "RST-C02.STARTUP-MCU-RUN.U28",
+          "RST-D01.STARTUP-MCU-RUN.U28",
+          "RST-E02.U28-28",
+          "RST-E02.U28-60",
+          "RST-T03.SYS-SEQUENCE",
+          "RST-T04.STARTUP-MCU-RUN.U28",
+          "SIG-C05.USB-J1-ATTACHED.C3",
+          "SIG-C05.USB-J1-FAULT.C3",
+          "SIG-C05.USB-J1-UNATTACHED.C3",
+          "SIG-C07.IF-DEBUG-MCU-STARTUP-MCU",
+          "SIG-C07.IF-DEBUG-MCU-UART-U4",
+          "SIG-C07.IF-ETHERNET-PORT-STARTUP-MCU",
+          "SIG-C07.IF-STARTUP-MCU-UART-U4",
+          "SIG-C07.IF-UART-U4-USB-J1",
+          "SIG-C07.UART-U4-RUN.U4",
+          "SIG-C09.ETHERNET-PORT-RUN.J3",
+          "SIG-C13.CLOCK-Y1.C1",
+          "SIG-C13.DEBUG-MCU.D25",
+          "SIG-C13.ETHERNET-PORT.J3",
+          "SIG-C13.UART-U4.U4",
+          "SIG-C13.USB-J1.C3",
+          "SIG-C19.ETHERNET-PORT.J3",
+          "SIG-D06.DEBUG-MCU-RUN.D25",
+          "SIG-D07.USB-J1.C3",
+          "SIG-D08.UART-U4-RUN.U4",
+          "SIG-D11.ETHERNET-PORT-RUN.J3",
+          "SIG-D13.SYS-PINMAP",
+          "SIG-E02.D.D",
+          "SIG-E02.RD.RD-P",
+          "SIG-E02.TD.TD-P",
+          "SIG-T03.D.D",
+          "SIG-T03.RD.RD-P",
+          "SIG-T03.TD.TD-P",
+          "SIG-T04.IF-DEBUG-MCU-STARTUP-MCU",
+          "SIG-T04.IF-DEBUG-MCU-UART-U4"
+        ],
+        "task_ids": [
+          "W-BOARD-EVIDENCE-ASSEMBLY",
+          "W-BOARD-EVIDENCE-DECAP",
+          "W-BOARD-EVIDENCE-ESD",
+          "W-BOARD-EVIDENCE-INPUT",
+          "W-BOARD-EVIDENCE-PHY",
+          "W-BOARD-EVIDENCE-SCOPE",
+          "W-CLOCK-Y1-CLOCK",
+          "W-CLOCK-Y1-DECAP",
+          "W-CLOCK-Y1-STRESS",
+          "W-DEBUG-MCU-ESD",
+          "W-DEBUG-MCU-PINOUT",
+          "W-DEBUG-MCU-STRESS",
+          "W-DEBUG-MCU-UART",
+          "W-DEBUG-MCU-UNUSED",
+          "W-ETHERNET-PORT-ESD",
+          "W-ETHERNET-PORT-PHY",
+          "W-ETHERNET-PORT-PINOUT",
+          "W-ETHERNET-PORT-STRESS",
+          "W-EXT-J1-ESD",
+          "W-EXT-J1-INPUT",
+          "W-EXT-J1-PINOUT",
+          "W-EXT-J1-REVERSE",
+          "W-EXT-J2-ESD",
+          "W-EXT-J2-INPUT",
+          "W-EXT-J2-PINOUT",
+          "W-EXT-J2-REVERSE",
+          "W-EXT-J3-ESD",
+          "W-EXT-J3-INPUT",
+          "W-EXT-J3-PINOUT",
+          "W-EXT-J3-REVERSE",
+          "W-IF-DEBUG-MCU-STARTUP-MCU-PINOUT",
+          "W-IF-DEBUG-MCU-STARTUP-MCU-UART",
+          "W-IF-DEBUG-MCU-UART-U4-PINOUT",
+          "W-IF-DEBUG-MCU-UART-U4-UART",
+          "W-IF-ETHERNET-PORT-STARTUP-MCU-PHY",
+          "W-IF-STARTUP-MCU-UART-U4-UART",
+          "W-IF-UART-U4-USB-J1-UART",
+          "W-POWER-CONVERTER-U3-ASSEMBLY",
+          "W-POWER-CONVERTER-U3-DECAP",
+          "W-POWER-CONVERTER-U3-LDO",
+          "W-POWER-CONVERTER-U3-RESET",
+          "W-POWER-CONVERTER-U3-REVERSE",
+          "W-POWER-CONVERTER-U3-STRESS",
+          "W-POWER-CONVERTER-U3-THERMAL",
+          "W-STARTUP-MCU-ASSEMBLY",
+          "W-STARTUP-MCU-DECAP",
+          "W-STARTUP-MCU-GPIO",
+          "W-STARTUP-MCU-RESET",
+          "W-STARTUP-MCU-STRESS",
+          "W-STARTUP-MCU-UNUSED",
+          "W-SYS-MONITOR-RESET",
+          "W-SYS-PINMAP-GPIO",
+          "W-SYS-POWER-INPUT",
+          "W-SYS-SEQUENCE-RESET",
+          "W-UART-U4-ASSEMBLY",
+          "W-UART-U4-DECAP",
+          "W-UART-U4-LOT",
+          "W-UART-U4-SCOPE",
+          "W-UART-U4-STRESS",
+          "W-UART-U4-UART",
+          "W-UART-U4-UNUSED",
+          "W-USB-J1-DECAP",
+          "W-USB-J1-ESD",
+          "W-USB-J1-PINOUT",
+          "W-USB-J1-REVERSE",
+          "W-USB-J1-SCOPE",
+          "W-USB-J1-STRESS",
+          "W-USB-J1-UNUSED"
+        ],
+        "message": "68 work items give the same reason for their stage and grouping; say per item why it is due at that stage or why its checks belong together. The report leaves a shared reason out."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "确认原生影响文字偏概括，不能独立支持每个物理后果。仅作未闭审查的潜在等级，已确认缺陷另有P1/P2独立后果；未用脚/文档/批次命名已按LOCAL_OR_DATA分开，其他待确认不升级为已证损坏。保持质量欠账和NO_GO。",
+      "dependency_groups": [
+        "assembly",
+        "clock",
+        "decap",
+        "esd",
+        "gpio",
+        "input",
+        "ldo",
+        "lot",
+        "phy",
+        "pinout",
+        "reset",
+        "reverse",
+        "scope",
+        "stress",
+        "thermal",
+        "uart",
+        "unused"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q059",
+      "candidate": {
+        "code": "TEMPLATE_REASON",
+        "field": "rationale",
+        "items": [
+          "FN-CLOCK-Y1/CLOCK-Y1-STRESS",
+          "FN-DEBUG-MCU/DEBUG-MCU-STRESS",
+          "FN-ETHERNET-PORT/ETHERNET-PORT-STRESS",
+          "FN-POWER-CONVERTER-U3/POWER-CONVERTER-U3-STRESS",
+          "FN-STARTUP-MCU/STARTUP-MCU-STRESS",
+          "FN-UART-U4/UART-U4-STRESS",
+          "FN-USB-J1/USB-J1-STRESS"
+        ],
+        "message": "The same rationale on several gaps (R54=1.2k，在假定±5%且+3V3≤3.432V时Rmin=1140Ω，I); if they are one gap keep one item, otherwise say why each is undecided",
+        "check_ids": [
+          "DEV-C01.C1",
+          "DEV-C01.C2",
+          "DEV-C01.C3",
+          "DEV-C01.C4",
+          "DEV-C01.C5",
+          "DEV-C01.C6",
+          "DEV-C01.C7",
+          "DEV-C01.CLOCK-Y1",
+          "DEV-C01.DEBUG-MCU",
+          "DEV-C01.ETHERNET-PORT",
+          "DEV-C01.POWER-CONVERTER-U3",
+          "DEV-C01.R1",
+          "DEV-C01.R2",
+          "DEV-C01.R54",
+          "DEV-C01.STARTUP-MCU",
+          "DEV-C01.UART-U4",
+          "DEV-C01.USB-J1",
+          "DEV-C05.PIN-LED.U28-33",
+          "DEV-C05.U28",
+          "DEV-C05.U4"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q060",
+      "candidate": {
+        "code": "TEMPLATE_REASON",
+        "field": "rationale",
+        "items": [
+          "FN-BOARD-EVIDENCE/BOARD-EVIDENCE-DECAP",
+          "FN-CLOCK-Y1/CLOCK-Y1-DECAP",
+          "FN-POWER-CONVERTER-U3/POWER-CONVERTER-U3-DECAP",
+          "FN-STARTUP-MCU/STARTUP-MCU-DECAP",
+          "FN-UART-U4/UART-U4-DECAP",
+          "FN-USB-J1/USB-J1-DECAP"
+        ],
+        "message": "The same rationale on several gaps (C3在+5V/GND；C4/C5/C6/C7共在+3V3/GND；只有C7=10); if they are one gap keep one item, otherwise say why each is undecided",
+        "check_ids": [
+          "DEV-C02.CLOCK-Y1",
+          "DEV-C02.POWER-CONVERTER-U3",
+          "DEV-C02.USB-J1",
+          "PWR-C09.DECAP-18EA511401C658364ABE.5V",
+          "PWR-C09.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-C09.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-C09.DECAP-AFD1770A43FC72E03D81.3V3",
+          "PWR-C10.DECAP-18EA511401C658364ABE.5V",
+          "PWR-C10.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-C10.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-C10.DECAP-AFD1770A43FC72E03D81.3V3",
+          "PWR-D01.DECOUPLING-INVENTORY",
+          "PWR-D02.DECAP-18EA511401C658364ABE.5V",
+          "PWR-D02.DECAP-5C1BDE151BA745416167.3V3",
+          "PWR-D02.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-D02.DECAP-AFD1770A43FC72E03D81.3V3"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "decap"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q061",
+      "candidate": {
+        "code": "TEMPLATE_REASON",
+        "field": "rationale",
+        "items": [
+          "FN-BOARD-EVIDENCE/BOARD-EVIDENCE-INPUT",
+          "FN-EXT-J1/EXT-J1-INPUT",
+          "FN-EXT-J2/EXT-J2-INPUT",
+          "FN-EXT-J3/EXT-J3-INPUT",
+          "FN-SYS-POWER/SYS-POWER-INPUT"
+        ],
+        "message": "The same rationale on several gaps (J1.1=+5V；J2.1与J3.4=+3V3，均无串联阻断。未提供外部电源/探); if they are one gap keep one item, otherwise say why each is undecided",
+        "check_ids": [
+          "DEV-C04.J1",
+          "DEV-C04.J2",
+          "DEV-C04.J3",
+          "PWR-C01.3V3",
+          "PWR-C01.5V",
+          "PWR-C19.BOARD",
+          "PWR-D04.BOARD"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "input"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q062",
+      "candidate": {
+        "code": "TEMPLATE_REASON",
+        "field": "rationale",
+        "items": [
+          "FN-DEBUG-MCU/DEBUG-MCU-PINOUT",
+          "FN-ETHERNET-PORT/ETHERNET-PORT-PINOUT",
+          "FN-EXT-J1/EXT-J1-PINOUT",
+          "FN-EXT-J2/EXT-J2-PINOUT",
+          "FN-EXT-J3/EXT-J3-PINOUT",
+          "FN-IF-DEBUG-MCU-STARTUP-MCU/IF-DEBUG-MCU-STARTUP-MCU-PINOUT",
+          "FN-IF-DEBUG-MCU-UART-U4/IF-DEBUG-MCU-UART-U4-PINOUT",
+          "FN-USB-J1/USB-J1-PINOUT"
+        ],
+        "message": "The same rationale on several gaps (J1封装名指向Amphenol 10118194、J2指向JST BM08B-S); if they are one gap keep one item, otherwise say why each is undecided",
+        "check_ids": [
+          "DEV-D02.J1",
+          "DEV-D02.J2",
+          "DEV-D02.J3",
+          "DEV-D02.U1",
+          "DEV-D03.J1",
+          "DEV-D03.J2",
+          "DEV-D03.J3",
+          "DEV-D05.J1",
+          "DEV-D05.J2",
+          "DEV-D05.J3",
+          "DEV-D05.U1",
+          "SIG-T04.IF-DEBUG-MCU-STARTUP-MCU",
+          "SIG-T04.IF-DEBUG-MCU-UART-U4"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "pinout"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q063",
+      "candidate": {
+        "code": "TEMPLATE_REASON",
+        "field": "rationale",
+        "items": [
+          "FN-BOARD-EVIDENCE/BOARD-EVIDENCE-SCOPE",
+          "FN-UART-U4/UART-U4-SCOPE",
+          "FN-USB-J1/USB-J1-SCOPE"
+        ],
+        "message": "The same rationale on several gaps (源README仅用于推断以太网开发/USB串口调试用途，catalog类型为ET); if they are one gap keep one item, otherwise say why each is undecided",
+        "check_ids": [
+          "DEV-D04.BOARD",
+          "DEV-Q01.DATASHEETS",
+          "DOC-D02.BOARD",
+          "DOC-V02.BOARD",
+          "REQ-C01.BOARD",
+          "REQ-D02.BOARD",
+          "REQ-D03.BOARD",
+          "REQ-D04.BOARD",
+          "REQ-D05.BOARD",
+          "REQ-Q01.REQUIREMENTS",
+          "REQ-Q02.CHAINS",
+          "REQ-Q03.STATES",
+          "REQ-Q08.BOARD",
+          "SIG-C13.UART-U4.U4",
+          "SIG-C13.USB-J1.C3"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "scope"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q064",
+      "candidate": {
+        "code": "TEMPLATE_REASON",
+        "field": "rationale",
+        "items": [
+          "FN-STARTUP-MCU/STARTUP-MCU-GPIO",
+          "FN-SYS-PINMAP/SYS-PINMAP-GPIO"
+        ],
+        "message": "The same rationale on several gaps (U28.36=PB15和U28.41=PA8均直接接GND；没有串阻，若任一被置); if they are one gap keep one item, otherwise say why each is undecided",
+        "check_ids": [
+          "DEV-D05.U28",
+          "RST-T04.STARTUP-MCU-RUN.U28",
+          "SIG-D13.SYS-PINMAP"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "gpio"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q065",
+      "candidate": {
+        "code": "TEMPLATE_REASON",
+        "field": "rationale",
+        "items": [
+          "FN-BOARD-EVIDENCE/BOARD-EVIDENCE-ESD",
+          "FN-DEBUG-MCU/DEBUG-MCU-ESD",
+          "FN-ETHERNET-PORT/ETHERNET-PORT-ESD",
+          "FN-EXT-J1/EXT-J1-ESD",
+          "FN-EXT-J2/EXT-J2-ESD",
+          "FN-EXT-J3/EXT-J3-ESD",
+          "FN-USB-J1/USB-J1-ESD"
+        ],
+        "message": "The same rationale on several gaps (J1.D+/D−直接到U4.5/6；J2的UART/SWD/NRST直连U28；); if they are one gap keep one item, otherwise say why each is undecided",
+        "check_ids": [
+          "DEV-E01.J1",
+          "DEV-E01.J2",
+          "DEV-E01.J3",
+          "PRO-C01.ETHERNET-PORT-RUN.J3",
+          "PRO-D03.J1",
+          "PRO-D03.J2",
+          "PRO-D03.J3",
+          "PRO-D05.BOARD",
+          "PRO-D06.BOARD",
+          "SIG-D07.USB-J1.C3",
+          "SIG-E02.D.D",
+          "SIG-T03.D.D"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "esd"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q066",
+      "candidate": {
+        "code": "TEMPLATE_REASON",
+        "field": "rationale",
+        "items": [
+          "FN-BOARD-EVIDENCE/BOARD-EVIDENCE-ASSEMBLY",
+          "FN-STARTUP-MCU/STARTUP-MCU-ASSEMBLY"
+        ],
+        "message": "The same rationale on several gaps (db.json JP1.2→BOOT1/U28.28、JP2.2→BOOT0/U); if they are one gap keep one item, otherwise say why each is undecided",
+        "check_ids": [
+          "DOC-T01.BOARD",
+          "PWR-T03.DECAP-AFD1770A43FC72E03D81.3V3",
+          "RST-C01.STARTUP-MCU-RUN.U28",
+          "RST-D01.STARTUP-MCU-RUN.U28",
+          "RST-E02.U28-28",
+          "RST-E02.U28-60"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "assembly"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q067",
+      "candidate": {
+        "code": "TEMPLATE_REASON",
+        "field": "rationale",
+        "items": [
+          "FN-EXT-J1/EXT-J1-REVERSE",
+          "FN-EXT-J2/EXT-J2-REVERSE",
+          "FN-EXT-J3/EXT-J3-REVERSE",
+          "FN-POWER-CONVERTER-U3/POWER-CONVERTER-U3-REVERSE",
+          "FN-USB-J1/USB-J1-REVERSE"
+        ],
+        "message": "The same rationale on several gaps (J3.4/J2.1同+3V3；外部可直接抬高U3.OUT及U4.VCC/V3，J); if they are one gap keep one item, otherwise say why each is undecided",
+        "check_ids": [
+          "PRO-D04.J1",
+          "PRO-D04.J2",
+          "PRO-D04.J3",
+          "PWR-C05.POWER-CONVERTER-U3-FAULT.C4",
+          "PWR-C05.POWER-CONVERTER-U3-RUN.C4",
+          "PWR-C05.POWER-CONVERTER-U3-STARTUP.C4",
+          "SIG-C05.USB-J1-ATTACHED.C3",
+          "SIG-C05.USB-J1-FAULT.C3",
+          "SIG-C05.USB-J1-UNATTACHED.C3"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "reverse"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q068",
+      "candidate": {
+        "code": "TEMPLATE_REASON",
+        "field": "rationale",
+        "items": [
+          "FN-POWER-CONVERTER-U3/POWER-CONVERTER-U3-RESET",
+          "FN-STARTUP-MCU/STARTUP-MCU-RESET",
+          "FN-SYS-MONITOR/SYS-MONITOR-RESET",
+          "FN-SYS-SEQUENCE/SYS-SEQUENCE-RESET"
+        ],
+        "message": "The same rationale on several gaps (U28.7 NRST仅接J2.4；WCH V3.9 PDF p15-16给内部P); if they are one gap keep one item, otherwise say why each is undecided",
+        "check_ids": [
+          "PWR-C18.POWER-CONVERTER-U3-FAULT.C4",
+          "PWR-C18.POWER-CONVERTER-U3-RUN.C4",
+          "PWR-C18.POWER-CONVERTER-U3-STARTUP.C4",
+          "PWR-C24.POWER-CONVERTER-U3.C4",
+          "PWR-T04.AS-BUILT.SUPERVISION-RAILS",
+          "RST-C02.STARTUP-MCU-RUN.U28",
+          "RST-T03.SYS-SEQUENCE"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "reset"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q069",
+      "candidate": {
+        "code": "TEMPLATE_REASON",
+        "field": "rationale",
+        "items": [
+          "FN-DEBUG-MCU/DEBUG-MCU-UART",
+          "FN-IF-DEBUG-MCU-STARTUP-MCU/IF-DEBUG-MCU-STARTUP-MCU-UART",
+          "FN-IF-DEBUG-MCU-UART-U4/IF-DEBUG-MCU-UART-U4-UART",
+          "FN-IF-STARTUP-MCU-UART-U4/IF-STARTUP-MCU-UART-U4-UART",
+          "FN-IF-UART-U4-USB-J1/IF-UART-U4-USB-J1-UART",
+          "FN-UART-U4/UART-U4-UART"
+        ],
+        "message": "The same rationale on several gaps (U4.2 TXD→TX-PROG→U28.43 PA10 USART1_RX；U); if they are one gap keep one item, otherwise say why each is undecided",
+        "check_ids": [
+          "SIG-C07.IF-DEBUG-MCU-STARTUP-MCU",
+          "SIG-C07.IF-DEBUG-MCU-UART-U4",
+          "SIG-C07.IF-STARTUP-MCU-UART-U4",
+          "SIG-C07.IF-UART-U4-USB-J1",
+          "SIG-C07.UART-U4-RUN.U4",
+          "SIG-C13.DEBUG-MCU.D25",
+          "SIG-D06.DEBUG-MCU-RUN.D25",
+          "SIG-D08.UART-U4-RUN.U4"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "uart"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q070",
+      "candidate": {
+        "code": "TEMPLATE_REASON",
+        "field": "rationale",
+        "items": [
+          "FN-BOARD-EVIDENCE/BOARD-EVIDENCE-PHY",
+          "FN-ETHERNET-PORT/ETHERNET-PORT-PHY",
+          "FN-IF-ETHERNET-PORT-STARTUP-MCU/IF-ETHERNET-PORT-STARTUP-MCU-PHY"
+        ],
+        "message": "The same rationale on several gaps (U28.37/38/39/40分别到U1.P$1/2/5/6；HY p1给10/); if they are one gap keep one item, otherwise say why each is undecided",
+        "check_ids": [
+          "SIG-C07.IF-ETHERNET-PORT-STARTUP-MCU",
+          "SIG-C09.ETHERNET-PORT-RUN.J3",
+          "SIG-C13.ETHERNET-PORT.J3",
+          "SIG-C19.ETHERNET-PORT.J3",
+          "SIG-D11.ETHERNET-PORT-RUN.J3",
+          "SIG-E02.RD.RD-P",
+          "SIG-E02.TD.TD-P",
+          "SIG-T03.RD.RD-P",
+          "SIG-T03.TD.TD-P"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "原生不同功能保留各自作用域，导致同一输入/物料问题重复生成工作项；归因已通过dependency_group去重。仍保留所有check_ids及原生待办，不把重复当多个板缺陷；共同缺口按independent-analysis.md和findings各组的关闭条件处理。设计选项未执行，不能用统一NONE理由代替电气证明。",
+      "dependency_groups": [
+        "phy"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q071",
+      "candidate": {
+        "code": "UNIFORM_SEVERITY_WITHIN_RULE",
+        "rule": "DEV-C01",
+        "grade": "P1",
+        "check_ids": [
+          "DEV-C01.C1",
+          "DEV-C01.C2",
+          "DEV-C01.C3",
+          "DEV-C01.C4",
+          "DEV-C01.C5",
+          "DEV-C01.C6",
+          "DEV-C01.C7",
+          "DEV-C01.CLOCK-Y1",
+          "DEV-C01.DEBUG-MCU",
+          "DEV-C01.ETHERNET-PORT",
+          "DEV-C01.POWER-CONVERTER-U3",
+          "DEV-C01.R1",
+          "DEV-C01.R2",
+          "DEV-C01.R54",
+          "DEV-C01.STARTUP-MCU",
+          "DEV-C01.UART-U4",
+          "DEV-C01.USB-J1"
+        ],
+        "message": "All 17 evidence gaps of DEV-C01 (an open item and its rows count once) share one potential grade; objects of one rule (bypass cap vs. bulk high-voltage resistor) rarely share one consequence."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "该提示针对未闭项的potential_severity，并非已证缺陷严重度；NET-A01按LOCAL_OR_DATA/P2保留绘图处置，DEV-C01为未核应力/故障窗口保留潜在损坏边界。独立归因中的已确认后果与待确认级别分列，不按统一潜在等级认定实物故障。",
+      "dependency_groups": [
+        "stress"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q072",
+      "candidate": {
+        "code": "UNIFORM_SEVERITY_WITHIN_RULE",
+        "rule": "NET-A01",
+        "grade": "P2",
+        "check_ids": [
+          "NET-A01.UNCONNECTED-072dcc",
+          "NET-A01.UNCONNECTED-093722",
+          "NET-A01.UNCONNECTED-0a1db1",
+          "NET-A01.UNCONNECTED-0a5ba9",
+          "NET-A01.UNCONNECTED-116bfe",
+          "NET-A01.UNCONNECTED-1b661f",
+          "NET-A01.UNCONNECTED-2b6eff",
+          "NET-A01.UNCONNECTED-351a40",
+          "NET-A01.UNCONNECTED-3c6fb8",
+          "NET-A01.UNCONNECTED-41589e",
+          "NET-A01.UNCONNECTED-4211c5",
+          "NET-A01.UNCONNECTED-43c5af",
+          "NET-A01.UNCONNECTED-467965",
+          "NET-A01.UNCONNECTED-551e12",
+          "NET-A01.UNCONNECTED-5e792e",
+          "NET-A01.UNCONNECTED-613a7e",
+          "NET-A01.UNCONNECTED-6bc534",
+          "NET-A01.UNCONNECTED-6c269b",
+          "NET-A01.UNCONNECTED-6ca4d2",
+          "NET-A01.UNCONNECTED-77bccc",
+          "NET-A01.UNCONNECTED-80d7dd",
+          "NET-A01.UNCONNECTED-836a42",
+          "NET-A01.UNCONNECTED-8f017e",
+          "NET-A01.UNCONNECTED-92476b",
+          "NET-A01.UNCONNECTED-9bd90f",
+          "NET-A01.UNCONNECTED-9be83a",
+          "NET-A01.UNCONNECTED-9d796a",
+          "NET-A01.UNCONNECTED-9f82bb",
+          "NET-A01.UNCONNECTED-a48bb6",
+          "NET-A01.UNCONNECTED-ada63d",
+          "NET-A01.UNCONNECTED-bb7d28",
+          "NET-A01.UNCONNECTED-bf0c73",
+          "NET-A01.UNCONNECTED-c0c9cc",
+          "NET-A01.UNCONNECTED-c3a704",
+          "NET-A01.UNCONNECTED-cad3f7",
+          "NET-A01.UNCONNECTED-d2cfec",
+          "NET-A01.UNCONNECTED-d81be7",
+          "NET-A01.UNCONNECTED-d9d7cc",
+          "NET-A01.UNCONNECTED-db5efc",
+          "NET-A01.UNCONNECTED-e97b64",
+          "NET-A01.UNCONNECTED-eb87dd",
+          "NET-A01.UNCONNECTED-f170ba",
+          "NET-A01.UNCONNECTED-fa5120",
+          "NET-A01.UNCONNECTED-fe70dc",
+          "NET-A01.UNCONNECTED-ff9eb6"
+        ],
+        "message": "All 45 evidence gaps of NET-A01 (an open item and its rows count once) share one potential grade; objects of one rule (bypass cap vs. bulk high-voltage resistor) rarely share one consequence."
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "该提示针对未闭项的potential_severity，并非已证缺陷严重度；NET-A01按LOCAL_OR_DATA/P2保留绘图处置，DEV-C01为未核应力/故障窗口保留潜在损坏边界。独立归因中的已确认后果与待确认级别分列，不按统一潜在等级认定实物故障。",
+      "dependency_groups": [
+        "unused"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q073",
+      "candidate": {
+        "code": "WIDE_GAP",
+        "function_id": "FN-POWER-CONVERTER-U3",
+        "key": "POWER-CONVERTER-U3-DECAP",
+        "aspects": [
+          "去耦容量",
+          "去耦接法",
+          "去耦电容额定",
+          "电容有效容量与寿命"
+        ],
+        "message": "One gap blocks 4 aspects; read each edge: does the missing quantity really enter every one of them?",
+        "check_ids": [
+          "DEV-C02.POWER-CONVERTER-U3",
+          "PWR-C09.DECAP-18EA511401C658364ABE.5V",
+          "PWR-C09.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-C10.DECAP-18EA511401C658364ABE.5V",
+          "PWR-C10.DECAP-5F5A98A037CEA5921FBF.3V3",
+          "PWR-D02.DECAP-18EA511401C658364ABE.5V",
+          "PWR-D02.DECAP-5F5A98A037CEA5921FBF.3V3"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "当前组decap影响多个具体方面；缺相同C3-C6值、同一模块/供电合同等可共享根因，但不同方面仍各保留判断，不因根组说明代替容量/ESR/时序/资格证明。对DOC/覆盖等广泛组的表达质量继续保留，完整闭环需按具体check_ids分别执行。",
+      "dependency_groups": [
+        "decap"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q074",
+      "candidate": {
+        "code": "WIDE_GAP",
+        "function_id": "FN-POWER-CONVERTER-U3",
+        "key": "POWER-CONVERTER-U3-LDO",
+        "aspects": [
+          "反馈模型与补偿资格",
+          "变换器时序与输出电容条件",
+          "变换器电压裕量",
+          "器件身份与封装"
+        ],
+        "message": "One gap blocks 4 aspects; read each edge: does the missing quantity really enter every one of them?",
+        "check_ids": [
+          "DEV-D01.U3",
+          "PWR-C02.POWER-CONVERTER-U3-FAULT.C4",
+          "PWR-C02.POWER-CONVERTER-U3-RUN.C4",
+          "PWR-C02.POWER-CONVERTER-U3-STARTUP.C4",
+          "PWR-C04.POWER-CONVERTER-U3-FAULT.U3",
+          "PWR-C04.POWER-CONVERTER-U3-RUN.U3",
+          "PWR-C04.POWER-CONVERTER-U3-STARTUP.U3",
+          "PWR-C15.POWER-CONVERTER-U3-FAULT.U3",
+          "PWR-C15.POWER-CONVERTER-U3-RUN.U3",
+          "PWR-C15.POWER-CONVERTER-U3-STARTUP.U3"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "当前组ldo影响多个具体方面；缺相同C3-C6值、同一模块/供电合同等可共享根因，但不同方面仍各保留判断，不因根组说明代替容量/ESR/时序/资格证明。对DOC/覆盖等广泛组的表达质量继续保留，完整闭环需按具体check_ids分别执行。",
+      "dependency_groups": [
+        "ldo"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q075",
+      "candidate": {
+        "code": "WIDE_GAP",
+        "function_id": "FN-BOARD-EVIDENCE",
+        "key": "BOARD-EVIDENCE-SCOPE",
+        "aspects": [
+          "DEV-D04",
+          "DEV-Q01",
+          "DOC-D02",
+          "DOC-V02",
+          "REQ-C01",
+          "REQ-D02",
+          "REQ-D03",
+          "REQ-D04",
+          "REQ-D05",
+          "REQ-Q01",
+          "REQ-Q02",
+          "REQ-Q03",
+          "REQ-Q08"
+        ],
+        "message": "One gap blocks 13 aspects; read each edge: does the missing quantity really enter every one of them?",
+        "check_ids": [
+          "DEV-D04.BOARD",
+          "DEV-Q01.DATASHEETS",
+          "DOC-D02.BOARD",
+          "DOC-V02.BOARD",
+          "REQ-C01.BOARD",
+          "REQ-D02.BOARD",
+          "REQ-D03.BOARD",
+          "REQ-D04.BOARD",
+          "REQ-D05.BOARD",
+          "REQ-Q01.REQUIREMENTS",
+          "REQ-Q02.CHAINS",
+          "REQ-Q03.STATES",
+          "REQ-Q08.BOARD"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "当前组scope影响多个具体方面；缺相同C3-C6值、同一模块/供电合同等可共享根因，但不同方面仍各保留判断，不因根组说明代替容量/ESR/时序/资格证明。对DOC/覆盖等广泛组的表达质量继续保留，完整闭环需按具体check_ids分别执行。",
+      "dependency_groups": [
+        "scope"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q076",
+      "candidate": {
+        "code": "WIDE_GAP",
+        "function_id": "FN-BOARD-EVIDENCE",
+        "key": "BOARD-EVIDENCE-ESD",
+        "aspects": [
+          "PRO-D05",
+          "PRO-D06",
+          "SIG-E02",
+          "SIG-T03"
+        ],
+        "message": "One gap blocks 4 aspects; read each edge: does the missing quantity really enter every one of them?",
+        "check_ids": [
+          "PRO-D05.BOARD",
+          "PRO-D06.BOARD",
+          "SIG-E02.D.D",
+          "SIG-T03.D.D"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "当前组esd影响多个具体方面；缺相同C3-C6值、同一模块/供电合同等可共享根因，但不同方面仍各保留判断，不因根组说明代替容量/ESR/时序/资格证明。对DOC/覆盖等广泛组的表达质量继续保留，完整闭环需按具体check_ids分别执行。",
+      "dependency_groups": [
+        "esd"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q077",
+      "candidate": {
+        "code": "WIDE_GAP",
+        "function_id": "FN-STARTUP-MCU",
+        "key": "STARTUP-MCU-ASSEMBLY",
+        "aspects": [
+          "strap 强制态",
+          "去耦连接覆盖",
+          "救砖通道",
+          "采样窗口电平"
+        ],
+        "message": "One gap blocks 4 aspects; read each edge: does the missing quantity really enter every one of them?",
+        "check_ids": [
+          "PWR-T03.DECAP-AFD1770A43FC72E03D81.3V3",
+          "RST-C01.STARTUP-MCU-RUN.U28",
+          "RST-D01.STARTUP-MCU-RUN.U28",
+          "RST-E02.U28-28",
+          "RST-E02.U28-60"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "当前组assembly影响多个具体方面；缺相同C3-C6值、同一模块/供电合同等可共享根因，但不同方面仍各保留判断，不因根组说明代替容量/ESR/时序/资格证明。对DOC/覆盖等广泛组的表达质量继续保留，完整闭环需按具体check_ids分别执行。",
+      "dependency_groups": [
+        "assembly"
+      ],
+      "changes_board_verdict": false
+    },
+    {
+      "id": "Q078",
+      "candidate": {
+        "code": "WIDE_GAP",
+        "function_id": "FN-ETHERNET-PORT",
+        "key": "ETHERNET-PORT-PHY",
+        "aspects": [
+          "以太网 PHY 与网变",
+          "以太网器件额定与基准",
+          "接口预算与规范模式",
+          "时序裕量"
+        ],
+        "message": "One gap blocks 4 aspects; read each edge: does the missing quantity really enter every one of them?",
+        "check_ids": [
+          "SIG-C09.ETHERNET-PORT-RUN.J3",
+          "SIG-C13.ETHERNET-PORT.J3",
+          "SIG-C19.ETHERNET-PORT.J3",
+          "SIG-D11.ETHERNET-PORT-RUN.J3"
+        ]
+      },
+      "review_disposition": "RETAIN_OPEN_LEDGER_QUALITY",
+      "reason": "当前组phy影响多个具体方面；缺相同C3-C6值、同一模块/供电合同等可共享根因，但不同方面仍各保留判断，不因根组说明代替容量/ESR/时序/资格证明。对DOC/覆盖等广泛组的表达质量继续保留，完整闭环需按具体check_ids分别执行。",
+      "dependency_groups": [
+        "phy"
+      ],
+      "changes_board_verdict": false
+    }
+  ]
+}

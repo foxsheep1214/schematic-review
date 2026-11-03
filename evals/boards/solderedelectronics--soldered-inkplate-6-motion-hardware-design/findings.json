@@ -1,0 +1,2740 @@
+{
+  "board": "solderedelectronics--soldered-inkplate-6-motion-hardware-design",
+  "source": {
+    "repo": "SolderedElectronics/Soldered-Inkplate-6-MOTION-hardware-design",
+    "commit": "01524cd35771b41a376c453546884d740e3c9159",
+    "schematic": "CAD/V2.1.0/Soldered Inkplate 6 MOTION.kicad_sch",
+    "license": "TAPR-OHL-1.0"
+  },
+  "types": [
+    "ANALOG",
+    "AV",
+    "DEBUG",
+    "I2C",
+    "LEVEL_SHIFT",
+    "POWER_CONVERTER",
+    "POWER_PROTECTION",
+    "STARTUP",
+    "STORAGE",
+    "USB"
+  ],
+  "run": {
+    "db_sha256": "f2e4395233ee26e3d3d8ac6f607cf2d5b5db6205ab8f4c4e1c684476f5ab3293",
+    "plan_items": 980,
+    "findings_total": 89,
+    "results_judged": 55,
+    "gate": "FAIL",
+    "sr_commit": "7ddd3b3377d2f167e57a2dd46ad1aa132774aabd",
+    "kicad_version": "10.0.7",
+    "gate_valid": false,
+    "release": "NO_GO",
+    "results_registered": 980,
+    "results_status": {
+      "INSUFFICIENT": 925,
+      "PASS": 28,
+      "FAIL": 8,
+      "NA": 19
+    },
+    "confirmed_defect_roots": 3,
+    "attribution_unit": "逐扫描提示/独立发现观察；U2两脚两条观察同一根因；M04与输出电容观察同一问题不相加",
+    "cache_review": "/Users/skyfend/.cache/sr-boards/solderedelectronics--soldered-inkplate-6-motion-hardware-design/review",
+    "native_report_rendered": false,
+    "review_complete": false,
+    "limitations": "925项仍INSUFFICIENT（含外部合同缺口与审查员未完成项）；功能原厂条款引用未填齐，门禁结构未通过，未交正式SR完成结论。",
+    "input_manifest": "/Users/skyfend/.cache/sr-boards/solderedelectronics--soldered-inkplate-6-motion-hardware-design/review/evidence-manifest.json",
+    "gate_error_count": 251
+  },
+  "findings": [
+    {
+      "id": "F001",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA8"
+      ],
+      "sr_text": "/FMC-DATA8 <- K35.65 (Inkplate_NEXT_GEN_ADAPTER)",
+      "verdict": "needs_human",
+      "evidence": "PDF p3只使用FMC-DATA0..7，p6 K35适配器仍引出DATA8..15；现网表确为单节点。是否应保留外部主机脚/补NC须外部模块定义与原设计意图，不能把未使用数据线判为断线缺陷。；物理节点=K35.65；网络=/FMC-DATA8",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.FMC-DATA8-35f50e"
+      ]
+    },
+    {
+      "id": "F002",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA9"
+      ],
+      "sr_text": "/FMC-DATA9 <- K35.64 (Inkplate_NEXT_GEN_ADAPTER)",
+      "verdict": "needs_human",
+      "evidence": "PDF p3只使用FMC-DATA0..7，p6 K35适配器仍引出DATA8..15；现网表确为单节点。是否应保留外部主机脚/补NC须外部模块定义与原设计意图，不能把未使用数据线判为断线缺陷。；物理节点=K35.64；网络=/FMC-DATA9",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.FMC-DATA9-7cf4f3"
+      ]
+    },
+    {
+      "id": "F003",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA10",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "/FMC-DATA10 <- K35.63 (Inkplate_NEXT_GEN_ADAPTER)",
+      "verdict": "needs_human",
+      "evidence": "PDF p3只使用FMC-DATA0..7，p6 K35适配器仍引出DATA8..15；现网表确为单节点。是否应保留外部主机脚/补NC须外部模块定义与原设计意图，不能把未使用数据线判为断线缺陷。；物理节点=K35.63；网络=/FMC-DATA10,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.FMC-DATA10-570880"
+      ]
+    },
+    {
+      "id": "F004",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA11",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "/FMC-DATA11 <- K35.62 (Inkplate_NEXT_GEN_ADAPTER)",
+      "verdict": "needs_human",
+      "evidence": "PDF p3只使用FMC-DATA0..7，p6 K35适配器仍引出DATA8..15；现网表确为单节点。是否应保留外部主机脚/补NC须外部模块定义与原设计意图，不能把未使用数据线判为断线缺陷。；物理节点=K35.62；网络=/FMC-DATA11,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.FMC-DATA11-83eeb8"
+      ]
+    },
+    {
+      "id": "F005",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA12",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "/FMC-DATA12 <- K35.61 (Inkplate_NEXT_GEN_ADAPTER)",
+      "verdict": "needs_human",
+      "evidence": "PDF p3只使用FMC-DATA0..7，p6 K35适配器仍引出DATA8..15；现网表确为单节点。是否应保留外部主机脚/补NC须外部模块定义与原设计意图，不能把未使用数据线判为断线缺陷。；物理节点=K35.61；网络=/FMC-DATA12,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.FMC-DATA12-263c18"
+      ]
+    },
+    {
+      "id": "F006",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA13",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "/FMC-DATA13 <- K35.60 (Inkplate_NEXT_GEN_ADAPTER)",
+      "verdict": "needs_human",
+      "evidence": "PDF p3只使用FMC-DATA0..7，p6 K35适配器仍引出DATA8..15；现网表确为单节点。是否应保留外部主机脚/补NC须外部模块定义与原设计意图，不能把未使用数据线判为断线缺陷。；物理节点=K35.60；网络=/FMC-DATA13,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.FMC-DATA13-c5485d"
+      ]
+    },
+    {
+      "id": "F007",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA14",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "/FMC-DATA14 <- K35.59 (Inkplate_NEXT_GEN_ADAPTER)",
+      "verdict": "needs_human",
+      "evidence": "PDF p3只使用FMC-DATA0..7，p6 K35适配器仍引出DATA8..15；现网表确为单节点。是否应保留外部主机脚/补NC须外部模块定义与原设计意图，不能把未使用数据线判为断线缺陷。；物理节点=K35.59；网络=/FMC-DATA14,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.FMC-DATA14-463de1"
+      ]
+    },
+    {
+      "id": "F008",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA15",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "/FMC-DATA15 <- K35.58 (Inkplate_NEXT_GEN_ADAPTER)",
+      "verdict": "needs_human",
+      "evidence": "PDF p3只使用FMC-DATA0..7，p6 K35适配器仍引出DATA8..15；现网表确为单节点。是否应保留外部主机脚/补NC须外部模块定义与原设计意图，不能把未使用数据线判为断线缺陷。；物理节点=K35.58；网络=/FMC-DATA15,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A01.FMC-DATA15-25ce98"
+      ]
+    },
+    {
+      "id": "F009",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "S2"
+      ],
+      "nets": [
+        "unconnected-(S2-Pad3)"
+      ],
+      "sr_text": "unconnected-(S2-Pad3) <- S2.3 (SK-3296S-01-L1，脚名 ?) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "false_alarm",
+      "evidence": "同版PDF p5 BOOT0 SWITCH：S2是三端SPDT，公共端2经R43控制BOOT0，端1到3V3，端3为有意未用throw。被动触点不能按CMOS输入判。；物理节点=S2.3；网络=unconnected-(S2-Pad3)",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；同版PDF p5 BOOT0 SWITCH：S2是三端SPDT，公共端2经R43控制BOOT0，端1到3V3，端3为有意未用throw。被动触点不能按CMOS输入判。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A01.UNCONNECTED-4abde0"
+      ]
+    },
+    {
+      "id": "F010",
+      "sr_rule": "NET-A02",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [],
+      "nets": [
+        "/Header & adapter/I2S-MCK",
+        "/Header & adapter/I2S-CK"
+      ],
+      "sr_text": "/Header & adapter/I2S-CK(2节点) <-> /Header & adapter/I2S-MCK(2节点)",
+      "verdict": "false_alarm",
+      "evidence": "db /Header & adapter/I2S-CK与I2S-MCK为两个各2节点的独立时钟信号，PDF p6分别为bit clock和master clock，非拼写分裂；无同义/本应同网证据。；源节点见原句；网络=/Header & adapter/I2S-MCK,/Header & adapter/I2S-CK",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:net_name_split",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；db /Header & adapter/I2S-CK与I2S-MCK为两个各2节点的独立时钟信号，PDF p6分别为bit clock和master clock，非拼写分裂；无同义/本应同网证据。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A02.HEADER-70e6a6"
+      ]
+    },
+    {
+      "id": "F011",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [],
+      "nets": [
+        "/E-paper_power_supply/VDDH-D",
+        "VDDH"
+      ],
+      "sr_text": "/E-paper_power_supply/VDDH-D (3节点): ['C9', 'D1', 'U1']",
+      "verdict": "false_alarm",
+      "evidence": "TPS65185 PDF p5 U1.34=VDDH_D为positive charge-pump base-voltage输出，接C9=100n到GND、D1；并非无源电源输入。；源节点见原句；网络=/E-paper_power_supply/VDDH-D,VDDH",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；TPS65185 PDF p5 U1.34=VDDH_D为positive charge-pump base-voltage输出，接C9=100n到GND、D1；并非无源电源输入。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A01.E-PAPER-POWER-SUPPLY-VDD-886fcf"
+      ]
+    },
+    {
+      "id": "F012",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [],
+      "nets": [
+        "VDDH"
+      ],
+      "sr_text": "VDDH (6节点): ['C1', 'D1', 'K2', 'R1', 'TP13', 'U1']",
+      "verdict": "false_alarm",
+      "evidence": "TPS65185 PDF p5/6及p19 active discharge：VDDH由U1.34/36和D1/C11正电荷泵产生，U1.35为放电端；BAT54S三端通路与专用输出脚未被电源树识别。不能因缺OUT式脚名报无源。；源节点见原句；网络=VDDH",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；TPS65185 PDF p5/6及p19 active discharge：VDDH由U1.34/36和D1/C11正电荷泵产生，U1.35为放电端；BAT54S三端通路与专用输出脚未被电源树识别。不能因缺OUT式脚名报无源。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A01.VDDH-8d1e48"
+      ]
+    },
+    {
+      "id": "F013",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "K23"
+      ],
+      "nets": [
+        "/Power, programming & other/3V3-SD",
+        "3V3"
+      ],
+      "sr_text": "K23.4 (VDD) <- /Power, programming & other/3V3-SD：经跳线 JP1 才接到供电，核该装配下跳线是否闭合",
+      "verdict": "false_alarm",
+      "evidence": "PDF p5 JP1是connected-trace旁路，另有Q9 S=3V3 D=3V3-SD，R41 10k上拉默认关断；“经JP1才接到供电”忽略受控并联路径。默认桥接应列装配/开关作用审查，非断电证据。；物理节点=K23.4；网络=/Power, programming & other/3V3-SD,3V3",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；PDF p5 JP1是connected-trace旁路，另有Q9 S=3V3 D=3V3-SD，R41 10k上拉默认关断；“经JP1才接到供电”忽略受控并联路径。默认桥接应列装配/开关作用审查，非断电证据。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.K23-4-79e37c"
+      ]
+    },
+    {
+      "id": "F014",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "/E-paper_power_supply/VDDH-FB",
+        "VDDH"
+      ],
+      "sr_text": "U1.33 (VDDH_FB) <- /E-paper_power_supply/VDDH-FB",
+      "verdict": "false_alarm",
+      "evidence": "TPS65185 SLVSAQ8G PDF p5 U1.33=VDDH_FB，是反馈输入非电源脚；R1/R2从VDDH分压，不能要求此点等于供电轨。；物理节点=U1.33；网络=/E-paper_power_supply/VDDH-FB,VDDH",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；TPS65185 SLVSAQ8G PDF p5 U1.33=VDDH_FB，是反馈输入非电源脚；R1/R2从VDDH分压，不能要求此点等于供电轨。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-33-b88359"
+      ]
+    },
+    {
+      "id": "F015",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "/E-paper_power_supply/VDDH-D",
+        "VDDH"
+      ],
+      "sr_text": "U1.34 (VDDH_D) <- /E-paper_power_supply/VDDH-D",
+      "verdict": "false_alarm",
+      "evidence": "TPS65185 PDF p5 U1.34=VDDH_D为positive charge-pump base-voltage输出，接C9=100n到GND、D1；并非无源电源输入。；物理节点=U1.34；网络=/E-paper_power_supply/VDDH-D,VDDH",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；TPS65185 PDF p5 U1.34=VDDH_D为positive charge-pump base-voltage输出，接C9=100n到GND、D1；并非无源电源输入。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-34-e55e23"
+      ]
+    },
+    {
+      "id": "F016",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "VDDH"
+      ],
+      "sr_text": "U1.35 (VDDH_DIS) <- VDDH",
+      "verdict": "false_alarm",
+      "evidence": "TPS65185 PDF p5/6及p19 active discharge：VDDH由U1.34/36和D1/C11正电荷泵产生，U1.35为放电端；BAT54S三端通路与专用输出脚未被电源树识别。不能因缺OUT式脚名报无源。；物理节点=U1.35；网络=VDDH",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；TPS65185 PDF p5/6及p19 active discharge：VDDH由U1.34/36和D1/C11正电荷泵产生，U1.35为放电端；BAT54S三端通路与专用输出脚未被电源树识别。不能因缺OUT式脚名报无源。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-35-2ae435"
+      ]
+    },
+    {
+      "id": "F017",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/E-CKV"
+      ],
+      "sr_text": "/E-CKV: ['K35.78', 'U2.30']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /E-CKV: ['K35.78', 'U2.30']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.78,U2.30；网络=/E-CKV",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.E-CKV-caa33d"
+      ]
+    },
+    {
+      "id": "F018",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/E-GMODE"
+      ],
+      "sr_text": "/E-GMODE: ['K35.79', 'U2.32']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /E-GMODE: ['K35.79', 'U2.32']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.79,U2.32；网络=/E-GMODE",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.E-GMODE-75818f"
+      ]
+    },
+    {
+      "id": "F019",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/E-LE"
+      ],
+      "sr_text": "/E-LE: ['K35.81', 'U2.36']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /E-LE: ['K35.81', 'U2.36']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.81,U2.36；网络=/E-LE",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.E-LE-eb7164"
+      ]
+    },
+    {
+      "id": "F020",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/E-OE"
+      ],
+      "sr_text": "/E-OE: ['K35.80', 'U2.29']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /E-OE: ['K35.80', 'U2.29']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.80,U2.29；网络=/E-OE",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.E-OE-4ca45a"
+      ]
+    },
+    {
+      "id": "F021",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/E-SPH"
+      ],
+      "sr_text": "/E-SPH: ['K35.76', 'U2.35']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /E-SPH: ['K35.76', 'U2.35']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.76,U2.35；网络=/E-SPH",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.E-SPH-1c4159"
+      ]
+    },
+    {
+      "id": "F022",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/E-SPV"
+      ],
+      "sr_text": "/E-SPV: ['K35.77', 'U2.33']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /E-SPV: ['K35.77', 'U2.33']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.77,U2.33；网络=/E-SPV",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.E-SPV-f57903"
+      ]
+    },
+    {
+      "id": "F023",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/EPD-BUFF-EN"
+      ],
+      "sr_text": "/EPD-BUFF-EN: ['K35.82', 'U2.24', 'U2.25']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /EPD-BUFF-EN: ['K35.82', 'U2.24', 'U2.25']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.82,U2.24,U2.25；网络=/EPD-BUFF-EN",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.EPD-BUFF-EN-fd84f3"
+      ]
+    },
+    {
+      "id": "F024",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/FMC-DATA0"
+      ],
+      "sr_text": "/FMC-DATA0: ['K35.73', 'U2.47']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA0: ['K35.73', 'U2.47']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.73,U2.47；网络=/FMC-DATA0",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA0-e005a0"
+      ]
+    },
+    {
+      "id": "F025",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/FMC-DATA1"
+      ],
+      "sr_text": "/FMC-DATA1: ['K35.72', 'U2.46']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA1: ['K35.72', 'U2.46']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.72,U2.46；网络=/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA1-0ddfcf"
+      ]
+    },
+    {
+      "id": "F026",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/FMC-DATA2"
+      ],
+      "sr_text": "/FMC-DATA2: ['K35.71', 'U2.44']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA2: ['K35.71', 'U2.44']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.71,U2.44；网络=/FMC-DATA2",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA2-40cfd3"
+      ]
+    },
+    {
+      "id": "F027",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/FMC-DATA3"
+      ],
+      "sr_text": "/FMC-DATA3: ['K35.70', 'U2.43']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA3: ['K35.70', 'U2.43']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.70,U2.43；网络=/FMC-DATA3",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA3-1b15e1"
+      ]
+    },
+    {
+      "id": "F028",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/FMC-DATA4"
+      ],
+      "sr_text": "/FMC-DATA4: ['K35.69', 'U2.41']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA4: ['K35.69', 'U2.41']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.69,U2.41；网络=/FMC-DATA4",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA4-dc035a"
+      ]
+    },
+    {
+      "id": "F029",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/FMC-DATA5"
+      ],
+      "sr_text": "/FMC-DATA5: ['K35.68', 'U2.40']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA5: ['K35.68', 'U2.40']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.68,U2.40；网络=/FMC-DATA5",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA5-cf7623"
+      ]
+    },
+    {
+      "id": "F030",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/FMC-DATA6"
+      ],
+      "sr_text": "/FMC-DATA6: ['K35.67', 'U2.38']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA6: ['K35.67', 'U2.38']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.67,U2.38；网络=/FMC-DATA6",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA6-e15fe3"
+      ]
+    },
+    {
+      "id": "F031",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35",
+        "U2"
+      ],
+      "nets": [
+        "/FMC-DATA7"
+      ],
+      "sr_text": "/FMC-DATA7: ['K35.66', 'U2.37']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA7: ['K35.66', 'U2.37']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.66,U2.37；网络=/FMC-DATA7",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA7-1bef70"
+      ]
+    },
+    {
+      "id": "F032",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA8"
+      ],
+      "sr_text": "/FMC-DATA8: ['K35.65']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA8: ['K35.65']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.65；网络=/FMC-DATA8",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA8-b5b299"
+      ]
+    },
+    {
+      "id": "F033",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA9"
+      ],
+      "sr_text": "/FMC-DATA9: ['K35.64']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA9: ['K35.64']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.64；网络=/FMC-DATA9",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA9-397307"
+      ]
+    },
+    {
+      "id": "F034",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA10",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "/FMC-DATA10: ['K35.63']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA10: ['K35.63']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.63；网络=/FMC-DATA10,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA10-010e19"
+      ]
+    },
+    {
+      "id": "F035",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA11",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "/FMC-DATA11: ['K35.62']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA11: ['K35.62']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.62；网络=/FMC-DATA11,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA11-e38a75"
+      ]
+    },
+    {
+      "id": "F036",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA12",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "/FMC-DATA12: ['K35.61']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA12: ['K35.61']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.61；网络=/FMC-DATA12,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA12-ae9d08"
+      ]
+    },
+    {
+      "id": "F037",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA13",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "/FMC-DATA13: ['K35.60']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA13: ['K35.60']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.60；网络=/FMC-DATA13,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA13-9c653a"
+      ]
+    },
+    {
+      "id": "F038",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA14",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "/FMC-DATA14: ['K35.59']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA14: ['K35.59']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.59；网络=/FMC-DATA14,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA14-312645"
+      ]
+    },
+    {
+      "id": "F039",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA15",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "/FMC-DATA15: ['K35.58']",
+      "verdict": "needs_human",
+      "evidence": "实际节点 /FMC-DATA15: ['K35.58']；K35为外部STM32/存储适配模块，原生符号的INPUT不能证明模块内部输出方向。需外部模块物理脚定义与所用FMC配置，保留needs_human。；物理节点=K35.58；网络=/FMC-DATA15,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A06.FMC-DATA15-113d8c"
+      ]
+    },
+    {
+      "id": "F040",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "K19",
+        "U10",
+        "U9"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "GND: ['K19.-', 'U10.2', 'U9.1', 'U9.2', 'U9.5', 'U9.6', 'U9.7']；开漏/三态等合法结构须逐条排除",
+      "verdict": "false_alarm",
+      "evidence": "GND含U10.2=VSS、U9.7=VSS和U9.1/2/5/6未用逻辑输入接地，PDF p5可见完整返回；MC14093B p2物理pin7是VSS。通用库把脚都标INPUT，使地网误报仅输入。；物理节点=K19.-,U10.2,U9.1,U9.2,U9.5,U9.6,U9.7；网络=GND",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；GND含U10.2=VSS、U9.7=VSS和U9.1/2/5/6未用逻辑输入接地，PDF p5可见完整返回；MC14093B p2物理pin7是VSS。通用库把脚都标INPUT，使地网误报仅输入。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A06.GND-a22c1e"
+      ]
+    },
+    {
+      "id": "F041",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "U9"
+      ],
+      "nets": [
+        "Net-(Q5-C)"
+      ],
+      "sr_text": "Net-(Q5-C): ['U9.10', 'U9.12', 'U9.13']；开漏/三态等合法结构须逐条排除",
+      "verdict": "false_alarm",
+      "evidence": "MC14093B官方p2 pin10是C门输出，pin12/13是D门输入；db还连接Q5.3集电极和R29.2。正反馈锁存节点有U9.10驱动，非只有输入。；物理节点=U9.10,U9.12,U9.13；网络=Net-(Q5-C)",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；MC14093B官方p2 pin10是C门输出，pin12/13是D门输入；db还连接Q5.3集电极和R29.2。正反馈锁存节点有U9.10驱动，非只有输入。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A06.NET-6ea32f"
+      ]
+    },
+    {
+      "id": "F042",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "U9"
+      ],
+      "nets": [
+        "Net-(U9-IN1C)"
+      ],
+      "sr_text": "Net-(U9-IN1C): ['U9.8', 'U9.9']；开漏/三态等合法结构须逐条排除",
+      "verdict": "false_alarm",
+      "evidence": "db U9.8/9共享Net-(U9-IN1C)，经R26=100k接SW-OUTD（U9.11输出）；另一门输出Net-(Q5-C)通过R29=100k与C54=100n到GND形成支路；属于两门反馈按键锁存；外部逻辑驱动经电阻到达，非悬空。；物理节点=U9.8,U9.9；网络=Net-(U9-IN1C)",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；db U9.8/9共享Net-(U9-IN1C)，经R26=100k接SW-OUTD（U9.11输出）；另一门输出Net-(Q5-C)通过R29=100k与C54=100n到GND形成支路；属于两门反馈按键锁存；外部逻辑驱动经电阻到达，非悬空。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A06.NET-e0f4f3"
+      ]
+    },
+    {
+      "id": "F043",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "S2"
+      ],
+      "nets": [
+        "unconnected-(S2-Pad3)"
+      ],
+      "sr_text": "unconnected-(S2-Pad3): ['S2.3']",
+      "verdict": "false_alarm",
+      "evidence": "PDF p5 S2 SPDT未用throw 3；无源开关触点不需要内部上/下拉或有源驱动。；物理节点=S2.3；网络=unconnected-(S2-Pad3)",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；PDF p5 S2 SPDT未用throw 3；无源开关触点不需要内部上/下拉或有源驱动。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A06.UNCONNECTED-29d523"
+      ]
+    },
+    {
+      "id": "F044",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [],
+      "nets": [
+        "/ESP32_microcontroller/ESP-3V3",
+        "/ESP32_microcontroller/ESP-RST",
+        "3V3"
+      ],
+      "sr_text": "/ESP32_microcontroller/ESP-RST: R13 上拉->/ESP32_microcontroller/ESP-3V3(3.3V)",
+      "verdict": "needs_human",
+      "evidence": "U4.2 EN由R13=100k上拉ESP-3V3，Q2下拉复位；ESP32手册EN时序须与U5开通和Q1/Q2复位链结合，通用NMOS/PMOS未给准确身份，不能仅凭3.3V上拉判过压或通过。；源节点见原句；网络=/ESP32_microcontroller/ESP-3V3,/ESP32_microcontroller/ESP-RST,3V3",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "RST-A01.ESP32-MICROCONTROLLER-ES-7f1e1f"
+      ]
+    },
+    {
+      "id": "F045",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [],
+      "nets": [
+        "Net-(U5-EN)",
+        "GND"
+      ],
+      "sr_text": "Net-(U5-EN): R18 下拉->GND(0.0V)",
+      "verdict": "needs_human",
+      "evidence": "U5.4 EN经R17=10k到/ESP-SW、R18=100k到GND；TPS7A26 p3/6是高有效。默认低可关ESP电源，外部K35控制高/低及复位时序、输入最小值未给；拉阻本身不是缺陷。；源节点见原句；网络=Net-(U5-EN),GND",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "RST-A01.NET-8427a9"
+      ]
+    },
+    {
+      "id": "F046",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-Pad32)"
+      ],
+      "sr_text": "K35.32 -> unconnected-(K35-Pad32): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.32；网络=unconnected-(K35-Pad32)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-32-d6c493"
+      ]
+    },
+    {
+      "id": "F047",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PH2-Pad33)"
+      ],
+      "sr_text": "K35.33 -> unconnected-(K35-PH2-Pad33): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.33；网络=unconnected-(K35-PH2-Pad33)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-33-55b3b6"
+      ]
+    },
+    {
+      "id": "F048",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PH3-Pad34)"
+      ],
+      "sr_text": "K35.34 -> unconnected-(K35-PH3-Pad34): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.34；网络=unconnected-(K35-PH3-Pad34)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-34-e311eb"
+      ]
+    },
+    {
+      "id": "F049",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PH4-Pad35)"
+      ],
+      "sr_text": "K35.35 -> unconnected-(K35-PH4-Pad35): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.35；网络=unconnected-(K35-PH4-Pad35)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-35-320372"
+      ]
+    },
+    {
+      "id": "F050",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PH5-Pad36)"
+      ],
+      "sr_text": "K35.36 -> unconnected-(K35-PH5-Pad36): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.36；网络=unconnected-(K35-PH5-Pad36)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-36-953b09"
+      ]
+    },
+    {
+      "id": "F051",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PH10-Pad37)"
+      ],
+      "sr_text": "K35.37 -> unconnected-(K35-PH10-Pad37): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.37；网络=unconnected-(K35-PH10-Pad37)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-37-dcad1e"
+      ]
+    },
+    {
+      "id": "F052",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PH11-Pad38)"
+      ],
+      "sr_text": "K35.38 -> unconnected-(K35-PH11-Pad38): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.38；网络=unconnected-(K35-PH11-Pad38)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-38-76c654"
+      ]
+    },
+    {
+      "id": "F053",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PH12-Pad39)"
+      ],
+      "sr_text": "K35.39 -> unconnected-(K35-PH12-Pad39): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.39；网络=unconnected-(K35-PH12-Pad39)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-39-8ec6db"
+      ]
+    },
+    {
+      "id": "F054",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PI0-Pad40)"
+      ],
+      "sr_text": "K35.40 -> unconnected-(K35-PI0-Pad40): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.40；网络=unconnected-(K35-PI0-Pad40)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-40-19cbde"
+      ]
+    },
+    {
+      "id": "F055",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PI1-Pad41)"
+      ],
+      "sr_text": "K35.41 -> unconnected-(K35-PI1-Pad41): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.41；网络=unconnected-(K35-PI1-Pad41)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-41-6077d4"
+      ]
+    },
+    {
+      "id": "F056",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PI2-Pad42)"
+      ],
+      "sr_text": "K35.42 -> unconnected-(K35-PI2-Pad42): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.42；网络=unconnected-(K35-PI2-Pad42)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-42-20c9d8"
+      ]
+    },
+    {
+      "id": "F057",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PI3-Pad43)"
+      ],
+      "sr_text": "K35.43 -> unconnected-(K35-PI3-Pad43): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.43；网络=unconnected-(K35-PI3-Pad43)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-43-379eb9"
+      ]
+    },
+    {
+      "id": "F058",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PI6-Pad44)"
+      ],
+      "sr_text": "K35.44 -> unconnected-(K35-PI6-Pad44): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.44；网络=unconnected-(K35-PI6-Pad44)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-44-1898dc"
+      ]
+    },
+    {
+      "id": "F059",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PI7-Pad45)"
+      ],
+      "sr_text": "K35.45 -> unconnected-(K35-PI7-Pad45): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.45；网络=unconnected-(K35-PI7-Pad45)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-45-1fd6a4"
+      ]
+    },
+    {
+      "id": "F060",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PI11-Pad46)"
+      ],
+      "sr_text": "K35.46 -> unconnected-(K35-PI11-Pad46): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.46；网络=unconnected-(K35-PI11-Pad46)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-46-6e87ce"
+      ]
+    },
+    {
+      "id": "F061",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PI12-Pad47)"
+      ],
+      "sr_text": "K35.47 -> unconnected-(K35-PI12-Pad47): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.47；网络=unconnected-(K35-PI12-Pad47)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-47-c74b66"
+      ]
+    },
+    {
+      "id": "F062",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PI13-Pad48)"
+      ],
+      "sr_text": "K35.48 -> unconnected-(K35-PI13-Pad48): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.48；网络=unconnected-(K35-PI13-Pad48)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-48-d9fe6b"
+      ]
+    },
+    {
+      "id": "F063",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PJ0-Pad49)"
+      ],
+      "sr_text": "K35.49 -> unconnected-(K35-PJ0-Pad49): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.49；网络=unconnected-(K35-PJ0-Pad49)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-49-faa47d"
+      ]
+    },
+    {
+      "id": "F064",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "unconnected-(K35-PJ1-Pad50)"
+      ],
+      "sr_text": "K35.50 -> unconnected-(K35-PJ1-Pad50): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.50；网络=unconnected-(K35-PJ1-Pad50)",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-50-2cdc44"
+      ]
+    },
+    {
+      "id": "F065",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA15",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "K35.58 -> /FMC-DATA15: 输入脚所在网只有该节点",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.58；网络=/FMC-DATA15,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-58-4b256d"
+      ]
+    },
+    {
+      "id": "F066",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA14",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "K35.59 -> /FMC-DATA14: 输入脚所在网只有该节点",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.59；网络=/FMC-DATA14,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-59-f59033"
+      ]
+    },
+    {
+      "id": "F067",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA13",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "K35.60 -> /FMC-DATA13: 输入脚所在网只有该节点",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.60；网络=/FMC-DATA13,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-60-d0eaae"
+      ]
+    },
+    {
+      "id": "F068",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA12",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "K35.61 -> /FMC-DATA12: 输入脚所在网只有该节点",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.61；网络=/FMC-DATA12,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-61-e20b08"
+      ]
+    },
+    {
+      "id": "F069",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA11",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "K35.62 -> /FMC-DATA11: 输入脚所在网只有该节点",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.62；网络=/FMC-DATA11,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-62-7fe9ba"
+      ]
+    },
+    {
+      "id": "F070",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA10",
+        "/FMC-DATA1"
+      ],
+      "sr_text": "K35.63 -> /FMC-DATA10: 输入脚所在网只有该节点",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.63；网络=/FMC-DATA10,/FMC-DATA1",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-63-d72133"
+      ]
+    },
+    {
+      "id": "F071",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA9"
+      ],
+      "sr_text": "K35.64 -> /FMC-DATA9: 输入脚所在网只有该节点",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.64；网络=/FMC-DATA9",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-64-0fa59d"
+      ]
+    },
+    {
+      "id": "F072",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "K35"
+      ],
+      "nets": [
+        "/FMC-DATA8"
+      ],
+      "sr_text": "K35.65 -> /FMC-DATA8: 输入脚所在网只有该节点",
+      "verdict": "needs_human",
+      "evidence": "K35接口保留/备用物理脚与NC如实存在；该符号代表外部主控模块，内部上下拉、复用、未用脚处置未随源图给出。源PDF p6无足以独立判坏或撤回的说明，需模块原图/负责人确认。；物理节点=K35.65；网络=/FMC-DATA8",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.K35-65-7fd2a0"
+      ]
+    },
+    {
+      "id": "F073",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "S1"
+      ],
+      "nets": [
+        "unconnected-(S1-Pad1)"
+      ],
+      "sr_text": "S1.1 -> unconnected-(S1-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "source schematic PDF p5的S1/S2为SPDT选择开关；本项NC端是未用throw而非有源逻辑输入。对S2.3缺显式NC只属图纸卫生，不能升级为电气悬空。；物理节点=S1.1；网络=unconnected-(S1-Pad1)",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；source schematic PDF p5的S1/S2为SPDT选择开关；本项NC端是未用throw而非有源逻辑输入。对S2.3缺显式NC只属图纸卫生，不能升级为电气悬空。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.S1-1-b25f78"
+      ]
+    },
+    {
+      "id": "F074",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "S2"
+      ],
+      "nets": [
+        "unconnected-(S2-Pad3)"
+      ],
+      "sr_text": "S2.3 -> unconnected-(S2-Pad3): 输入脚所在网只有该节点",
+      "verdict": "false_alarm",
+      "evidence": "source schematic PDF p5的S1/S2为SPDT选择开关；本项NC端是未用throw而非有源逻辑输入。对S2.3缺显式NC只属图纸卫生，不能升级为电气悬空。；物理节点=S2.3；网络=unconnected-(S2-Pad3)",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；source schematic PDF p5的S1/S2为SPDT选择开关；本项NC端是未用throw而非有源逻辑输入。对S2.3缺显式NC只属图纸卫生，不能升级为电气悬空。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.S2-3-ad6e1c"
+      ]
+    },
+    {
+      "id": "F075",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "unconnected-(U2-4Y2-Pad22)"
+      ],
+      "sr_text": "U2.22 -> unconnected-(U2-4Y2-Pad22): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "TI SN74LVC16244A PDF p4 DGV pin table及p1逻辑图：22/23是4Y3/4Y4三态输出（库别名4Y2/4Y3），不是输入；未用输出可以NC，需按物理号核方向，不能用库的INPUT一概判。；物理节点=U2.22；网络=unconnected-(U2-4Y2-Pad22)",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；TI SN74LVC16244A PDF p4 DGV pin table及p1逻辑图：22/23是4Y3/4Y4三态输出（库别名4Y2/4Y3），不是输入；未用输出可以NC，需按物理号核方向，不能用库的INPUT一概判。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.U2-22-0e4120"
+      ]
+    },
+    {
+      "id": "F076",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "unconnected-(U2-4Y3-Pad23)"
+      ],
+      "sr_text": "U2.23 -> unconnected-(U2-4Y3-Pad23): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "TI SN74LVC16244A PDF p4 DGV pin table及p1逻辑图：22/23是4Y3/4Y4三态输出（库别名4Y2/4Y3），不是输入；未用输出可以NC，需按物理号核方向，不能用库的INPUT一概判。；物理节点=U2.23；网络=unconnected-(U2-4Y3-Pad23)",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；TI SN74LVC16244A PDF p4 DGV pin table及p1逻辑图：22/23是4Y3/4Y4三态输出（库别名4Y2/4Y3），不是输入；未用输出可以NC，需按物理号核方向，不能用库的INPUT一概判。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.U2-23-f8d30a"
+      ]
+    },
+    {
+      "id": "F077",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "unconnected-(U2-4A3-Pad26)"
+      ],
+      "sr_text": "U2.26 -> unconnected-(U2-4A3-Pad26): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "true_defect",
+      "evidence": "TI SN74LVC16244A SCAS699C PDF p7 §7.3 footnote(1)要求未用输入固定VCC或GND。U2.26/27（原符号4A3/4A2，官方4A4/4A3，按物理号对应）均为单节点NC，PDF p3交叉验证。OE状态不免除输入偏置要求；未证明必然现场失效。；物理节点=U2.26；网络=unconnected-(U2-4A3-Pad26)",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-CMOS-UNUSED-INPUT",
+        "mutation": "在已供电SN74LVC16244A模型中仅断开物理26或27脚的固定电平并加NoConnect，保留其他脚与电源",
+        "target_rule": "NET-A07"
+      },
+      "check_ids": [
+        "NET-A07.U2-26-e5d662"
+      ]
+    },
+    {
+      "id": "F078",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "unconnected-(U2-4A2-Pad27)"
+      ],
+      "sr_text": "U2.27 -> unconnected-(U2-4A2-Pad27): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "true_defect",
+      "evidence": "TI SN74LVC16244A SCAS699C PDF p7 §7.3 footnote(1)要求未用输入固定VCC或GND。U2.26/27（原符号4A3/4A2，官方4A4/4A3，按物理号对应）均为单节点NC，PDF p3交叉验证。OE状态不免除输入偏置要求；未证明必然现场失效。；物理节点=U2.27；网络=unconnected-(U2-4A2-Pad27)",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-CMOS-UNUSED-INPUT",
+        "mutation": "在已供电SN74LVC16244A模型中仅断开物理26或27脚的固定电平并加NoConnect，保留其他脚与电源",
+        "target_rule": "NET-A07"
+      },
+      "check_ids": [
+        "NET-A07.U2-27-d43d57"
+      ]
+    },
+    {
+      "id": "F079",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "U8"
+      ],
+      "nets": [
+        "unconnected-(U8-CT-Pad5)"
+      ],
+      "sr_text": "U8.5 -> unconnected-(U8-CT-Pad5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "TPS3840 SNVSB03E PDF p4 Table5-1明确CT不用外部延时电容时悬空；原图p5 U8.5 NC符合最短固定延时用法，不强加去耦/上拉。；物理节点=U8.5；网络=unconnected-(U8-CT-Pad5)",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/part_words.py:unused_input_permission; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "先用官方物理脚角色/被动触点/真实受控通路核对象，再判断本规则；TPS3840 SNVSB03E PDF p4 Table5-1明确CT不用外部延时电容时悬空；原图p5 U8.5 NC符合最短固定延时用法，不强加去耦/上拉。",
+        "basis": "同版网表/原理图及上述原厂页码"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.U8-5-7f5b0d"
+      ]
+    },
+    {
+      "id": "F080",
+      "sr_rule": "PWR-D02",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "U10",
+        "C43",
+        "D5",
+        "C57"
+      ],
+      "nets": [
+        "VUSB",
+        "GND"
+      ],
+      "sr_text": "U10 VDD本地旁路0.1uF小于手册最小4.7uF",
+      "verdict": "true_defect",
+      "evidence": "MCP73831 DS20001984G PDF p11 §3.1要求VDD对VSS旁路至少4.7uF。db U10.4=VUSB、U10.2=GND；VUSB-GND唯一直接电容C43=100n=0.1uF（BOM与PDF p5同版）。0.1-4.7=-4.6uF，标称已少47倍。C57=2u2在VBAT；VIN侧大电容隔D5不能作为U10本地直接旁路；外部USB源电容不替代板内旁路。证实条款偏离，未断言样机会必坏。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-CHARGER-CIN",
+        "mutation": "在MCP73831正确模型中把VDD-GND唯一4.7uF以上电容改为100nF，保留VBAT输出电容、隔离二极管和外部供电",
+        "target_rule": "PWR-D02"
+      },
+      "check_ids": [
+        "PWR-C09.DECAP-A7225411ED058A9801BA.VUSB",
+        "PWR-D02.DECAP-A7225411ED058A9801BA.VUSB"
+      ]
+    },
+    {
+      "id": "F081",
+      "sr_rule": "PWR-C04",
+      "criteria": [
+        "G03-003",
+        "G03-004"
+      ],
+      "severity": "P1",
+      "refs": [
+        "U10",
+        "C57",
+        "C56"
+      ],
+      "nets": [
+        "VBAT",
+        "GND"
+      ],
+      "sr_text": "电池断开时U10 VBAT输出C57仅2.2uF，小于4.7uF稳定性要求",
+      "verdict": "true_defect",
+      "evidence": "MCP73831 DS20001984G PDF p11 §3.2：battery disconnected时VBAT到VSS至少4.7uF以保证loop stability。db U10.3=VBAT、U10.2=GND；C57=2u2（BOM），C56=DNP，当前直接装配输出容量只有2.2uF，2.2-4.7=-2.5uF（少53.2%），标称已不满足。电池有连接时不能直接沿用此故障条件；未证明样机振荡。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-CHARGER-COUT",
+        "mutation": "在MCP73831测试模型中保持VDD旁路合规，断开外接电池，将VBAT-VSS唯一输出电容改2.2uF并把其他并联输出电容设DNP",
+        "target_rule": "PWR-C04"
+      },
+      "check_ids": [
+        "PWR-C04.GAP-CHARGER-COUT.VBAT",
+        "PWR-C09.DECAP-5EF0C5CE0418E7ABFFF2.VBAT",
+        "PWR-D02.DECAP-5EF0C5CE0418E7ABFFF2.VBAT"
+      ]
+    },
+    {
+      "id": "F082",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "K23"
+      ],
+      "nets": [],
+      "sr_text": "K23 被分类成 relay",
+      "verdict": "false_alarm",
+      "evidence": "K23 BOM HYC77-TF09-200；同版PDF p5明确SD CARD HOLDER，物理脚2 CS/3 MOSI/4 VDD/5 SCLK/6 GND/7 MISO；K位号不能覆盖TF插座功能。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify / scripts/device_kinds.py:relay prefix",
+        "what": "K23 BOM HYC77-TF09-200；同版PDF p5明确SD CARD HOLDER，物理脚2 CS/3 MOSI/4 VDD/5 SCLK/6 GND/7 MISO；K位号不能覆盖TF插座功能。 保留准确订货码与原字段，不能用分类/前缀代替额定核验。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.K23"
+      ]
+    },
+    {
+      "id": "F083",
+      "sr_rule": "DEV-D04",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "U9"
+      ],
+      "nets": [],
+      "sr_text": "U9 手册标题 mosfet 与ic冲突",
+      "verdict": "false_alarm",
+      "evidence": "MC14093B/D Rev11 PDF p1标题Quad 2-Input NAND Schmitt Trigger；P/N-channel是门电路工艺，物理输出/输入仍是NAND，不是分立MOSFET。intent.kind_reason已核，标题冲突提示仍重复。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/datasheet_kinds.py:cues / kind_conflict",
+        "what": "MC14093B/D Rev11 PDF p1标题Quad 2-Input NAND Schmitt Trigger；P/N-channel是门电路工艺，物理输出/输入仍是NAND，不是分立MOSFET。intent.kind_reason已核，标题冲突提示仍重复。 保留准确订货码与原字段，不能用分类/前缀代替额定核验。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D04.BOARD"
+      ]
+    },
+    {
+      "id": "F084",
+      "sr_rule": "REQ-Q08",
+      "criteria": [],
+      "severity": "撤回",
+      "refs": [
+        "FD1",
+        "FD2",
+        "FD3",
+        "FD4"
+      ],
+      "nets": [],
+      "sr_text": "DEBUG-BOARD候选包含FD1-FD4",
+      "verdict": "false_alarm",
+      "evidence": "FD1..4原生FIDUCIAL且没有任何电气物理脚；不应作为DEBUG功能成员或承接电气问题。TP为合法测试对象，分别保留。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:Generator.debug",
+        "what": "FD1..4原生FIDUCIAL且没有任何电气物理脚；不应作为DEBUG功能成员或承接电气问题。TP为合法测试对象，分别保留。 保留准确订货码与原字段，不能用分类/前缀代替额定核验。"
+      },
+      "seed": null,
+      "check_ids": []
+    },
+    {
+      "id": "F085",
+      "sr_rule": "DEV-C03",
+      "criteria": [
+        "G02-017"
+      ],
+      "severity": "撤回",
+      "refs": [
+        "R2",
+        "R4",
+        "R6"
+      ],
+      "nets": [],
+      "sr_text": "R2/R4/R6 RESISTOR_VALUE_UNREAD",
+      "verdict": "false_alarm",
+      "evidence": "原值分别显式前缀47k5、52k3、43k，后接Yageo RC0603FR订货码；未修改db、未猜额定。应拆分有单位阻值前缀与准确型号，仍分别核公差额定，不因连写让反馈/NTC计算失去值。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/solve_dividers.py:parse_resistor / parse_resistor_noted",
+        "what": "原值分别显式前缀47k5、52k3、43k，后接Yageo RC0603FR订货码；未修改db、未猜额定。应拆分有单位阻值前缀与准确型号，仍分别核公差额定，不因连写让反馈/NTC计算失去值。 保留准确订货码与原字段，不能用分类/前缀代替额定核验。"
+      },
+      "seed": null,
+      "check_ids": []
+    },
+    {
+      "id": "F086",
+      "sr_rule": "PRO-C04",
+      "criteria": [
+        "G05-019",
+        "G05-020"
+      ],
+      "severity": "撤回",
+      "refs": [
+        "K29"
+      ],
+      "nets": [
+        "/Header & adapter/SPI1-SCK"
+      ],
+      "sr_text": "PRO-C04.K29-3.K29-3",
+      "verdict": "false_alarm",
+      "evidence": "db K29.3=/Header & adapter/SPI1-SCK；PDF p6为SPI1信号引出。GPIO/时钟输出不是配电母线，不应触发源侧熔断器/支路保护协调；信号故障耐受归PRO-D04/SIG-C08。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/powertree.py:PowerTree._search; scripts/interfaces.py:Deriver.source / derive",
+        "what": "区分电源轨与已声明的逻辑信号；从物理供电脚或受控电源角色证明source，不把SCK/CS命名误作源"
+      },
+      "seed": null,
+      "check_ids": [
+        "PRO-C04.K29-3.K29-3"
+      ]
+    },
+    {
+      "id": "F087",
+      "sr_rule": "PRO-C04",
+      "criteria": [
+        "G05-019",
+        "G05-020"
+      ],
+      "severity": "撤回",
+      "refs": [
+        "K29"
+      ],
+      "nets": [
+        "/Header & adapter/SPI1-CS"
+      ],
+      "sr_text": "PRO-C04.K29-4.K29-4",
+      "verdict": "false_alarm",
+      "evidence": "db K29.4=/Header & adapter/SPI1-CS；PDF p6为SPI1信号引出。GPIO/时钟输出不是配电母线，不应触发源侧熔断器/支路保护协调；信号故障耐受归PRO-D04/SIG-C08。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/powertree.py:PowerTree._search; scripts/interfaces.py:Deriver.source / derive",
+        "what": "区分电源轨与已声明的逻辑信号；从物理供电脚或受控电源角色证明source，不把SCK/CS命名误作源"
+      },
+      "seed": null,
+      "check_ids": [
+        "PRO-C04.K29-4.K29-4"
+      ]
+    },
+    {
+      "id": "F088",
+      "sr_rule": "DEV-D01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "U12"
+      ],
+      "nets": [],
+      "sr_text": "U12 APDS-9960 原厂全文未绑定",
+      "verdict": "knowledge_gap",
+      "evidence": "同版BOM/网表确认APDS-9960；HardwareWiki文件名检索无本型号。官方页面已找到，但PDF实际下载403/404（AS5600两URL均404），不能将搜索预览写AVAILABLE。引脚电气窗/Ioff/上电默认参数尚待全文核验，不把整颗IC视为缺陷。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D01.U12"
+      ]
+    },
+    {
+      "id": "F089",
+      "sr_rule": "DEV-D01",
+      "criteria": [],
+      "severity": "未定",
+      "refs": [
+        "U14"
+      ],
+      "nets": [],
+      "sr_text": "U14 AS5600 原厂全文未绑定",
+      "verdict": "knowledge_gap",
+      "evidence": "同版BOM/网表确认AS5600；HardwareWiki文件名检索无本型号。官方页面已找到，但PDF实际下载403/404（AS5600两URL均404），不能将搜索预览写AVAILABLE。引脚电气窗/Ioff/上电默认参数尚待全文核验，不把整颗IC视为缺陷。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D01.U14"
+      ]
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G05-019",
+      "sr_rule": "PRO-C04",
+      "refs": [
+        "U1",
+        "K2",
+        "K35",
+        "PAD1"
+      ],
+      "nets": [
+        "VDDH",
+        "VEE",
+        "VPOS",
+        "VNEG",
+        "VIN",
+        "3V3"
+      ],
+      "why_expected": "现计划PRO-C04无K2/K35/PAD1输出支路对象；需补保护边界核对，不断言必须独立保险丝",
+      "evidence": "G05-019; db K2.34 VDDH,2 VEE,33 VPOS,1 VNEG; K35.1/54/55/86/112=3V3; PAD1.1=VIN；逐支路核U1电子纸多轨到K2、3V3到K35和VIN到PAD1的源侧保护/上游覆盖，不因接口符号不认作connector漏对象",
+      "classification": "coverage_gap_only",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:Deriver.is_connector / derive; scripts/plan_circuits.py:plan_concrete_checks",
+        "what": "从物理电源脚和准确连接器种类展开K2/K35/PAD1每条电源支路，按真实source追保护覆盖；不把每支路等同独立保险丝。",
+        "basis": "G05-019; db K2.34 VDDH,2 VEE,33 VPOS,1 VNEG; K35.1/54/55/86/112=3V3; PAD1.1=VIN"
+      },
+      "seed": {
+        "kind": "COV-EXTERNAL-POWER-BRANCH",
+        "mutation": "用本板型K前缀FPC/adapter及PAD作为外部电源终点，保留电子纸四轨/3V3/VIN连通；断言计划枚举各实际支路，不断言硬件有缺陷。",
+        "target_rule": "PRO-C04"
+      }
+    },
+    {
+      "id": "M02",
+      "criterion": "G04-010",
+      "sr_rule": "RST-T04",
+      "refs": [
+        "U15",
+        "U1",
+        "Q9",
+        "Q13",
+        "Q14"
+      ],
+      "nets": [
+        "/PWRUP",
+        "/WAKEUP",
+        "/VCOM-CTRL",
+        "/SD-EN",
+        "/AS5600-EN"
+      ],
+      "why_expected": "RST-T04仅STARTUP-U4/U5/U6及LED-SWITCH；未把I2C GPIO expander控制电源的实际引脚列成默认态对象",
+      "evidence": "G04-010; U15.4 WAKEUP,5 PWRUP,6 VCOM-CTRL,10 AS5600-EN,11 SD-EN; source PDF p8；核U15上电/RESET期间P0_3/4/5、P1_0/1的默认态和外部拉阻能否确定电子纸/SD/AS5600电源开关状态",
+      "classification": "coverage_gap_only",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:plan_concrete_checks; scripts/circuit_candidates.py:Generator.chains",
+        "what": "识别GPIO expander实际驱动的电源EN，展开POR/RESET/未供电状态；用准确PCAL6416A默认高阻/外部偏置核对，不假设运行寄存器初值。",
+        "basis": "G04-010; U15.4 WAKEUP,5 PWRUP,6 VCOM-CTRL,10 AS5600-EN,11 SD-EN; source PDF p8"
+      },
+      "seed": {
+        "kind": "COV-EXPANDER-POWER-ENABLE",
+        "mutation": "加入PCAL6416A输出到电源/受控开关EN拓扑与RESET，断言RST-T04包含U15.4/5/6/10/11；电气判定仍需偏置和系统安全态合同。",
+        "target_rule": "RST-T04"
+      }
+    },
+    {
+      "id": "M03",
+      "criterion": "G04-054",
+      "sr_rule": "ANA-C01",
+      "refs": [
+        "Q7",
+        "Q8",
+        "R35",
+        "R36",
+        "R37",
+        "K35"
+      ],
+      "nets": [
+        "VBAT",
+        "/BAT-V"
+      ],
+      "why_expected": "BAT-SENSE只有Q7被归属，ANALOG未触发任何电路规则；计划ANA-C01仅U8，漏掉电池分压量",
+      "evidence": "G04-054; source PDF p5 R36=R37=100k and Q8 switched VBAT; db /BAT-V to K35.103；核电池采样开关导通/截止下BAT-V=VBAT*R37/(R36+R37)、公差与后端ADC输入范围及绝限",
+      "classification": "coverage_gap_only",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:plan_concrete_checks; scripts/circuit_candidates.py:Generator.analog",
+        "what": "追穿Q8电池采样开关和R36/R37分压到K35.103，生成ADC范围/绝限检查；ANALOG类型不可因无本地ADC器件而空规则。",
+        "basis": "G04-054; source PDF p5 R36=R37=100k and Q8 switched VBAT; db /BAT-V to K35.103"
+      },
+      "seed": {
+        "kind": "COV-SWITCHED-BATTERY-ADC",
+        "mutation": "保留Q7/Q8受控VBAT及100k/100k分压到外部ADC接口，断言ANA-C01对象含R36/R37/K35.103；不得无ADC范围合同就注入电气故障。",
+        "target_rule": "ANA-C01"
+      }
+    },
+    {
+      "id": "M04",
+      "criterion": "G03-003",
+      "sr_rule": "PWR-C04",
+      "refs": [
+        "U10",
+        "C57"
+      ],
+      "nets": [
+        "VBAT"
+      ],
+      "why_expected": "PWR-C04未为charger VBAT脚展开；PWR-D02去耦项不能替代loop稳定性要求",
+      "evidence": "G03-003; MCP73831 DS20001984G PDF p11 section3.2; db C57 VBAT-GND; source BOM C57=2u2; C56 DNP；核MCP73831电池断开时VBAT输出稳定性所需电容至少4.7uF；C57标称2.2uF，已低于最小值",
+      "classification": "confirmed_defect",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:REGULATOR_OUT_RE / plan_concrete_checks",
+        "what": "将charger物理VBAT按原厂输出角色展开PWR-C04，明确电池断开工况，计已装C57并排除DNP C56；容量/ESR同时核，不盲目把所有VBAT都当输出。",
+        "basis": "G03-003; MCP73831 DS20001984G PDF p11 section3.2; db C57 VBAT-GND; source BOM C57=2u2; C56 DNP"
+      },
+      "seed": {
+        "kind": "D-CHARGER-COUT",
+        "mutation": "保持输入旁路合规；断开电池，把VBAT-VSS唯一已装电容改为2.2uF，C56置DNP；期待PWR-C04报告小于4.7uF。",
+        "target_rule": "PWR-C04"
+      }
+    }
+  ],
+  "summary": {
+    "true_defect": 4,
+    "false_alarm": 23,
+    "criterion_issue": 0,
+    "knowledge_gap": 2,
+    "needs_human": 60,
+    "misses": 4
+  },
+  "top50_checklist": [
+    {
+      "number": 1,
+      "criterion": "G01-018",
+      "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+      "sr_rules": [
+        "PWR-C17"
+      ],
+      "disposition": "不适用：网表无−48V/RTN或交流整流/市电输入；只有USB/电池低压路径。",
+      "planned_rule_rows": {
+        "PWR-C17": 0
+      }
+    },
+    {
+      "number": 2,
+      "criterion": "G01-019",
+      "title": "−48 V 输入的工作电压范围与耐受范围",
+      "sr_rules": [
+        "PWR-C17"
+      ],
+      "disposition": "不适用：网表无−48V/RTN或交流整流/市电输入；只有USB/电池低压路径。",
+      "planned_rule_rows": {
+        "PWR-C17": 0
+      }
+    },
+    {
+      "number": 3,
+      "criterion": "G01-020",
+      "title": "−48 V 输入 0.1 s 中断后自恢复",
+      "sr_rules": [
+        "PWR-C18"
+      ],
+      "disposition": "不适用：网表无−48V/RTN或交流整流/市电输入；只有USB/电池低压路径。",
+      "planned_rule_rows": {
+        "PWR-C18": 12
+      }
+    },
+    {
+      "number": 4,
+      "criterion": "G01-021",
+      "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+      "sr_rules": [
+        "PRO-C01"
+      ],
+      "disposition": "不适用：网表无−48V/RTN或交流整流/市电输入；只有USB/电池低压路径。",
+      "planned_rule_rows": {
+        "PRO-C01": 1
+      }
+    },
+    {
+      "number": 5,
+      "criterion": "G01-022",
+      "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+      "sr_rules": [
+        "PWR-C19"
+      ],
+      "disposition": "不适用：网表无−48V/RTN或交流整流/市电输入；只有USB/电池低压路径。",
+      "planned_rule_rows": {
+        "PWR-C19": 1
+      }
+    },
+    {
+      "number": 6,
+      "criterion": "G01-023",
+      "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+      "sr_rules": [
+        "PWR-C13"
+      ],
+      "disposition": "不适用：网表无−48V/RTN或交流整流/市电输入；只有USB/电池低压路径。",
+      "planned_rule_rows": {
+        "PWR-C13": 1
+      }
+    },
+    {
+      "number": 7,
+      "criterion": "G01-024",
+      "title": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+      "sr_rules": [
+        "PWR-C18"
+      ],
+      "disposition": "不适用：网表无−48V/RTN或交流整流/市电输入；只有USB/电池低压路径。",
+      "planned_rule_rows": {
+        "PWR-C18": 12
+      }
+    },
+    {
+      "number": 8,
+      "criterion": "G01-025",
+      "title": "交流输入较长暂降与中断后自恢复（判据 C）",
+      "sr_rules": [
+        "PWR-C18"
+      ],
+      "disposition": "不适用：网表无−48V/RTN或交流整流/市电输入；只有USB/电池低压路径。",
+      "planned_rule_rows": {
+        "PWR-C18": 12
+      }
+    },
+    {
+      "number": 9,
+      "criterion": "G01-026",
+      "title": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+      "sr_rules": [
+        "SIG-C05"
+      ],
+      "disposition": "待核：K20→F1→VUSB→D5→SW-IN→Q4→VIN→U5/U6；USB最低源压/线损、最大负载未给，不把5V标称当最坏值。",
+      "planned_rule_rows": {
+        "SIG-C05": 3
+      }
+    },
+    {
+      "number": 10,
+      "criterion": "G01-027",
+      "title": "USB 可用电流按实际协商档取",
+      "sr_rules": [
+        "SIG-C05"
+      ],
+      "disposition": "待核：R19/R20各5k1下拉为Sink线索，无主动电流档检测；实际USB默认档、配置与负载未知，已有SIG-C05，不能直接宣称取2A/3A。",
+      "planned_rule_rows": {
+        "SIG-C05": 3
+      }
+    },
+    {
+      "number": 11,
+      "criterion": "G01-029",
+      "title": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+      "sr_rules": [
+        "PWR-C13",
+        "SIG-C05"
+      ],
+      "disposition": "待核：VUSB直连C43仅0.1uF；D5/Q4之后VIN有多只bulk且向LDO/显示供电，插入时开关状态和各支路等效容量待逐态累加；PWR-C13/SIG-C05已计划，不以0.1uF代表整个入口。",
+      "planned_rule_rows": {
+        "PWR-C13": 1,
+        "SIG-C05": 3
+      }
+    },
+    {
+      "number": 12,
+      "criterion": "G01-030",
+      "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+      "sr_rules": [
+        "SIG-D07"
+      ],
+      "disposition": "待核适用性：本板CC纯电阻，U7为CH340C；SIG-D07已计划，必须区分被动Sink与控制器检测条款，未凭无DET脚报缺陷。",
+      "planned_rule_rows": {
+        "SIG-D07": 1
+      }
+    },
+    {
+      "number": 13,
+      "criterion": "G01-031",
+      "title": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+      "sr_rules": [
+        "SIG-C05"
+      ],
+      "disposition": "无USB Source功能证据：K20 CC1/CC2均Rd，未见Source开关/DRP控制；电池可能反灌属22/27另核，不因有VBAT当Source。",
+      "planned_rule_rows": {
+        "SIG-C05": 3
+      }
+    },
+    {
+      "number": 14,
+      "criterion": "G03-003",
+      "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+      "sr_rules": [
+        "PWR-C04"
+      ],
+      "disposition": "M04/已证D-003：U10.3 VBAT→C57 2.2uF→GND，C56 DNP；MCP73831 DS20001984G p11 §3.2要求电池断开时至少4.7uF。初始PWR-C04漏charger VBAT，补后FAIL。",
+      "planned_rule_rows": {
+        "PWR-C04": 12
+      }
+    },
+    {
+      "number": 15,
+      "criterion": "G03-004",
+      "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+      "sr_rules": [
+        "PWR-C04"
+      ],
+      "disposition": "M04同一覆盖机制：VBAT输出ESR/容量一起按手册核；U5/U6 OUT计划已存在。容量不足已证，未捏造ESR不合格。",
+      "planned_rule_rows": {
+        "PWR-C04": 12
+      }
+    },
+    {
+      "number": 16,
+      "criterion": "G03-016",
+      "title": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+      "sr_rules": [
+        "DRV-C02"
+      ],
+      "disposition": "已计划DRV-C02.POWER-LATCH-RUN.Q4；Q4 SW-IN→VIN给bulk充电。缺输入源阻抗、负载与起始壳温，现run声明不能放行所有启动/故障态。",
+      "planned_rule_rows": {
+        "DRV-C02": 1
+      }
+    },
+    {
+      "number": 17,
+      "criterion": "G03-018",
+      "title": "变换器 UVLO 开启点低于输入窗下限",
+      "sr_rules": [
+        "PWR-C06"
+      ],
+      "disposition": "PWR-C06已覆盖U1/U10/U5/U6。USB/电池低限、LDO压差与所接外部模块最低输入未受控，不能凭内部UVLO存在判通过。",
+      "planned_rule_rows": {
+        "PWR-C06": 12
+      }
+    },
+    {
+      "number": 18,
+      "criterion": "G03-019",
+      "title": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+      "sr_rules": [
+        "PWR-C06"
+      ],
+      "disposition": "待核：VUSB经D5、VBAT经Q3，源阻抗/峰流不明，电压跌落与UVLO滞回不能计算；PWR-C06等已有检查。",
+      "planned_rule_rows": {
+        "PWR-C06": 12
+      }
+    },
+    {
+      "number": 19,
+      "criterion": "G03-021",
+      "title": "软启动充电电流加启动期负载低于器件限流下限",
+      "sr_rules": [
+        "PWR-D03"
+      ],
+      "disposition": "待核：Q4将VIN电容接到SW-IN，U1电子纸/SD负载启动峰流未知；PWR-C01/C03/C13已有计划，不假设电池等于理想源。",
+      "planned_rule_rows": {
+        "PWR-D03": 0
+      }
+    },
+    {
+      "number": 20,
+      "criterion": "G03-025",
+      "title": "复位门限高于各负载最低工作电压，掉电先复位",
+      "sr_rules": [
+        "PWR-T04"
+      ],
+      "disposition": "U8 TPS3840PL27，额定门限2.7V；被复位外部K35主控的最低工作电压/门限公差、跌落速率未知。RST-C01已计划，CT空置合法不等于复位门限通过。",
+      "planned_rule_rows": {
+        "PWR-T04": 1
+      }
+    },
+    {
+      "number": 21,
+      "criterion": "G03-028",
+      "title": "上电时序在极值时间下满足约束",
+      "sr_rules": [
+        "PWR-C24"
+      ],
+      "disposition": "U15控制WAKEUP/PWRUP/VCOM-CTRL到U1，K2外接面板型号/电源顺序未知；STARTUP/RST及M02补查，不能借TPS65185典型顺序替面板合同。",
+      "planned_rule_rows": {
+        "PWR-C24": 4
+      }
+    },
+    {
+      "number": 22,
+      "criterion": "G03-032",
+      "title": "稳压器反向电流在手册允许内或已阻断",
+      "sr_rules": [
+        "PWR-C05"
+      ],
+      "disposition": "待核：Q3电池选择/D5 USB二极管/Q4主开关；U5/U6 IN=VIN，OUT为3V3类域，后端可外部上电。PWR-C05有对象，需反向电流规格与状态。",
+      "planned_rule_rows": {
+        "PWR-C05": 12
+      }
+    },
+    {
+      "number": 23,
+      "criterion": "G03-037",
+      "title": "电解与钽电容不承受反压",
+      "sr_rules": [
+        "DEV-C01"
+      ],
+      "disposition": "已核极性事实：C73 TAJB686K006RNJ，1接3V3正轨、2接GND；源图p7与BOM对应，无已见反装。其余MLCC/电荷泵飞跨电容不当极性电解。",
+      "planned_rule_rows": {
+        "DEV-C01": 16
+      }
+    },
+    {
+      "number": 24,
+      "criterion": "G03-038",
+      "title": "电解与钽电容的直流加纹波峰值在降额内",
+      "sr_rules": [
+        "DEV-C01"
+      ],
+      "disposition": "C73为68uF/6.3V钽，3V3标称不超额定；必须核最高瞬态/保证输入与降额，现仅静态方向事实，不据此电应力全通过。DEV-C02/PWR-C10已计划。",
+      "planned_rule_rows": {
+        "DEV-C01": 16
+      }
+    },
+    {
+      "number": 25,
+      "criterion": "G03-040",
+      "title": "串联使用的电解电容有均压措施",
+      "sr_rules": [
+        "DEV-C01"
+      ],
+      "disposition": "无串联电解/钽分压链证据；U1飞跨电容属于电荷泵，不能误套串联储能电解均压要求。",
+      "planned_rule_rows": {
+        "DEV-C01": 16
+      }
+    },
+    {
+      "number": 26,
+      "criterion": "G04-005",
+      "title": "输入信号不超接收端绝对最大值",
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "disposition": "SIG-C08已覆盖I2C及外部接口；U7 USB UART与K35、电子纸缓冲I/O需准确最高电平/绝限。不能只以同网3V3通过。",
+      "planned_rule_rows": {
+        "SIG-C08": 93
+      }
+    },
+    {
+      "number": 27,
+      "criterion": "G04-007",
+      "title": "未上电接口承受正常或故障信号不损坏",
+      "sr_rules": [
+        "PRO-D04",
+        "SIG-C08"
+      ],
+      "disposition": "AS5600通过Q13/Q14可断电而I2C-SCL/SDA经R47/R48上拉3V3；SIG-C08已有I2C覆盖，U14完整手册尚缺，保留具体Ioff/注入缺口。",
+      "planned_rule_rows": {
+        "PRO-D04": 31,
+        "SIG-C08": 93
+      }
+    },
+    {
+      "number": 28,
+      "criterion": "G04-009",
+      "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "disposition": "同27；不能将内部保护二极管或串阻当完整反灌保护；还需U2/U3/K35各域先掉电状态及轨负载。现无注入总量/残压上界。",
+      "planned_rule_rows": {
+        "SIG-C08": 93
+      }
+    },
+    {
+      "number": 29,
+      "criterion": "G04-010",
+      "title": "上电和复位期间关键输出有确定状态",
+      "sr_rules": [
+        "RST-T04"
+      ],
+      "disposition": "M02：U15.4 WAKEUP/.5 PWRUP/.6 VCOM-CTRL/.10 AS5600-EN/.11 SD-EN原计划未列默认态，补RST-T04。Q13端R54下拉、Q14栅R55上拉已有，故不是宣称全部门极悬空。",
+      "planned_rule_rows": {
+        "RST-T04": 8
+      }
+    },
+    {
+      "number": 30,
+      "criterion": "G04-017",
+      "title": "I²C 上拉电阻不超上升时间决定的上限",
+      "sr_rules": [
+        "SIG-C01"
+      ],
+      "disposition": "R47/R48=10k，各接3V3；tr=.8473×10000×Cb。假设100pF则847ns，400kHz/300ns合同若成立则Cb≤35.4pF。频率与外接K24/K25负载未给，条件算例不能报实物缺陷。SIG-C01已有。",
+      "planned_rule_rows": {
+        "SIG-C01": 3
+      }
+    },
+    {
+      "number": 31,
+      "criterion": "G04-018",
+      "title": "I²C 上拉电阻不低于灌电流决定的下限",
+      "sr_rules": [
+        "SIG-C01"
+      ],
+      "disposition": "同段无已知额外并联上拉；3.333V/10k=0.3333mA为忽略VOL的单条标称上界，电阻公差、外接上拉、最弱从机VOL/IOL保证未齐。SIG-C01已有，不泛用3mA放行。",
+      "planned_rule_rows": {
+        "SIG-C01": 3
+      }
+    },
+    {
+      "number": 32,
+      "criterion": "G04-032",
+      "title": "CAN 总线两端端接，总阻约 60 Ω",
+      "sr_rules": [
+        "SIG-C03"
+      ],
+      "disposition": "无CAN收发器/CANH/CANL，所见UART/SD/I2C/FMC不套60Ω端接。",
+      "planned_rule_rows": {
+        "SIG-C03": 0
+      }
+    },
+    {
+      "number": 33,
+      "criterion": "G04-040",
+      "title": "隔离接口两侧的供电和地不被无意短接",
+      "sr_rules": [
+        "PRO-D02"
+      ],
+      "disposition": "无跨隔离器/变压器的信号屏障；GND_A在K35为模拟参考分区，不是已声明电气隔离。已reject伪ISOLATION候选，模块内部连接仍待核。",
+      "planned_rule_rows": {
+        "PRO-D02": 0
+      }
+    },
+    {
+      "number": 34,
+      "criterion": "G04-041",
+      "title": "运放两个输入在最坏工况下不超共模范围",
+      "sr_rules": [
+        "ANA-C01"
+      ],
+      "disposition": "板内无可识别独立运放输入对；U2是数字缓冲/U9是NAND；不把EPD差分电源反馈误当运放共模。外部模块内部不在本图。",
+      "planned_rule_rows": {
+        "ANA-C01": 3
+      }
+    },
+    {
+      "number": 35,
+      "criterion": "G04-054",
+      "title": "ADC 输入不超满量程和绝对最大值",
+      "sr_rules": [
+        "ANA-C03"
+      ],
+      "disposition": "M03：Q8导通时R36=R37=100k，BAT-V=VBAT/2→K35.103；ANA-C01原来只查U8，未查此采样。后端ADC全量程与VBAT最大值未知，补项INSUFFICIENT而非损坏。",
+      "planned_rule_rows": {
+        "ANA-C03": 2
+      }
+    },
+    {
+      "number": 36,
+      "criterion": "G04-078",
+      "title": "晶振负载电容与晶振规定 CL 相符",
+      "sr_rules": [
+        "CLK-C01"
+      ],
+      "disposition": "原生板内无独立Y晶体/两端晶体负载电容；U4 ESP32模块与外部K35时钟在模块内，不能算Cload通过。",
+      "planned_rule_rows": {
+        "CLK-C01": 0
+      }
+    },
+    {
+      "number": 37,
+      "criterion": "G04-079",
+      "title": "振荡器增益裕量足够起振",
+      "sr_rules": [
+        "CLK-C01"
+      ],
+      "disposition": "同36，模块内晶体起振不从本板网表外推。",
+      "planned_rule_rows": {
+        "CLK-C01": 0
+      }
+    },
+    {
+      "number": 38,
+      "criterion": "G04-082",
+      "title": "一颗晶振只驱动一个器件",
+      "sr_rules": [
+        "CLK-C01"
+      ],
+      "disposition": "同36，未见一晶体多器件共享网络；模块间I2S-CK/MCK是两种时钟并非晶体共用。",
+      "planned_rule_rows": {
+        "CLK-C01": 0
+      }
+    },
+    {
+      "number": 39,
+      "criterion": "G05-019",
+      "title": "每条配电支路在源侧有保护",
+      "sr_rules": [
+        "PRO-C04"
+      ],
+      "disposition": "M01：K2.34/2/33/1为VDDH/VEE/VPOS/VNEG，K35多3V3脚及PAD1.1 VIN原PRO-C04未覆盖；补支路检查，是否已有源侧内保护需另算，非要求每针一个熔断器。",
+      "planned_rule_rows": {
+        "PRO-C04": 31
+      }
+    },
+    {
+      "number": 40,
+      "criterion": "G05-022",
+      "title": "过流动作点上限下通路器件与连接器不超额定",
+      "sr_rules": [
+        "DEV-C01",
+        "DEV-C04"
+      ],
+      "disposition": "F1 ASMD1206-200在K20 VBUS入口；DEV-C01/C04已有。2A保持标称不能当保护动作上限；K35/电池、连接器总电流和准确F1曲线未齐。",
+      "planned_rule_rows": {
+        "DEV-C01": 16,
+        "DEV-C04": 31
+      }
+    },
+    {
+      "number": 41,
+      "criterion": "G05-025",
+      "title": "故障电流下的动作时间短于被保护对象的耐受时间",
+      "sr_rules": [
+        "PRO-C05"
+      ],
+      "disposition": "PRO-C05.F1已计划，需F1时间-电流/环境/导线与D5/Q4耐受；无短路源能力和动作时限，不能将有PTC等于安全。",
+      "planned_rule_rows": {
+        "PRO-C05": 1
+      }
+    },
+    {
+      "number": 42,
+      "criterion": "G05-030",
+      "title": "TVS 工作电压不低于被钳节点最高工作电压",
+      "sr_rules": [
+        "PRO-E02"
+      ],
+      "disposition": "未识别独立TVS；D1/D2为BAT54S电荷泵，D5为USB肖特基，D6/D7为LED。TVS自身选型项当前无对象，不据此证明对外ESD满足；PRO-D03仍开放。",
+      "planned_rule_rows": {
+        "PRO-E02": 0
+      }
+    },
+    {
+      "number": 43,
+      "criterion": "G05-031",
+      "title": "TVS 钳位电压不超被保护器件绝对最大值",
+      "sr_rules": [
+        "PRO-E02"
+      ],
+      "disposition": "同42；无真实TVS就不把二极管VRWM当受保护引脚绝限的钳位证明。",
+      "planned_rule_rows": {
+        "PRO-E02": 0
+      }
+    },
+    {
+      "number": 44,
+      "criterion": "G05-032",
+      "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+      "sr_rules": [
+        "PRO-E02"
+      ],
+      "disposition": "同42；没有TVS脉冲曲线、源波形/温度资格，不能凭二极管功率当浪涌验证。",
+      "planned_rule_rows": {
+        "PRO-E02": 0
+      }
+    },
+    {
+      "number": 45,
+      "criterion": "G05-040",
+      "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+      "sr_rules": [
+        "DRV-C02"
+      ],
+      "disposition": "DRV-C02对Q4已计划且criterion明确故障计时/重复重试，但实际工况仅run，带短路启动电源边界未给；保持未审完，不声称故障态已覆盖通过。",
+      "planned_rule_rows": {
+        "DRV-C02": 1
+      }
+    },
+    {
+      "number": 46,
+      "criterion": "G05-041",
+      "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+      "sr_rules": [
+        "DRV-C02"
+      ],
+      "disposition": "同45；Q4起始壳温、热短路脉宽/源阻抗及真实SOT-23曲线边界未核，不用25°C单脉冲图当全温保证。",
+      "planned_rule_rows": {
+        "DRV-C02": 1
+      }
+    },
+    {
+      "number": 47,
+      "criterion": "G05-048",
+      "title": "熔断器分断能力不小于预期短路电流",
+      "sr_rules": [
+        "PRO-C01"
+      ],
+      "disposition": "PRO-C01.F1有计划；F1为PTC须按准确器件最大故障/分断能力与源短路电流比对，不借普通熔丝额定或USB典型值放行。",
+      "planned_rule_rows": {
+        "PRO-C01": 1
+      }
+    },
+    {
+      "number": 48,
+      "criterion": "G05-054",
+      "title": "每个对外电源接口的反接有明确处置",
+      "sr_rules": [
+        "PRO-D04",
+        "PWR-T05"
+      ],
+      "disposition": "PWR-T05/PRO-D04已有；USB/电池源选择Q3与主Q4应分别核，外部K35/PAD接口的误接场景未给，M01补供电边界，不断言全板防反。",
+      "planned_rule_rows": {
+        "PRO-D04": 31,
+        "PWR-T05": 1
+      }
+    },
+    {
+      "number": 49,
+      "criterion": "G05-057",
+      "title": "反接阻断之前没有单向 TVS 造成源短路",
+      "sr_rules": [
+        "PWR-C26"
+      ],
+      "disposition": "PWR-C26已有，未识别独立单向TVS；不能把D5串联肖特基或指示LED当并联单向TVS。所有实际旁路仍需核。",
+      "planned_rule_rows": {
+        "PWR-C26": 1
+      }
+    },
+    {
+      "number": 50,
+      "criterion": "G05-087",
+      "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+      "sr_rules": [
+        "PWR-T05"
+      ],
+      "disposition": "SSM3J358R物理1G/2S/3D已核：Q3 G=VUSB S=SW-IN D=VBAT；Q4 S=SW-IN D=VIN G=SW-OUTD。Q3是电源选择、Q4是开关，不能自动当背靠背反接保护；PWR-T05保留未闭。",
+      "planned_rule_rows": {
+        "PWR-T05": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "T01",
+    "category": "workflow_blocker",
+    "evidence": "ETHERNET-U30/LEVEL_SHIFT-U12候选states=[]；52决定合法推出37电路，带候选lint exit1：circuits.states 必须为非空字符串数组（两条）。",
+    "proposed_fix": {
+      "owner": "checker",
+      "where": "scripts/catalog.py:CANDIDATE_STATES; scripts/circuit_decisions.py:derive; scripts/plan_review.py:validate_intent",
+      "what": "统一候选默认状态与意图校验契约：对正常态或状态不变问题给出合法表示；不得让无额外受控工况的审查靠伪造需求才能继续。"
+    }
+  },
+  {
+    "id": "T02",
+    "category": "input_field_loss",
+    "evidence": "原生XML有Val/Tolerance：R33=200k/1%，R127=0R，R148=100R/1%；原始db只保留库Value。冷扫163颗R_…_0402阻值无法读出；导出字段经read_bom读入后仍未自动取Val。",
+    "proposed_fix": {
+      "owner": "checker",
+      "where": "scripts/parse_kicad.py:_component; scripts/read_bom.py; scripts/checkers/graph.py",
+      "what": "保留原生自定义字段及来源；优先取明确电气Val并保留Tolerance/Voltage。库名不可猜值；冲突留诊断；为0R/200k/100R增加回归。"
+    }
+  },
+  {
+    "id": "T03",
+    "category": "documentation_drift",
+    "evidence": "references/results-format.md示例schema14，运行时results_model.SCHEMA_VERSION=15；首次gate不读旧版，已正式migrate14→15再校验，判决未变。",
+    "proposed_fix": {
+      "owner": "checker",
+      "where": "scripts/results_model.py:SCHEMA_VERSION; references/results-format.md",
+      "what": "合并步同步文档与运行时schema，并测试版本示例的一致性。"
+    }
+  }
+]
