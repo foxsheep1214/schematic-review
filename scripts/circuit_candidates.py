@@ -28,7 +28,7 @@ import part_words as pw
 import requirement_clarifications
 
 SCHEMA_VERSION = 2
-RULES_VERSION = '2026-11-02.2a'   # a non-converter IC's switch without an inductive drain is no converter; R8: U406
+RULES_VERSION = '2026-11-02.6a'   # boards-merge6 F19: power branches only for input candidates; EN on a supply is no chain
 MAX_HOPS = 4
 ANALOG_HOPS = 2
 INPUT_HOPS = 6
@@ -48,6 +48,13 @@ DEBUG_PIN_RE = re.compile(r'^(SWDIO|SWCLK|SWO|TCK|TMS|TDI|TDO|NTRST|JTAG\w*)$', 
 PROTECTIVE_RE = re.compile(r'THERMISTOR|FUSE|\bGDT\b|SPARK', re.I)   # with netgraph's NTC and varistor words
 PROTECTIVE_KINDS = device_kinds.with_flag('protective')             # fuse, tvs, bridge_rectifier, ntc, varistor
 PASS_THROUGH = frozenset({pw.BRIDGE_RECTIFIER})      # multi-pin parts the input walk passes
+# An input walk that meets one of these anchors has reached a power stage: the branch it came from carries power.
+POWER_STAGE_ROLES = CONVERTER_ROLES | {'load_switch', 'pd_controller'}
+# Parts only a power entry carries: a rectifier bridge, an inrush NTC or a varistor across the line (AC inlets reach a
+# transformer or bridge before any storage capacitor the walk can see).
+POWER_PATH_KINDS = frozenset({pw.BRIDGE_RECTIFIER, pw.NTC, pw.VARISTOR})
+SUPPLY_PIN_RE = re.compile(r'^(VDD\w*|VCC\w*|VIN\d*|PVIN\d*|VBAT|VS|VBUS|IN)$', re.I)   # a startup pin on its own supply
+POWER_JACK_RE = re.compile(r'JACK[-_ ]?DC|DC[-_ ]?JACK|BARREL|POWER[-_ ]?JACK|PWR[-_ ]?JACK', re.I)   # its contacts are a supply
 WALK = 'walk'
 IDENTITY_ROLES = ('anchor', 'endpoint', 'connector', 'pd_controller')   # a part's identity in a candidate, not its body
 
@@ -499,44 +506,77 @@ class Generator:
             for part, (hops, via, role) in members.items():
                 self.add(cid, part, role, via, hops)
 
+    def power_net(self, net):
+        """A supply by the netlist (powertree supply candidates, a declared or rail-named net, hierarchical prefix aside)."""
+        leaf = str(net).rsplit('/', 1)[-1].lstrip('+')
+        return net in self.supplies or self.tree.is_rail(net) or ng.is_rail(net) or ng.is_rail(leaf)
+
     def input_walk(self, connector):
-        """From the connector through series parts (two-terminal, bridges, chokes) to the first storage capacitor."""
-        members, seen, storage = {}, {}, None
-        queue = deque((net, 0, f'{WALK} {connector}.{pin}') for pin, net in sorted(self.graph.pins_of(connector).items())
+        """From the connector through series parts (two-terminal, bridges, chokes) to the first storage capacitor.
+
+        Only the connector pins that carry power keep their branch (boards-merge6 F19): a pin whose own net is a supply,
+        or whose walk reaches a storage capacitor, a stop net, a power-stage anchor (regulator, load switch), a barrier
+        (transformer) or a part only a power entry carries (bridge, inrush NTC, varistor). Signal,
+        bus and chassis pins of the same connector (CAN termination behind a jumper, DI channels, shield Y-capacitors)
+        are not its input protection."""
+        members, seen, storage, power = {}, {}, None, set()
+        group, reached = {}, {}          # pins whose branches meet through series parts are one branch
+
+        def root(pin):
+            while group.get(pin, pin) != pin:
+                pin = group[pin]
+            return pin
+
+        def join(a, b):
+            group[root(a)] = root(b)
+
+        queue = deque((net, 0, f'{WALK} {connector}.{pin}', pin) for pin, net in sorted(self.graph.pins_of(connector).items())
                       if net not in self.graph.pseudo)
-        protective = False
         while queue:
-            net, hops, path = queue.popleft()
+            net, hops, path, origin = queue.popleft()
+            if net in reached:
+                join(origin, reached[net])
             if seen.get(net, 99) <= hops or net in self.grounds:
                 continue
-            seen[net] = hops
+            seen[net], reached[net] = hops, origin
+            if not hops and (self.power_net(net) or ng.is_rail(self.pin_name(connector + '.' + origin))
+                             or POWER_JACK_RE.search(_blob(self.graph.parts.get(connector, {})))):
+                power.add(origin)
             caps = [c for c in self.ground_caps(net) if (parse_capacitance(self.graph.parts[c].get('value')) or 0) >= STORAGE_FARAD]
             if net in self.stops:
                 caps = self.ground_caps(net)      # a converter's input rail ends the input: its capacitors are the input's, whatever their value
             if caps or net in self.stops:
                 for cap in caps:
-                    members[cap] = (hops + 1, f'{path} -> {net} -> {cap}', 'storage_capacitor')
+                    members[cap] = (hops + 1, f'{path} -> {net} -> {cap}', 'storage_capacitor', origin)
                 storage = storage or net
+                power.add(origin)
                 continue
             if hops >= INPUT_HOPS:
                 continue
             for ref in self.graph.refs_on(net):
+                if ref in self.anchors and self.anchors[ref] in POWER_STAGE_ROLES:
+                    power.add(origin)
+                if ref in self.barriers or self.graph.kind(ref) in POWER_PATH_KINDS:
+                    power.add(origin)
                 if ref == connector or ref in self.anchors or ref in self.barriers or ref in members:
                     continue
                 kind = self.graph.kind(ref)
                 blob = _blob(self.graph.parts.get(ref, {}))
                 is_protective = kind in PROTECTIVE_KINDS or bool(PROTECTIVE_RE.search(blob) or pw.NTC_RE.search(blob) or pw.VARISTOR_RE.search(blob))
                 if self.two_terminal(ref):
-                    members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind)
-                    protective |= is_protective
-                    queue.append((next(n for n in self.graph.nets_of(ref) if n != net), hops + 1, f'{path} -> {net} -> {ref}'))
+                    members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind, origin)
+                    queue.append((next(n for n in self.graph.nets_of(ref) if n != net), hops + 1, f'{path} -> {net} -> {ref}', origin))
                 elif (kind in PASS_THROUGH or kind in pw.SERIES_WINDINGS
                       or (kind == pw.INDUCTOR and len(self.graph.pins_of(ref)) == 4)):
-                    members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind)
-                    protective |= is_protective
+                    members[ref] = (hops + 1, f'{path} -> {net} -> {ref}', 'protective' if is_protective else kind, origin)
                     for other in self.graph.nets_of(ref):
                         if other != net:
-                            queue.append((other, hops + 1, f'{path} -> {net} -> {ref}'))
+                            queue.append((other, hops + 1, f'{path} -> {net} -> {ref}', origin))
+        power = {root(pin) for pin in power}
+        members = {ref: m[:3] for ref, m in members.items() if root(m[3]) in power}
+        if storage is not None and not any(m[2] == 'storage_capacitor' for m in members.values()):
+            storage = None
+        protective = any(m[2] == 'protective' for m in members.values())
         return (members, storage) if protective else None
 
     def isolation(self):
@@ -575,6 +615,9 @@ class Generator:
                 if self.matches(PROTECTION_PIN_RE, node):
                     ctype, label = 'POWER_PROTECTION', 'protection'
                 elif self.matches(STARTUP_PIN_RE, node):
+                    if net in self.supplies or any(self.matches(SUPPLY_PIN_RE, anchor + '.' + other)
+                                                   for other, n in self.graph.pins_of(anchor).items() if n == net and other != pin):
+                        continue  # boards-merge6 F19: EN tied straight to a supply (LM74910 EN on VS) is always-on, no chain
                     ctype, label = 'STARTUP', 'startup'
                 else:
                     continue

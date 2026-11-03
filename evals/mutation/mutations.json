@@ -7229,5 +7229,40 @@
   "file": "scripts/catalog.py",
   "old": "        'highsidesmartpower'),",
   "new": "        ),"
+ },
+ {
+  "id": "M1313",
+  "name": "an input candidate keeps the signal, bus and chassis branches of its connector again",
+  "file": "scripts/circuit_candidates.py",
+  "old": "members = {ref: m[:3] for ref, m in members.items() if root(m[3]) in power}",
+  "new": "members = {ref: m[:3] for ref, m in members.items()}"
+ },
+ {
+  "id": "M1314",
+  "name": "connector pins whose branches meet through series parts are judged apart",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                join(origin, reached[net])\n",
+  "new": "                pass\n"
+ },
+ {
+  "id": "M1315",
+  "name": "an EN pin tied to its own supply builds a startup chain again",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                    if net in self.supplies or any(self.matches(SUPPLY_PIN_RE, anchor + '.' + other)",
+  "new": "                    if False and any(self.matches(SUPPLY_PIN_RE, anchor + '.' + other)"
+ },
+ {
+  "id": "M1316",
+  "name": "a bridge, inrush NTC or line varistor is no power-entry evidence",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                if ref in self.barriers or self.graph.kind(ref) in POWER_PATH_KINDS:\n                    power.add(origin)\n",
+  "new": ""
+ },
+ {
+  "id": "M1317",
+  "name": "a DC barrel jack's contacts are no supply evidence",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                             or POWER_JACK_RE.search(_blob(self.graph.parts.get(connector, {})))):",
+  "new": "                             ):"
  }
 ]

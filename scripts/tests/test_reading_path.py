@@ -39,7 +39,8 @@ READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审
 # ① +10 B 2026-11-02: the vocabulary's DC_24V row names the new check PWR-C27 (rule library 1.6.0).
 # ① +266 B 2026-11-02: three physical-mechanism qualification rows (USB CC, passive crystal, RTC backup); ledger merge2B.
 # ① +9 B 2026-11-02 boards-merge6 F18: the vocabulary's load_switch title cues add highsidesmartpower (ST IPS4140HQ).
-STEP_MAX_BYTES = {'①': 171_085, '②': 158_290, '③': 224_960, '④': 124_430, '⑤': 37_800}   # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。 2026-11-02 合并步 5：④ +430（verdicts-and-release.md 文档/订货一致性按有无电气后果定级）。
+# ① +141 B 2026-11-02 boards-merge6 F19: checker-conventions says which connector pins an input candidate keeps, and EN on its own supply is no chain (② +123 B, the same document).
+STEP_MAX_BYTES = {'①': 171_226, '②': 158_413, '③': 224_960, '④': 124_430, '⑤': 37_800}   # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。 2026-11-02 合并步 5：④ +430（verdicts-and-release.md 文档/订货一致性按有无电气后果定级）。
 
 
 def section(text, title):
