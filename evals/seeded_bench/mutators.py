@@ -565,6 +565,7 @@ def board_mutations(db):
                 break
 
     yield from merge2b_mutations(db)
+    yield from merge3_mutations(db)
 
 
 def merge2b_mutations(db):
@@ -627,3 +628,55 @@ def merge2b_mutations(db):
                        contract={'source': 'lane-1 kimchi F29/M01; ROHM BD71847AMWV Rev003 p110 Table5-36',
                                  'required_effective_uF': [11, 33], 'mutant_nominal_uF': 1.22,
                                  'baseline': 'synthetic nominal 22.22uF; DC-bias/temperature qualification is not certified by this probe'})
+
+def merge3_mutations(db):
+    """Four controlled physical probes; pin tables and operating contracts are explicit."""
+    parts, pins = db.get('parts', {}), db.get('pin2net', {})
+    model = lambda ref: str(parts.get(ref, {}).get('part') or '')
+    if model('U7') == 'CDDFN10-3324P' and all('U7.' + p in pins for p in ('1','2','3','4','5','8')):
+        base, out = copy.deepcopy(db), copy.deepcopy(db)
+        base['parts']['U7'].update(part='TPD4E05U06QDQARQ1', value='TPD4E05U06QDQARQ1', prim='Device:D_TVS',
+                                  fields={'MPN':'TPD4E05U06QDQARQ1'})
+        nets=tuple(sorted({pins['U7.'+p] for p in ('1','2','4','5')}))
+        intent={'schema_version':5,'power_rails':{n:{'voltage_v':{'min':4.75,'max':5.25},
+                    'citation':'SEED controlled normal signal window; not the source board operating specification'} for n in nets}}
+        yield Mutation('D-ARRAY-TVS-LOW-VRWM', ('PRO-E02',), ('U7',), nets,
+            'four-channel pin-compatible 5.5V TVS -> 3.3V TVS under a controlled 4.75..5.25V window',out,baseline=base,intent=intent,
+            contract={'source':'TI SLVSCO7C p3 pin map, p5 VRWM=5.5V; Bourns CDDFN10-3324P p2 VRWM=3.3V',
+                      'normal_v':[4.75,5.25],'baseline_vrwm_v':5.5,'mutant_vrwm_v':3.3,
+                      'physical_pins':{'signal':['1','2','4','5'],'return':['3','8'],'nc':['6','7','9','10']},
+                      'min_channel_rows':{'ref':'U7','rule':'PRO-E02','count':4},
+                      'limit':'per-channel evidence retrieval is automatic; VRWM/clamp coordination remains an expert decision'})
+    if model('QA1') == 'MDP10N027' and str(parts['QA1'].get('value')) == 'CRST030N10N' and all('QA1.'+p in pins for p in ('1','2','3')):
+        device={'mpn':'CRST030N10N','package':'TO-220','identity_citation':'source schematic QA1 VALUE CRST030N10N; MDP10N027 is symbol identity',
+                'citation':'CRST030N10N Rev4 p1 TO220 graphic pin1 G pin2 D pin3 S','pinout_complete':True,
+                'pins':{p:{'name':n,'role':'other'} for p,n in [('1','G'),('2','D'),('3','S')]}}
+        base=copy.deepcopy(db)
+        for p in ('1','2','3'):base.get('pinname',{}).pop('QA1.'+p,None)
+        out=moved(base,'QA1.1','SEED_QA1_GATE_OPEN')
+        out['no_connect_nodes']=[n for n in out.get('no_connect_nodes',[]) if n!='QA1.1']
+        yield Mutation('D-OFFICIAL-MOS-GATE-OPEN',('DRV-A03',),('QA1',),('SEED_QA1_GATE_OPEN',),
+            'disconnect the actual QA1 gate; recover G/D/S solely from the complete cited manufacturer table',out,baseline=base,
+            intent={'schema_version':5,'devices':{'QA1':device}},contract={'source':device['citation'],'raw_names':'intentionally absent on both sides'})
+    if model('U3')=='EL817' and model('U1')=='VIPer22ADIP-E' and 'R4' in parts:
+        device={'mpn':'EL817','package':'DIP-4','identity_citation':'source U3 EL817, family-common pin map only; CTR suffix unconfirmed',
+                'citation':'Everlight DPC-0000011 Rev11 p1 Pin Configuration, EL817 family-common map only','pinout_complete':True,
+                'pins':{p:{'name':n,'role':'other'} for p,n in [('1','A'),('2','K'),('3','E'),('4','C')]}}
+        base=copy.deepcopy(db)
+        for p in ('1','2','3','4'):base.get('pinname',{}).pop('U3.'+p,None)
+        out=moved(base,'R4.1','SEED_FEEDBACK_LED_OPEN')
+        yield Mutation('D-OFFICIAL-OPTO-FEEDBACK-OPEN',('PRO-C01',),('U3','R4'),('SEED_FEEDBACK_LED_OPEN',),
+            'open the real R4 LED-feed path; official A/K/E/C must retain the controller feedback-open fault question',out,baseline=base,
+            intent={'schema_version':5,'devices':{'U3':device}},
+            contract={'source':device['citation'],'required_plan_prefix':'PRO-C01.FEEDBACK-OPEN','limit':'source board other faults remain; this pair isolates only an LED-feed opening'})
+    if model('U1')=='LM5160DNT' and 'C12' in parts and pins.get('C12.1')==pins.get('U1.9'):
+        base,out=copy.deepcopy(db),copy.deepcopy(db)
+        base['parts']['C12']['value']='1uF/16V';out['parts']['C12']['value']='1uF/4V'
+        yield Mutation('D-UNKNOWN-SUPPLY-NO-PASS',('DEV-C01',),('C12',),(pins['C12.1'],),
+            'reduce the capacitor 16V to4V while withholding VIN/VCC window from analysis; never infer 0V/PASS',out,baseline=base,
+            intent={'schema_version':5,'assemblies':[{'id':'run','citation':'SEED controlled assembly p1; original procurement population, voltages withheld',
+                    'population':{ref:not bool(part.get('nc')) for ref,part in parts.items()},'jumpers':{}}]},
+            contract={'guard_no_proposal_pass':['C12'],
+               'source':'TI LM5160 SNVSA03E p6 VCC regulator electrical characteristics; source U1.9 VCC/C12 topology',
+               'external_test_truth_only':{'VIN_v':24,'ICC_mA':20,'VCC_window_v':[6.47,8.52]},
+               'limit':'physical 4V rating is insufficient under this controlled external condition; analysis deliberately lacks that condition and must request evidence'})

@@ -249,6 +249,21 @@ class Generator:
         walk of one hop claims it first."""
         return 1 if 'capacitor' in str(snubber.get('type', '')) else 0
 
+    def switch_passives(self, cid, switch):
+        # A high-side drain on the shared DC bus is not itself a switching
+        # node. Bus capacitors are supply references, and a bus voltage divider
+        # is not an RC snubber belonging to every bridge phase.
+        drain = switch.get('drain_net')
+        if drain in self.supplies and not switch.get('switch_node_evidence'):
+            for cap in self.ground_caps(drain):
+                self.add(cid, cap, 'input_capacitor', f'input_capacitor: shared supply {drain}', 0)
+            return drain
+        for snubber in switch.get('snubbers', []):
+            for ref in str(snubber.get('ref', '')).split('+'):
+                if ref and ref not in self.barriers:
+                    self.add(cid, ref, 'snubber', f'power_switch:{switch["id"]} snubber {snubber.get("type", "")}',
+                             self.snubber_hops(snubber))
+
     def self_anchored(self, switch):
         """A switch nobody with a verified role drives anchors itself when nothing drives it, when only its own
         pins do, or when the reviewer declared its role (power_switches, cited). This only permits anchoring;
@@ -353,17 +368,16 @@ class Generator:
                                     if net == switch['source_net']], stops, 1, expand_seeds=True)
                 for pull in switch.get('gate_pulls', []):
                     self.add(cid, pull['ref'], 'gate_pull', f'power_switch:{sid} gate_pull', 0)
-                for snubber in switch.get('snubbers', []):
-                    for ref in str(snubber.get('ref', '')).split('+'):
-                        if ref and ref not in self.barriers:     # a Y capacitor on the switch node is the isolation's
-                            self.add(cid, ref, 'snubber', f'power_switch:{sid} snubber {snubber.get("type", "")}',
-                                     self.snubber_hops(snubber))
+                bus = self.switch_passives(cid, switch)
+                if bus:
+                    stops.add(bus)
+                    cand['nets'].setdefault('input', bus)
                 for evidence in switch.get('switch_node_evidence', []):
                     if str(evidence).startswith('inductive:') and not sync_rectifier:
                         ref = evidence.split(':', 1)[1]
                         self.add(cid, ref, 'inductive', f'power_switch:{sid} switch_node_evidence {evidence}', 0)
                         inductive.append(ref)
-                if switch.get('drain_net'):
+                if switch.get('drain_net') and not bus:
                     cand['nets']['switch'] = switch['drain_net']
             for load in self.loads:
                 if sync_rectifier:

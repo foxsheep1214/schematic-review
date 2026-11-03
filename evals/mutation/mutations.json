@@ -5883,7 +5883,7 @@
   "id": "M907",
   "name": "seed runtime errors pass silently",
   "file": "evals/seeded_bench/run.py",
-  "old": "return 1 if any('error' in row for row in records) or any('error' in row for row in baselines.values()) else 0",
+  "old": "return 1 if regressions or any('error' in row for row in records) or any('error' in row for row in baselines.values()) else 0",
   "new": "return 0"
  },
  {
@@ -6655,5 +6655,82 @@
   "file": "scripts/plan_circuits.py",
   "old": "if any(not netgraph_ground(net) and not re.fullmatch(r'GND\\d*|VSS|CASE|SHIELD', str(connector_graph.pinname.get(ref + '.' + pin, '')), re.I)",
   "new": "if any(True"
+ },
+ {
+  "id": "M1041",
+  "name": "merge3 controlled pairs are not exposed to board runner",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "    yield from merge3_mutations(db)",
+  "new": "    yield from ()"
+ },
+ {
+  "id": "M1042",
+  "name": "unknown proposal PASS slips through seed guard",
+  "file": "evals/seeded_bench/run.py",
+  "old": "if not rows or any(c.get('proposal', {}).get('result') is not None for c in rows):",
+  "new": "if not rows:"
+ },
+ {
+  "id": "M1043",
+  "name": "four channel contract accepts one whole package row",
+  "file": "evals/seeded_bench/run.py",
+  "old": "if len(rows) < wanted['count']:",
+  "new": "if False:"
+ },
+ {
+  "id": "M1044",
+  "name": "new site compensates lost old automatic target",
+  "file": "evals/seeded_bench/run.py",
+  "old": "elif 'error' in new or not set(old.get('auto', [])) <= set(new.get('auto', [])):",
+  "new": "elif 'error' in new:"
+ },
+ {
+  "id": "M1045",
+  "name": "feedback-open seed obligation is discarded",
+  "file": "evals/seeded_bench/run.py",
+  "old": "    if prefix:\n        observations['fault_rows']",
+  "new": "    if False:\n        observations['fault_rows']"
+ },
+ {
+  "id": "M1046",
+  "name": "MOS seed never opens the physical gate",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out=moved(base,'QA1.1','SEED_QA1_GATE_OPEN')",
+  "new": "out=copy.deepcopy(base)"
+ },
+ {
+  "id": "M1047",
+  "name": "signal transformer suppresses the verified TVS channel again",
+  "file": "scripts/protective_clamps.py",
+  "old": "and graph.is_fitted(node.partition('.')[0]) and power_winding(node.partition('.')[0]))",
+  "new": "and graph.is_fitted(node.partition('.')[0]))"
+ },
+ {
+  "id": "M1048",
+  "name": "shared DC drain collects bus divider as every snubber",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        if drain in self.supplies and not switch.get('switch_node_evidence'):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M1049",
+  "name": "recovered high-side drain crosses the shared bus during candidate walk",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                    stops.add(bus)",
+  "new": "                    pass"
+ },
+ {
+  "id": "M1050",
+  "name": "shared DC input drain becomes a switching net",
+  "file": "scripts/circuit_candidates.py",
+  "old": "if switch.get('drain_net') and not bus:",
+  "new": "if switch.get('drain_net'):"
+ },
+ {
+  "id": "M1051",
+  "name": "unknown-voltage seed hides behind unverified assembly",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "'population':{ref:not bool(part.get('nc')) for ref,part in parts.items()},'jumpers':{}}]}",
+  "new": "'population':{},'jumpers':{}}]}"
  }
 ]

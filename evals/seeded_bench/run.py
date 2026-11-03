@@ -80,6 +80,45 @@ def located(text, tokens):
     return any(re.search(r'(?<![\w.])' + re.escape(t) + r'(?![\w])', text) for t in tokens)
 
 
+
+def contract_guards(contract, checks):
+    """Explicit probe obligations, separate from new automatic findings."""
+    observations, errors = {}, []
+    for ref in contract.get('guard_no_proposal_pass', []):
+        rows = [c for c in checks if c['rule']=='DEV-C01' and c.get('object', {}).get('ref')==ref]
+        observations[ref] = [c.get('proposal') for c in rows]
+        if not rows or any(c.get('proposal', {}).get('result') is not None for c in rows):
+            errors.append(ref + ': unknown supply must have a located unknown proposal')
+        if rows and not any('power_rails.' in str(c.get('proposal', {}).get('bases', [])) + (c.get('proposal', {}).get('note') or '') for c in rows):
+            errors.append(ref + ': unknown supply dependency is missing')
+    wanted = contract.get('min_channel_rows')
+    if wanted:
+        rows = [c for c in checks if c['rule']==wanted['rule'] and c.get('object', {}).get('ref')==wanted['ref']]
+        observations['channel_objects'] = [c['object'] for c in rows]
+        if len(rows) < wanted['count']:
+            errors.append('array lost individual channel rows')
+    prefix = contract.get('required_plan_prefix')
+    if prefix:
+        observations['fault_rows'] = [c['id'] for c in checks if c['id'].startswith(prefix)]
+        if not observations['fault_rows']:
+            errors.append('official opto map lost feedback-open fault row')
+    return observations, errors
+
+
+def compare_sites(records, before):
+    """Reject losing any previous target at its physical site, even if another site compensates."""
+    key = lambda r: (r['board'], r['defect'], r['site'])
+    current = {key(r): r for r in records}
+    errors = []
+    for old in before.get('records', []):
+        new = current.get(key(old))
+        if new is None:
+            errors.append('missing old site: ' + repr(key(old)))
+        elif 'error' in new or not set(old.get('auto', [])) <= set(new.get('auto', [])):
+            errors.append('old automatic target lost: ' + repr(key(old)))
+    return errors
+
+
 def evaluate(sut, boards):
     records, baselines = [], {}
     with tempfile.TemporaryDirectory(prefix='seeded-bench-') as tmp:
@@ -120,6 +159,11 @@ def evaluate(sut, boards):
                                          and located(json.dumps(c.get('object', {}), ensure_ascii=False), tokens)})
                 rec['planned_targets'] = sorted({c['rule'] for c in checks if c['rule'] in m.targets
                                                  and located(json.dumps(c.get('object', {}), ensure_ascii=False), tokens)})
+                observations, errors = contract_guards(m.contract, checks)
+                if observations:
+                    rec['contract_guards'] = observations
+                if errors:
+                    rec['error'] = '; '.join(errors)
                 records.append(rec)
     return records, baselines
 
@@ -183,7 +227,7 @@ def main():
                   else json.loads((args.cache / 'manifest.json').read_text(encoding='utf-8')))
         if args.boards_cache:
             manifest = {'boards': []}
-            for name in ('boards-merge1.json', 'boards-merge2b.json'):
+            for name in ('boards-merge1.json', 'boards-merge2b.json', 'boards-merge3.json'):
                 manifest['boards'].extend(json.loads((HERE / name).read_text(encoding='utf-8'))['boards'])
             from parse_kicad import build
             from parse_netlist import integrity_problems
@@ -196,10 +240,12 @@ def main():
                 boards.append({'id': item['id'], 'db': str(target), 'board_seeds_only': True})
         records, baselines = evaluate(args.sut.resolve(), boards)
     summary = summarize(records)
-    compare = json.loads(args.compare.read_text(encoding='utf-8'))['summary'] if args.compare else None
+    before = json.loads(args.compare.read_text(encoding='utf-8')) if args.compare else None
+    compare = before['summary'] if before else None
+    regressions = compare_sites(records, before) if before else []
     args.out.mkdir(parents=True, exist_ok=True)
     result = {'sut': str(args.sut), 'seconds': round(time.time() - start, 1), 'boards': boards,
-              'baselines': baselines, 'summary': summary, 'records': records}
+              'baselines': baselines, 'summary': summary, 'records': records, 'site_regressions': regressions}
     (args.out / 'results.json').write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding='utf-8')
     text = report(summary, baselines, compare)
     (args.out / 'report.md').write_text(text, encoding='utf-8')
@@ -208,7 +254,9 @@ def main():
         worse = below_baseline(summary, json.loads(args.gate.read_text(encoding='utf-8')))
         print('\n'.join(worse) or 'gate: no defect type below baseline')
         return 1 if worse else 0
-    return 1 if any('error' in row for row in records) or any('error' in row for row in baselines.values()) else 0
+    if regressions:
+        print('\n'.join(regressions))
+    return 1 if regressions or any('error' in row for row in records) or any('error' in row for row in baselines.values()) else 0
 
 
 if __name__ == '__main__':

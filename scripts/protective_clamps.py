@@ -185,7 +185,17 @@ def switch_node(graph, net, intent=None):
     on a net that is no rail by name or declaration (a discrete switch's drain carries no such pin name; the winding's
     other end on the input rail is DC, so a clamp there protects the rail)."""
     winding = not is_rail(net, intent)
+
+    def power_winding(ref):
+        # Ethernet/signal magnetics are not power-switch evidence. Require an
+        # actual switching pin or transistor switch terminal on this magnetic.
+        return any(pw.name_matches(SWITCH_NODE_PIN_RE, graph.pinname.get(n), n.partition('.')[2])
+                   or (graph.kind(n.partition('.')[0]) == pw.MOSFET and graph.role(n) == 'drain')
+                   or (graph.kind(n.partition('.')[0]) == pw.BJT and graph.role(n) == 'collector')
+                   for other in graph.nets_of(ref) if not ng.is_ground(other) and not is_rail(other, intent)
+                   for n in graph.nodes_on(other) if graph.is_fitted(n.partition('.')[0]))
+
     return any(pw.name_matches(SWITCH_NODE_PIN_RE, graph.pinname.get(node), node.partition('.')[2])
                or (winding and graph.kind(node.partition('.')[0]) in pw.WINDING_PAIRS
-                   and graph.is_fitted(node.partition('.')[0]))
+                   and graph.is_fitted(node.partition('.')[0]) and power_winding(node.partition('.')[0]))
                for node in graph.nodes_on(net))

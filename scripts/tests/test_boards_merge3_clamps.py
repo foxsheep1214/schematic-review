@@ -73,3 +73,12 @@ def test_unknown_array_pinout_keeps_port_review_without_inventing_trip_threshold
     assert any(r['rule']=='PRO-D03' for r in plan['checks'])
     assert any(r['rule']=='DEV-D02' and r['object'].get('ref')=='D1' for r in plan['checks'])
     assert not [r for r in plan['checks'] if r['rule']=='PRO-C02' and r['object'].get('ref')=='D1']
+
+
+def test_signal_transformer_does_not_suppress_a_verified_port_tvs_channel():
+    db=board('GBLC03C',['GND','ETH_LINE']);db['device_kinds']={'D1':{'kind':'tvs','citation':'GBLC03 manufacturer p1'}}
+    add(db,'T1','TRANSFORMER',[('1','AA','ETH_LINE'),('2','AB','ETH_OTHER'),('3','BA','PORT_A'),('4','BB','PORT_B')])
+    assert len(pc.channels('D1',db['parts']['D1'],NetGraph(db)))==1
+    # A real switch on the winding restores the energy-clamp window.
+    add(db,'Q1','NMOS',[('1','G','GATE'),('2','D','ETH_LINE'),('3','S','GND')])
+    assert not pc.channels('D1',db['parts']['D1'],NetGraph(db))
