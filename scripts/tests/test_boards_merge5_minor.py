@@ -69,3 +69,15 @@ def test_plan_asks_no_strap_row_for_a_bootstrap_boot_pin():
     db['ref2page'] = {ref: 1 for ref in db['parts']}
     ids = [c['id'] for c in build_review_plan(db)['checks'] if c['rule'] == 'RST-E02']
     assert not [i for i in ids if 'U7' in i]
+
+
+# 4d: PoE jack centre taps V1+/V1- are a polarity-agnostic power input, not a differential data pair
+def test_poe_centre_taps_are_not_a_differential_pair():
+    from checkers.diff_levels import _Scan
+    nets = {'/VC1P': ['J2.7', 'U4.15'], '/VC1N': ['J2.8', 'U4.2'], '/ETH_TXP': ['J2.1', 'U1.3'], '/ETH_TXN': ['J2.2', 'U1.4']}
+    db = {'parts': {'J2': {'value': 'RJ45'}, 'U4': {'value': 'LT4321'}, 'U1': {'value': 'LAN9500A'}}, 'nets': nets,
+          'pin2net': {n: k for k, v in nets.items() for n in v},
+          'pinname': {'J2.7': 'V1+', 'J2.8': 'V1-', 'J2.1': 'TD+', 'J2.2': 'TD-', 'U4.15': 'IN12', 'U4.2': 'IN36',
+                      'U1.3': 'TXP', 'U1.4': 'TXN'}}
+    scan = _Scan(db, {'fitted': list(db['parts'])}, {}, set())
+    assert [p[1] for p in scan._pairs()] == ['/ETH_TXP']

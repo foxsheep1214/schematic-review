@@ -455,7 +455,7 @@
 
 | 输入 | SHA256 |
 |---|---|
-| seeded results.json | `6360dea85657c6c5a939eef1959ef75f3df3899a3aeacc83087d71d79648a0da` |
+| seeded results.json | `ef348a48b3e58b2de7b00d928ef144c122596b92f10dd80b1ef6a864c329489c` |
 | typical results.json | `075a5d9177878c7ca4858671f1dc9de9d20a71926b1f17df64931340d33ed066` |
 | KiCad replay results.json | `d2f1607616282c6b2e1e53e08023f415a4324a0e745899b1b845ed07abe25354` |
 | known_defects.json | `35c824bfdcb2f967bba1ee843d94969c53c153ad1ad2434cdf345405e6c90452` |

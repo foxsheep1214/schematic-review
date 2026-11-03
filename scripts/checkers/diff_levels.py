@@ -68,6 +68,9 @@ class _Scan:
                        self.graph.pins_of(r).get('P$9') == net and self.graph.pins_of(r).get('P$10') == partner
                        for r in self.graph.refs_on(net)):
                     break  # HanRun HY931147C Rev.A/1 p1: rectified PoE power; RD/TD pairs remain data
+                if any(set(self.graph.named_pins(r, re.compile(r'^V%s[+-]$' % n)).values()) == {net, partner}
+                       for r in self.graph.refs_on(net) for n in '123456789'):
+                    break  # PoE jack centre taps V1+/V1-: either polarity, fed to a bridge (poepico LT4321, 4321f p1), power not data
                 # 同一器件同时出现在两条腿上才算一对；交流耦合的两侧各自成对。
                 if not set(self._devices(net)) & set(self._devices(partner)):
                     continue

@@ -7096,5 +7096,12 @@
   "file": "scripts/plan_circuits.py",
   "old": "if not any(n != node and n.split('.')[0] == ref for f in far for n in nets.get(f, [])):",
   "new": "if not any(n != node for f in far for n in nets.get(f, [])):"
+ },
+ {
+  "id": "M1219",
+  "name": "PoE centre taps are a differential pair again",
+  "file": "scripts/checkers/diff_levels.py",
+  "old": "for r in self.graph.refs_on(net) for n in '123456789'):",
+  "new": "for r in self.graph.refs_on(net) for n in ''):"
  }
 ]
