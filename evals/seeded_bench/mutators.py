@@ -568,6 +568,7 @@ def board_mutations(db):
     yield from merge3_mutations(db)
     yield from merge4_mutations(db)
     yield from merge5_mutations(db)
+    yield from merge6_mutations(db)
 
 
 def merge2b_mutations(db):
@@ -790,3 +791,23 @@ def merge5_mutations(db):
                        out, baseline=copy.deepcopy(db),
                        contract={'source': 'capacitive-soil-sensor M01; SE5218 has no SS pin, current limit unknown'})
 
+
+
+def merge6_mutations(db):
+    """boards-merge6: the ASG industrial I/O calibration board (internal) around misses M03 (crystal) and F21 (MCU boot
+    strap). Both are defects on a corrected original: the unmutated board is the paired baseline."""
+    parts, pins = db.get('parts', {}), db.get('pin2net', {})
+    model = lambda ref: str(parts.get(ref, {}).get('part') or parts.get(ref, {}).get('value') or '')
+    if (model('U301') == 'STM32F103C8T6' and pins.get('Y301.1') == '/04_MCU/OSC_IN'
+            and pins.get('C308.1') == '/04_MCU/OSC_IN' and pins.get('C309.1') == '/04_MCU/OSC_OUT'):
+        for mutation in crystal_load(db):
+            if mutation.refs[0] == 'Y301':
+                mutation.baseline = copy.deepcopy(db)
+                mutation.contract = {'capacitors': ['C308', 'C309'],
+                                     'cl_pf': 12, 'source': 'calibration industrial-io M03; Y301 value 8MHz/12pF; ST AN2867 §3.3 CL = C1·C2/(C1+C2) + Cs'}
+                yield mutation
+    if model('U301') == 'STM32F103C8T6' and pins.get('R301.2') == '/04_MCU/BOOT0' and pins.get('U301.44') == '/04_MCU/BOOT0':
+        yield Mutation('D-BOOT0-FLOAT', ('RST-E02', 'NET-A01'), ('U301', 'R301'), ('/04_MCU/BOOT0',),
+                       'remove the BOOT0 pull-down R301: the boot mode sampled at reset is undefined',
+                       removed(db, 'R301'), baseline=copy.deepcopy(db),
+                       contract={'source': 'calibration industrial-io F21; ST DS5319 §2.3.8 boot modes (BOOT0 selects at reset)'})

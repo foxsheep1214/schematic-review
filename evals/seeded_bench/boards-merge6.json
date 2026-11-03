@@ -1,0 +1,14 @@
+{
+ "note": "boards-merge6: the ASG-drawn industrial I/O calibration board (RS-485/CAN/8 DI/4 DO, 24 V input). Internal design record, read-only; its exported netlist is copied into the board cache by hand. Two sites around misses M03 (crystal load) and F21 (MCU boot strap); paired baselines are the unmutated board.",
+ "boards": [
+  {
+   "id": "calibration--industrial-io-rs485-can",
+   "source": {
+    "repo": "ASG calibration (local, ~/Documents/ASG-calibration/industrial-io-rs485-can)",
+    "commit": "n/a",
+    "schematic": "原理图/IIO_R1.kicad_sch (netlist.xml exported 2026-11-03 00:09)",
+    "license": "internal"
+   }
+  }
+ ]
+}
