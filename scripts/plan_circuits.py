@@ -95,10 +95,15 @@ OWNED_PART_KINDS = {'DEV-C01': lambda kind: kind not in (CONNECTOR, TESTPOINT),
 
 def _database_blobs(db):
     blobs = []
-    for net in db.get('nets', {}):
-        blobs.append(f'NET:{net}')
+    nets, pin2net = db.get('nets', {}), db.get('pin2net', {})
+    alone = {net for net, nodes in nets.items()   # KiCad's own name for a lone unwired pin builds no function (TPA3116 SCLK0)
+             if len(nodes) < 2 and re.match(r'(?:.*/)?unconnected-\(', net, re.I)}
+    for net in nets:
+        if net not in alone:
+            blobs.append(f'NET:{net}')
     for node, pin in db.get('pinname', {}).items():
-        blobs.append(f'PIN:{node}:{pin}')
+        if pin2net.get(node) not in alone:
+            blobs.append(f'PIN:{node}:{pin}')
     for ref, part in db.get('parts', {}).items():
         if pw.mechanical_part(part):
             continue

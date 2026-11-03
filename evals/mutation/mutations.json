@@ -7117,5 +7117,19 @@
   "file": "scripts/i2c_topology.py",
   "old": "and net and not self.rail(net) and any(",
   "new": "and net and any("
+ },
+ {
+  "id": "M1222",
+  "name": "unwired KiCad pins raise function circuits again",
+  "file": "scripts/plan_circuits.py",
+  "old": "if len(nodes) < 2 and re.match(r'(?:.*/)?unconnected-\\(', net, re.I)}",
+  "new": "if False}"
+ },
+ {
+  "id": "M1223",
+  "name": "named lone nets stop raising function circuits",
+  "file": "scripts/plan_circuits.py",
+  "old": "if len(nodes) < 2 and re.match(r'(?:.*/)?unconnected-\\(', net, re.I)}",
+  "new": "if len(nodes) < 2}"
  }
 ]

@@ -96,3 +96,16 @@ def test_spi_wired_sensor_aliases_build_no_i2c_bus():
     from i2c_topology import Inventory
     assert [b for b in Inventory(_adxl('ACS'), {}).seeds()[0] if b['origin'] == 'name-hint'] == []
     assert [b for b in Inventory(_adxl('+3V3'), {}).seeds()[0] if b['origin'] == 'name-hint']   # CS tied high: I2C
+
+
+# 4f: a KiCad "unconnected-(...)" lone pin (unused I2S SCLK0 of TPA3116) raises no SPI/CLOCK function; a named lone net still does
+def test_unwired_pin_raises_no_function_but_named_lone_net_does():
+    from plan_circuits import _feature_hits
+    import catalog
+    pattern = catalog.CIRCUIT_TYPE_BY_NAME['SPI'].pattern
+    lone = {'nets': {'unconnected-(IC3-SCLK0-Pad3)': ['IC3.3']}, 'pin2net': {'IC3.3': 'unconnected-(IC3-SCLK0-Pad3)'},
+            'pinname': {'IC3.3': 'SCLK0'}, 'parts': {'IC3': {'value': 'TPA3116D2'}}}
+    assert _feature_hits(lone, pattern) == []
+    named = {'nets': {'SPI_SCLK': ['IC3.3']}, 'pin2net': {'IC3.3': 'SPI_SCLK'}, 'pinname': {'IC3.3': 'SCLK0'},
+             'parts': {'IC3': {'value': 'TPA3116D2'}}}
+    assert _feature_hits(named, pattern)
