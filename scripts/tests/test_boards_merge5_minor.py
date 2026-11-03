@@ -25,3 +25,19 @@ def test_allowed_open_needs_the_exact_model_pin_and_an_open_net():
     db = one_pin('U2', 'TMC2209-LA', '17', 'VREF', net='VREF')
     db['nets']['VREF'].append('R1.1')
     assert pw.unused_input_permission(db, 'U2.17') is None
+
+
+# 4b: a cell or cell holder is a source (CeraCharge C25, CR1220 holder K2 with pins 1+/2-)
+def test_cells_and_holders_under_other_prefixes_are_batteries():
+    assert pw.classify('C25', {'value': '100uAH-1V8-4.4x3mm_LIon_batt', 'prim': 'TFT_capacitors:100uAH-1V8-4.4x3mm_LIon_batt'}, 2)[0] == pw.BATTERY
+    assert pw.classify('K2', {'value': 'CR1220_HOLDER', 'part': 'CR1220_HOLDER'}, 2, [(None, '1+'), (None, '2-')])[0] == pw.BATTERY
+
+
+def test_cell_words_do_not_capture_connectors_ics_or_plain_capacitors():
+    assert pw.classify('J1', {'value': 'BATT', 'prim': 'Connector:Conn_01x02'}, 2)[0] == pw.CONNECTOR
+    assert pw.classify('J1', {'value': 'BATT'}, 2)[0] == pw.CONNECTOR          # a battery connector is not the cell
+    assert pw.classify('U1', {'value': 'BQ24075 Li-Ion charger'}, 16)[0] == pw.IC
+    assert pw.classify('C1', {'value': '100uF', 'prim': 'Device:C'}, 2)[0] == pw.CAPACITOR
+    assert pw.classify('R35', {'value': '2k', 'part': 'CR0402-FX-2001GLF'}, 2)[0] == pw.RESISTOR   # Bourns CR chip resistor
+    assert pw.classify('R5', {'value': '100k BATT sense'}, 2)[0] == pw.RESISTOR                    # a resistor named for its job
+    assert pw.classify('X1', {'value': '2k', 'part': 'CR0603-FX-2001ELF'}, 2)[0] != pw.BATTERY       # case size, not a coin cell

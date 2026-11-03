@@ -7054,5 +7054,33 @@
   "file": "scripts/part_words.py",
   "old": "and pin == '17' and 'VREF' in aliases",
   "new": "and pin == '71' and 'VREF' in aliases"
+ },
+ {
+  "id": "M1215",
+  "name": "cell keywords no longer make a battery",
+  "file": "scripts/part_words.py",
+  "old": "        return BATTERY, 'part-keyword'\n    controller_pins",
+  "new": "        pass\n    controller_pins"
+ },
+ {
+  "id": "M1216",
+  "name": "cell keywords capture connectors",
+  "file": "scripts/part_words.py",
+  "old": "(?:U|M|IC|J|P|CN|TP|BT|B|R)\\d",
+  "new": "(?:U|M|IC|TP|BT|B|R)\\d"
+ },
+ {
+  "id": "M1225",
+  "name": "chip-resistor case codes read as coin cells",
+  "file": "scripts/part_words.py",
+  "old": "CR(?:1216|1220|1225|1616|1620|1632|2016|2025|2032|2330|2430|2450|2477)",
+  "new": "CR\\d{4}"
+ },
+ {
+  "id": "M1226",
+  "name": "an R refdes can be classified as a battery",
+  "file": "scripts/part_words.py",
+  "old": "(?:U|M|IC|J|P|CN|TP|BT|B|R)\\d",
+  "new": "(?:U|M|IC|J|P|CN|TP|BT|B)\\d"
  }
 ]
