@@ -1006,7 +1006,7 @@ CIRCUIT_TYPES = (
             ('PWR-C18',),
             ('requirements', 'datasheets')),
     CircuitType('INDUSTRIAL_DI', '工业 24 V 数字输入', 'SIG',
-            r'(^|[:_-])(DIN?\d+|PLC_IN\d*)([:_-]|$)',
+            r'(^|[:_/-])(DIN?\d+|PLC_IN\d*)([:_-]|$)',   # '/': hierarchical /07_DI/DI1 (boards-merge6 M02)
             ('SIG-C10',),
             ('requirements', 'datasheets')),
     CircuitType('POE_PD', 'PoE 受电端', 'PWR',

@@ -361,3 +361,15 @@ def test_crystal_through_a_series_resistor_and_not_on_two_oscillators():
     db = _io_board()
     db['pinname']['U301.6'] = 'PD1'                                   # one end on a plain GPIO
     assert 'CLOCK-Y301' not in _io_candidates(db)
+
+
+# M02: a hierarchical path separator is a word boundary for the industrial DI name hint (/07_DI/DI1, /INPUT/DI0)
+def test_industrial_di_name_hint_reads_hierarchical_nets():
+    import catalog
+    from plan_circuits import _feature_hits
+    pattern = catalog.CIRCUIT_TYPE_BY_NAME['INDUSTRIAL_DI'].pattern
+    db = {'nets': {'/07_DI/DI1': ['U601.3', 'R611.1'], '/07_DI/CLK_F': ['U601.25', 'R1.1']}, 'pinname': {}, 'pin2net': {},
+          'parts': {}}
+    assert _feature_hits(db, pattern) == ['NET:/07_DI/DI1']
+    db['nets'] = {'/07_DI/CE_F': ['U601.24', 'R2.1'], '/SDCARD/DI': ['U5.2', 'J5.2']}
+    assert _feature_hits(db, pattern) == []

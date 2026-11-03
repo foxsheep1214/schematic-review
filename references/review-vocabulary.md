@@ -35,7 +35,7 @@
 | DC_48V | −48 V 直流输入 | PWR | PWR-C17、PWR-C18、PWR-C13、PRO-C01 | requirements、datasheets | `(^\|[:_-])-?48V(_?RTN\|_?IN)?([:_-]\|$)\|VBAT_?48` |
 | DC_24V | 24 V 工业直流输入 | PWR | PWR-C27、PWR-C18、PWR-C13、PRO-C01、PWR-T05 | requirements、datasheets | `(^\|[:_-])\+?24V(_?RTN\|_?IN)?([:_-]\|$)\|VIN_?24` |
 | AC_MAINS | 交流市电输入 | PWR | PWR-C18 | requirements、datasheets | `(^\|[:_-])(AC_?[LN]\|VAC\|MAINS)([:_-]\|$)` |
-| INDUSTRIAL_DI | 工业 24 V 数字输入 | SIG | SIG-C10 | requirements、datasheets | `(^\|[:_-])(DIN?\d+\|PLC_IN\d*)([:_-]\|$)` |
+| INDUSTRIAL_DI | 工业 24 V 数字输入 | SIG | SIG-C10 | requirements、datasheets | `(^\|[:_/-])(DIN?\d+\|PLC_IN\d*)([:_-]\|$)` |
 | POE_PD | PoE 受电端 | PWR | SIG-C11、SIG-C12、PWR-C13、PWR-C23、PRO-C03 | requirements、datasheets | `POE\|(^\|[:_-])VPORT([:_-]\|$)` |
 | VEHICLE_28V | 军车 28 V 输入 | PWR | PWR-C21、PRO-C01、PWR-T05 | requirements、datasheets | `(^\|[:_-])(28V\|VEH_?28)([:_-]\|$)` |
 | SHIP_AC | 舰船交流输入 | PWR | PWR-C22、PRO-C01 | requirements、datasheets | `(^\|[:_-])SHIP_?AC([:_-]\|$)` |

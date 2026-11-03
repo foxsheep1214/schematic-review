@@ -7369,5 +7369,12 @@
   "file": "scripts/circuit_candidates.py",
   "old": "            common = sorted(ends[0] & ends[1])",
   "new": "            common = sorted(ends[0] | ends[1])"
+ },
+ {
+  "id": "M1333",
+  "name": "a hierarchical /07_DI/DI1 net raises no industrial DI name hint",
+  "file": "scripts/catalog.py",
+  "old": "r'(^|[:_/-])(DIN?\\d+|PLC_IN\\d*)([:_-]|$)',",
+  "new": "r'(^|[:_-])(DIN?\\d+|PLC_IN\\d*)([:_-]|$)',"
  }
 ]
