@@ -1,0 +1,892 @@
+{
+ "true_defects": [
+  {
+   "index": 72,
+   "board": "hasanberkdasar--bms-can-bus",
+   "lane": "lane-2",
+   "id": "F-VC16",
+   "sr_rule": "SIG-T04",
+   "criteria": [],
+   "severity": "P2",
+   "refs": [
+    "C6",
+    "J1",
+    "Q6",
+    "R11",
+    "U1"
+   ],
+   "nets": [
+    "Net-(J1-Pin_1)",
+    "Net-(J3-Pin_1)",
+    "Net-(Q3-G)",
+    "Net-(Q4-G)",
+    "Net-(Q5-G)",
+    "Net-(U1-SRN)",
+    "Net-(U1-SRP)",
+    "Net-(U1-TS1)",
+    "Net-(U1-TS2/WAKE)"
+   ],
+   "sr_text": "VC16 与 VC15 短接，未按厂家要求接到实际电芯",
+   "evidence": "U1.48 VC16 与 U1.1 VC15、VC4..VC14 全在 BAT+，其差分为0；前四个相邻通道 VC1..VC4 接了电芯阶梯。厂家指定 VC1-VC0、VC2-VC1、VC16-VC15 应接实际电芯，允许短接的是未用中间通道，不能把 VC16 当未用通道。；/Users/skyfend/.cache/sr-boards/hasanberkdasar--bms-can-bus/db.json U1.48 VC16 与 U1.1 VC15、VC4..VC14 全在 BAT+，其差分为0；前四个相邻通道 VC1..VC4 接了电芯阶梯。厂家指定 VC1-VC0、VC2-VC1、VC16-VC15 应接实际电芯，允许短接的是未用中间通道，不能把 VC16 当未用通道。; /Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/08_电源管理/电池管理/TI - BQ76952.pdf p75 Table16-3 VC0–VC16; pp35-36 §10.1",
+   "proposed_fix": null
+  },
+  {
+   "index": 109,
+   "board": "gorkemguven--12v-1a-isolated-flyback-smps",
+   "lane": "lane-3",
+   "id": "F02",
+   "sr_rule": "DEV-D04",
+   "criteria": [],
+   "severity": "P1",
+   "refs": [
+    "C12",
+    "C13",
+    "R26",
+    "IC7"
+   ],
+   "nets": [
+    "Net-(IC7-REFERENCE)",
+    "Net-(AT2-COLLECTOR)"
+   ],
+   "sr_text": "BOM、Value与采购身份不一致",
+   "evidence": "C12 Value=1nF，但Manufacturer_Part_Number=VJ1206Y104JXXCW1BC、Description=0.1uF/25V/1206，且Footprint为0805，存在100倍容量及0805/1206冲突。R26 Value=2.63k，料号CRCW12062K00FKEA及Description为2kΩ。R6=10k，VREF按2.495V仅算名义分支：2.63k→11.9817V、2k→14.9700V，差2.9883V；不将分支值当实际输出。IC7字段厂家onsemi，链接却指Guangdong-Hottech TL431_C181103.pdf；onsemi family手册没有证明本板SOT23-3采购后缀，不可借其他封装脚表宣判接反。BOM共47颗，C12/C13未列；未据此擅自判DNP。需统一精确订货码、值、封装和装配版次，再审反馈/稳定性。",
+   "proposed_fix": null
+  },
+  {
+   "index": 150,
+   "board": "copperpilot--jetson-ai-cam-copperpilot",
+   "lane": "lane-4",
+   "id": "F45",
+   "sr_rule": "SIG-C05",
+   "criteria": [],
+   "severity": "P1",
+   "refs": [
+    "IC7",
+    "IC3",
+    "R47",
+    "R49",
+    "R102",
+    "J11"
+   ],
+   "nets": [
+    "/USB/USBC_ID",
+    "Net-(IC3-~{EN})",
+    "/USB/USBC_VBUS"
+   ],
+   "sr_text": "Type-C DFP附着输出与负载开关使能断开，端口始终被关闭",
+   "evidence": "HD3SS3220 PDFp3 PORT高选DFP；p4 pin27 ID为附着后拉低的开漏输出。R55=2k将PORT上拉5V，但IC7.27为NC；/USB/USBC_ID只经R47=100k上拉5V并经R49=0R到IC3.3，R102=100k再上拉，T7/R137/R42均DNP。NCP380原厂手册PDFp2 TSOP-6引脚及p18订货表：LSNAJA为低有效EN。正常有电时EN保持高，不存在随附着拉低的通路，C35/R131不能供VBUS。",
+   "proposed_fix": null
+  },
+  {
+   "index": 52,
+   "board": "anthilla--anthc",
+   "lane": "lane-2",
+   "id": "F-USBDET",
+   "sr_rule": "SIG-D07",
+   "criteria": [
+    "G01-030"
+   ],
+   "severity": "P2",
+   "refs": [
+    "U5",
+    "R47",
+    "R63",
+    "D3",
+    "U12"
+   ],
+   "nets": [
+    "+5V",
+    "VBUS",
+    "Net-(U5-VBUS)"
+   ],
+   "sr_text": "USB拔出后U5的VBUS检测仍可能为高",
+   "evidence": "R47/R63取样D3后共用+5V；电池boost保持5V时U5.8仍为3.412V，不能区分USB插拔。 后备供电时USB电源丢失无法由这根检测线辨识。 U5=CP2102N-A02-GQFN24 / CP2102N-A02-GQFN24 (5→+3V3, 6→+3V3, 7→+3V3, 4→/DN, 3→/DP, 23→/DTR, 12→/RS485, 19→/RTS；其余脚见缓存逐项证据)；R47=CR0603-FX-2212ELF / 22K1 (1→+5V, 2→Net-(U5-VBUS))；R63=RT0603DRE0747K5L / 47K5 (2→GND, 1→Net-(U5-VBUS))；D3=B5819W / B5819W (1→+5V, 2→VBUS)；U12=LM2735XSD/NOPB / LM2735X (2→+BATT, 3→/EN_STEP_UP, 1→GND, 5→GND, 7→GND, 6→Net-(D7-A), 4→Net-(U12-FB))。独立复核及原厂页码见 /Users/skyfend/.cache/sr-boards/anthilla--anthc/review/evidence.md；修正后应复验：将R47上端改接D3输入侧连接器VBUS，再复核分压与掉电漏电限制。",
+   "proposed_fix": null
+  },
+  {
+   "index": 97,
+   "board": "solderedelectronics--io-expander-mcp23017-breakout-hardware-design",
+   "lane": "lane-2",
+   "id": "F01",
+   "sr_rule": "DEV-D01/DEV-D04",
+   "criteria": [],
+   "severity": "P2",
+   "refs": [
+    "U2",
+    "U3"
+   ],
+   "nets": [
+    "3V3",
+    "5V",
+    "SCL3,3",
+    "SCL5",
+    "SDA3,3",
+    "SDA5"
+   ],
+   "sr_text": "受审公开设计未固定 U2 双管及 U3 输出档的完整型号",
+   "evidence": "在锁定的V1.2.1原理图中，U2仅写NMOS-DUAL，U3仅写SE5218；同版文件树无BOM。SE5218 p2列多种输出档，该受审文件不能唯一规定图示3V3的订货码。这是受审公开设计的定义完整性缺陷；不能推断作者另存的采购资料、实际贴错或电气损坏。 原理图U2.value=NMOS-DUAL/U3.value=SE5218；固定提交同版V1.2.1无输出BOM，其他版本BOM不能补证。SE5218 Rev4/19/2016 p2 Ordering/Marking：A=3.3V、B=2.8V、C=2.5V、D=1.8V、E=1.5V、F=3.0V、G=1.2V。判据为DEV-D01/D04及results-format.md §3“甲”，不是宣称发生实物失效。",
+   "proposed_fix": null
+  },
+  {
+   "index": 94,
+   "board": "rmingon--rs485-spy-injector",
+   "lane": "lane-2",
+   "id": "S04",
+   "sr_rule": "NET-A01",
+   "criteria": [],
+   "severity": "P2",
+   "refs": [
+    "J4"
+   ],
+   "nets": [
+    "unconnected-(J4-CC2-PadB5)"
+   ],
+   "sr_text": "J4.B5在单节点伪网；没有Rd。USB-C Sink接法须各CC独立5.1kohm到GND，不能仅补NC标记。",
+   "evidence": "J4.B5在单节点伪网；没有Rd。USB-C Sink接法须各CC独立5.1kohm到GND，不能仅补NC标记。；原扫描层级=CANDIDATE；/Users/skyfend/.cache/sr-boards/rmingon--rs485-spy-injector/db.json parts/nets/pin2net，固定提交原生导出; /Users/skyfend/.cache/sr-boards/rmingon--rs485-spy-injector/review/ds/USB-C.pdf p54 5V USB-C sink-only port",
+   "proposed_fix": null
+  },
+  {
+   "index": 198,
+   "board": "tonydefilippis--poepico",
+   "lane": "lane-4",
+   "id": "F23",
+   "sr_rule": "PRO-E02",
+   "criteria": [
+    "G05-030",
+    "G05-031",
+    "G05-032",
+    "G05-033",
+    "G05-034"
+   ],
+   "severity": "P1",
+   "refs": [
+    "D1",
+    "D4",
+    "U4",
+    "Q1",
+    "Q2",
+    "Q3",
+    "Q4"
+   ],
+   "nets": [
+    "VDD",
+    "VSS"
+   ],
+   "sr_text": "D1 (C10769 SMAJ24A Diode:SMAJ24A) 跨 VDD；轨名提示=无，型号提示=24V。同网 IC 脚 U4.10(~{EN})、U4.12(OUTP) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；同网其他器件 C16、D4、Q1、Q2、Q3、Q4、Q9 各按自身耐压比较；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网不接连接器（内部节点）：瞬态按前级钳位后的残压或本地源（热插拔、感性关断）取，没有瞬态源时只核工作电压与稳态功耗；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+   "evidence": "D1 K=VDD、A=VSS，与D4=SMF58A并联；source-bom.csv row23 明写 SMAJ24A、24V、26.7V、38.9V；PoE整流桥Q1–Q8输出直接VDD。24V VRWM小于PoE正常48V分析点（差−24V），并小于常规37–57V PoE窗口。SMAJ24A原厂系列表电气行 https://www.littelfuse.com/~/media/electronics/datasheets/tvs_diodes/littelfuse_tvs_diode_smaj_datasheet.pdf.pdf 及LT4295 Rev.B p1/p11。58V并联管不隔离低压管。确证选值不匹配，烧毁时间未定。",
+   "proposed_fix": null
+  },
+  {
+   "index": 10,
+   "board": "badgineer--mp2-esc",
+   "lane": "lane-1",
+   "id": "F02",
+   "sr_rule": "DOC-Q01",
+   "criteria": [
+    "G02-026"
+   ],
+   "severity": "P2",
+   "refs": [
+    "R43",
+    "R44",
+    "R55",
+    "R56"
+   ],
+   "nets": [
+    "/AU_GATESIG",
+    "/AL_GATESIG"
+   ],
+   "sr_text": "固定提交v0.6 PDF与当前原生图及BOM不一致",
+   "evidence": "source-schematic.pdf p1右上桥：R43/R44/R55/R56等18只标6R8；同提交CCC_ESC.kicad_sch、导出XML/db及BOM这些件为4R7。原生重导native-current.pdf证实4R7。文件名v0.6与同一git提交不能证明PDF内容同步。",
+   "proposed_fix": null
+  },
+  {
+   "index": 65,
+   "board": "fossasia--pslab-hardware",
+   "lane": "lane-2",
+   "id": "F-CAP",
+   "sr_rule": "DOC-D01",
+   "criteria": [],
+   "severity": "P2",
+   "refs": [
+    "C5",
+    "C23"
+   ],
+   "nets": [
+    "/OSC_REF2",
+    "GND",
+    "Net-(U13A-+)"
+   ],
+   "sr_text": "C5/C23 的 10 nF 显示值与 100 nF 订货码冲突",
+   "evidence": "原图 C5/C23 value=10nF，PartNumber=C0603C104J4RACTU；KEMET C1002_X7R PDF p2 订货规则104=10×10^4 pF=100nF、J=5%、4=16V。BOM将C5/C7/C23/C40合行且拼接两种MPN，不能唯一恢复逐位号装配。两种容量相差10倍，不能自动择一。；/Users/skyfend/.cache/sr-boards/fossasia--pslab-hardware/review/ds/C5.pdf p2 Ordering Information",
+   "proposed_fix": null
+  },
+  {
+   "index": 188,
+   "board": "satya777777--esp32-industrial-io-controller",
+   "lane": "lane-4",
+   "id": "F003",
+   "sr_rule": "DEV-C05",
+   "criteria": [
+    "G01-026",
+    "G01-027",
+    "G01-028",
+    "G01-029",
+    "G01-031"
+   ],
+   "severity": "P1",
+   "refs": [
+    "J2",
+    "R6",
+    "R7",
+    "R8",
+    "U2"
+   ],
+   "nets": [
+    "VBUS"
+   ],
+   "sr_text": "DEV-C05：逐颗核供电电压、输入电压、负载、频率及温度等级/参数保证条件覆盖声明工况；区分环境温度、壳温与结温，形成允许温度约束，实际结温实现转 HANDOFF；借用相似器件保证范围或典型±typical_band（G02 工程取值）估算可用于必需功能和性能判据（含P1，P1时整个范围内结论不变，并把样机实测记为必需移交），不能据此放行损坏边界、过热或保护保证；本器件或受控身份全分支均适用的保证边界仍可按实际判据核对，不属于借相似器件估算；供电/输入低于推荐范围下限在本项判定（整个窗口确定欠压时 DEV-C01 同判 FAIL 并共用 finding）；绝对最大额定只作损坏边界，不当作工作范围\nPWR-D02：按准确器件条款核对本组实际电源脚、直接供电/返回段和串联边界；无直接电容须核适用替代接法，不用普通旁路证明专用滤波组；同网电容不证明布局充分\nSIG-C05：核对 VBUS 供电资格、电压档位、放电、反灌、过流及端口未供电状态；放电外接电阻对片内放电开关的电流上限归 DEV-C01",
+   "evidence": "本轮固定网表/BOM字段：J2=USB_C_Receptacle_USB2.0_16P；R6=22.1K；R7=5.5K；R8=5.5K；U2=CP2102N-Axx-xQFN24。物理归网：J2: A6→D+, B6→D+, A7→D-, B7→D-, A1→GND, A12→GND, B1→GND, B12→GND, S1→GND, A5→Net-(J2-CC1), B5→Net-(J2-CC2), A4→Net-(J2-VBUS-PadA4), A9→Net-(J2-VBUS-PadA4), B4→Net-(J2-VBUS-PadA4), B9→Net-(J2-VBUS-PadA4)；R6: 1→Net-(J2-VBUS-PadA4), 2→VBUS；R7: 2→GND, 1→Net-(J2-CC2)；R8: 2→GND, 1→Net-(J2-CC1)；U2: 5→+3V3, 6→+3V3, 3→D+, 4→D-, 23→DTR, 21→ESP RX, 20→ESP TX, 2→GND, 25→GND, 9→Net-(U2-~{RST}), 19→RTS, 7→VBUS, 8→VBUS。判定：J2.A4/A9/B4/B9→R6=22.1k→VBUS；VBUS同时接R9=47.5k至地、U2.8检测、U2.7 VREGIN及D2.2供SYS_5V。空载5V分压为3.412356V、Rth=15.082615k；5.5V时R6短路电流仅0.248869mA。Silicon Labs CP2102N Rev1.5 PDF p5–6 Fig2.1–2.3、p12表3.6规定VREGIN是电源输入，外部3.3V供VDD且不用内稳压时须将VREGIN接VDD；现图将检测分压误用于供电，D2支路不能提供ESP32 p28所要求的0.5A电源能力。",
+   "proposed_fix": null
+  },
+  {
+   "index": 121,
+   "board": "pionixpublic--reference-hardware",
+   "lane": "lane-3",
+   "id": "F003",
+   "sr_rule": "CLK-C01",
+   "criteria": [
+    "G04-078",
+    "G04-079",
+    "G04-080",
+    "G04-081",
+    "G04-082",
+    "G04-083",
+    "G04-084",
+    "G04-085"
+   ],
+   "severity": "P2",
+   "refs": [
+    "Y3",
+    "U17"
+   ],
+   "nets": [
+    "Net-(U17-OSC1)",
+    "Net-(U17-OSC2)"
+   ],
+   "sr_text": "Y3.Value=16MHz，Field6=ABM8-24.000MHZ-10-B1U-T且描述24MHz；相差8MHz/50%。24MHz仍在MCP2515的25MHz范围内，问题是频率契约与采购不一致。",
+   "evidence": "Y3.Value=16MHz，Field6=ABM8-24.000MHZ-10-B1U-T且描述24MHz；相差8MHz/50%。24MHz仍在MCP2515的25MHz范围内，问题是频率契约与采购不一致。 证据：record/review-evidence.md E03；独立原厂PDF及源哈希在review/record/source-manifest.json。",
+   "proposed_fix": null
+  },
+  {
+   "index": 3,
+   "board": "antmicro--hdmi-mipi-bridge",
+   "lane": "lane-1",
+   "id": "F28",
+   "sr_rule": "DEV-D05",
+   "criteria": [],
+   "severity": "P1",
+   "refs": [
+    "U1",
+    "U4",
+    "C2",
+    "C25"
+   ],
+   "nets": [
+    "Net-(U1C-DAOUT)",
+    "Net-(U4C-DAOUT)",
+    "unconnected-(U1C-PFIL-PadA6)",
+    "unconnected-(U4C-PFIL-PadA6)"
+   ],
+   "sr_text": "未用APLL时，Toshiba p10规定PFIL经0.1uF接AVSS，DAOUT开路。本图C2/C25=100n接A5(DAOUT)至GND，A6(PFIL)有NC标记；BIASDA和PCKIN另已有100n，不能替代PFIL。",
+   "evidence": "未用APLL时，Toshiba p10规定PFIL经0.1uF接AVSS，DAOUT开路。本图C2/C25=100n接A5(DAOUT)至GND，A6(PFIL)有NC标记；BIASDA和PCKIN另已有100n，不能替代PFIL。 证据：datasheets/TC358743XBG.pdf p10 Table3.1 APLL; p12 Fig3.1 A5/A6; db.json refs U1,U4,C2,C25。手册SHA256见缓存independent-evidence.json。",
+   "proposed_fix": null
+  },
+  {
+   "index": 29,
+   "board": "mlab-modules--solarmini01",
+   "lane": "lane-1",
+   "id": "F12",
+   "sr_rule": "DEV-D01",
+   "criteria": [],
+   "severity": "P2",
+   "refs": [
+    "D2"
+   ],
+   "nets": [
+    "Net-(D1-K)",
+    "GND"
+   ],
+   "sr_text": "D2 料号与指定封装不配套",
+   "evidence": "D2 Value=SMBJ5.0A、Footprint=Diode_SMD:D_SMA在源BOM与当前图一致；Vishay88392 Rev09-Jan-2024 p1/p5和Bourns SMBJ p1/p4均为SMB/DO-214AA，SMA=DO-214AC。确认的是料号/封装数据不配套，不判当前PCB焊盘实物。",
+   "proposed_fix": null
+  },
+  {
+   "index": 140,
+   "board": "weirdgyn--driverino-shield",
+   "lane": "lane-3",
+   "id": "F02",
+   "sr_rule": "DEV-C01",
+   "criteria": [
+    "G02-007",
+    "G02-027",
+    "G02-028",
+    "G03-037",
+    "G03-038",
+    "G03-040",
+    "G05-022"
+   ],
+   "severity": "P1",
+   "refs": [
+    "C2",
+    "C3",
+    "P9",
+    "U1"
+   ],
+   "nets": [
+    "+36V",
+    "GNDPWR"
+   ],
+   "sr_text": "标注36V工作点超出U1/C2/C3的35V边界",
+   "evidence": "原图p1 P9.1及U1.9/10/11标+36V；C2和C3直接跨+36V/GNDPWR。TI源SLVSF18 p8推荐VM≤35V、绝限40V；Panasonic EEEFKV121XSV产品表为35V；Yuden新旧码映射GMK316AB7106KL-TR为35V。按标注点36−35=1V超出。实际外部输入包络未给：本发现是明确标注契约不相容，不把网名当实物测量，不声称36V越过U1的40V绝限。",
+   "proposed_fix": null
+  },
+  {
+   "index": 12,
+   "board": "blkburn--zigbee",
+   "lane": "lane-1",
+   "id": "F01",
+   "sr_rule": "DEV-D02",
+   "criteria": [],
+   "severity": "P2",
+   "refs": [
+    "U1"
+   ],
+   "nets": [
+    "unconnected-(U1-~{RESET}/SIO3-Pad7)"
+   ],
+   "sr_text": "U1的第7脚标为RESET#，但IH1订货变体实际为HOLD#。",
+   "evidence": "U1 VALUE=MX25R8035FM1IH1，源图/db pin7=~RESET/SIO3；原厂PM2164 Rev1.6 p8+p84同一完整订货码明确HOLD#、高性能模式、8-SOP150mil。p8 Note1允许真正未外连WP#/HOLD#内部上拉；错误为脚义标注，未证实NC电气失效。",
+   "proposed_fix": null
+  },
+  {
+   "index": 85,
+   "board": "newell--nixie-clock-esp32c3",
+   "lane": "lane-2",
+   "id": "F001",
+   "sr_rule": "NET-A07",
+   "criteria": [],
+   "severity": "P1",
+   "refs": [
+    "U4",
+    "U5",
+    "U6",
+    "U7",
+    "U8",
+    "U9",
+    "U10",
+    "U11"
+   ],
+   "nets": [
+    "unconnected-(U4-~{SRCLR}-Pad10)",
+    "unconnected-(U5-~{SRCLR}-Pad10)",
+    "unconnected-(U6-~{SRCLR}-Pad10)",
+    "unconnected-(U7-~{SRCLR}-Pad10)",
+    "unconnected-(U8-~{SRCLR}-Pad10)",
+    "unconnected-(U9-~{SRCLR}-Pad10)",
+    "unconnected-(U10-~{SRCLR}-Pad10)",
+    "unconnected-(U11-~{SRCLR}-Pad10)"
+   ],
+   "sr_text": "U4–U11的10脚均为单节点NC，输入没有固定逻辑电位；这违反SN74HC595 SCLS041J p4脚注1/p15未用输入处置要求。",
+   "evidence": "U4–U11的10脚均为单节点NC，输入没有固定逻辑电位；这违反SN74HC595 SCLS041J p4脚注1/p15未用输入处置要求。 固定原图PDF p7、网表每颗10脚只挂NC；TI SCLS041J p4 §6.3 note1/p15 §11。",
+   "proposed_fix": null
+  },
+  {
+   "index": 59,
+   "board": "antmicro--m2-smart-iot-module",
+   "lane": "lane-2",
+   "id": "F002",
+   "sr_rule": "PWR-T04",
+   "criteria": [
+    "G03-025"
+   ],
+   "severity": "P2",
+   "refs": [
+    "C69",
+    "Q1",
+    "R14",
+    "R15",
+    "R27",
+    "R30",
+    "U3",
+    "U7"
+   ],
+   "nets": [
+    "/CoralAccelerator/1V8_CORAL",
+    "/CoralAccelerator/RST_EN",
+    "3V3_CORAL",
+    "CORAL_USB_N",
+    "CORAL_USB_P",
+    "GND",
+    "Net-(Q1-D)",
+    "Net-(R45-Pad1)",
+    "Net-(R46-Pad1)",
+    "Net-(U3-PMIC_EN)",
+    "Net-(U3-USB_SEL)",
+    "Net-(U7-_RESET)",
+    "nRF_CORAL_PGOOD",
+    "nRF_CORAL_RST"
+   ],
+   "sr_text": "U7的2.93V门限不适用于1.8V监测轨",
+   "evidence": "同一订货码29是2.93V门限、F是400ms（TI p3/p26），TI p8门限精度±2%。最低下降门限=2.93*0.98=2.8714V，而U5是1.8V档；在AP2120 p7规定的1–30mA/VIN2.8V窗口，即使Vout=1.836V，仍比该最低门限低1.0354V（释放门限还包含正滞回）。这是独立的选型不相容；即便先纠正U7脚位，1.8V正常轨仍不能满足2.93V释放门限。未把该计算扩成所有异常状态的数值保证。应选与1.8V及Coral复位/时序兼容的准确门限、延时、脚序；替代料尚未选定，不给虚构具体替代MPN。；依据见缓存record/engineering.md及record/pcb-pad-facts.json；未把未确定损坏后果当事实。",
+   "proposed_fix": null
+  },
+  {
+   "index": 88,
+   "board": "prajyotdaphal--home_automation-module",
+   "lane": "lane-2",
+   "id": "F02",
+   "sr_rule": "PRO-C05",
+   "criteria": [
+    "G05-019",
+    "G05-025"
+   ],
+   "severity": "P0",
+   "refs": [
+    "F2",
+    "J9",
+    "K6",
+    "K7",
+    "K8"
+   ],
+   "nets": [
+    "/AC"
+   ],
+   "sr_text": "F2两端同接/AC，熔断不能切断支路",
+   "evidence": "F2.1=F2.2=/AC=J9.2=K6.1=K7.1=K8.1。网表与原图一致，删除F2仍有/AC公共导线，250mA标签和任何熔断曲线都不能恢复断流。 可定位独立记录：/Users/skyfend/.cache/sr-boards/prajyotdaphal--home_automation-module/review/evidence/independent-review.md §FUSE；原始db及BOM/分析副本/手册哈希见source-lock.json。",
+   "proposed_fix": null
+  },
+  {
+   "index": 159,
+   "board": "gyrocopterllc--flatmcu",
+   "lane": "lane-4",
+   "id": "F034",
+   "sr_rule": "PWR-C04",
+   "criteria": [
+    "G03-003",
+    "G03-004"
+   ],
+   "severity": "P1",
+   "refs": [
+    "C11",
+    "C19",
+    "C38",
+    "C39",
+    "C41",
+    "FB1",
+    "U2"
+   ],
+   "nets": [
+    "+3V3",
+    "/MCU/3V3_MCU",
+    "GND"
+   ],
+   "sr_text": "U2.2→GND直接电容C11 1u+C19/C38/C39各0.1u=1.3uF；BOM的C39=1u分支为2.2uF，均低于DS31009 Rev24-3 p6所需4.7uF本地补偿电容。C41=4.7u在FB1后，不能无频率/阻抗证据当成U2本地Cout；应在U2输出侧配置满足有效容量/ESR的本地电容。确认条款偏离，不宣称实物必振荡。",
+   "evidence": "原厂AP1117 DS31009 Rev24-3 March2015 p2/p6与source.pdf p1、MCU页FB1；U2.2→GND直接电容C11 1u+C19/C38/C39各0.1u=1.3uF；BOM的C39=1u分支为2.2uF，均低于DS31009 Rev24-3 p6所需4.7uF本地补偿电容。C41=4.7u在FB1后，不能无频率/阻抗证据当成U2本地Cout；应在U2输出侧配置满足有效容量/ESR的本地电容。确认条款偏离，不宣称实物必振荡。 2007版10uF不作本轮判据。此为手册本地名义容量/接法偏离；尚未确认实物振荡。",
+   "proposed_fix": null
+  },
+  {
+   "index": 102,
+   "board": "antmicro--sdi-mipi-bridge-hw",
+   "lane": "lane-3",
+   "id": "D01",
+   "sr_rule": "RST-T03",
+   "criteria": [
+    "G03-024",
+    "G03-030",
+    "G03-047",
+    "G05-062",
+    "G05-091"
+   ],
+   "severity": "P1",
+   "refs": [
+    "U1",
+    "U4"
+   ],
+   "nets": [
+    "+3V3",
+    "+1V2"
+   ],
+   "sr_text": "CrossLink的辅助电源先于核心电源建立",
+   "evidence": "ds/U4.pdf p30 §4.5：VCCAUX同时或后于VCC，在VCC达到最低工作1.14V前VCCAUX不得高于VCC；本板D5直接+3V3，E4/E6为由U1产生+1V2。U1电源UVLO上升最小1.5V，爬升到此值前core尚未建立，aux已随输入抬高，顺序不符合。此项不声称实物必坏。；来源/独立摘记：/Users/skyfend/.cache/sr-boards/antmicro--sdi-mipi-bridge-hw/review/record/evidence-facts.json。默认装配。",
+   "proposed_fix": null
+  }
+ ],
+ "false_alarm_patterns": [
+  {
+   "index": 632,
+   "board": "leonardoward--dpp-architecture-pcb",
+   "lane": "lane-2",
+   "id": "F18",
+   "sr_rule": "DRV-E01/DRV-A03",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "Q1 的 gate drivers 错列经 R2 到 GND 的 J2/J3 地触点",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/checkers/power_switch.py:_Scan.drivers、_driver_pins",
+    "what": "先识别G/S偏置支路；沿串阻找driver时不得把地网/返回网上的任意连接器算外部驱动。保留真正外接gate信号针，R2仍须参与默认态/漏电预算。判据来自本板网表与DS40183 p2的实际OUT*功能。"
+   }
+  },
+  {
+   "index": 1808,
+   "board": "imike78--home-mini-v1-drop-in-pcb",
+   "lane": "lane-4",
+   "id": "F35",
+   "sr_rule": "NET-A07",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "U2.8 -> Net-(U2-ELEC0): 输入脚所在网只有该节点",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/lint.py:Lint.run NET-A01/NET-A06/NET-A07；scripts/checkers/netgraph.py:is_fitted",
+    "what": "区分电容触摸/天线等模拟电极端点和数字输入；BOM的DNP不应消掉TestPoint_Pad的PCB铜。数字输入与DNP电阻/连接器仍按真实装配判。"
+   }
+  },
+  {
+   "index": 1292,
+   "board": "s59mz--kicad-pmod_rs485",
+   "lane": "lane-3",
+   "id": "F05",
+   "sr_rule": "REQ-Q07",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "F05：Interface_UART库路径为ADM2582E生成额外独立UART覆盖项；本板已归RS485-U1，没有第二套独立UART电路。",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/plan_circuits.py:_feature_hits / plan_subjects",
+    "what": "以经核验角色/总线和已确认电路决定类型；库路径命中仅作提示，不重复派独立UART覆盖。",
+    "basis": "U1原厂标题为RS485收发器；Interface_UART是KiCad符号库路径。RS485-U1已含TTL收发与差分现场总线，无独立UART收发电路。",
+    "regression": "真正独立UART桥/收发器应保留覆盖；同一RS485的TXD/RXD不触发第二电路。"
+   }
+  },
+  {
+   "index": 1416,
+   "board": "antmicro--kria-k26-devboard",
+   "lane": "lane-4",
+   "id": "F045",
+   "sr_rule": "NET-A01",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "/Xilinx K26 SOM/HDB13 <- J_SOM240_2.B45 (ADM6-60-01.5-L-4-2-A-TR)",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/lint.py:Lint.run NET-A01",
+    "what": "按装配态排除未装配节点，再判断有效端点数；不要将 DNP 连接器的标签按贴装电路悬空报缺陷。依据同版 XML DNP 和 as-built population。"
+   }
+  },
+  {
+   "index": 527,
+   "board": "antmicro--m2-smart-iot-module",
+   "lane": "lane-2",
+   "id": "F086",
+   "sr_rule": "PWR-A02",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "U4.E24 (DEC6) <- /nRF52840/DEC4_6",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/lint.py:Lint.run/driven/_local_regulator_node; scripts/powertree.py:PowerTree",
+    "what": "驱动识别应使用经手册核验的V_OUT/V_out及片内稳压/开关节点角色，沿已贴串联电阻/电感追源；5V_EN按ADBUS5物理输出辨为控制网。仍保留状态/负载预算审查。依据AP2120p2、MIC2877p12、Nordic官方引脚表、FTDIp14。"
+   }
+  },
+  {
+   "index": 559,
+   "board": "antmicro--stm32h7-hdmi-board",
+   "lane": "lane-2",
+   "id": "F10",
+   "sr_rule": "PWR-A01",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "电源轨只经连接器进板：+5V: 板上无来源，经 ['J9.1'] 由外部供电；输入保护按 PRO 规则另核",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/parse_kicad.py:_component; scripts/lint.py:driven",
+    "what": "保留原始自定义字段及出处，将明确的 Val 作为有单位的电气值读取；保留原 value，不从MPN猜阻值。R13/R131 等0R装配桥可导通；未知/DNP件不导通。回归确认零欧桥后源仍可追到真实输出，不能让外部连接器优先覆盖板内源。依据原XML Val、KiCad dnp装配声明与PWR-A01关闭条件。"
+   }
+  },
+  {
+   "index": 1332,
+   "board": "theushen--eegfrontier",
+   "lane": "lane-3",
+   "id": "F25",
+   "sr_rule": "DEV-C01",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "R2/R3的原值1kΩ被报“阻值读不出”；SI单位清楚，独立读为1000Ω，不是缺设计输入。",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/solve_dividers.py:parse_resistor / parse_resistor_noted",
+    "what": "数值与SI前缀解析后允许尾随Ω/Ω/ohm单位，保留大小写m/M和原文；补1kΩ、1kΩ、1kohm、1MΩ、1mΩ的差异测试，拒绝未知尾词仍保留。 判据出处：原始db R2/R3.value=1kΩ，value_provenance.ohm=null；parse_resistor先把Ω换R，再解析1K后残留R导致拒读；按1k±5%下限950Ω，保守5V功耗25/950=0.0263158W。"
+   }
+  },
+  {
+   "index": 721,
+   "board": "newell--hv-flyback-converter",
+   "lane": "lane-2",
+   "id": "F30",
+   "sr_rule": "RST-T04",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "核主控与外设在断电、复位、启动配置采样与固件接管前的 IO 默认态（高阻、内部上下拉、默认输出）对继电器、电源使能、驱动器、LED 与外部总线的影响；关键控制线在适用状态下须有保证的安全默认态，内部偏置或外部电路均须有据；断电或 IO 电源域未建立时内部偏置通常不存在，该阶段须由外部电路保证",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/plan_circuits.py:subject_precondition / CircuitPlanning.plan_subjects",
+    "what": "在subject_precondition/plan_subjects按真实barrier.mechanism分流；transformer只问绕组/工作应力与有依据的隔离要求，数字默认态/速率/CMTI/协议预算须有isolator或数字发送/接收端点；不得把邻接J1当隔离收发器。 依据：Coilcraft Doc510-1 p1功率绕组图；db TR1.1=GND，J1为电源/HVEN。"
+   }
+  },
+  {
+   "index": 1781,
+   "board": "hirusha785--12v-5a-isolated-flyback-smps-kicad",
+   "lane": "lane-4",
+   "id": "F17",
+   "sr_rule": "PWR-C26",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "PWR-C26.INPUT-PROTECT.C1：防反接器件的压降和导通条件计入预算（最低输入下下游不低于最低工作电压）；反接时阻断之后不承受超额反压，阻断之前没有造成源短路的单向 TVS，接到输入的上拉或控制脚电流受限",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/plan_circuits.py:CircuitPlanning.plan_subjects / subject_precondition",
+    "what": "按实际接口AC/DC和防反路径选择PWR-C26，桥式交流入口不得机械套MOS反接判据。",
+    "basis": "AC入口不存在规定DC正接/反接方向；桥式整流实际压降另归功率损耗，不是MOS防反接模板。"
+   }
+  },
+  {
+   "index": 790,
+   "board": "prajyotdaphal--home_automation-module",
+   "lane": "lane-2",
+   "id": "F07",
+   "sr_rule": "SIG-C07",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "继电器线圈/触点整组接口被要求数字VOH/VIL裕量",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/interfaces.py: LINK / SIG-C07 applicability",
+    "what": "按线圈驱动和干接点端口分别构建接口；机械触点核开断/接触额定，不生成数字电平窗口；保留Q基极能力检查。"
+   }
+  },
+  {
+   "index": 1097,
+   "board": "antmicro--scalenode-cm4-baseboard",
+   "lane": "lane-3",
+   "id": "F112",
+   "sr_rule": "PWR-D02",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "按准确器件条款核对本组实际电源脚、直接供电/返回段和串联边界；无直接电容须核适用替代接法，不用普通旁路证明专用滤波组；同网电容不证明布局充分",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/decoupling.py:Inventory.groups; scripts/checkers/isolation_sides.py:model",
+    "what": "供电/返回发现与计划展开均先过滤当前assembly实际population；U3/U4 DNP不展开任何旁路组。勿因手册中存在供电脚而覆盖DNP。"
+   }
+  },
+  {
+   "index": 852,
+   "board": "solderedelectronics--io-expander-mcp23017-breakout-hardware-design",
+   "lane": "lane-2",
+   "id": "F35",
+   "sr_rule": "DEV-Q01/REQ-Q08",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "| SR 认不出的器件（能力不足，待补） | FD1 | FIDUCIAL / FIDUCIAL |  | SR 能力不足：按手册标题给这类器件一个类别名，补进 device_kinds.KINDS 登记表（一行：词、前缀、手册线索、两端/链路/保护/磨损、可否声明、要不要手册）和定界表（可得性、允许的估算与倍数、失效后果、样机能否验、边界）；接了两个以上网络的，本板由审查员在 intent.device_kinds 里归类 |",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/validate_review.py:NEW_DEVICE_KIND提示生成；scripts/device_kinds.py:settlement",
+    "what": "确认无电气脚的fiducial/mounting-hole从待手册类别/定界表提示排除；依据db完整声明pin集合与器件图形身份；有接地脚的屏蔽/安装件仍按实际连接审。"
+   }
+  },
+  {
+   "index": 744,
+   "board": "newell--nixie-clock-esp32c3",
+   "lane": "lane-2",
+   "id": "F094",
+   "sr_rule": "REQ-Q08",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "POWER_CONVERTER-Q35：RGB的BSS138电平转换被认作电源变换器；C10/C11/C20-C25被认作RC吸收。",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/circuit_candidates.py:Generator.converters/Generator.self_anchored; scripts/circuit_decisions.py:derive",
+    "what": "Converter候选先服从已核level_shifter用途，并要求真实储能/功率变换机制；禁止沿公共电源将旁路电容识别为RC吸收。拒绝后释放held成员，允许有引用地改归真实LEVEL_SHIFT电路。",
+    "basis": "Q35原生G/D/S物理网和p5用途；onsemi BSS138/D Rev7 p1 G/S/D map。"
+   }
+  },
+  {
+   "index": 1718,
+   "board": "greatscottgadgets--urti-mainboard",
+   "lane": "lane-4",
+   "id": "F495",
+   "sr_rule": "PWR-C10",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "按受控电容规格与工况核耐压/降额及适用 ESR；依赖具体型号特性时核实际料号，不从封装或轨名猜参数；计划带预判（proposal）时按预判判定，改判只用其封闭理由码；ESR 只在器件条款或稳定性判据要求时核",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/checkers/decoupling.py: build_inventory",
+    "what": "本组供电候选实际落在GND：U15.4。源图对应EP/OGND或单电源运放V−接公共地；它们应归返回脚，不应独立要求对GND的电源旁路容量/额定。其真实正供电段的去耦仍逐组审，不能由本NA删除。 应先确认实际对象/型号/装配，再决定本项是否适用。 判据：本条evidence的具体物理对象与原厂页/原生脚型；保留真实反例，不按型号子串全局豁免。"
+   }
+  },
+  {
+   "index": 1853,
+   "board": "rmingon--chlinknet",
+   "lane": "lane-4",
+   "id": "F084",
+   "sr_rule": "SIG-T04",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "FN-IF-CLOCK-Y1-STARTUP-MCU: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, located (page, table or section, a datasheet section title, a requirement id), in a margin basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/review_functions.py:function_errors F1; scripts/interfaces.py",
+    "what": "允许严格限于连接事实的功能，全部非NA决定方面均为T/D事实且有定位网表+官方脚表证据时通过F1的来源检查；数值C/E项仍强制数值/条款和独立计算，不以此绕过CLK-C01、起振或应力。增加该最小晶体接口反例，验证缺数值证明仍被拒。"
+   }
+  },
+  {
+   "index": 344,
+   "board": "scottbez1--faderbuddy",
+   "lane": "lane-1",
+   "id": "F02",
+   "sr_rule": "PWR-C04",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "fault 时 POWER_CONVERTER-U2（C1、C2、C3、C4、C5、JP4、U2）的最小导通/关断时间与输出电容是否满足控制器手册的适用条件；允许失调节的故障或关断状态下，动作与恢复是否成立；fault 时 POWER_CONVERTER-U2（C1、C2、C3、C4、C5、JP4、U2）的反馈模型与补偿配置是否符合厂家适用条件，规定角点的稳定性与动态边界是否成立（无反馈环时按拓扑记 NA）",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/catalog.py:CIRCUIT_TYPES/SUBJECT_REQUIRES；scripts/plan_circuits.py:subject_precondition；scripts/circuit_candidates.py:Generator.converters；scripts/circuit_decisions.py:derive",
+    "what": "motor_driver按实际角色派H桥驱动、续流/再生、最大电流、热与复位安全问题；OUT1/2不得匹配稳压输出/反馈模型。供入电容从完整官方power脚角色收集，包含VM；add并入已有电路时保留anchor/nets，避免C1取代U2成为锚点。PWR-C04/C15对无稳压输出/反馈者不展开，保留电机动态审查。"
+   }
+  },
+  {
+   "index": 397,
+   "board": "tinkerforge--evse-v2-bricklet",
+   "lane": "lane-1",
+   "id": "F18",
+   "sr_rule": "DRV-A01",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "L101（inductor，状态 schematic-default）: 开关节点 5V 与 Net-(U110-IN) 之间未见续流二极管、钳位器件或 RC 吸收；若由驱动器内部钳位需给出资料证据",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/checkers/inductive_load.py:loads/_series_filter",
+    "what": "核VALUE=FB、两端负载与储能器件角色；串联滤波磁珠不套开关线圈续流。保留真正继电器/电机/储能电感的DRV-T01/DRV-C01。"
+   }
+  },
+  {
+   "index": 1623,
+   "board": "cellkeeper-bms--cellkeeper-hardware",
+   "lane": "lane-4",
+   "id": "F152",
+   "sr_rule": "NET-A06",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "unconnected-(H7-Pad1): ['H7.1']",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/lint.py:Lint.run (NET-A06)",
+    "what": "按一致机械符号/物理角色排除单节点机械焊盘，不用H前缀一律豁免电气器件。"
+   }
+  },
+  {
+   "index": 1235,
+   "board": "neotron-compute--neotron-pico",
+   "lane": "lane-3",
+   "id": "F282",
+   "sr_rule": "PWR-C09",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "按本状态器件条款分别核对直接供电/返回段的数量、容量组合及有效容量要求；串联边界另一侧电容不计本段；替代接法需适用依据，标称总量不代替保证容量",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/decoupling.py:supply_pins/return_pins,Inventory.groups; scripts/checkers/decoupling.py:plan",
+    "what": "先区分无源配电连接器、模组可选输出/参考与真实供电输入；HPGND必须按完整返回名称/官方PW28脚表归return，不能生成GND对自身去耦组。Pico未引出3V3/ADC_VREF是模块输出，不能要求载板给输出再去耦。保留真实负载的供电/电容检查，并允许有据不适用，避免将未资格化候选当IC任务。"
+   }
+  },
+  {
+   "index": 82,
+   "board": "antmicro--jetson-agx-thor-baseboard",
+   "lane": "lane-1",
+   "id": "F002",
+   "sr_rule": "DRV-A03",
+   "criteria": null,
+   "severity": null,
+   "refs": null,
+   "nets": null,
+   "sr_text": "栅极无驱动源且无下拉：Q24（mosfet，状态 as-built）：栅极网 Net-(Q24-G) 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定",
+   "evidence": null,
+   "proposed_fix": {
+    "owner": "checker",
+    "where": "scripts/checkers/power_switch.py:_Scan.drivers / PowerSwitchChecker.cold_findings",
+    "what": "识别理想二极管/PowerPath控制器GATE输出，优先核资料引脚语义；若库类型passive但连到未分类IC控制脚，仅记候选而非确认无驱动。LTC4412 RevC p5是驱动依据。"
+   }
+  }
+ ],
+ "method": "random.Random(20261102); shuffle indices; pass1 unique board & unique sr_rule, pass2 unique board, pass3 fill"
+}

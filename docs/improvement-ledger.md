@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 86 块板归因抽查：20 条真缺陷、20 条误报 (2026-11-02)
+
+按种子 20261102 从汇总抽样，逐条对 db、原理图与手册原文独立复核（`docs/proposals/spot-check-2026-11-02.md`）：真缺陷同意 19、证据不足 1（flatmcu U2 的 AP1117 输出电容未计磁珠后的 C41），误报同意 20；没有需要反转的结论。附保留意见 5 条。系统性偏差：文档/订货一致性类真缺陷占 7/20 且严重度偏重，应按有无电气后果分级；个别真缺陷只靠网名或名义条款；放宽 SIG-T04 证据门禁时须保留"晶体无频率/负载电容即报资料缺失"的回归。这些交合并步 5。
+
+- Event: user:2026-11-02 (抽 20 条真缺陷、20 条误报看一眼)
+- Causes: judgment 1
+- Changed: docs/proposals/spot-check-2026-11-02.md, docs/proposals/spot-check-2026-11-02.sample.json, docs/improvement-ledger.md
+- Gates: 无代码改动
+
 ## 准则库 1.7.0 入库：9 条新准则、12 条修订，挂到已有检查项 (2026-11-02)
 
 草案（下一条）经用户确认后入库：HardwareWiki 登记文件 G01 1.5、G02 1.3、G03 1.5、G04 1.2、G05 1.2 与规范正文同步，共用层重建为 1.7.0（353 条），ASG 同字节。`catalog.BASIS` 把 G02-036/038 挂到 DEV-D01、DEV-D04，G02-037/038 挂到 DOC-D01、DOC-Q01，G02-039 挂到 DEV-C01，G03-059 挂到 PWR-C15，G04-101 挂到 DEV-D02、DEV-D04，G04-102 挂到 DEV-D05、NET-A01、NET-A07，G04-103/104 挂到 SIG-C05（G04-104 另挂 NET-A07）；没有新建检查项，USB 四条的连接器类型限定靠 sr_check 文字与合并步 2B 的连接器型号判定。厂家出处核过原件：PCA9517A Rev. 4.1、RP2350 2026-01-10 构建版、ADS1299 SBAS499C、DFLS1100 DS30497 Rev. 14-2；WCH CH32V30x 评估板原理图未取得原件，登记为版次未核。
