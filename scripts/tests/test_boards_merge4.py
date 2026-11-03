@@ -95,3 +95,60 @@ def test_a_ground_bled_to_ground_is_still_a_ground():
     db, intent = _midpoint_board()
     add(db, 'R99', '1M', [('1', '', 'CHASSIS_GND'), ('2', '', 'GND')])   # a bleed resistor, no divider
     assert not passive_stress.midpoint_ground(NetGraph(db), 'CHASSIS_GND')
+
+
+# 3. A bias/reference feed through a kilo-ohm resistor is a weak drive, not "no drive" (PCA9306 VREF2, phantom feed).
+def _weak_board(resistor=True):
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    db = empty()
+    add(db, 'U2', 'LDO', [('1', 'VIN', '+12V'), ('2', 'VOUT', '+5V'), ('3', 'GND', 'GND')])
+    add(db, 'U19', 'PCA9306', [('7', 'VREF2', 'NREF'), ('4', 'GND', 'GND')])
+    add(db, 'J1', 'CONN_01X02', [('1', '', '+12V'), ('2', '', 'GND')])
+    db['native_pintype'] = {'U19.7': 'power_in', 'U19.4': 'power_in', 'U2.1': 'power_in', 'U2.2': 'power_out'}
+    if resistor:
+        add(db, 'R63', '200k', [('1', '', '+5V'), ('2', '', 'NREF')])
+    return db
+
+
+def test_kilo_ohm_feed_is_a_weak_drive_with_its_resistor():
+    from lint import Lint
+    rows = [f for f in Lint(_weak_board()).run() if f['rule'] == 'PWR-A02' and 'U19.7' in f['detail']]
+    assert rows and all(f['kind'] == 'INFO' for f in rows)
+    assert '弱驱动，R=R63 200k' in rows[0]['detail']
+
+
+def test_a_pin_with_no_feed_at_all_is_still_undriven():
+    from lint import Lint
+    rows = [f for f in Lint(_weak_board(resistor=False)).run() if f['rule'] == 'PWR-A02' and 'U19.7' in f['detail']]
+    assert rows and rows[0]['kind'] == 'FINDING'
+
+
+def test_weak_source_names_resistor_and_far_net():
+    from checkers.netgraph import NetGraph
+    from checkers.powertree import PowerTree
+    found = PowerTree(NetGraph(_weak_board())).weak_source('NREF')
+    assert found['resistor'] == 'R63' and found['via'] == '+5V' and found['ohm'] == 200000
+    assert PowerTree(NetGraph(_weak_board())).weak_source('GND') is None
+
+
+def test_rail_fed_only_through_a_resistor_is_weakly_driven():
+    from lint import Lint
+    from test_inductive_load import add
+    db = _weak_board()
+    add(db, 'R5', '2.2k', [('1', '', '+5V'), ('2', '', '+6V')])
+    add(db, 'C5', '47uF', [('1', '', '+6V'), ('2', '', 'GND')])
+    add(db, 'U1', 'OPA1652', [('8', 'V+', '+6V'), ('4', 'V-', 'GND')])
+    db['native_pintype'].update({'U1.8': 'power_in', 'U1.4': 'power_in'})
+    rows = [f for f in Lint(db).run() if f['rule'] == 'PWR-A01' and f['detail'].startswith('+6V')]
+    assert rows and rows[0]['kind'] == 'INFO' and '弱驱动，R=R5 2.2k' in rows[0]['detail']
+
+
+def test_a_resistor_to_an_undriven_net_is_no_weak_drive():
+    from lint import Lint
+    from test_inductive_load import add
+    db = _weak_board(resistor=False)
+    add(db, 'R64', '10k', [('1', '', 'NREF'), ('2', '', 'NOWHERE')])
+    add(db, 'C64', '100n', [('1', '', 'NOWHERE'), ('2', '', 'GND')])
+    rows = [f for f in Lint(db).run() if f['rule'] == 'PWR-A02' and 'U19.7' in f['detail']]
+    assert rows and rows[0]['kind'] == 'FINDING'

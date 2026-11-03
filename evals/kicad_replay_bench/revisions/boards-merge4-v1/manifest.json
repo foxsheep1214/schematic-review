@@ -1,0 +1,487 @@
+{
+ "revision": "boards-merge4-v1",
+ "field_changes": {
+  "rf1-c2000-float-flyback.plan.checks_total": {
+   "before": 368,
+   "after": 367
+  },
+  "rf1-c2000-float-flyback.plan.functions": {
+   "before": [
+    {
+     "id": "FN-EXT-CPUIN1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-CPUOUT1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-IN1",
+     "members": 5,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-J1",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-OUT1",
+     "members": 7,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-GROUND",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 17,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ],
+   "after": [
+    {
+     "id": "FN-EXT-CPUIN1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-CPUOUT1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-IN1",
+     "members": 5,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-J1",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-OUT1",
+     "members": 7,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-GROUND",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 16,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ]
+  },
+  "rf1-c2000-float-flyback-intent.plan.checks_total": {
+   "before": 368,
+   "after": 367
+  },
+  "rf1-c2000-float-flyback-intent.plan.functions": {
+   "before": [
+    {
+     "id": "FN-EXT-CPUIN1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-CPUOUT1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-IN1",
+     "members": 5,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-J1",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-OUT1",
+     "members": 7,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-GROUND",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 17,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ],
+   "after": [
+    {
+     "id": "FN-EXT-CPUIN1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-CPUOUT1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-IN1",
+     "members": 5,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-J1",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-OUT1",
+     "members": 7,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-GROUND",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 16,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ]
+  },
+  "rf1-c2000-float-flyback-frames.plan.checks_total": {
+   "before": 393,
+   "after": 392
+  },
+  "rf1-c2000-float-flyback-frames.plan.functions": {
+   "before": [
+    {
+     "id": "FN-EXT-CPUIN1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-CPUOUT1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-IN1",
+     "members": 5,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-J1",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-OUT1",
+     "members": 7,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-PRI-FLYBACK",
+     "members": 102,
+     "states": [
+      "startup",
+      "run",
+      "fault"
+     ]
+    },
+    {
+     "id": "FN-SYS-GROUND",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 17,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ],
+   "after": [
+    {
+     "id": "FN-EXT-CPUIN1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-CPUOUT1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-IN1",
+     "members": 5,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-J1",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-OUT1",
+     "members": 7,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-PRI-FLYBACK",
+     "members": 102,
+     "states": [
+      "startup",
+      "run",
+      "fault"
+     ]
+    },
+    {
+     "id": "FN-SYS-GROUND",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 16,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ]
+  }
+ },
+ "scope": [
+  "rf1 的 HV_BIAS 只经 R10/R9 100k 接到 VOUT_N 的绕组来源：kΩ 级偏置供电是合法弱驱动，PWR-A01 由疑似无驱动 FINDING 改为带 R 值的 INFO，计划少一行（368→367，frames 393→392）及对应框架成员；不表示该偏置的压降或电气合格。"
+ ],
+ "parents": {
+  "revisions/boards-merge3-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge3-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge3-v1/expected.json": "ae0e51297f4cb5e26bd514ed65d3f72e5e15307a58b342063cce2b3e6900df15",
+  "revisions/boards-merge3-v1/manifest.json": "2d9a1752b8a53c7e9b2e08702171755c54d1da20bedc8df8b4ed0e1517bcd823"
+ },
+ "derived_files": {
+  "revisions/boards-merge4-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge4-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge4-v1/expected.json": "778724c71bae42d0cdd232cbe19942170d8bac2197c39c591ec2fc30aaabf13e"
+ }
+}

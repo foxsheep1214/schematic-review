@@ -598,6 +598,10 @@ class Lint:
                     self.add('PWR-A01', '供电路径阻值未明',
                              f'{n}: 可能经 {uncertain["path"]} 接到 {uncertain["source"]}；未知阻值 {uncertain["unknown_resistors"]}，不判断路',
                              kind='CANDIDATE', source_trace=uncertain)
+                elif weak := self.powertree.weak_source(n):
+                    self.add('PWR-A01', '电源轨经电阻弱驱动',
+                             f'{n}: 弱驱动，R={weak["resistor"]} {weak["value"]}，来自 {weak["via"]}（来源 {weak["source"]}）；'
+                             '不是悬空，负载电流下的压降按 PWR/DEV 规则另核', kind='INFO', source_trace=weak)
                 else:
                     self.add('PWR-A01', '电源轨疑似无驱动',
                              f'{n} ({len(nds)}节点): {sorted(self.refs_of(n))[:6]}')
@@ -640,10 +644,16 @@ class Lint:
                 elif not entry and not (STARTUP_PIN_RE.match(pn or '') and self._resistor_fed(n)):
                     # a high-voltage start-up pin is fed through its start-up resistor by design, whatever its value
                     uncertain = self._unknown_supply_path(n)
+                    weak = None if uncertain else self.powertree.weak_source(n)
                     if uncertain:
                         self.add('PWR-A02', '供电路径阻值未明',
                                  f'{node} ({pn}) <- {n}: 未知阻值 {uncertain["unknown_resistors"]}，可能来源 {uncertain["source"]}，不判断路',
                                  ref, kind='CANDIDATE', source_trace=uncertain)
+                    elif weak:
+                        self.add('PWR-A02', '电源脚经电阻弱驱动',
+                                 f'{node} ({pn}) <- {n}: 弱驱动，R={weak["resistor"]} {weak["value"]}，来自 {weak["via"]}'
+                                 f'（来源 {weak["source"]}）；不是悬空，该脚静态电流下的压降与脚义（偏置/参考/供电）按手册另核',
+                                 ref, kind='INFO', source_trace=weak)
                     else:
                         self.add('PWR-A02', '电源球所在轨无驱动', f'{node} ({pn}) <- {n}', ref)
 

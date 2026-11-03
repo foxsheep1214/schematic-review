@@ -6774,5 +6774,26 @@
   "file": "scripts/checkers/domains.py",
   "old": "        if not zero and passive_stress.midpoint_ground(graph, net):\n",
   "new": "        if False:\n"
+ },
+ {
+  "id": "M1106",
+  "name": "a pin fed through a kilo-ohm resistor is reported undriven",
+  "file": "scripts/lint.py",
+  "old": "                    elif weak:\n",
+  "new": "                    elif False:\n"
+ },
+ {
+  "id": "M1107",
+  "name": "a rail fed through a kilo-ohm resistor is reported undriven",
+  "file": "scripts/lint.py",
+  "old": "                elif weak := self.powertree.weak_source(n):\n",
+  "new": "                elif False:\n"
+ },
+ {
+  "id": "M1108",
+  "name": "a weak feed needs no source on the far side",
+  "file": "scripts/checkers/powertree.py",
+  "old": "            found = self.source_of(other) or feed.source_of(other)\n",
+  "new": "            found = {'source': other, 'path': []}\n"
  }
 ]
