@@ -257,3 +257,49 @@ def test_module_pin_names_with_subscripts_are_read():
                                       ('4', 'V_{O}', 'VO5V'), ('5', 'TRIM', 'TRIM'), ('6', '0V', 'GND')])
     side = isolation_sides.model(NetGraph(db), 'U102')
     assert side['sides'][0]['nets'] == ['GNDD', 'POE_ACTIVE', 'VDD_POE_IN'] and side['power_outputs'] == ['4']
+
+
+# 6. Dual MOS per channel (FS8205A G1/S1/D12, G2/S2/D12) and lettered isolator sides (MAX14850 VCCA/GNDA, VCCB/GNDB).
+def test_dual_mos_is_two_channels_sharing_the_drain():
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    from checkers import power_switch
+    db = empty()
+    add(db, 'U2', 'FS8205A', [('1', 'D12', 'DRN'), ('2', 'S1', 'GND_ISO'), ('3', 'S1', 'GND_ISO'), ('4', 'G1', 'OD'),
+                              ('5', 'G2', 'OC'), ('6', 'S2', 'GND'), ('7', 'S2', 'GND'), ('8', 'D12', 'DRN')])
+    db['device_kinds'] = {'U2': {'kind': 'mosfet', 'citation': 'FS8205A datasheet p1'}}
+    db['parts']['U2']['prim'] = 'Q_Dual_NMOS'
+    inventory = power_switch.build_inventory(db)
+    switches = [s for state in inventory['states'] for s in state['switches'] if s['ref'] == 'U2']
+    by_gate = {s['gate_net']: s for s in switches}
+    assert set(by_gate) == {'OD', 'OC'}
+    assert by_gate['OD']['source_net'] == 'GND_ISO' and by_gate['OC']['source_net'] == 'GND'
+    assert by_gate['OD']['drain_net'] == by_gate['OC']['drain_net'] == 'DRN'
+    assert {s['channel'] for s in switches} == {'1', '2'}
+
+
+def test_unindexed_dual_mos_channels_stay_unresolved():
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    from checkers import power_switch
+    db = empty()
+    add(db, 'Q2', 'SiZ270DT', [('1', 'G', 'GA'), ('2', 'D', 'VMOT'), ('5', 'S', 'SRC'), ('8', 'G', 'GB'), ('9', 'S', 'PHASE')])
+    db['device_kinds'] = {'Q2': {'kind': 'mosfet', 'citation': 'SiZ270DT datasheet p1'}}
+    inventory = power_switch.build_inventory(db)
+    switches = [s for state in inventory['states'] for s in state['switches'] if s['ref'] == 'Q2']
+    assert {s['gate_net'] for s in switches} == {'GA', 'GB'}
+    assert all('channel-pin-map:Q2' in s['gaps'] and s['source_net'] is None for s in switches)
+
+
+def test_lettered_isolator_sides_follow_supply_letters_not_channel_digits():
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    from checkers.netgraph import NetGraph
+    from checkers import isolation_sides
+    db = empty()
+    add(db, 'U103', 'MAX14850', [('1', 'VCCA', '3V3'), ('8', 'GNDA', 'GND'), ('2', 'INA1', 'M-CLK'), ('4', 'OUTA1', 'M-MISO'),
+                                 ('16', 'VCCB', 'VEE'), ('9', 'GNDB', 'AGND'), ('15', 'OUTB1', 'B1'), ('12', 'INB2', 'B2')])
+    db['device_kinds'] = {'U103': {'kind': 'isolator', 'citation': 'MAX14850 p11'}}
+    side = isolation_sides.model(NetGraph(db), 'U103')
+    assert side['mechanism'] == 'digital_isolator'
+    assert [s['nets'] for s in side['sides']] == [['3V3', 'GND', 'M-CLK', 'M-MISO'], ['AGND', 'B1', 'B2', 'VEE']]

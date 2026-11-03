@@ -104,8 +104,15 @@ def model(graph, ref, intent=None):
                 groups = (primary, secondary)
     elif groups is None and (graph.role_kind(ref) == 'isolator' or re.match(r'^(ADUM\d|ISO\d|SI8[46]\d|CA-IS\d)', mpn)):
         mechanism = 'digital_isolator'
-        groups = tuple([p for p in actual if re.fullmatch(r'.*(?:[12]|[AB])', names[p], re.I)
-                        and names[p].upper().endswith(suffix)] for suffix in ('1', '2'))
+        # Side letters on the supplies (VCCA/GNDA, VCCB/GNDB: MAX14850) name the sides; the trailing channel digit of
+        # INA1/OUTB2 is a channel, not a side (boards-merge4). Otherwise VDD1/GND1 digits name the sides (ADuM).
+        lettered = {p: m.group(1).upper() for p in actual
+                    if (m := re.fullmatch(r'(?:VCC|VDD|VDDIO|GND|IN|OUT|I/?O|EN|DE|RE)([AB])\d*', names[p], re.I))}
+        if {lettered.get(p) for p in actual if re.fullmatch(r'(?:VCC|VDD)[AB]', names[p], re.I)} == {'A', 'B'}:
+            groups = tuple([p for p in actual if lettered.get(p) == side] for side in ('A', 'B'))
+        else:
+            groups = tuple([p for p in actual if re.fullmatch(r'.*(?:[12]|[AB])', names[p], re.I)
+                            and names[p].upper().endswith(suffix)] for suffix in ('1', '2'))
         if not all(groups):
             groups = tuple([p for p in actual if names[p].upper().endswith(suffix)] for suffix in ('A', 'B'))
     if mechanism is None:

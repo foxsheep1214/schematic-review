@@ -468,10 +468,15 @@
      ]
     }
    ]
+  },
+  "r02-dasduino-coreplus.plan.checks_total": {
+   "before": 389,
+   "after": 391
   }
  },
  "scope": [
-  "rf1 的 HV_BIAS 只经 R10/R9 100k 接到 VOUT_N 的绕组来源：kΩ 级偏置供电是合法弱驱动，PWR-A01 由疑似无驱动 FINDING 改为带 R 值的 INFO，计划少一行（368→367，frames 393→392）及对应框架成员；不表示该偏置的压降或电气合格。"
+  "rf1 的 HV_BIAS 只经 R10/R9 100k 接到 VOUT_N 的绕组来源：kΩ 级偏置供电是合法弱驱动，PWR-A01 由疑似无驱动 FINDING 改为带 R 值的 INFO，计划少一行（368→367，frames 393→392）及对应框架成员；不表示该偏置的压降或电气合格。",
+  "r02 U5（NMOS-DUAL，G1/S1/D1 与 G2/S2/D2）按通道拆成两个开关对象，第二通道补 DRV-E01/DRV-C02 各一行（389→391）；不表示驱动或 SOA 已核。"
  ],
  "parents": {
   "revisions/boards-merge3-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
@@ -482,6 +487,6 @@
  "derived_files": {
   "revisions/boards-merge4-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
   "revisions/boards-merge4-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
-  "revisions/boards-merge4-v1/expected.json": "778724c71bae42d0cdd232cbe19942170d8bac2197c39c591ec2fc30aaabf13e"
+  "revisions/boards-merge4-v1/expected.json": "754acaa40354e6e5e23a84f5efec0c80ba341a98be8ed99ca536af58c372e5c7"
  }
 }

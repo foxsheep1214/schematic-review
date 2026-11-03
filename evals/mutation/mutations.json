@@ -6851,5 +6851,33 @@
   "file": "scripts/checkers/isolation_sides.py",
   "old": "    spelled = {p: pw.pin_aliases(names[p]) or (names[p],) for p in actual}\n",
   "new": "    spelled = {p: (names[p],) for p in actual}\n"
+ },
+ {
+  "id": "M1118",
+  "name": "a dual MOS keeps only its first gate",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "        if len(gates) < 2:\n",
+  "new": "        if True:\n"
+ },
+ {
+  "id": "M1119",
+  "name": "a shared D12 drain belongs to no channel",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "                                and (m.group(1) == index.group(1) or (len(m.group(1)) > 1 and index.group(1) in m.group(1)))):\n",
+  "new": "                                and m.group(1) == index.group(1)):\n"
+ },
+ {
+  "id": "M1120",
+  "name": "unindexed dual-MOS channels guess their drain and source",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "            else:\n                gaps.append('channel-pin-map:' + ref)\n",
+  "new": "            else:\n                nodes.update(drain=graph.node_named(ref, 'drain'), source=graph.node_named(ref, 'source'))\n"
+ },
+ {
+  "id": "M1121",
+  "name": "lettered isolator sides fall back to channel digits",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "        if {lettered.get(p) for p in actual if re.fullmatch(r'(?:VCC|VDD)[AB]', names[p], re.I)} == {'A', 'B'}:\n",
+  "new": "        if False:\n"
  }
 ]
