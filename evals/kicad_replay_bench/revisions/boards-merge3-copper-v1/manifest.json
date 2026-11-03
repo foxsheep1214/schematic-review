@@ -1,0 +1,15 @@
+{
+ "revision": "boards-merge3-copper-v1",
+ "parents": {
+  "revisions/boards-merge2-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge2-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge2-v1/expected.json": "01cb6d29116eb165956ff65ec69459bbf3c9659a6236e3f68d1b256bc1bd9267",
+  "revisions/boards-merge2-v1/manifest.json": "7909f2f2295a866931384f5557e21b835a57a148764c88adbf52d5637d1bd3a1"
+ },
+ "derived_files": {
+  "revisions/boards-merge3-copper-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge3-copper-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge3-copper-v1/expected.json": "f7672bc5fe9c2f657712a0b5256577231294dd09ef8b40a67055656a55366080"
+ },
+ "scope": "Only r03 check total 440 to436 after native TP3/TP4 copper is retained despite procurement DNP. Four exact removed rows inspected in /tmp/codex-work/boards-merge3/copper-native-{before,after}; all other 194 fields unchanged. Not an electrical verdict."
+}

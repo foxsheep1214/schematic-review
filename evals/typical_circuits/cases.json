@@ -494,6 +494,11 @@
      "rule": "DRV-A03",
      "match": "U3（mosfet，状态 as-built）：栅极网 OD 由 U2.1 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，并核上电、复位与驱动高阻时栅极状态",
      "why": "栅极由方向未知的 IC 脚驱动：核该脚为输出及上电状态"
+    },
+    {
+     "rule": "DRV-A03",
+     "match": "U3（mosfet，状态 as-built）：栅极网 OC 由 U2.3 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，并核上电、复位与驱动高阻时栅极状态",
+     "why": "合并步 4：FS8205A 双 MOS 按通道拆开，第二通道 G2/S2（OC 充电控制）独立成对象；栅极由方向未知的 IC 脚驱动，核该脚为输出及上电状态"
     }
    ],
    "known_false_alarms": [],
@@ -736,31 +741,6 @@
     },
     {
      "rule": "NET-A07",
-     "match": "U2.10 -> unconnected-(U2-~{DSR}-Pad10): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
-     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
-    },
-    {
-     "rule": "NET-A07",
-     "match": "U2.11 -> unconnected-(U2-~{RI}-Pad11): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
-     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
-    },
-    {
-     "rule": "NET-A07",
-     "match": "U2.12 -> unconnected-(U2-~{DCD}-Pad12): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
-     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
-    },
-    {
-     "rule": "NET-A07",
-     "match": "U2.15 -> unconnected-(U2-R232-Pad15): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
-     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
-    },
-    {
-     "rule": "NET-A07",
-     "match": "U2.9 -> unconnected-(U2-~{CTS}-Pad9): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
-     "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
-    },
-    {
-     "rule": "NET-A07",
      "match": "U4.4 -> unconnected-(U4-SENSOR_VP-Pad4): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
      "why": "输入脚标为 NC：确认内部上下拉或允许悬空"
     },
@@ -792,7 +772,33 @@
      "why": "USB-C 母座 SBU 未用并已标 NC；NC 豁免要求连接器库身份可核（HRO 自建库不在受控名单），保守保留"
     }
    ],
-   "fixed_false_alarms": [],
+   "fixed_false_alarms": [
+    {
+     "rule": "NET-A07",
+     "match": "U2.10 -> unconnected-(U2-~{DSR}-Pad10): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "合并2B：WCH CH340DS1 V3C pp3–4脚表/p4未用I/O可悬空；严格匹配CH340C/G的物理脚与功能，不豁免其他输入。"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.11 -> unconnected-(U2-~{RI}-Pad11): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "合并2B：WCH CH340DS1 V3C pp3–4脚表/p4未用I/O可悬空；严格匹配CH340C/G的物理脚与功能，不豁免其他输入。"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.12 -> unconnected-(U2-~{DCD}-Pad12): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "合并2B：WCH CH340DS1 V3C pp3–4脚表/p4未用I/O可悬空；严格匹配CH340C/G的物理脚与功能，不豁免其他输入。"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.15 -> unconnected-(U2-R232-Pad15): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "合并2B：WCH CH340DS1 V3C pp3–4脚表/p4未用I/O可悬空；严格匹配CH340C/G的物理脚与功能，不豁免其他输入。"
+    },
+    {
+     "rule": "NET-A07",
+     "match": "U2.9 -> unconnected-(U2-~{CTS}-Pad9): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+     "why": "合并2B：WCH CH340DS1 V3C pp3–4脚表/p4未用I/O可悬空；严格匹配CH340C/G的物理脚与功能，不豁免其他输入。"
+    }
+   ],
    "note": "修复前 SR 无法解析本板（多单元运放共享电源脚被判重复归网）"
   },
   {
@@ -879,45 +885,44 @@
      "rule": "PRO-E02",
      "match": "D25 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DSR2_ISO；轨名提示=无，型号提示=无。",
      "why": "TVS/ESD 跨信号或电源：核 VRWM/VBR/VC 与信号电平"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "U2 (USBLC6-2SC6 USBLC6-2SC6 Power_Protection:USBLC6-2SC6) 跨 /USB/UD+；通道 1-6 物理脚=['1', '6'] 网络=['/USB/UD+']，返回=['GND1']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "U2 (USBLC6-2SC6 USBLC6-2SC6 Power_Protection:USBLC6-2SC6) 跨 /USB/UD-；通道 3-4 物理脚=['3', '4'] 网络=['/USB/UD-']，返回=['GND1']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "U2 (USBLC6-2SC6 USBLC6-2SC6 Power_Protection:USBLC6-2SC6) 跨 VBUS；通道 5 物理脚=['5'] 网络=['VBUS']，返回=['GND1']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D6 (SM712_SOT23 SM712 Diode:SM712_SOT23) 跨 /RS485/A0；通道 1 物理脚=['1'] 网络=['/RS485/A0']，返回=['GND2']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D6 (SM712_SOT23 SM712 Diode:SM712_SOT23) 跨 /RS485/B0；通道 2 物理脚=['2'] 网络=['/RS485/B0']，返回=['GND2']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D8 (SM712_SOT23 SM712 Diode:SM712_SOT23) 跨 /RS485/A3；通道 1 物理脚=['1'] 网络=['/RS485/A3']，返回=['GND2']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D8 (SM712_SOT23 SM712 Diode:SM712_SOT23) 跨 /RS485/B3；通道 2 物理脚=['2'] 网络=['/RS485/B3']，返回=['GND2']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
     }
    ],
-   "known_false_alarms": [
-    {
-     "rule": "NET-A01",
-     "match": "/USB/CTS0 <- U3.41 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/CTS3 <- U3.46 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/DCD0 <- U3.33 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/DSR0 <- U3.29 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/RI0 <- U3.32 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/RTS0 <- U3.40 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    },
-    {
-     "rule": "NET-A01",
-     "match": "/USB/RTS3 <- U3.45 (CH344Q)",
-     "why": "人工裁决 2026-10-20 OVER_STRICT：CH344Q 未用的调制解调/GPIO 双向脚只挂层次标签；NET-A01 对 IC 双向脚已降 CANDIDATE（relax:NET-A01）"
-    }
-   ],
+   "known_false_alarms": [],
    "fixed_false_alarms": [
     {
      "rule": "PWR-A01",
@@ -1013,6 +1018,41 @@
      "rule": "PRO-E02",
      "match": "D25 (D_TVS SMF15CA Device:D_TVS) 跨 /UART/DSR2_ISO；轨名提示=NoneV，型号提示=NoneV。",
      "why": "typical-boards 审读判为误报，已修（CANDIDATE）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/CTS0 <- U3.41 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/CTS3 <- U3.46 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/DCD0 <- U3.33 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/DSR0 <- U3.29 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/RI0 <- U3.32 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/RTS0 <- U3.40 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/USB/RTS3 <- U3.45 (CH344Q)",
+     "why": "合并步 4 已修：CH344Q 双向脚带原生 no-connect 标记，NET-A01 按有意不接记 INFO（原裁决 2026-10-20 OVER_STRICT）"
     }
    ]
   },
@@ -1030,6 +1070,16 @@
      "rule": "NET-A01",
      "match": "unconnected-(J1-Pad4) <- J1.4 (DS1133-S60BPX，脚名 ?) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
      "why": "引脚未连接且没有 NC 标记：图纸卫生，确认有意悬空"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D3 (SM712_SOT23 SM712_SOT23 Diode:SM712_SOT23) 跨 Net-(D3-A1)；通道 1 物理脚=['1'] 网络=['Net-(D3-A1)']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D3 (SM712_SOT23 SM712_SOT23 Diode:SM712_SOT23) 跨 Net-(D3-A2)；通道 2 物理脚=['2'] 网络=['Net-(D3-A2)']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
     }
    ],
    "known_false_alarms": [],
@@ -1372,7 +1422,23 @@
    "id": "usb232r02",
    "category": "USB-UART (FT232)",
    "fixture": "fixtures/usb232r02.xml",
-   "expected": [],
+   "expected": [
+    {
+     "rule": "PRO-E02",
+     "match": "U1 (USBLC6-2SC6 USBLC6-2SC6 Power_Protection:USBLC6-2SC6) 跨 /D-；通道 1-6 物理脚=['1', '6'] 网络=['/D-', '/DN']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "U1 (USBLC6-2SC6 USBLC6-2SC6 Power_Protection:USBLC6-2SC6) 跨 /D+；通道 3-4 物理脚=['3', '4'] 网络=['/D+', '/DP']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "U1 (USBLC6-2SC6 USBLC6-2SC6 Power_Protection:USBLC6-2SC6) 跨 /VBUS；通道 5 物理脚=['5'] 网络=['/VBUS']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    }
+   ],
    "known_false_alarms": [],
    "fixed_false_alarms": [
     {
@@ -1770,6 +1836,31 @@
      "rule": "PWR-A02",
      "match": "U4.36 (REGIN，原生 power_in) <- GND",
      "why": "BQ76952 内部 LDO 输入 REGIN 接地：手册允许不用内部 LDO 时接 VSS，但需审查者按手册确认，作候选保留"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D3 (ESD5B5.0ST1G ESD5B5.0ST1G Diode:SZESD9B5.0ST5G) 跨 /ESP32-C3 MCU/USB_D-；轨名提示=无，型号提示=无。同网 IC 脚 U5.26(GPIO18/USB_D-) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D4 (ESD5B5.0ST1G ESD5B5.0ST1G Diode:SZESD9B5.0ST5G) 跨 /ESP32-C3 MCU/USB_D+；轨名提示=无，型号提示=无。同网 IC 脚 U5.27(GPIO19/USB_D+) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D12 (SMCJ70A SMCJ70A LibreSolar:D_Zener) 跨 /BAT-；通道 2 物理脚=['2'] 网络=['/BAT-']，返回=['/BAT+']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D8 (PESD2CANFD24V-TR PESD2CANFD Power_Protection:NUP2105L) 跨 /CAN_H；通道 2 物理脚=['2'] 网络=['/CAN_H']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
+    },
+    {
+     "rule": "PRO-E02",
+     "match": "D8 (PESD2CANFD24V-TR PESD2CANFD Power_Protection:NUP2105L) 跨 /CAN_L；通道 1 物理脚=['1'] 网络=['/CAN_L']，返回=['GND']",
+     "why": "合并步3逐对象审读：真实 TVS 通道/局部轨钳位的工作窗、残压与能量需要核对，是有效审查线索；不代表已确认电气违规。USBLC6 按 ST 功能图包含两数据线和 VBUS；其余按原生实际端点，不用封装推针义。"
     }
    ],
    "known_false_alarms": [
@@ -2085,6 +2176,11 @@
      "rule": "DRV-A03",
      "match": "Q3（mosfet，状态 as-built）：栅极网 /VIN_VEXT_G 由 U2.11 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，并核上电、复位与驱动高阻时栅极状态",
      "why": "栅极由方向未知的 BQ25672 脚驱动（SDRV、ACDRV1/2）：核该脚为输出及上电状态"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "/BAT_PACK_4S <- JP14.1",
+     "why": "DNP 排除后电池选项网只剩已贴 JP14 一端；保留实际装配连接审查线索。"
     }
    ],
    "known_false_alarms": [],
@@ -2103,7 +2199,7 @@
    "expected": [
     {
      "rule": "PWR-A01",
-     "match": "+1V2_SEC (18节点): ['C54', 'C56', 'C57', 'C60', 'C61', 'U21']",
+     "match": "+1V2_SEC (",
      "why": "副 MCU 1.2 V 的唯一来源是负载开关 U38（FPF2001），U38 值为 DNI：按图装配时 +1V2_SEC 无供电，核装配意图"
     },
     {
@@ -2360,6 +2456,11 @@
      "rule": "RST-A02",
      "match": "U17（状态 as-built）：U17.7 与本器件供电轨同为 +3V3_SEC，使能/复位随电源同时建立；需确认器件允许该时序或另加延时",
      "why": "MAX14932 使能与供电同网：核器件允许的上电时序"
+    },
+    {
+     "rule": "NET-A01",
+     "match": "Net-(U38-ON) <- R55.1",
+     "why": "DNI U38 排除后仅剩已贴零欧 R55 一端，装配依赖须核；不检查未贴 U38 的引脚。"
     }
    ],
    "known_false_alarms": [],

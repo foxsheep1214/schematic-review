@@ -54,7 +54,7 @@ class InterfaceTests(unittest.TestCase):
 
     def test_a_chain_is_a_link_interface_with_its_own_parts_and_takes_the_nets_it_touches(self):
         fault = self.by_id['LINK-POWER_PROTECTION-U1.FAULT']
-        self.assertEqual((fault['kind'], fault['parts'], nets(fault)), ('LINK', ['C41', 'R42', 'U9'], {'FLT', 'FLT_A'}))
+        self.assertEqual((fault['kind'], fault['parts'], nets(fault)), ('LINK', ['C41', 'R42', 'U9'], {'FLT', 'FLT_A', 'FLT_C'}))  # R42 reaches U1.7 through the series chain
         self.assertEqual(nets(self.by_id['LINK-STARTUP-U1.HV']), {'HV_IN', 'RECT'})
         self.assertEqual(self.by_id['LINK-ISOLATION-PRI/SEC']['parts'], ['CY1'])
         pair_nets = set().union(*(nets(i) for i in self.section['interfaces'] if i['kind'] == 'CIRCUIT_PAIR'))

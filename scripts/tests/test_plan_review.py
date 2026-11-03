@@ -467,13 +467,13 @@ class ReviewPlanTests(unittest.TestCase):
         checks = build_review_plan(db)['checks']
         refs = sorted({x['object']['ref'] for x in checks if x['rule'] == 'PRO-C02'})
         # 2026-10-26（方案 B）：跨网与地的防护钳位（信号线 D3、电源轨 D4、板内 IO 的 D5）只出 PRO-E02；
-        # 串在门限链里的齐纳 D1 与门限脚 U1 仍是 PRO-C02 两侧窗口。两路 ESD 阵列 D6 有三个网，不是两端钳位，
-        # 由连接器的 PRO-D03 带走，也不出两侧窗口。
+        # 串在门限链里的齐纳 D1 与门限脚 U1 仍是 PRO-C02 两侧窗口。两路 ESD 阵列 D6 逐通道进 PRO-E02，
+        # 连接器的 PRO-D03 仍核挂线；不出两侧窗口。
         self.assertEqual(refs, ['D1', 'U1'])
         connector = next(x for x in checks if x['rule'] == 'PRO-D03' and x['object']['ref'] == 'J1')
         self.assertNotIn('clamp_refs', connector)   # 2026-10-26: the connector row asks topology only
         from lint import Lint
-        self.assertEqual(sorted(x['ref'] for x in Lint(db).run() if x['rule'] == 'PRO-E02'), ['D3', 'D4', 'D5'])
+        self.assertEqual(sorted(x['ref'] for x in Lint(db).run() if x['rule'] == 'PRO-E02'), ['D3', 'D4', 'D5', 'D6', 'D6'])
 
     def test_sensor_discrimination_is_planned_per_controller_pin(self):
         checks = [x for x in build_review_plan(threshold_db())['checks'] if x['rule'] == 'ANA-C04']

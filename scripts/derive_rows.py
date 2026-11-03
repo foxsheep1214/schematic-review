@@ -142,7 +142,7 @@ def derive(plan, results):
             continue
         if existing is not None:
             for field in ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings',
-                          'bom_constraint', 'requirement_clauses'):
+                          'bom_constraint', 'requirement_clauses', 'proposal_override'):
                 if field in existing:
                     row[field] = existing[field]
             existing.clear()

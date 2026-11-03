@@ -1,0 +1,221 @@
+{
+ "legacy_sites": 247,
+ "legacy_auto_before": 177,
+ "legacy_auto_after": 177,
+ "regressions": [],
+ "new_sites": [
+  {
+   "board": "antmicro--jetson-agx-thor-baseboard",
+   "defect": "D-TVS-VRWM",
+   "site": "D54+/SoM_Power/~{PWR_BTN}",
+   "note": "replace compliant working-voltage contract with TPD1E0B04DPYR",
+   "targets": [
+    "PRO-E02"
+   ],
+   "contract": {
+    "normal_v": 5.0,
+    "mutant_vrwm_v": 3.6,
+    "source": "TI TPD1E0B04 datasheet recommended working range, adjudication lane-1 F058",
+    "baseline": "synthetic TVS working-voltage contract, not an orderable MPN"
+   },
+   "paired_baseline": true,
+   "auto": [
+    "PRO-E02"
+   ],
+   "other": [],
+   "pointed": [
+    "DEV-D02",
+    "PRO-E02"
+   ]
+  },
+  {
+   "board": "antmicro--stm32h7-hdmi-board",
+   "defect": "D-TVS-VRWM",
+   "site": "D22+/Debug + PD/USB_VBUS",
+   "note": "replace compliant working-voltage contract with PTVS9V0S1UR,115",
+   "targets": [
+    "PRO-E02"
+   ],
+   "contract": {
+    "normal_v": 15.0,
+    "mutant_vrwm_v": 9.0,
+    "source": "Nexperia PTVS9V0S1UR VRWM=9V, adjudication lane-2 F49",
+    "baseline": "synthetic TVS working-voltage contract, not an orderable MPN"
+   },
+   "paired_baseline": true,
+   "auto": [
+    "PRO-E02"
+   ],
+   "other": [],
+   "pointed": [
+    "DEV-D02",
+    "PRO-E02",
+    "PWR-C01",
+    "PWR-C09",
+    "PWR-C10",
+    "PWR-D02",
+    "PWR-E02",
+    "PWR-T01",
+    "PWR-T03",
+    "RST-E01",
+    "RST-T01",
+    "RST-T03"
+   ]
+  },
+  {
+   "board": "antmicro--stm32h7-hdmi-board",
+   "defect": "D-MLCC-RATING-BELOW-PD",
+   "site": "C139+C140+/Debug + PD/USB_VBUS",
+   "note": "25V synthetic contract -> exact TDK 10V MLCC under controlled 15V mode",
+   "targets": [
+    "DEV-A01",
+    "DEV-C01"
+   ],
+   "contract": {
+    "normal_v": 15,
+    "rating_v": 10,
+    "mpn": "C1005X6S1A105K050BC",
+    "source": "https://product.tdk.com/en/search/capacitor/ceramic/mlcc/info?part_no=C1005X6S1A105K050BC"
+   },
+   "paired_baseline": true,
+   "auto": [],
+   "other": [],
+   "pointed": [
+    "PRO-E02",
+    "PWR-C01",
+    "PWR-C09",
+    "PWR-C10",
+    "PWR-D02",
+    "PWR-E02",
+    "PWR-T01",
+    "PWR-T03",
+    "RST-E01",
+    "RST-T01",
+    "RST-T03"
+   ]
+  },
+  {
+   "board": "antmicro--rdimm-ddr4-tester",
+   "defect": "D-SHUNT-MPN-CONFLICT",
+   "site": "R199+VDD1V2+VDDQ",
+   "note": "keep 5mOhm value and Kelvin topology, replace MPN with 0Ohm CR1206-J/-000ELF",
+   "targets": [
+    "DEV-D04"
+   ],
+   "contract": {
+    "value_ohm": 0.005,
+    "mpn_ohm": 0,
+    "source": "Bourns CR1206-J/-000ELF qualification; lane-3 F146"
+   },
+   "paired_baseline": true,
+   "auto": [],
+   "other": [],
+   "pointed": [
+    "PWR-A06",
+    "PWR-C01",
+    "PWR-C09",
+    "PWR-C10",
+    "PWR-D02",
+    "PWR-T01",
+    "PWR-T03",
+    "RST-T03",
+    "SIG-E02",
+    "SIG-T03"
+   ]
+  },
+  {
+   "board": "antmicro--rdimm-ddr4-tester",
+   "defect": "D-I2C-ADDRESS-COLLISION",
+   "site": "U19+U20+3V3_SYS",
+   "note": "U20 ADDRSEL GND (0x10) -> VDD (0x1F), matching U19",
+   "targets": [
+    "SIG-D01"
+   ],
+   "contract": {
+    "pin": "ADDRSEL.6",
+    "baseline_addresses": [
+     31,
+     16
+    ],
+    "mutant_addresses": [
+     31,
+     31
+    ],
+    "source": "Microchip PAC1954 DS20006539D address selection; lane-3 F147"
+   },
+   "paired_baseline": true,
+   "auto": [],
+   "other": [],
+   "pointed": [
+    "DEV-C05",
+    "DEV-D01",
+    "DEV-D02",
+    "DEV-D05",
+    "PWR-A06",
+    "PWR-C01",
+    "PWR-C09",
+    "PWR-C10",
+    "PWR-D02",
+    "PWR-T01",
+    "PWR-T03",
+    "RST-T03",
+    "SIG-D13"
+   ]
+  },
+  {
+   "board": "antmicro--rdimm-ddr4-tester",
+   "defect": "D-XTAL-LOAD",
+   "site": "Y2+C190+C193",
+   "note": "C190,C193 -> 1uF",
+   "targets": [
+    "CLK-C01"
+   ],
+   "contract": {
+    "cl_pf": 18,
+    "capacitors": [
+     "C190",
+     "C193"
+    ],
+    "source": "Abracon ABM8G ordering code CL=18pF, lane-3 M01"
+   },
+   "paired_baseline": false,
+   "auto": [],
+   "other": [],
+   "pointed": [
+    "CLK-C01"
+   ]
+  },
+  {
+   "board": "antmicro--kria-k26-devboard",
+   "defect": "D-CMOS-UNUSED-IN-FLOAT",
+   "site": "U36",
+   "note": "disconnect unused input A5.13; retain output O5.12 and DAP NC markers",
+   "targets": [
+    "NET-A07",
+    "DEV-D05"
+   ],
+   "contract": {
+    "input": "U36.13",
+    "source": "onsemi 74LCX07/D Rev2 p3 note4, lane-4 F219"
+   },
+   "paired_baseline": true,
+   "auto": [
+    "NET-A07"
+   ],
+   "other": [],
+   "pointed": [
+    "DEV-C05",
+    "DEV-D01",
+    "DEV-D02",
+    "DEV-D05",
+    "NET-A07",
+    "PWR-C09",
+    "PWR-C10",
+    "PWR-D02",
+    "PWR-T03",
+    "SIG-D13"
+   ]
+  }
+ ],
+ "note": "TVS auto hits are parameter-retrieval review hints, not computed voltage-window verdicts. MLCC/shunt/address/crystal numeric checks remain automatic gaps. Paired baselines are explicit synthetic parameter contracts where original source is already defective; no invented orderable MPN."
+}

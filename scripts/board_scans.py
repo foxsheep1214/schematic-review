@@ -10,11 +10,11 @@ import re
 
 from checkers.netgraph import is_ground, is_rail, rail_voltage
 from decoupling import parse_capacitance
-from part_words import CAPACITOR, CONNECTOR, CRYSTAL, FERRITE, IC, INDUCTOR, JUMPER, LED_RE, RESISTOR, SWITCH, TESTPOINT
+from part_words import CAPACITOR, CONNECTOR, CRYSTAL, FERRITE, IC, INDUCTOR, JUMPER, LED_RE, RESISTOR, SWITCH, TESTPOINT, pin_aliases
 from checkers.passive_stress import rated_voltage   # BOM 值字段里写明的耐压：100nF/16V、10uF 25V、4.7u/X5R/50V
 
 POLARITY = {'+': 'plus', 'P': 'plus', 'POS': 'plus', '-': 'minus', 'N': 'minus', 'NEG': 'minus'}
-REFDES_RE = re.compile(r'^(?!.*\?)[A-Za-z][A-Za-z0-9_/+-]*?\d+[A-Za-z]?$')   # USB-C1, PS2_KBD1, PGM/DBG1 are annotated
+REFDES_RE = re.compile(r'^(?!.*\?)(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9][A-Za-z0-9_/+-]*$')   # USB-C1, PS2_KBD1, PGM/DBG1 are annotated
 I2C_LINE_RE = re.compile(r'^(SDA|SCL)\d*$')
 # UM10204 §7.1：Rp_max = tr/(0.8473·Cb)，Rp_min = (Vpullup-VOL)/IOL。取最宽松的一端，超出就没有哪种模式能成立：
 # 标准模式 tr 1 µs（表 11）、Cb 只算一个脚的 10 pF；增强快速模式 IOL 20 mA、VOL 0.4 V（表 10）。
@@ -128,6 +128,8 @@ def led_current_limit(lint):
 
 
 def _is_i2c_net(net):
+    if re.search(r'(?:^|[^A-Z0-9])I2S(?:[^A-Z0-9]|$)', str(net).upper()):
+        return False
     return any(I2C_LINE_RE.match(token) for token in re.split(r'[^A-Z0-9]+', str(net).upper()))
 
 
@@ -194,7 +196,17 @@ def i2c_pullups(lint):
         ics = [ref for ref in refs if lint.graph.kind(ref) == IC]
         access = [ref for ref in refs if lint.graph.kind(ref) == TESTPOINT]
         series = [ref for ref in refs if lint.graph.kind(ref) == RESISTOR and ref not in resistors]
-        if not resistors and len(ics) == 1 and len(ics) + len(access) + len(series) == len(refs):
+        models = {ref: str(lint.parts.get(ref, {}).get('part', '')) for ref in ics}
+        ftdi = [ref for ref in ics if re.fullmatch(r'FT4232H[A-Z0-9/-]*', models[ref], re.I)]
+        buffer = [ref for ref in ics if re.fullmatch(r'TXU0[23]04[A-Z0-9/-]*', models[ref], re.I)]
+        declared_bus = any(bus.get(k) in segment for bus in ((lint.intent.get('i2c') or {}).get('buses') or [])
+                           for k in ('sda', 'scl'))
+        if not resistors and ftdi and buffer and set(ics) == set(ftdi + buffer) and not declared_bus:
+            lint.add('SIG-A03', '固定缓冲段上的 I2C 名称线索',
+                     f'{net}: {ics} 为 MPSSE/固定方向缓冲段，名称不证明开漏角色；实际二极管后的总线侧及上拉另核',
+                     ics[0], kind='INFO')
+            continue
+        if not resistors and access and len(ics) == 1 and len(ics) + len(access) + len(series) == len(refs):
             # 只有一颗 IC，其余是测试点：对端和上拉在生产/调试夹具上（连接器仍按候选，板外主机未必有上拉）。
             lint.add('SIG-A03', 'I²C 线无上拉',
                      f'{net}: 只有 {ics[0]} 和测试点 {access[:6]}，对端与上拉在生产/调试夹具；'
@@ -281,7 +293,7 @@ def can_bus_short(lint):
     """SIG-A06：收发器 CANH/CANL 同网，或两网间跨接 ≤1 Ω 电阻（G04-032）；120 Ω 端接不算。"""
     from solve_dividers import parse_resistor
     for ref, part in sorted(lint.parts.items()):
-        if part.get('nc') or lint.graph.kind(ref) != IC:
+        if lint.graph.kind(ref) != IC:
             continue
         nodes = {CAN_PIN_RE.match(str(lint.pinname.get(node, '')).strip()).group(1).upper(): node
                  for node in _nodes(lint, ref) if CAN_PIN_RE.match(str(lint.pinname.get(node, '')).strip())}
@@ -364,7 +376,7 @@ def crystal_shared(lint):
     for ref, nets in _passive_crystals(lint):
         on_both = []
         for ic in sorted(lint.parts):
-            if lint.parts[ic].get('nc') or lint.graph.kind(ic) != IC:
+            if lint.graph.kind(ic) != IC:
                 continue
             reached = {lint.pin2net.get(node) for node in _nodes(lint, ic)
                        if OSCILLATOR_PIN_RE.search(str(lint.pinname.get(node, '')).strip())}
@@ -403,7 +415,7 @@ def floating_inputs(lint):
         if _pin_class(types[node]) != 'IN':
             continue
         ref = node.partition('.')[0]
-        if lint.parts.get(ref, {}).get('nc'):
+        if not lint.graph.is_fitted(ref):
             continue
         net = lint.pin2net.get(node)
         declared_nc = node in no_connect or (net is not None and net in lint.pseudo)
@@ -412,9 +424,38 @@ def floating_inputs(lint):
         # unknown parts, IC inputs and unmarked dangling nets still get checked.
         if declared_nc and lint.graph.qualified_connector_contact(ref):
             continue
+        if lint.graph.kind(ref) == TESTPOINT and re.search(r'(?:^|:)MOUNTINGHOLE(?:_PAD)?$',
+                str(lint.parts.get(ref, {}).get('prim', '')), re.I):
+            continue
+        from part_words import unused_input_permission
+        permission = unused_input_permission(lint.db, node)
+        if permission:
+            lint.add('NET-A07', '手册允许未用输入开路', f'{node}: {permission}', ref, kind='INFO')
+            continue
         # A datasheet NC pin typed input has no input to bias.
         from lint import DATASHEET_NC_PIN_RE
         if DATASHEET_NC_PIN_RE.match(lint.pinname.get(node, '')):
+            continue
+        # Narrow exact-family pin policies from the four-board adjudications. NC marks the unused mode.
+        identity = str(lint.parts.get(ref, {}).get('part') or '')
+        pin_names = pin_aliases(lint.pinname.get(node), node.partition('.')[2])
+        permission = None
+        if re.fullmatch(r'MAX3421E[A-Z0-9+/-]*', identity, re.I) and any(re.fullmatch(r'GPIN[0-7]', name) for name in pin_names):
+            permission = 'MAX3421E Pin Description'
+        elif re.fullmatch(r'TPS2372[A-Z0-9/-]*', identity, re.I) and 'AUTCLS' in pin_names:
+            permission = 'TPS2372 Pin Functions'
+        elif identity.upper() == 'TXU0204BQAR' and any(re.fullmatch(r'[AB][1-4]', name) for name in pin_names):
+            permission = 'TXU0204 section 9.3.1.1 unused-input permission (not a guaranteed 5M ohm bias)'
+        elif identity.upper() == '93LC66BT-I/MC' and 'ORG' in pin_names and node.endswith('.6'):
+            permission = '93LC66B pin table: fixed x16 variant, ORG is NC'
+        elif re.fullmatch(r'KSZ9031RNXIC(?:-TR)?', identity, re.I) and 'LDO_O' in pin_names and node.endswith('.43'):
+            supplies = lint.graph.named_pins(ref, re.compile(r'^(?:DVDDL|AVDDL)\w*$', re.I))
+            paths = [lint.power_path(n) for n in set(supplies.values())]
+            if paths and all(path and path['source'].partition('.')[0] != ref for path in paths):
+                permission = 'KSZ9031 pin43 LDO_O unused with externally sourced DVDDL/AVDDL'
+        if declared_nc and permission:
+            lint.add('NET-A07', '手册允许未用输入开路',
+                     f'{node}: {identity} 按 {permission} 允许当前未用接法；其他型号/脚不豁免', ref, kind='INFO')
             continue
         if net is None:
             lint.add('NET-A07', '声明输入脚无网络', f'{node}: 引脚类型为输入，网表中没有网络', ref)

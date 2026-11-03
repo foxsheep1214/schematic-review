@@ -82,6 +82,71 @@ def normalize(value):
     return str(value).strip().upper() if value is not None else ''
 
 
+def copper_tie(ref, part):
+    """A fabricated net tie, distinct from a removable zero-ohm resistor."""
+    text = ' '.join(str(part.get(k) or '') for k in ('prim', 'jedec', 'part'))
+    return bool(re.match(r'^NT\d', ref, re.I) or re.search(r'(?:^|[:\s])NET[-_ ]?TIE(?:[-_\s]|$)', text, re.I))
+
+
+def board_copper(ref, part):
+    """Copper remains when excluded from procurement; a component test pin does not."""
+    return copper_tie(ref, part) or bool(re.search(r'(?:^|:)TestPoint_Pad(?:_|$)', str(part.get('jedec') or ''), re.I))
+
+
+def mechanical_part(part):
+    """Native mechanical identities, never a word in a free-form description."""
+    text = ' '.join(str(part.get(k) or '') for k in ('prim', 'jedec'))
+    return bool(re.search(r'MOUNTINGHOLE|FIDUCIAL|(?:^|[:_\s])LOGO(?:_|\s|$)|DIN[-_ ]?965(?:_|\s|$)', text, re.I))
+
+
+def load_socket(part):
+    """A removable memory card consumes board power; its socket is not an input source."""
+    return any(str(part.get(k) or '').upper() == 'HYC77-TF09-200' for k in ('part', 'value'))
+
+
+def official_pin_types(part):
+    """Exact manufacturer's direction table, not a generic name-based override."""
+    model = str(part.get('part') or part.get('value') or '')
+    if re.fullmatch(r'MC14093B(?:(?:DT|D|F)(?:R2)?G?)?', model, re.I):
+        types = {str(p): 'output' if p in (3, 4, 10, 11) else 'power_in' if p in (7, 14) else 'input'
+                 for p in range(1, 15)}
+        return types, 'onsemi MC14093B/D Rev11 Aug2025 p1 Pin Assignment (14-pin D/DT/F)'
+    return None
+
+
+# Supply ports of multi-output PMICs and integrated off-line switches, from the exact family's pin table (boards-merge4):
+# the switch pins (to the storage inductor or the transformer), the output ports (each its own supply node) and the
+# feedback/control pins. Names compare through pin_aliases; an unknown family has no ports here.
+SUPPLY_PORT_RULES = (
+    (r'TPS6502[0-3][A-Z0-9]*',
+     {'switch': ('L1', 'L2', 'L3'), 'outputs': ('VDCDC1', 'VDCDC2', 'VDCDC3', 'VLDO1', 'VLDO2', 'VRTC'),
+      'feedback': ('VDCDC1', 'VDCDC2', 'VDCDC3')},
+     'TI TPS65023 SLVS670 Terminal Functions: L1/L2/L3 switch pins, VDCDC1-3 converter output sense, VLDO1/2 and VRTC '
+     'outputs'),
+    (r'TOP2(?:0[0-4]|1[0-4]|2[1-7])[A-Z0-9-]*',
+     {'switch': ('D', 'DRAIN'), 'outputs': (), 'feedback': ('C', 'CONTROL')},
+     'Power Integrations TOPSwitch-II TOP221-227 / TOPSwitch TOP200-204 Pin Functional Description: DRAIN = integrated '
+     'MOSFET drain, CONTROL = feedback and supply input, SOURCE = MOSFET source and return'),
+)
+
+
+def supply_ports(part):
+    """{'switch', 'outputs', 'feedback': names, 'citation'} for an exact PMIC/integrated-switch family, else None. The part
+    number or the value may name it (a TOP204 symbol valued TOP227 is still the family)."""
+    for key in ('part', 'value'):
+        model = str((part or {}).get(key) or '')
+        for pattern, ports, citation in SUPPLY_PORT_RULES:
+            if re.fullmatch(pattern, model, re.I):
+                return dict(ports, citation=citation)
+    return None
+
+
+def supply_port(part, name, pin, which):
+    """The pin plays the port `which` ('switch', 'outputs', 'feedback') in its family's table."""
+    ports = supply_ports(part)
+    return bool(ports) and any(alias in ports[which] for alias in pin_aliases(name, pin))
+
+
 OVERBAR_RE = re.compile(r'^~\{(.+)\}$')
 INDEX_SUFFIX_RE = re.compile(r'^(.*?[A-Z])[_-]?(\d+)$')
 
@@ -104,6 +169,10 @@ def pin_aliases(name, pin=None):
             found.append(value)
 
     add(raw)
+    if raw == '+VO':
+        add('VO')  # positive DC/DC module output; the original signed pin name is preserved
+    for candidate in list(found):
+        add(re.sub(r'_\{([A-Za-z0-9]+)\}', r'\1', candidate))  # KiCad inline subscripts: P_{GOOD} -> PGOOD
     for candidate in list(found):
         # 上划线与等价的低有效写法前缀只影响写法，不影响功能名本身
         match = OVERBAR_RE.match(candidate)
@@ -171,7 +240,11 @@ def pin_signature(pin_names):
     mixed names give None; datasheet and explicit library evidence remain
     independent of this pin-name heuristic.
     """
-    aliases = {a for name, pin in pin_names for a in pin_aliases(name, pin)}
+    pins = list(pin_names)
+    # B01/C01/E01 are matrix contacts, not three transistor terminals.
+    if len(pins) > 8 or any(re.fullmatch(r'[BCEGDS]0\d+', normalize(name)) for name, pin in pins):
+        return None
+    aliases = {a for name, pin in pins for a in pin_aliases(name, pin)}
     base = (bool(aliases & {'B', 'BASE'})
             and bool(aliases & {'C', 'COLLECTOR', 'COL'})
             and bool(aliases & {'E', 'EMITTER', 'EMIT'}))
@@ -201,14 +274,44 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
             return UNKNOWN, f'datasheet says {kind} but symbol pin names say {sig}'
         return kind, 'datasheet'
     signature = pin_signature(pin_names)
-    blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))
+    primitive = normalize(part.get('prim'))
+    if copper_tie(ref, part):
+        return JUMPER, 'part-keyword'
+    if any(re.search(r'(?:^|:)TRAFO(?:_\d+)?$', normalize(part.get(k))) for k in ('part', 'value', 'prim')):
+        return TRANSFORMER, 'part-keyword'
+    if mechanical_part(part) and not signature:
+        return TESTPOINT, 'part-keyword'
+    if any(re.fullmatch(r'HYC77-TF09-200|FH34SRJ-\d+S-0\.5SH\(50\)', str(part.get(k) or ''), re.I)
+           for k in ('part', 'value')):
+        return CONNECTOR, 'part-keyword'
+    if normalize(part.get('part')) == 'HY931147C':
+        return CONNECTOR, 'part-keyword'  # HanRun integrated magnetics RJ45, Rev.A/1 p1; not an active IC
+    if pin_count == 2 and re.match(r'^(?:L|FB)\d', ref, re.I) and normalize(part.get('value')) == 'FB':
+        return FERRITE, 'part-keyword'
+    if re.fullmatch(r'SM\d+B-GHS-TB(?:\(LF\))?(?:\(SN\))?', normalize(part.get('part'))):
+        return CONNECTOR, 'part-keyword'  # JST GH physical header MPN; no package-brand inference
+    # Placed functional symbols outrank a port label (a terminal named "Relay") or a package category.
+    if re.search(r'(?:^|:)MOUNTINGHOLE(?:_PAD)?$|(?:^|:)FIDUCIAL(?:_|$)', primitive):
+        return TESTPOINT, 'part-keyword'
+    if primitive.startswith('OSCILLATOR:') or re.fullmatch(r'TCXO|VCTCXO|OCXO', normalize(part.get('value'))):
+        return IC, 'part-keyword'
+    if re.search(r'(?:^|:)SW_DIP_SPSTX?\d*', normalize(part.get('jedec'))):
+        return SWITCH, 'part-keyword'
+    if re.fullmatch(r'(?:[^:]+:)?NOVA_PROGRAMMER_HEADER', primitive):
+        return CONNECTOR, 'part-keyword'
+    if re.search(r'(?:^|:)CONN_\d+(?:X\d+)?(?:_|$)|(?:^|:)EASYC(?:[-_]|$)', primitive):
+        return CONNECTOR, 'part-keyword'
+    blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim'))
     ic_ref = re.match(r'^(U|M|IC)\d', ref, re.I)
+    controller_pins = {a for name, pin in pin_names for a in pin_aliases(name, pin)}
+    if ic_ref and pin_count is not None and pin_count >= 4 and {'GATE', 'SENSE', 'IN'} <= controller_pins:
+        return IC, 'pin-names'  # an ideal-diode controller is not a two-terminal diode
     transistor = {kind for pattern, kind in KEYWORD_KINDS if kind in (MOSFET, BJT)
                   and not (pattern == SI_FET_WORDS and ic_ref) and re.search(pattern, blob, re.I)}
     # Optical libraries also contain emitters and integrated RGB controllers.
     # Only the OPTO heuristic uses the symbol identity without its namespace;
     # other explicit library categories (e.g. Transistor_BJT:) stay intact.
-    opto_identity = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'jedec'))
+    opto_identity = ' '.join(normalize(part.get(key)) for key in ('part', 'value'))
     prim_identity = normalize(part.get('prim'))
     opto_identity += ' ' + prim_identity.split(':', 1)[-1]
     for pattern, kind in KEYWORD_KINDS:
@@ -255,3 +358,58 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
                 return UNKNOWN, 'refdes-prefix conflicts with pin count'
             return kind, 'refdes-prefix'
     return UNKNOWN, 'no classification evidence'
+
+
+def unused_input_permission(db, node):
+    """A physically unused pin explicitly permitted open by an exact model's own pin table.
+
+    No permission propagates to connected nets, related families or unknown packages.
+    These citations are manufacturer clauses from the adjudicated board evidence.
+    """
+    ref, _, pin = node.partition('.')
+    part = (db.get('parts') or {}).get(ref, {})
+    model = str(part.get('part') or part.get('value') or '')
+    aliases = {a.rstrip('#') for a in pin_aliases((db.get('pinname') or {}).get(node), pin)}
+    net = (db.get('pin2net') or {}).get(node)
+    if net is not None and len((db.get('nets') or {}).get(net, [])) > 1:
+        return None
+    if re.fullmatch(r'CH340[CG]', model, re.I):
+        pins = {'3': 'RXD', '9': 'CTS', '10': 'DSR', '11': 'RI', '12': 'DCD', '15': 'R232'}
+        if pin in pins and pins[pin] in aliases:
+            return 'WCH CH340DS1 V3C pp3–4 pin table / p4 unused I/O note (CH340C/G)'
+    if re.fullmatch(r'TPS709(?:\d{2})?(?:DBV[RT])?', model, re.I) and pin == '3' and 'EN' in aliases:
+        return 'TI TPS709 SBVS186H p3 Table5-1 / p13 §7.4: EN may float, internal 300nA pull-up'
+    if re.fullmatch(r'TPS5430(?:DDA[RT]?)?', model, re.I) and pin == '5' and 'ENA' in aliases:
+        return 'TI TPS5430 SLVS632L p3 Table4-1 / p9 §6.3.3: ENA may float, internal 1.5Mohm pull-up'
+    return None
+
+
+def usb_connector_type(part):
+    """Physical USB family from its own symbol/model, never from VBUS or a CC-less controller."""
+    text = ' '.join(str(part.get(k) or '') for k in ('part', 'prim', 'value'))
+    if re.fullmatch(r'U262-161N-4BVC11', str(part.get('part') or ''), re.I):
+        return 'Type-C'
+    if re.search(r'(?:USB[_ -]?C(?:_|\b)|TYPE[_ -]?C(?:_|\b))', text, re.I):
+        return 'Type-C'
+    if re.search(r'MICRO[_ -]?B[_ -]?USB|USB[_ -]?B[_ -]?MICRO', text, re.I):
+        return 'Micro-B'
+    if re.search(r'(?:^|[:\s])USB[_ -]?A(?:_|\b)', text, re.I):
+        return 'Type-A'
+    if re.search(r'(?:^|[:\s])USB[_ -]?B(?:_|\b)', text, re.I):
+        return 'Type-B'
+    return None
+
+
+def supply_pin_routes(part, pins):
+    """Backward source-search routes of exact multi-terminal identities; never short all terminals.
+
+    C_Feedthrough's placed symbol has through pins 1/2 and shunt pin 3. BAT54C (Nexperia 2022-07-01
+    p1 Table2, https://assets.nexperia.com/documents/data-sheet/BAT54C.pdf) is 1/2 anodes, 3 common cathode.
+    Caller still verifies population, grounds and the presence of each actual physical pin.
+    """
+    primitive = str(part.get('prim') or '').rsplit(':', 1)[-1]
+    if re.fullmatch(r'C_Feedthrough(?:_Small)?', primitive, re.I) and set(pins) == {'1', '2', '3'}:
+        return (('1', '2', 'feedthrough-symbol'), ('2', '1', 'feedthrough-symbol'))
+    if str(part.get('part') or '').upper() == 'BAT54C' and set(pins) == {'1', '2', '3'}:
+        return (('3', '1', 'BAT54C-p1-Table2'), ('3', '2', 'BAT54C-p1-Table2'))
+    return ()

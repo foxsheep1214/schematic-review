@@ -10,7 +10,7 @@ import re
 from part_words import (ANCHOR_ROLES, ANODE_NAMES, BJT, CATHODE_NAMES, COIL_NAMES, CONNECTOR, CONNECTOR_CONTACT_RE,
                         DIODE, DRAIN_NAMES, GATE_NAMES, IC, IC_ROLES, LED_ANODE_NAMES, LED_CATHODE_NAMES, MOSFET, OPTO,
                         PASSIVE_LINKS, RELAY, SOURCE_NAMES, TVS, ZENER, classify, name_matches, normalize, pin_aliases,
-                        pin_signature)
+                        pin_signature, board_copper, copper_tie, official_pin_types)
 
 GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
 # 可带 RAIL_ 前缀（RAIL_3V3_PRI）；VSYS/VMOT/VLED/VM、P5V/P3V3 也是轨名；HV/HV80_IN/HV_BIAS 是高压轨（HVEN、HV_EN 是使能）；
@@ -99,15 +99,32 @@ class NetGraph:
         self.nets = db.get('nets', {})
         self.parts = db.get('parts', {})
         self.pin2net = db.get('pin2net', {})
-        self.pinname = db.get('pinname', {})
-        self.pintype = db.get('pintype', {})
+        self.pinname = db.get('resolved_pinname', db.get('pinname', {}))
+        self.pintype = dict(db.get('pintype', {}))
+        self.native_pintype = dict(db.get('native_pintype') or {})
+        self.pin_type_sources = {}
+        self.pin_evidence = db.get('pin_name_evidence', {})
+        self.pin_conflicts = db.get('pin_name_conflicts', [])
         self.pseudo = set(db.get('pseudo_nets', []))
         self._pins = {}
         for node, net in self.pin2net.items():
             ref, _, pin = node.partition('.')
             self._pins.setdefault(ref, {})[pin] = net
+        for ref, part in self.parts.items():
+            rule = official_pin_types(part)
+            if not rule:
+                continue
+            types, citation = rule
+            for pin, native_type in types.items():
+                node = ref + '.' + pin
+                if node not in self.pin2net:
+                    continue
+                self.pin_type_sources[node] = {'native': self.native_pintype.get(node),
+                                               'effective': native_type, 'citation': citation}
+                self.native_pintype[node] = native_type
+                self.pintype[node] = {'input': 'IN', 'output': 'OUT', 'power_in': 'POWER'}[native_type]
         if fitted is None:
-            fitted = {ref for ref, part in self.parts.items() if not part.get('nc')}
+            fitted = {ref for ref, part in self.parts.items() if not part.get('nc') or board_copper(ref, part)}
         self.fitted = set(fitted)
         self._kinds = {}
 
@@ -280,6 +297,48 @@ class NetGraph:
             other = ends[0] if ends[1] == net else ends[1]
             out.append((ref, other))
         return sorted(out)
+
+    def low_resistance_peers(self, net):
+        """Fitted <=1 ohm links/net ties for source discovery; not a voltage-drop signoff."""
+        from solve_dividers import parse_resistor
+        found, queue = {net: []}, [net]
+        while queue:
+            current = queue.pop(0)
+            for ref, other in self.neighbors(current):
+                part = self.parts.get(ref, {})
+                value = parse_resistor(part.get('value')) if self.kind(ref) == 'resistor' else None
+                tie = copper_tie(ref, part)
+                if other in found or not (tie or (value and 0 <= value['kohm'] <= .001)):
+                    continue
+                found[other] = found[current] + [ref]
+                if not is_ground(other):
+                    queue.append(other)
+        return found
+
+    def signal_source_peers(self, net, max_ohm=10000.0, max_hops=3, stop_nets=()):
+        """Source identity through <=10 kohm total series resistance, distinct from <=1 ohm rail equivalence.
+        10 kohm is a discovery envelope including board-proven 4k7 with tolerance, not a drive-strength,
+        logic-level or timing guarantee. Never cross grounds/rails to collect unrelated output pins.
+        """
+        from solve_dividers import parse_resistor
+        stops = set(stop_nets)
+        found, costs, queue = {net: []}, {net: 0.0}, [(net, 0)]
+        while queue:
+            current, hops = queue.pop(0)
+            if current in stops or hops >= max_hops or (current != net and (is_ground(current) or is_rail(current))):
+                continue
+            for ref, other in self.neighbors(current, {'resistor', 'jumper'}):
+                part = self.parts.get(ref, {})
+                value = {'kohm': 0.0} if copper_tie(ref, part) else parse_resistor(part.get('value')) if self.kind(ref) == 'resistor' else None
+                if value is None or value['kohm'] < 0 or other in stops or is_ground(other) or is_rail(other):
+                    continue
+                cost = costs[current] + value['kohm'] * 1000
+                if cost > max_ohm or cost >= costs.get(other, float('inf')):
+                    continue
+                costs[other] = cost
+                found[other] = found[current] + [ref]
+                queue.append((other, hops + 1))
+        return found
 
     def series_path(self, net, kinds=PASSIVE_LINKS, max_hops=3, fitted_only=True):
         """沿串联无源件扩展出的等电位候选网络集合（含起点）。"""

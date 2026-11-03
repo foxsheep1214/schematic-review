@@ -1,0 +1,1205 @@
+{
+ "revision": "boards-merge4-v1",
+ "field_changes": {
+  "rf1-c2000-float-flyback.plan.checks_total": {
+   "before": 368,
+   "after": 367
+  },
+  "rf1-c2000-float-flyback.plan.functions": {
+   "before": [
+    {
+     "id": "FN-EXT-CPUIN1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-CPUOUT1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-IN1",
+     "members": 5,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-J1",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-OUT1",
+     "members": 7,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-GROUND",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 17,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ],
+   "after": [
+    {
+     "id": "FN-EXT-CPUIN1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-CPUOUT1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-IN1",
+     "members": 5,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-J1",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-OUT1",
+     "members": 7,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-GROUND",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 16,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ]
+  },
+  "rf1-c2000-float-flyback-intent.plan.checks_total": {
+   "before": 368,
+   "after": 367
+  },
+  "rf1-c2000-float-flyback-intent.plan.functions": {
+   "before": [
+    {
+     "id": "FN-EXT-CPUIN1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-CPUOUT1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-IN1",
+     "members": 5,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-J1",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-OUT1",
+     "members": 7,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-GROUND",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 17,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ],
+   "after": [
+    {
+     "id": "FN-EXT-CPUIN1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-CPUOUT1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-IN1",
+     "members": 5,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-J1",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-OUT1",
+     "members": 7,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-GROUND",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 16,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ]
+  },
+  "rf1-c2000-float-flyback-frames.plan.checks_total": {
+   "before": 393,
+   "after": 392
+  },
+  "rf1-c2000-float-flyback-frames.plan.functions": {
+   "before": [
+    {
+     "id": "FN-EXT-CPUIN1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-CPUOUT1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-IN1",
+     "members": 5,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-J1",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-OUT1",
+     "members": 7,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-PRI-FLYBACK",
+     "members": 102,
+     "states": [
+      "startup",
+      "run",
+      "fault"
+     ]
+    },
+    {
+     "id": "FN-SYS-GROUND",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 17,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ],
+   "after": [
+    {
+     "id": "FN-EXT-CPUIN1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-CPUOUT1",
+     "members": 13,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-IN1",
+     "members": 5,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-J1",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-OUT1",
+     "members": 7,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-PRI-FLYBACK",
+     "members": 102,
+     "states": [
+      "startup",
+      "run",
+      "fault"
+     ]
+    },
+    {
+     "id": "FN-SYS-GROUND",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 16,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ]
+  },
+  "r02-dasduino-coreplus.plan.checks_total": {
+   "before": 389,
+   "after": 391
+  },
+  "rf1-c2000-float-flyback.decoupling.group_gaps": {
+   "before": {
+    "UNSPECIFIED/candidate:Reg1:RAIL_8V25": [
+     "confirm-group-and-return:candidate:Reg1:RAIL_8V25",
+     "need-one-explicit-return-net",
+     "official-full-pinout:Reg1",
+     "population:Reg1"
+    ],
+    "UNSPECIFIED/candidate:Reg1:VIN": [
+     "confirm-group-and-return:candidate:Reg1:VIN",
+     "need-one-explicit-return-net",
+     "official-full-pinout:Reg1",
+     "population:Reg1"
+    ],
+    "UNSPECIFIED/candidate:Reg2:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:Reg2:RAIL_3V3_PRI",
+     "official-full-pinout:Reg2",
+     "population:C14",
+     "population:C16",
+     "population:C25",
+     "population:C31",
+     "population:C35",
+     "population:C38",
+     "population:Reg2"
+    ],
+    "UNSPECIFIED/candidate:Reg2:RAIL_8V25": [
+     "confirm-group-and-return:candidate:Reg2:RAIL_8V25",
+     "official-full-pinout:Reg2",
+     "population:C10",
+     "population:C13",
+     "population:C19",
+     "population:C21",
+     "population:Reg2"
+    ],
+    "UNSPECIFIED/candidate:Reg3:RAIL_3V3_SEC": [
+     "confirm-group-and-return:candidate:Reg3:RAIL_3V3_SEC",
+     "official-full-pinout:Reg3",
+     "population:C18",
+     "population:C45",
+     "population:Reg3"
+    ],
+    "UNSPECIFIED/candidate:Reg3:VOUT_P": [
+     "confirm-group-and-return:candidate:Reg3:VOUT_P",
+     "official-full-pinout:Reg3",
+     "population:C3",
+     "population:C4",
+     "population:C43",
+     "population:C44",
+     "population:Reg3"
+    ],
+    "UNSPECIFIED/candidate:U1:RAIL_8V25": [
+     "confirm-group-and-return:candidate:U1:RAIL_8V25",
+     "official-full-pinout:U1",
+     "population:C10",
+     "population:C13",
+     "population:C19",
+     "population:C21",
+     "population:U1"
+    ],
+    "UNSPECIFIED/candidate:U10:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U10:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U10",
+     "population:U10"
+    ],
+    "UNSPECIFIED/candidate:U10:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U10:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U10",
+     "population:U10"
+    ],
+    "UNSPECIFIED/candidate:U11:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U11:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U11",
+     "population:U11"
+    ],
+    "UNSPECIFIED/candidate:U11:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U11:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U11",
+     "population:U11"
+    ],
+    "UNSPECIFIED/candidate:U12:VOUT_N": [
+     "confirm-group-and-return:candidate:U12:VOUT_N",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U12",
+     "population:U12"
+    ],
+    "UNSPECIFIED/candidate:U12:VOUT_P": [
+     "confirm-group-and-return:candidate:U12:VOUT_P",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U12",
+     "population:U12"
+    ],
+    "UNSPECIFIED/candidate:U3:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U3:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U3",
+     "population:U3"
+    ],
+    "UNSPECIFIED/candidate:U3:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U3:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U3",
+     "population:U3"
+    ],
+    "UNSPECIFIED/candidate:U7:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U7:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U7",
+     "population:U7"
+    ],
+    "UNSPECIFIED/candidate:U7:RAIL_3V3_SEC": [
+     "confirm-group-and-return:candidate:U7:RAIL_3V3_SEC",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U7",
+     "population:U7"
+    ],
+    "UNSPECIFIED/candidate:U8:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U8:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U8",
+     "population:U8"
+    ],
+    "UNSPECIFIED/candidate:U8:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U8:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U8",
+     "population:U8"
+    ],
+    "UNSPECIFIED/candidate:U9:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U9:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U9",
+     "population:U9"
+    ],
+    "UNSPECIFIED/candidate:U9:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U9:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U9",
+     "population:U9"
+    ]
+   },
+   "after": {
+    "UNSPECIFIED/candidate:Reg1:RAIL_8V25": [
+     "confirm-group-and-return:candidate:Reg1:RAIL_8V25",
+     "need-one-explicit-return-net",
+     "official-full-pinout:Reg1",
+     "population:Reg1"
+    ],
+    "UNSPECIFIED/candidate:Reg1:VIN": [
+     "confirm-group-and-return:candidate:Reg1:VIN",
+     "need-one-explicit-return-net",
+     "official-full-pinout:Reg1",
+     "population:Reg1"
+    ],
+    "UNSPECIFIED/candidate:Reg2:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:Reg2:RAIL_3V3_PRI",
+     "official-full-pinout:Reg2",
+     "population:C14",
+     "population:C16",
+     "population:C25",
+     "population:C31",
+     "population:C35",
+     "population:C38",
+     "population:Reg2"
+    ],
+    "UNSPECIFIED/candidate:Reg2:RAIL_8V25": [
+     "confirm-group-and-return:candidate:Reg2:RAIL_8V25",
+     "official-full-pinout:Reg2",
+     "population:C10",
+     "population:C13",
+     "population:C19",
+     "population:C21",
+     "population:Reg2"
+    ],
+    "UNSPECIFIED/candidate:Reg3:RAIL_3V3_SEC": [
+     "confirm-group-and-return:candidate:Reg3:RAIL_3V3_SEC",
+     "official-full-pinout:Reg3",
+     "population:C18",
+     "population:C45",
+     "population:Reg3"
+    ],
+    "UNSPECIFIED/candidate:Reg3:VOUT_P": [
+     "confirm-group-and-return:candidate:Reg3:VOUT_P",
+     "official-full-pinout:Reg3",
+     "population:C3",
+     "population:C4",
+     "population:C43",
+     "population:C44",
+     "population:Reg3"
+    ],
+    "UNSPECIFIED/candidate:U1:RAIL_8V25": [
+     "confirm-group-and-return:candidate:U1:RAIL_8V25",
+     "official-full-pinout:U1",
+     "population:C10",
+     "population:C13",
+     "population:C19",
+     "population:C21",
+     "population:U1"
+    ],
+    "UNSPECIFIED/candidate:U10:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U10:3V3_CTRL",
+     "official-full-pinout:U10",
+     "population:C15",
+     "population:C26",
+     "population:C28",
+     "population:C32",
+     "population:C34",
+     "population:C39",
+     "population:U10"
+    ],
+    "UNSPECIFIED/candidate:U10:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U10:RAIL_3V3_PRI",
+     "official-full-pinout:U10",
+     "population:C14",
+     "population:C16",
+     "population:C25",
+     "population:C31",
+     "population:C35",
+     "population:C38",
+     "population:U10"
+    ],
+    "UNSPECIFIED/candidate:U11:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U11:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U11",
+     "population:U11"
+    ],
+    "UNSPECIFIED/candidate:U11:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U11:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U11",
+     "population:U11"
+    ],
+    "UNSPECIFIED/candidate:U12:VOUT_N": [
+     "confirm-group-and-return:candidate:U12:VOUT_N",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U12",
+     "population:U12"
+    ],
+    "UNSPECIFIED/candidate:U12:VOUT_P": [
+     "confirm-group-and-return:candidate:U12:VOUT_P",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U12",
+     "population:U12"
+    ],
+    "UNSPECIFIED/candidate:U3:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U3:3V3_CTRL",
+     "official-full-pinout:U3",
+     "population:C15",
+     "population:C26",
+     "population:C28",
+     "population:C32",
+     "population:C34",
+     "population:C39",
+     "population:U3"
+    ],
+    "UNSPECIFIED/candidate:U3:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U3:RAIL_3V3_PRI",
+     "official-full-pinout:U3",
+     "population:C14",
+     "population:C16",
+     "population:C25",
+     "population:C31",
+     "population:C35",
+     "population:C38",
+     "population:U3"
+    ],
+    "UNSPECIFIED/candidate:U7:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U7:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U7",
+     "population:U7"
+    ],
+    "UNSPECIFIED/candidate:U7:RAIL_3V3_SEC": [
+     "confirm-group-and-return:candidate:U7:RAIL_3V3_SEC",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U7",
+     "population:U7"
+    ],
+    "UNSPECIFIED/candidate:U8:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U8:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U8",
+     "population:U8"
+    ],
+    "UNSPECIFIED/candidate:U8:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U8:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U8",
+     "population:U8"
+    ],
+    "UNSPECIFIED/candidate:U9:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U9:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U9",
+     "population:U9"
+    ],
+    "UNSPECIFIED/candidate:U9:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U9:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U9",
+     "population:U9"
+    ]
+   }
+  },
+  "rf1-c2000-float-flyback-intent.decoupling.group_gaps": {
+   "before": {
+    "run/candidate:Reg1:RAIL_8V25": [
+     "confirm-group-and-return:candidate:Reg1:RAIL_8V25",
+     "need-one-explicit-return-net",
+     "official-full-pinout:Reg1"
+    ],
+    "run/candidate:Reg1:VIN": [
+     "confirm-group-and-return:candidate:Reg1:VIN",
+     "need-one-explicit-return-net",
+     "official-full-pinout:Reg1"
+    ],
+    "run/candidate:Reg2:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:Reg2:RAIL_3V3_PRI",
+     "official-full-pinout:Reg2"
+    ],
+    "run/candidate:Reg2:RAIL_8V25": [
+     "confirm-group-and-return:candidate:Reg2:RAIL_8V25",
+     "official-full-pinout:Reg2"
+    ],
+    "run/candidate:Reg3:RAIL_3V3_SEC": [
+     "confirm-group-and-return:candidate:Reg3:RAIL_3V3_SEC",
+     "official-full-pinout:Reg3"
+    ],
+    "run/candidate:Reg3:VOUT_P": [
+     "confirm-group-and-return:candidate:Reg3:VOUT_P",
+     "official-full-pinout:Reg3"
+    ],
+    "run/candidate:U1:RAIL_8V25": [
+     "confirm-group-and-return:candidate:U1:RAIL_8V25",
+     "official-full-pinout:U1"
+    ],
+    "run/candidate:U10:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U10:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U10"
+    ],
+    "run/candidate:U10:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U10:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U10"
+    ],
+    "run/candidate:U11:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U11:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U11"
+    ],
+    "run/candidate:U11:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U11:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U11"
+    ],
+    "run/candidate:U12:VOUT_N": [
+     "confirm-group-and-return:candidate:U12:VOUT_N",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U12"
+    ],
+    "run/candidate:U12:VOUT_P": [
+     "confirm-group-and-return:candidate:U12:VOUT_P",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U12"
+    ],
+    "run/candidate:U3:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U3:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U3"
+    ],
+    "run/candidate:U3:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U3:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U3"
+    ],
+    "run/candidate:U7:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U7:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U7"
+    ],
+    "run/candidate:U7:RAIL_3V3_SEC": [
+     "confirm-group-and-return:candidate:U7:RAIL_3V3_SEC",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U7"
+    ],
+    "run/candidate:U8:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U8:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U8"
+    ],
+    "run/candidate:U8:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U8:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U8"
+    ],
+    "run/candidate:U9:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U9:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U9"
+    ],
+    "run/candidate:U9:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U9:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U9"
+    ]
+   },
+   "after": {
+    "run/candidate:Reg1:RAIL_8V25": [
+     "confirm-group-and-return:candidate:Reg1:RAIL_8V25",
+     "need-one-explicit-return-net",
+     "official-full-pinout:Reg1"
+    ],
+    "run/candidate:Reg1:VIN": [
+     "confirm-group-and-return:candidate:Reg1:VIN",
+     "need-one-explicit-return-net",
+     "official-full-pinout:Reg1"
+    ],
+    "run/candidate:Reg2:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:Reg2:RAIL_3V3_PRI",
+     "official-full-pinout:Reg2"
+    ],
+    "run/candidate:Reg2:RAIL_8V25": [
+     "confirm-group-and-return:candidate:Reg2:RAIL_8V25",
+     "official-full-pinout:Reg2"
+    ],
+    "run/candidate:Reg3:RAIL_3V3_SEC": [
+     "confirm-group-and-return:candidate:Reg3:RAIL_3V3_SEC",
+     "official-full-pinout:Reg3"
+    ],
+    "run/candidate:Reg3:VOUT_P": [
+     "confirm-group-and-return:candidate:Reg3:VOUT_P",
+     "official-full-pinout:Reg3"
+    ],
+    "run/candidate:U1:RAIL_8V25": [
+     "confirm-group-and-return:candidate:U1:RAIL_8V25",
+     "official-full-pinout:U1"
+    ],
+    "run/candidate:U10:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U10:3V3_CTRL",
+     "official-full-pinout:U10"
+    ],
+    "run/candidate:U10:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U10:RAIL_3V3_PRI",
+     "official-full-pinout:U10"
+    ],
+    "run/candidate:U11:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U11:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U11"
+    ],
+    "run/candidate:U11:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U11:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U11"
+    ],
+    "run/candidate:U12:VOUT_N": [
+     "confirm-group-and-return:candidate:U12:VOUT_N",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U12"
+    ],
+    "run/candidate:U12:VOUT_P": [
+     "confirm-group-and-return:candidate:U12:VOUT_P",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U12"
+    ],
+    "run/candidate:U3:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U3:3V3_CTRL",
+     "official-full-pinout:U3"
+    ],
+    "run/candidate:U3:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U3:RAIL_3V3_PRI",
+     "official-full-pinout:U3"
+    ],
+    "run/candidate:U7:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U7:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U7"
+    ],
+    "run/candidate:U7:RAIL_3V3_SEC": [
+     "confirm-group-and-return:candidate:U7:RAIL_3V3_SEC",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U7"
+    ],
+    "run/candidate:U8:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U8:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U8"
+    ],
+    "run/candidate:U8:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U8:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U8"
+    ],
+    "run/candidate:U9:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U9:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U9"
+    ],
+    "run/candidate:U9:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U9:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U9"
+    ]
+   }
+  },
+  "rf1-c2000-float-flyback-frames.decoupling.group_gaps": {
+   "before": {
+    "run/candidate:Reg1:RAIL_8V25": [
+     "confirm-group-and-return:candidate:Reg1:RAIL_8V25",
+     "need-one-explicit-return-net",
+     "official-full-pinout:Reg1"
+    ],
+    "run/candidate:Reg1:VIN": [
+     "confirm-group-and-return:candidate:Reg1:VIN",
+     "need-one-explicit-return-net",
+     "official-full-pinout:Reg1"
+    ],
+    "run/candidate:Reg2:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:Reg2:RAIL_3V3_PRI",
+     "official-full-pinout:Reg2"
+    ],
+    "run/candidate:Reg2:RAIL_8V25": [
+     "confirm-group-and-return:candidate:Reg2:RAIL_8V25",
+     "official-full-pinout:Reg2"
+    ],
+    "run/candidate:Reg3:RAIL_3V3_SEC": [
+     "confirm-group-and-return:candidate:Reg3:RAIL_3V3_SEC",
+     "official-full-pinout:Reg3"
+    ],
+    "run/candidate:Reg3:VOUT_P": [
+     "confirm-group-and-return:candidate:Reg3:VOUT_P",
+     "official-full-pinout:Reg3"
+    ],
+    "run/candidate:U1:RAIL_8V25": [
+     "confirm-group-and-return:candidate:U1:RAIL_8V25",
+     "official-full-pinout:U1"
+    ],
+    "run/candidate:U10:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U10:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U10"
+    ],
+    "run/candidate:U10:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U10:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U10"
+    ],
+    "run/candidate:U11:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U11:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U11"
+    ],
+    "run/candidate:U11:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U11:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U11"
+    ],
+    "run/candidate:U12:VOUT_N": [
+     "confirm-group-and-return:candidate:U12:VOUT_N",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U12"
+    ],
+    "run/candidate:U12:VOUT_P": [
+     "confirm-group-and-return:candidate:U12:VOUT_P",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U12"
+    ],
+    "run/candidate:U3:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U3:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U3"
+    ],
+    "run/candidate:U3:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U3:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U3"
+    ],
+    "run/candidate:U7:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U7:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U7"
+    ],
+    "run/candidate:U7:RAIL_3V3_SEC": [
+     "confirm-group-and-return:candidate:U7:RAIL_3V3_SEC",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U7"
+    ],
+    "run/candidate:U8:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U8:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U8"
+    ],
+    "run/candidate:U8:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U8:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U8"
+    ],
+    "run/candidate:U9:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U9:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U9"
+    ],
+    "run/candidate:U9:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U9:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U9"
+    ]
+   },
+   "after": {
+    "run/candidate:Reg1:RAIL_8V25": [
+     "confirm-group-and-return:candidate:Reg1:RAIL_8V25",
+     "need-one-explicit-return-net",
+     "official-full-pinout:Reg1"
+    ],
+    "run/candidate:Reg1:VIN": [
+     "confirm-group-and-return:candidate:Reg1:VIN",
+     "need-one-explicit-return-net",
+     "official-full-pinout:Reg1"
+    ],
+    "run/candidate:Reg2:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:Reg2:RAIL_3V3_PRI",
+     "official-full-pinout:Reg2"
+    ],
+    "run/candidate:Reg2:RAIL_8V25": [
+     "confirm-group-and-return:candidate:Reg2:RAIL_8V25",
+     "official-full-pinout:Reg2"
+    ],
+    "run/candidate:Reg3:RAIL_3V3_SEC": [
+     "confirm-group-and-return:candidate:Reg3:RAIL_3V3_SEC",
+     "official-full-pinout:Reg3"
+    ],
+    "run/candidate:Reg3:VOUT_P": [
+     "confirm-group-and-return:candidate:Reg3:VOUT_P",
+     "official-full-pinout:Reg3"
+    ],
+    "run/candidate:U1:RAIL_8V25": [
+     "confirm-group-and-return:candidate:U1:RAIL_8V25",
+     "official-full-pinout:U1"
+    ],
+    "run/candidate:U10:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U10:3V3_CTRL",
+     "official-full-pinout:U10"
+    ],
+    "run/candidate:U10:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U10:RAIL_3V3_PRI",
+     "official-full-pinout:U10"
+    ],
+    "run/candidate:U11:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U11:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U11"
+    ],
+    "run/candidate:U11:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U11:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U11"
+    ],
+    "run/candidate:U12:VOUT_N": [
+     "confirm-group-and-return:candidate:U12:VOUT_N",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U12"
+    ],
+    "run/candidate:U12:VOUT_P": [
+     "confirm-group-and-return:candidate:U12:VOUT_P",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U12"
+    ],
+    "run/candidate:U3:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U3:3V3_CTRL",
+     "official-full-pinout:U3"
+    ],
+    "run/candidate:U3:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U3:RAIL_3V3_PRI",
+     "official-full-pinout:U3"
+    ],
+    "run/candidate:U7:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U7:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U7"
+    ],
+    "run/candidate:U7:RAIL_3V3_SEC": [
+     "confirm-group-and-return:candidate:U7:RAIL_3V3_SEC",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U7"
+    ],
+    "run/candidate:U8:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U8:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U8"
+    ],
+    "run/candidate:U8:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U8:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U8"
+    ],
+    "run/candidate:U9:3V3_CTRL": [
+     "confirm-group-and-return:candidate:U9:3V3_CTRL",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U9"
+    ],
+    "run/candidate:U9:RAIL_3V3_PRI": [
+     "confirm-group-and-return:candidate:U9:RAIL_3V3_PRI",
+     "need-one-explicit-return-net",
+     "official-full-pinout:U9"
+    ]
+   }
+  }
+ },
+ "scope": [
+  "rf1 的 HV_BIAS 只经 R10/R9 100k 接到 VOUT_N 的绕组来源：kΩ 级偏置供电是合法弱驱动，PWR-A01 由疑似无驱动 FINDING 改为带 R 值的 INFO，计划少一行（368→367，frames 393→392）及对应框架成员；不表示该偏置的压降或电气合格。",
+  "r02 U5（NMOS-DUAL，G1/S1/D1 与 G2/S2/D2）按通道拆成两个开关对象，第二通道补 DRV-E01/DRV-C02 各一行（389→391）；不表示驱动或 SOA 已核。",
+  "rf1 的 U3/U10（ISO7710/AMC03xx 类两侧隔离器）去耦候选组只取本侧返回脚（GND1 或 GND2），need-one-explicit-return-net 缺口消失、改为列出本侧电容的装配缺口；检查数不变，不表示去耦已核。"
+ ],
+ "parents": {
+  "revisions/boards-merge3-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge3-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge3-v1/expected.json": "ae0e51297f4cb5e26bd514ed65d3f72e5e15307a58b342063cce2b3e6900df15",
+  "revisions/boards-merge3-v1/manifest.json": "2d9a1752b8a53c7e9b2e08702171755c54d1da20bedc8df8b4ed0e1517bcd823"
+ },
+ "derived_files": {
+  "revisions/boards-merge4-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge4-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge4-v1/expected.json": "839c2262a4cb55a45a9cad130d72690d8f0a0619e81ca75a9074606eb189f5bc"
+ }
+}

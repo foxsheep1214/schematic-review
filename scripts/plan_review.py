@@ -375,7 +375,11 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.checks = []
         self.functions = []
         self.rule_plan = []
-        self.diagnostics = []
+        self.diagnostics = list(analysis_db.get('pin_name_conflicts', []))
+        pin_types = NetGraph(analysis_db).pin_type_sources
+        if pin_types:
+            self.diagnostics.append({'code': 'MANUFACTURER_PIN_DIRECTIONS', 'pins': pin_types,
+                                     'detail': '准确型号的原厂物理脚方向用于分析；原生方向不改，逐脚保留来源与差异'})
         self._ids = set()
 
     def add_check(self, rule, obj, key=None, criterion=None,
@@ -450,9 +454,18 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         derive_rows derives it, so which rows derive is no longer the reviewer's choice (SR task loop 2026-10-25, ③:
         derived rows 387 / 287 / 185 on one board). Board-owned rows and rows already bound stay as they are."""
         frames = {f['circuit']: f for f in self.functions if f.get('circuit')}
+        by_id = {f['id']: f for f in self.functions}
         for check in checks:
             owner = check.get('owner') or {}
             frame = frames.get(owner.get('id')) if owner.get('kind') == 'CIRCUIT' else None
+            bound = by_id.get(check.get('function_id'))
+            if bound is not None and bound.get('circuit') and check['id'] not in {m['check_id'] for m in bound['members']}:
+                # a row carried over from a merged plan keeps its function_id; the rebuilt frame takes it back as a
+                # member instead of leaving the binding one-sided (boards-merge4: 8 rows bound, members empty)
+                bound['members'].append({'check_id': check['id'], 'rule': check['rule'], 'aspect': check.get('aspect')
+                                         or catalog.title(check['rule']), 'state': (check.get('object') or {}).get('state')})
+                bound['blind_spots'].setdefault(check['rule'], catalog.explanation(check['rule'])['risk_if_omitted'])
+                continue
             if frame is None or check.get('function_id') or check.get('applicability') == 'NOT_APPLICABLE':
                 continue
             check['function_id'] = frame['id']
@@ -460,6 +473,11 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             state = (check.get('object') or {}).get('state')
             frame['members'].append({'check_id': check['id'], 'rule': check['rule'], 'aspect': check['aspect'], 'state': state})
             frame['blind_spots'].setdefault(check['rule'], catalog.explanation(check['rule'])['risk_if_omitted'])
+        stale = sorted({c['id'] + ' -> ' + c['function_id'] for c in checks
+                        if c.get('function_id') and str(c['function_id']).startswith('FN-') and c['function_id'] not in by_id})
+        if stale:
+            raise ValueError('internal error: rows bound to a function frame this plan does not build (member list would '
+                             'be empty): ' + '; '.join(stale[:5]))
 
     def _ready_check(self, rule, obj, gaps, trigger, **extra):
         return self.add_check(rule, obj, readiness='WAITING_EVIDENCE' if gaps else 'READY',
@@ -576,6 +594,11 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.merge_previous_checks()
         self.attach_lint_findings()
         self.plan_system_frames()
+        from part_words import board_copper
+        unfitted = sorted(ref for ref, part in self.db.get('parts', {}).items() if part.get('nc') and not board_copper(ref, part))
+        if unfitted:
+            self.diagnostics.append({'code': 'UNFITTED_PARTS', 'refs': unfitted,
+                                     'detail': '未贴装器件 %d 个，已排除' % len(unfitted)})
         for material in (self.datasheet_audit or {}).get('materials', []):
             if material.get('status') == 'NOT_FOUND':
                 self.diagnostics.append({
@@ -604,6 +627,11 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
                                                    '手册有供电/返回脚的补角色，确无的（分流基准等）不用改' % (
                                                        ref, '、'.join(sorted({'power', 'return'} - roles)))})
         unread = passive_stress.unread_values(self.db)
+        ambiguous = {ref: part['value_provenance'] for ref, part in self.db.get('parts', {}).items()
+                     if (part.get('value_provenance') or {}).get('method') == 'ambiguous-component-prefix'}
+        if ambiguous:
+            self.diagnostics.append({'code': 'RESISTOR_VALUE_AMBIGUOUS', 'values': ambiguous,
+                                     'message': 'RKM 与本板元件前缀写法冲突，阻值未知；按已绑定采购型号/原厂订货表或明确值合同消歧后重跑'})
         if unread:   # a value the parser cannot read is reported, not dropped in silence
             self.diagnostics.append({'code': 'RESISTOR_VALUE_UNREAD', 'values': unread,
                                      'message': '阻值读不出；改成 阻值[/公差][/额定功率][/额定电压][/封装] 的写法或确认阻值后重跑'})
@@ -767,6 +795,11 @@ def lint_check(finding):
     obj = {'lint_detail': str(finding.get('detail') or '')}
     if isinstance(finding.get('ref'), str) and finding['ref'].strip():
         obj['ref'] = finding['ref']
+    if finding.get('clamp_channel'):
+        channel = finding['clamp_channel']
+        obj.update(channel=channel['channel'], nodes=[finding['ref'] + '.' + p for p in channel['pins']],
+                   nets=channel['nets'], return_nodes=[finding['ref'] + '.' + p for p in channel['return_pins']],
+                   return_nets=channel['return_nets'], pinout_citation=channel['citation'])
     return {'id': lint_check_id(finding), 'rule': rule, 'method': catalog.method_of(rule),
             'domain': catalog.domain_of(rule), 'object': obj,
             'criterion': '%s：%s' % (finding.get('name') or catalog.title(rule), finding.get('detail') or ''),

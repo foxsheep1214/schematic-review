@@ -14,6 +14,8 @@ from . import netgraph as ng
 import part_words as pw
 from . import passive_stress
 from . import powertree
+from . import isolation_sides
+from solve_dividers import parse_resistor
 
 SCHEMA_VERSION = 1
 GROUND = 'ground'
@@ -46,13 +48,26 @@ def ground_labels(graph, intent):
         zero = window is not None and window['min'] == 0 and window['max'] == 0
         if not (passive_stress.ground_name(net) or zero):
             continue
+        if not zero and passive_stress.midpoint_ground(graph, net):
+            continue   # a divider midpoint named like a ground (VGND/GNDA) is no reference domain
         domain = rail.get('domain') if isinstance(rail.get('domain'), str) and rail['domain'].strip() else None
         labels[net] = domain or pw.normalize(net).rsplit('/', 1)[-1]
+    # Equal leaf names in different sheets are not evidence that two ground nets are one domain.
+    initial_labels = list(labels.values())
+    for net in labels:
+        if not (rails.get(net) or {}).get('domain') and initial_labels.count(labels[net]) > 1:
+            labels[net] = net
     return labels
 
 
 def conducts(graph, ref):
     """器件引脚之间是否直流导通（参考地分区意义上）。"""
+    if isolation_sides.model(graph, ref) is not None:
+        return False
+    if graph.kind(ref) == pw.RESISTOR:
+        value = parse_resistor(graph.parts.get(ref, {}).get('value'))
+        if value is None or value['kohm'] >= 1000:
+            return False       # >=1 Mohm bleed/leakage is not a reference connection; unreadable is unknown
     if graph.kind(ref) in NON_CONDUCTING:
         return False
     if graph.role_kind(ref) == ISOLATOR:
@@ -60,7 +75,7 @@ def conducts(graph, ref):
     return True
 
 
-def _components(graph, grounds):
+def _components(graph, grounds, side_models=None):
     """并查集：经导通器件相连的网络分量。
 
     返回 {net: root} 和把两个不同标签的地连到一起的器件 [(ref, [标签, 标签])]。
@@ -76,26 +91,37 @@ def _components(graph, grounds):
 
     bridges = []
     for ref in sorted(graph.parts):
-        if not graph.is_fitted(ref) or not conducts(graph, ref):
+        if not graph.is_fitted(ref):
             continue
-        nets = [n for n in graph.nets_of(ref) if n in parent]
-        for other in nets[1:]:
-            a, b = find(nets[0]), find(other)
-            if a == b:
-                continue
-            la, lb = labels.get(a, set()), labels.get(b, set())
-            if la and lb and la != lb:
-                bridges.append((ref, sorted(la | lb)))
-            parent[b] = a
-            labels[a] = la | lb
-            labels.pop(b, None)
+        side = (side_models or {}).get(ref)
+        if side:
+            # Reference groups inside a package, never an edge across its barrier. Passive transformer windings
+            # and relay contact states need explicit connectivity; side membership alone does not close contacts.
+            groups = [x['nets'] for x in side['sides']] if side['mechanism'] not in ('transformer', 'relay') else []
+        elif conducts(graph, ref):
+            groups = [graph.nets_of(ref)]
+        else:
+            continue
+        for group in groups:
+            nets = [n for n in group if n in parent]
+            for other in nets[1:]:
+                a, b = find(nets[0]), find(other)
+                if a == b:
+                    continue
+                la, lb = labels.get(a, set()), labels.get(b, set())
+                if la and lb and la != lb:
+                    bridges.append((ref, sorted(la | lb)))
+                parent[b] = a
+                labels[a] = la | lb
+                labels.pop(b, None)
     return {net: find(net) for net in parent}, bridges
 
 
 def derive(graph, intent=None):
     """参考地分区、跨域器件、核心器件与截止网络；冲突只记录。"""
     grounds = ground_labels(graph, intent)
-    roots, bridges = _components(graph, grounds)
+    side_models = isolation_sides.inventory(graph, intent)
+    roots, bridges = _components(graph, grounds, side_models)
     root_domain, conflicts = {}, []
     for net, label in sorted(grounds.items()):
         root_domain.setdefault(roots[net], label)   # a merged component keeps its first label; the bridge is the conflict
@@ -117,7 +143,8 @@ def derive(graph, intent=None):
     for net, rail in sorted(rails.items()):
         declared = rail.get('domain') if isinstance(rail, dict) and isinstance(rail.get('domain'), str) else None
         derived = nets.get(net)
-        if declared and net not in grounds and derived is not None and derived != declared:
+        declared_label = grounds.get(declared, declared)   # a declared domain may name its actual ground net
+        if declared and net not in grounds and derived is not None and derived != declared_label:
             conflicts.append({'code': 'DOMAIN_CONFLICT', 'net': net, 'declared': declared, 'derived': derived})
 
     barriers = []
@@ -125,8 +152,14 @@ def derive(graph, intent=None):
         if not graph.is_fitted(ref):
             continue
         touched = sorted({nets.get(n) for n in graph.nets_of(ref)} - {None})
-        if len(touched) > 1:
-            barriers.append({'ref': ref, 'kind': graph.kind(ref), 'domains': touched})
+        if len(touched) > 1 or ref in side_models:
+            barrier = {'ref': ref, 'kind': graph.kind(ref), 'domains': touched}
+            if ref in side_models:
+                side = side_models[ref]
+                barrier.update(side)
+                for group in barrier['sides']:
+                    group['domains'] = sorted({nets.get(n) for n in group['nets']} - {None})
+            barriers.append(barrier)
 
     anchors = {ref: graph.role_kind(ref) for ref in sorted(graph.parts) if graph.is_anchor(ref)}
     undeclared = sorted(ref for ref in graph.parts if graph.is_fitted(ref) and graph.kind(ref) == pw.IC
@@ -151,13 +184,14 @@ def rail_stops(graph, intent, grounds, anchors):
     tree = powertree.PowerTree(graph, intent)
     rails = (intent or {}).get('power_rails') or {}
     rails = rails if isinstance(rails, dict) else {}
+    supplies = set(rails) | powertree.supply_candidates(graph, intent)
     for net in sorted(graph.nets):
         if net in stops or net in graph.pseudo or tree.is_switch_node(net):
             continue
         if tree.rail_basis(net) == powertree.DRIVER:
             stops[net] = DRIVER
             continue
-        if net not in rails:
+        if net not in supplies:
             continue
         reached = set()
         for ref in graph.refs_on(net):

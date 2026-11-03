@@ -4,6 +4,19 @@ SR 现在主要审 ASG 生成的 KiCad 工程。`seeded_bench` 统计真实电�
 严格解析能不能产出 db、缺名脚怎么记、导出日志怎么算、去耦清单在缺口下怎么分组。本基准用 ASG 已冻结的
 真实交付回放这一层，每个字段都有人工核对后冻结的预期答案。每次改 SR 都应跑一次，几秒即可。
 
+当前默认约定 `boards-merge4-v1`（2026-11-02，合并步 4）：父约定 `boards-merge3-v1` 的输入字节不变，只改 manifest 的 `field_changes` 所列字段：rf1 三例的 HV_BIAS 经 100k 接到有来源的网，按 kΩ 级弱驱动记 INFO 而不再是疑似无驱动，检查数 368→367（frames 393→392）及对应框架成员；r02 的双 MOS U5 按 G1/G2 通道拆成两个开关对象，第二通道补 DRV-E01/DRV-C02（389→391）；rf1 三例两侧隔离器 U3/U10 的去耦候选组只取本侧返回脚，`decoupling.group_gaps` 的 need-one-explicit-return-net 缺口换成本侧电容装配缺口；本步后续各项若再改冻结字段，逐项追加在同一 manifest 的 `scope` 与 `field_changes` 里。不表示被改字段对应电路电气合格。
+
+此前默认约定 `boards-merge3-v1`（2026-11-02）：r02 的 X1 接地壳脚不是有源供电，新增 CLK-C01.X1，388→389；此前全部字段保留，195/195。父约定 `boards-merge3-mechanical-v1` 将 r02 HYC77-TF09-200 从继电器更正为存储卡座，移除 9 项、增加 13 项，384→388，并保留 U6 的跳线供电提示。每版 manifest 绑定父版原字节；详见合并步 3 报告。
+
+更早默认约定 `boards-merge3-copper-v1`（2026-11-02）：DNP 只排除可拆元件，TP3/TP4 为 PCB 测试铜，r03 四条仅单节点/仅输入的旧提示去掉，检查数 440→436；原生索引与此前约定不改，不表示输入偏置或整板合格。
+
+此前默认约定 `boards-merge2-v1`（2026-11-02）：合并步 2A 与 2B 合并，以 `boards-merge2b-v1` 的答案为基，只套用 2A 对 rf2 的变化（没有输入滤波器不生成 PWR-E03/C11，101→99）；manifest 绑定两个父约定。
+
+此前 `boards-merge2a-v1`（2026-11-02）：没有实际输入滤波器不生成 PWR-E03/C11。
+逐行对比只移除 rf2 的 `PWR-E03.U1-5V.5V`、`PWR-C11.U1-5V.5V`（97→95）；真实 LT3957 SW 驱动 TR1 的绕组/钳位项保留。
+其余冻结字段、原 XML/脚表、此前 `boards-merge1-v1` 及历史约定均保持原字节，manifest 绑定父项与本版派生文件。
+此前 `boards-merge1-v1` 计入 DNP 排除后的真实单节点网；`native-fields-v1` 保留 KiCad 自定义字段。
+
 ## 运行
 
 当前候选的页面库存行为使用独立 `page-inventory-v1` 约定，位于

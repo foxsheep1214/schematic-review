@@ -1,0 +1,30 @@
+{
+  "lane": "lane-3",
+  "boards": [
+    "antmicro--rdimm-ddr4-tester",
+    "solderedelectronics--1s-li-ion-battery-protection-hardware-design",
+    "greatscottgadgets--hackrf-pro",
+    "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design",
+    "greatscottgadgets--cynthion-hardware",
+    "theushen--eegfrontier",
+    "ben5049--switch-v4-hardware",
+    "solderedelectronics--i2c-multiplexer-tca9548a-breakout-hardware-design",
+    "danielmartensson--stm32-plc",
+    "solderedelectronics--usb-uart-ch340c-converter-board-hardware-design",
+    "neotron-compute--neotron-pico",
+    "s59mz--kicad-pmod_rs485",
+    "mlab-modules--batdatunit01",
+    "gorkemguven--12v-1a-isolated-flyback-smps",
+    "pionixpublic--reference-hardware",
+    "loudifier--openrefmic",
+    "antmicro--scalenode-cm4-baseboard",
+    "teapotlaboratories--feather-rak3172",
+    "antmicro--sdi-mipi-bridge-hw",
+    "weirdgyn--driverino-shield",
+    "canbardo--canbardo",
+    "x-zeed--utac-pcb",
+    "skot--bitaxe",
+    "floyd-fish--isolated-power-supply-and-ldo-verification",
+    "solderedelectronics--soldered-inkplate-2-hardware-design"
+  ]
+}

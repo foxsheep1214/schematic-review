@@ -1170,6 +1170,9 @@ SUBJECT_PRECONDITIONS = {
     'PROTECTION_PART': '电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC',
     'SENSE_ELEMENT': '电路里没有采样电阻（<1 Ω）、NTC 或接到 IC 检测脚的分压',
     'ANALOG_PIN': '电路里没有放大器、ADC 或温度传感器的脚',
+    'USB_CC': '电路里没有 Type-C 连接器或 CC/PD 控制角色',
+    'PASSIVE_CRYSTAL': '电路里没有无源晶体，有源时钟另核 CLK-D01',
+    'RTC_BACKUP': '电路里没有 RTC、备份电源或电池充电机制',
     'START_PIN': '电路里没有带复位、使能、禁止或启动配置脚（RESET、EN、DIS、UVLO、BOOT、strap）的 IC',
     'RESCUE_PIN': '电路里没有 MCU，也没有带启动配置脚（BOOT、strap、MODE）的 IC：没有可烧录、可救援的器件',
 }
@@ -1179,6 +1182,9 @@ BASELINE_RULES = {'REQ-C02': 'aerospace', 'PWR-C25': 'aerospace', 'SIG-C18': 'ae
 EXTERNAL_INTERFACE_TYPES = ('DC_48V', 'DC_24V', 'AC_MAINS', 'INDUSTRIAL_DI', 'POE_PD', 'VEHICLE_28V', 'SHIP_AC')
 SUBJECT_REQUIRES = {
     ('POWER_CONVERTER', 'PWR-C04'): 'SWITCH_PIN',
+    ('USB', 'SIG-D04'): 'USB_CC',
+    ('CLOCK', 'CLK-C01'): 'PASSIVE_CRYSTAL',
+    ('CLOCK', 'CLK-D03'): 'RTC_BACKUP',
     ('POWER_CONVERTER', 'PWR-C15'): 'FEEDBACK_PIN',
     ('POWER_CONVERTER', 'PWR-C06'): 'PROTECTION_PART',
     ('POWER_PROTECTION', 'PWR-C06'): 'PROTECTION_PART',
@@ -1310,7 +1316,7 @@ INTERFACE_SUBJECTS = {
     'EXTERNAL': ('DEV-D03', 'DEV-C04', 'PRO-D03', 'PRO-D04'),
     'SUPPLY': ('PWR-C14',),
 }
-INTERFACE_NET_SUBJECTS = {'CIRCUIT_PAIR': ('SIG-C08',), 'LINK': ('SIG-C08',)}
+INTERFACE_NET_SUBJECTS = {'CIRCUIT_PAIR': ('SIG-C08',), 'LINK': ('SIG-C08',), 'EXTERNAL': ('SIG-C08',)}
 NOISE_SENSITIVE_TYPES = ('ANALOG', 'CLOCK', 'RF')
 # 归接口的规则（设计稿附录 A）：按电路展开的检查项仍归电路；其余检查项的网络都落在同一个接口上时归该接口。
 INTERFACE_RULES = frozenset({
@@ -1367,6 +1373,9 @@ CANDIDATE_STATES = {
     'ANALOG': ('run', 'fault'),
     'ISOLATION': ('run',),
     'STARTUP': ('power-on', 'restart'),
+    **{name: ('idle', 'active') for name in ('I2C', 'SPI', 'UART', 'HSSERIAL', 'LEVEL_SHIFT', 'ETHERNET',
+                                            'CLOCK', 'CAN', 'RS485', 'DDR', 'STORAGE', 'RF', 'AV',
+                                            'INDUSTRIAL_DI', 'AC_MAINS', 'POE_PD', 'DC_48V', 'VEHICLE_28V', 'SHIP_AC')},
     'DEBUG': ('run',),       # 调试口的答案不随工作态变化，仍要一个态来展开检查项
 }
 

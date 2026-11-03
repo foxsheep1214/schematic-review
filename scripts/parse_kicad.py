@@ -17,7 +17,7 @@ KiCad 网表 (kicadxml) -> 与 parse_netlist.py 相同的结构化索引
    `no_connect_nodes`——它是"图上声明不接"，不是"器件不贴"。
 2. **真正悬空的引脚**：没有 NC 标记却落在 `unconnected-(...)` 网里的引脚保持为
    真实单节点网，NET-A01 照常扫出，不被伪网络掩盖。
-3. **DNP 不贴**：`<property name="dnp"/>` 或 VALUE 带 NC 标记才写 `parts[ref].nc`。
+3. **DNP 不贴**：`dnp` 属性、`DNP`/`不贴` 字段的肯定标记或 VALUE 带 NC 才写 `parts[ref].nc`。
    `exclude_from_bom` 只是 BOM 卫生标记，不作装配证据。
 
 引脚功能名取 `pinfunction`（KiCad 的引脚名），缺失时回落到库符号的引脚名；
@@ -36,6 +36,7 @@ import xml.etree.ElementTree as ET
 
 from parse_netlist import is_not_populated, self_check
 from page_inventory import native_inventory, NATIVE
+from solve_dividers import parse_resistor
 
 # KiCad 电气类型 -> 既有 PINUSE 词汇；未知类型保留原文，不静默当作 UNSPEC
 PINUSE = {
@@ -45,10 +46,34 @@ PINUSE = {
     'open_collector': 'OCL', 'open_emitter': 'OCA', 'no_connect': 'NC',
 }
 MPN_FIELD = re.compile(
-    r'^(MPN|MFR[._\s-]?P/?N|MANUFACTURER[_\s-]?PART[_\s-]?(NUMBER|NO\.?)|'
+    r'^(MPN|MFGRPART|MFR[._\s-]?P/?N|MANUFACTURER[_\s-]?PART[_\s-]?(NUMBER|NO\.?)|'
     r'PART[_\s-]?(NUMBER|NO\.?)|ORDER(ING)?[_\s-]?(CODE|NUMBER))$', re.I)
 UNCONNECTED = re.compile(r'^unconnected-\(.*\)$', re.I)
 NO_NAME = '~'
+
+
+# Assembly fields are design facts; do not infer population from BOM exclusion.
+POPULATION_FIELDS = {'populate', 'population', 'fitted', 'assembly', 'assemble', 'stuff', 'stuffed', 'mount'}
+UNFITTED_MARKS = {'dnp', 'dnf', 'dni', 'not fitted', 'not populated', 'do not populate', 'do not fit', '不贴', '不装'}
+
+
+def _not_part_number(text, mpn):
+    """The text, unless it spells the part number itself (only the separators differ: MCP3464RT-E_NC for
+    MCP3464RT-E/NC), whose NC is an ordering suffix rather than a not-fitted mark; then ''."""
+    def letters(value):
+        return re.sub(r'[^A-Z0-9]', '', str(value or '').rsplit(':', 1)[-1].upper())
+    return '' if mpn and letters(text) == letters(mpn) else text
+
+
+def population_evidence(fields, properties):
+    evidence = []
+    for source, entries in (('property', properties), ('field', fields)):
+        for name, value in entries.items():
+            key, mark = name.strip().casefold(), str(value).strip().casefold()
+            if ((key in ('dnp', 'dnf', 'dni', '不贴') and mark in ({'1', 'true', 'yes', 'y', 'x'} | UNFITTED_MARKS | ({''} if source == 'property' else set())))
+                    or (key in POPULATION_FIELDS and mark in UNFITTED_MARKS)):
+                evidence.append({'source': source, 'field': name, 'raw': value, 'population': 'unfitted'})
+    return evidence
 
 
 def _text(value):
@@ -133,7 +158,12 @@ def _component(comp, libparts, pages):
                   for item in comp.findall('./property')}
     mpn = next((value for name, value in sorted(fields.items())
                 if MPN_FIELD.match(name) and value), '')
-    value = _text(comp.findtext('value'))
+    population = population_evidence(fields, properties)
+    original_value = _text(comp.findtext('value'))
+    val_field = next((name for name in fields if name.casefold() == 'val' and fields[name]), None)
+    value = fields[val_field] if val_field else original_value
+    value_source = val_field or 'value'
+    parsed = parse_resistor(value) if re.match(r'^R\d', comp.get('ref', ''), re.I) else None
     footprint = _text(comp.findtext('footprint'))
     sheetpath = comp.find('sheetpath')
     path = sheetpath.get('names') if sheetpath is not None else None
@@ -145,10 +175,49 @@ def _component(comp, libparts, pages):
         # Instance documentation is design data, not a verified part identity.
         # Do not borrow the cached libpart's link when this declaration is empty.
         'datasheet': _text(comp.findtext('datasheet')),
-        # dnp 是装配声明；exclude_from_bom 只是 BOM 卫生，不作装配证据。
-        'nc': 'dnp' in properties or is_not_populated(lib, value),
+        # dnp 是装配声明；exclude_from_bom 只是 BOM 卫生，不作装配证据。料号自带的 /NC、_NC 订货后缀
+        # （MCP3464RT-E/NC 的 UQFN 封装码）不是不贴标记（boards-merge4）。
+        'nc': bool(population) or is_not_populated(*(_not_part_number(text, mpn) for text in (lib, value))),
     }
+    if population:
+        part['population_provenance'] = population
+    # Ordinary literal-only symbols retain their existing db representation.
+    # New native facts participate in the fingerprint only when actually present.
+    if fields or (parsed and parsed.get('method') in ('packaged-RKM', 'component-prefix')):
+        part.update(original_value=original_value, fields=fields,
+                    value_provenance={'field': value_source, 'raw': value,
+                                      'method': parsed.get('method', 'literal-RKM') if parsed else 'unknown',
+                                      'ohm': parsed['kohm'] * 1000 if parsed else None})
     return part, pages.get(path), lib, normalization
+
+
+def _resolve_resistor_style(parts):
+    """A board's R10k convention makes bare R330 ambiguous, never automatically 330 ohms.
+
+    Only the netlist's explicit procurement identity may resolve an ordering
+    code; an unbound stock code is not a manufacturer value declaration.
+    Preserve source text and both readings, and give numeric consumers an
+    unreadable effective value rather than an accidental 0.33-ohm short.
+    """
+    resistors = {r: p for r, p in parts.items() if re.match(r'^R\d', r, re.I)}
+    prefixed = [r for r, p in resistors.items()
+                if (parse_resistor(p.get('value')) or {}).get('method') == 'component-prefix']
+    if len(prefixed) < 3 or len(prefixed) * 2 <= len(resistors):
+        return
+    for ref, part in resistors.items():
+        raw = str(part.get('value') or '')
+        if not re.fullmatch(r'R\d{2,}', raw):
+            continue
+        rkm, component = parse_resistor(raw), parse_resistor(raw[1:])
+        if not rkm or not component or rkm['kohm'] == component['kohm']:
+            continue
+        part.setdefault('original_value', raw)
+        provenance = dict(part.get('value_provenance') or {'field': 'value', 'raw': raw})
+        provenance.update(method='ambiguous-component-prefix', ohm=None,
+                          candidates_ohm=[rkm['kohm'] * 1000, component['kohm'] * 1000],
+                          style_refs=sorted(prefixed))
+        part['value_provenance'] = provenance
+        part['value'] = raw + ' [ambiguous RKM/component-prefix]'
 
 
 SEXPR_TOKEN = re.compile(r'\s*(?:(\()|(\))|"((?:[^"\\]|\\.)*)"|([^\s()"]+))')
@@ -257,6 +326,8 @@ def parse(xml_text, export_errors=()):
 
     if not parts:
         raise ValueError('空网表：没有导出器件；不能作为审查输入')
+
+    _resolve_resistor_style(parts)
 
     nets, pin2net, pinname, pintype = {}, {}, {}, {}
     native_pintype = {}

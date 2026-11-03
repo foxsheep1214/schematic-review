@@ -1,0 +1,1787 @@
+{
+ "schema": "criteria-patch/1",
+ "date": "2026-11-02",
+ "base_library_version": "1.6.1",
+ "proposed_library_version": "1.7.0",
+ "spec_versions": {
+  "G01": "1.4→1.5",
+  "G02": "1.2→1.3",
+  "G03": "1.4→1.5",
+  "G04": "1.1→1.2",
+  "G05": "1.1→1.2"
+ },
+ "note": "amend 的 old 为当前登记表原值；被修订条目的 version 一并 1.0→1.1（G04-091 等）。add 每项的 entry 是完整登记表条目，basis/confirmed/evidence/placement_note 为草案附注，入库时剥离（登记表 criteria 无这些字段，出处在 source）。凡 edition/page 写“待核”的厂家出处取自实板 findings 引文，入库前须对原件核。",
+ "amend": [
+  {
+   "id": "G01-026",
+   "field": "title",
+   "old": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+   "new": "USB Type-C/PD 供电输入电压窗按 vSafe5V 并计线缆压降",
+   "evidence": [
+    "mlab-modules--usbi2c01",
+    "rmingon--chlinknet",
+    "tonydefilippis--poepico"
+   ],
+   "why": "出处是 PD 表 4.6/4.8，只对 Type-C/PD 端口成立"
+  },
+  {
+   "id": "G01-026",
+   "field": "applies_when.text",
+   "old": null,
+   "new": "VBUS 取电的 USB Type-C 插座端口（含 PD 协商）；传统 USB 连接器（Standard-A/B、Mini/Micro-B，无 CC/PD）不套本条数值",
+   "evidence": [
+    "mlab-modules--usbi2c01",
+    "rmingon--chlinknet",
+    "tonydefilippis--poepico"
+   ],
+   "why": "词表只有 USB 一类，连接器与协议前提写在 text 与 not_applicable"
+  },
+  {
+   "id": "G01-026",
+   "field": "not_applicable",
+   "old": "USB 只作数据接口、VBUS 不取电时不适用。",
+   "new": "USB 只作数据接口、VBUS 不取电时不适用；无 CC/PD 的传统 USB 连接器不套 vSafe5V 数值，源端窗口按 USB 2.0/USB 3.2 规范或所接电源规格另核（Type-C R2.5 §4.4.2 p152：传统 USB 连接器（Standard-A、Micro-B 等）默认供 VBUS 的主机/充电器豁免“未附着不带电”与表 4-2 电容两项；Source 插座处 VBUS 按 USB 2.0/USB 3.2 规范），线缆压降与下游最低工作电压照样核。",
+   "evidence": [
+    "mlab-modules--usbi2c01",
+    "antmicro--scalenode-cm4-baseboard",
+    "pionixpublic--reference-hardware",
+    "rmingon--chlinknet",
+    "tonydefilippis--poepico"
+   ],
+   "why": "保留压降与下游最低电压核对，只去掉错套的数值"
+  },
+  {
+   "id": "G01-026",
+   "field": "sr_check",
+   "old": "核对输入窗按源端范围减线缆压降计算，下游转换器在最低值下能工作。",
+   "new": "先定端口连接器类型（Type-C/传统）与是否 PD 协商；Type-C 端口核对输入窗按源端范围减线缆压降计算，下游转换器在最低值下能工作；传统连接器不按本条数值判，记“按 USB 2.0/3.2 另核”，取不到适用规范的记资料不足。",
+   "evidence": [
+    "mlab-modules--usbi2c01",
+    "antmicro--scalenode-cm4-baseboard",
+    "pionixpublic--reference-hardware",
+    "rmingon--chlinknet",
+    "tonydefilippis--poepico"
+   ],
+   "why": "防止把 Type-C 数值当所有 USB 的判据"
+  },
+  {
+   "id": "G01-029",
+   "field": "title",
+   "old": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+   "new": "USB Type-C/PD Sink 的 VBUS 电容按附着与协商状态分档，协商后超过 100 µF 须限流",
+   "evidence": [
+    "antmicro--scalenode-cm4-baseboard",
+    "tonydefilippis--poepico"
+   ],
+   "why": "原标题把协商后 100 µF 当成所有 USB Sink 的上限"
+  },
+  {
+   "id": "G01-029",
+   "field": "applies_when.text",
+   "old": null,
+   "new": "Type-C 插座作 Sink 或 DRP（含 PD）；按未附着、附着后首次显式协商前、PD 协商成功后三态分别核",
+   "evidence": [
+    "antmicro--scalenode-cm4-baseboard",
+    "tonydefilippis--poepico",
+    "mlab-modules--usbi2c01"
+   ],
+   "why": "状态是必要前提"
+  },
+  {
+   "id": "G01-029",
+   "field": "not_applicable",
+   "old": "端口不作 Sink 时不适用。",
+   "new": "端口不作 Sink 时不适用；无 CC/PD 的传统 USB 连接器（Micro-B、USB-B 等）不套本条数值，入口电容与浪涌按 USB 2.0/USB 3.2 规范另核。",
+   "evidence": [
+    "mlab-modules--usbi2c01",
+    "antmicro--scalenode-cm4-baseboard",
+    "pionixpublic--reference-hardware",
+    "rmingon--chlinknet",
+    "tonydefilippis--poepico"
+   ],
+   "why": "Micro-B 上 1.2 µF/55 µF 不能用本条放行或判错"
+  },
+  {
+   "id": "G01-029",
+   "field": "sr_check",
+   "old": "统计 VBUS 上的体电容，核对 ≤ 100 µF 或有限流电路。",
+   "new": "先定连接器、角色与状态：Type-C 未 Attached.SNK 时 VBUS 电容不超过 10 µF（Type-C 表 4-3）；附着后首次显式协商前按 PD 表 4.7 的 cSnkBulk；仅 PD 协商成功后按 cSnkBulkPd 不超过 100 µF，超出须有限流电路。≤100 µF 不是任意 USB Sink 的充分通过条件；传统连接器记“按 USB 2.0/3.2 另核”。关闭条件：端口所处各状态逐档比较通过。",
+   "evidence": [
+    "antmicro--scalenode-cm4-baseboard",
+    "tonydefilippis--poepico",
+    "brainsmoke--usb2_hub"
+   ],
+   "why": "asg_action 已写非附着 10 µF，sr_check 漏了；brainsmoke J5 真缺陷正是非附着 >10 µF"
+  },
+  {
+   "id": "G01-030",
+   "field": "applies_when.text",
+   "old": null,
+   "new": "Type-C 插座作 Sink 或 DRP 时（断开判定按 Type-C 表 4-3）；传统 USB 设备的 VBUS 检测与 D+/D− 上拉撤除按 USB 2.0 与控制器手册另核",
+   "evidence": [
+    "mlab-modules--usbi2c01",
+    "pionixpublic--reference-hardware",
+    "rmingon--chlinknet",
+    "tonydefilippis--poepico"
+   ],
+   "why": "表 4-3 是 Type-C 条款"
+  },
+  {
+   "id": "G01-030",
+   "field": "not_applicable",
+   "old": "端口不作 Sink 时不适用。",
+   "new": "端口不作 Sink 时不适用；无 CC 的传统 USB 连接器不套 40 ms/3.67 V 数值。",
+   "evidence": [
+    "mlab-modules--usbi2c01",
+    "antmicro--scalenode-cm4-baseboard",
+    "pionixpublic--reference-hardware",
+    "rmingon--chlinknet",
+    "tonydefilippis--poepico"
+   ],
+   "why": ""
+  },
+  {
+   "id": "G01-031",
+   "field": "title",
+   "old": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+   "new": "USB Type-C Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+   "evidence": [
+    "brainsmoke--usb2_hub",
+    "nabucasa--yellow",
+    "pionixpublic--reference-hardware"
+   ],
+   "why": "对象限定 Type-C 插座"
+  },
+  {
+   "id": "G01-031",
+   "field": "applies_when.text",
+   "old": null,
+   "new": "Type-C 插座作 Source 或 DRP 时；传统 USB 连接器（Standard-A、Micro-B 等）默认供 VBUS 的主机/充电器端口按 Type-C R2.5 §4.4.2 豁免",
+   "evidence": [
+    "brainsmoke--usb2_hub",
+    "nabucasa--yellow",
+    "pionixpublic--reference-hardware"
+   ],
+   "why": "保留标准原文的传统例外"
+  },
+  {
+   "id": "G01-031",
+   "field": "not_applicable",
+   "old": "端口不作 Source 时不适用。",
+   "new": "端口不作 Source 时不适用；Standard-A、Micro-B 等传统连接器默认供 VBUS 的端口不适用（Type-C R2.5 §4.4.2 p152：传统 USB 连接器（Standard-A、Micro-B 等）默认供 VBUS 的主机/充电器豁免“未附着不带电”与表 4-2 电容两项；Source 插座处 VBUS 按 USB 2.0/USB 3.2 规范），其端口电源开关、过流与 Hub 供电模式按 USB 2.0/Hub 控制器手册另核。",
+   "evidence": [
+    "brainsmoke--usb2_hub",
+    "nabucasa--yellow",
+    "pionixpublic--reference-hardware",
+    "rmingon--chlinknet",
+    "tonydefilippis--poepico"
+   ],
+   "why": "nabucasa J4 双 Type-A、brainsmoke J1–J4 Standard-A、pionix J2 USB-A 被错套"
+  },
+  {
+   "id": "G01-031",
+   "field": "sr_check",
+   "old": "核对源端口有 VBUS 开关和放电路径，端口电容不超过表 4-2。",
+   "new": "先确认端口是 Type-C 插座且作 Source/DRP；核对源端口有 VBUS 开关和放电路径、未附着时不带电，端口电容不超过表 4-2。传统连接器端口不按本条判。关闭条件：比较通过。",
+   "evidence": [
+    "brainsmoke--usb2_hub",
+    "nabucasa--yellow",
+    "pionixpublic--reference-hardware"
+   ],
+   "why": ""
+  },
+  {
+   "id": "G03-005",
+   "field": "relations",
+   "old": {
+    "reuses": [
+     "G03-010"
+    ],
+    "related": [
+     "G03-003",
+     "G03-004"
+    ]
+   },
+   "new": {
+    "reuses": [
+     "G03-010"
+    ],
+    "related": [
+     "G03-003",
+     "G03-004",
+     "G03-059"
+    ]
+   },
+   "evidence": [
+    "rapidanalysis--xerxes"
+   ],
+   "why": "与新增 G03-059 互指；本条适用条件不变"
+  },
+  {
+   "id": "G04-036",
+   "field": "not_applicable",
+   "old": "",
+   "new": "模拟隔离放大器、隔离电源模块、以太网等无源磁性隔离不适用本条（其故障输出、失电状态按各自手册另核，不因没有数字默认态而放行）。",
+   "evidence": [
+    "pionixpublic--cb-eval-board"
+   ],
+   "why": "本条内容是数字隔离器默认输出"
+  },
+  {
+   "id": "G04-037",
+   "field": "not_applicable",
+   "old": "",
+   "new": "模拟隔离放大器、隔离电源模块、无源磁性隔离不适用（无数据速率指标）。",
+   "evidence": [
+    "pionixpublic--cb-eval-board"
+   ],
+   "why": ""
+  },
+  {
+   "id": "G04-039",
+   "field": "applies_when.text",
+   "old": "有数字隔离器或隔离接口时（绝缘等级归 G06）",
+   "new": "有数字隔离器、隔离放大器或其他带 CMTI 指标的隔离接口时（绝缘等级归 G06）",
+   "evidence": [
+    "pionixpublic--cb-eval-board"
+   ],
+   "why": "AMC3311 一类模拟隔离放大器也有 CMTI 要求，不能因“非数字”放行"
+  },
+  {
+   "id": "G04-091",
+   "field": "title",
+   "old": "以太网中心抽头不并联",
+   "new": "以太网中心抽头不并联（所选 PHY/磁件原厂未许可时）",
+   "evidence": [
+    "rmingon--chlinknet"
+   ],
+   "why": ""
+  },
+  {
+   "id": "G04-091",
+   "field": "applies_when.text",
+   "old": "用分立以太网变压器时；集成磁性元件的 RJ45 按其手册",
+   "new": "用分立以太网变压器或集成磁性 RJ45 时；千兆 PHY 无原厂许可时适用；所选 PHY/磁件原厂手册或参考设计明确允许中心抽头共偏置的按原厂",
+   "evidence": [
+    "rmingon--chlinknet"
+   ],
+   "why": "tailoring 已写“面向千兆 PHY”，sr_check 却是通用禁止句"
+  },
+  {
+   "id": "G04-091",
+   "field": "sr_check",
+   "old": "多个中心抽头直接或经扼流圈并联判风险。关闭条件：比较通过。",
+   "new": "按所选 PHY/磁件的原厂手册与参考设计核中心抽头接法：原厂明确允许共偏置的（如 WCH CH32V30x 10/100 内置 PHY 参考图 HR911105A 的 CT 共接 3V3 加 0.1 µF）按原厂关闭；千兆 PHY 无原厂许可而多个中心抽头直接或经扼流圈并联判风险；缺 PHY/磁件资料记资料不足，不报“并联本身必错”。关闭条件：与原厂接法一致。",
+   "evidence": [
+    "rmingon--chlinknet"
+   ],
+   "why": ""
+  },
+  {
+   "id": "G04-091",
+   "field": "source",
+   "old": [
+    {
+     "document": "Microchip ENT-AN0098 Magnetics Guide（原 Microsemi，面向其 PHY）",
+     "edition": "Rev.2.2",
+     "clause": "§3.5",
+     "page": "6（印刷 4）"
+    }
+   ],
+   "new": [
+    {
+     "document": "Microchip ENT-AN0098 Magnetics Guide（原 Microsemi，面向其 PHY）",
+     "edition": "Rev.2.2",
+     "clause": "§3.5",
+     "page": "6（印刷 4）"
+    },
+    {
+     "document": "WCH CH32V30x 评估板原理图 CH32V30xSCH.pdf（厂家参考设计，作共偏置示例）",
+     "edition": "版次待核（chlinknet 实板引用）",
+     "clause": "ETH 区 HR911105A 中心抽头 4/5 共接 3V3、C14=0.1 µF",
+     "page": "9（PDF）"
+    }
+   ],
+   "evidence": [
+    "rmingon--chlinknet"
+   ],
+   "why": "厂家反例出处；入库前对原件核版次"
+  },
+  {
+   "id": "G05-030",
+   "field": "sr_check",
+   "old": "独立复核；低于判不成立（漏电或误导通）；只比 VBR 的判方法错误。关闭条件：比较通过。",
+   "new": "独立复核；多通道 TVS/ESD 阵列逐通道按各自所接节点的最高工作电压核 VRWM；低于判不成立（漏电或误导通）；只比 VBR 的判方法错误。关闭条件：每个通道比较通过。",
+   "evidence": [
+    "antmicro--hdmi-mipi-bridge",
+    "brainsmoke--usb2_hub",
+    "newell--hv-flyback-converter"
+   ],
+   "why": "漏问 PRO-E02 17 块板，阵列只按器件整体问"
+  },
+  {
+   "id": "G05-031",
+   "field": "inputs",
+   "old": [
+    "G07 端口浪涌等级与源阻抗（得到浪涌电流和波形）",
+    "钳位电压（对应电流、波形、温度）或 RDYN",
+    "被保护器件绝对最大值（含瞬态额定）"
+   ],
+   "new": [
+    "G07 端口浪涌等级与源阻抗（得到浪涌电流和波形）",
+    "钳位电压（对应电流、波形、温度）或 RDYN",
+    "被保护器件绝对最大值（含瞬态额定）：包括同网器件，以及经磁珠、小电阻、保险等直流低阻或滤波支路能到达的后级器件"
+   ],
+   "evidence": [
+    "copperpilot--jetson-ai-cam-copperpilot"
+   ],
+   "why": "“被保护器件”只取同网会漏掉滤波后的薄弱 IC"
+  },
+  {
+   "id": "G05-031",
+   "field": "sr_check",
+   "old": "独立复算（含温度系数）；超过判不成立；手册没有该波形数据的只能定界并标估算，不放行损坏判据；G07 未给浪涌等级记资料不足。关闭条件：比较通过。",
+   "new": "独立复算（含温度系数）；被保护对象沿同一事件的实际低阻/滤波路径追到后级脚，计入该路径在事件频段的阻抗、限流与次级钳位后比较；多通道阵列逐通道比较；超过判不成立；手册没有该波形数据的只能定界并标估算，不放行损坏判据；G07 未给浪涌等级记资料不足，不捏造事件。关闭条件：比较通过。",
+   "evidence": [
+    "copperpilot--jetson-ai-cam-copperpilot",
+    "antmicro--hdmi-mipi-bridge"
+   ],
+   "why": ""
+  },
+  {
+   "id": "G04-010",
+   "field": "applies_when.circuit_types",
+   "old": [
+    "I2C",
+    "SPI",
+    "UART",
+    "LEVEL_SHIFT",
+    "CAN",
+    "RS485",
+    "USB",
+    "ETHERNET",
+    "CLOCK",
+    "HSSERIAL",
+    "DEBUG",
+    "ISOLATION"
+   ],
+   "new": [
+    "I2C",
+    "SPI",
+    "UART",
+    "LEVEL_SHIFT",
+    "CAN",
+    "RS485",
+    "USB",
+    "ETHERNET",
+    "CLOCK",
+    "HSSERIAL",
+    "DEBUG",
+    "ISOLATION",
+    "STARTUP"
+   ],
+   "evidence": [
+    "mlab-modules--batdatunit01"
+   ],
+   "why": "控制器 GPIO 直接驱动转换器 EN 时（TPS631000 EN 不得悬空，AVR 复位三态）不属于接口类型，原条件不触发"
+  },
+  {
+   "id": "G04-010",
+   "field": "applies_when.text",
+   "old": "有板间、对外或跨电源域的数字接口时",
+   "new": "有板间、对外或跨电源域的数字接口时；或控制器 GPIO 直接驱动使能、片选、驱动器输入等关键控制脚时",
+   "evidence": [
+    "mlab-modules--batdatunit01"
+   ],
+   "why": ""
+  },
+  {
+   "id": "G01-026",
+   "field": "version",
+   "old": "1.0",
+   "new": "1.1",
+   "evidence": [],
+   "why": "条目修订"
+  },
+  {
+   "id": "G01-029",
+   "field": "version",
+   "old": "1.0",
+   "new": "1.1",
+   "evidence": [],
+   "why": "条目修订"
+  },
+  {
+   "id": "G01-030",
+   "field": "version",
+   "old": "1.0",
+   "new": "1.1",
+   "evidence": [],
+   "why": "条目修订"
+  },
+  {
+   "id": "G01-031",
+   "field": "version",
+   "old": "1.0",
+   "new": "1.1",
+   "evidence": [],
+   "why": "条目修订"
+  },
+  {
+   "id": "G03-005",
+   "field": "version",
+   "old": "1.0",
+   "new": "1.1",
+   "evidence": [],
+   "why": "条目修订"
+  },
+  {
+   "id": "G04-010",
+   "field": "version",
+   "old": "1.0",
+   "new": "1.1",
+   "evidence": [],
+   "why": "条目修订"
+  },
+  {
+   "id": "G04-036",
+   "field": "version",
+   "old": "1.0",
+   "new": "1.1",
+   "evidence": [],
+   "why": "条目修订"
+  },
+  {
+   "id": "G04-037",
+   "field": "version",
+   "old": "1.0",
+   "new": "1.1",
+   "evidence": [],
+   "why": "条目修订"
+  },
+  {
+   "id": "G04-039",
+   "field": "version",
+   "old": "1.0",
+   "new": "1.1",
+   "evidence": [],
+   "why": "条目修订"
+  },
+  {
+   "id": "G04-091",
+   "field": "version",
+   "old": "1.0",
+   "new": "1.1",
+   "evidence": [],
+   "why": "条目修订"
+  },
+  {
+   "id": "G05-030",
+   "field": "version",
+   "old": "1.0",
+   "new": "1.1",
+   "evidence": [],
+   "why": "条目修订"
+  },
+  {
+   "id": "G05-031",
+   "field": "version",
+   "old": "1.0",
+   "new": "1.1",
+   "evidence": [],
+   "why": "条目修订"
+  }
+ ],
+ "add": [
+  {
+   "entry": {
+    "id": "G02-036",
+    "title": "器件身份唯一：值、料号、厂家、资料与封装指向同一订货型号",
+    "spec": "G02",
+    "version": "1.0",
+    "status": "active",
+    "nature": "shall",
+    "applies_when": {
+     "board": true,
+     "text": "所有进 BOM 的器件；关键/特殊器件以完整订货料号为身份，常规件（片阻、MLCC 等）以值加规格（容差、耐压/功率、介质、封装）为身份"
+    },
+    "not_applicable": "",
+    "tailoring": "",
+    "inputs": [
+     "实例的 Value、料号/采购码、厂家、资料链接、封装字段",
+     "原厂订货信息（后缀与封装、电压/输出档的对应）"
+    ],
+    "asg_action": "每个实例的值、料号、厂家、资料链接与封装字段指向同一订货型号：后缀对应的封装、输出档、温度档与所用手册一致；常规件不强求料号，但值、规格与封装字段互不矛盾（如图面 470 nF/1812/≥250 V 与采购码 100 nF/0805/50 V 不得并存）。证据：身份对照表（实例字段 → 原厂订货信息页）。",
+    "sr_check": "逐实例比对字段与原厂订货信息；两个字段指向不同型号、后缀与封装不对应、资料链接指向别的器件（含同系列不同后缀）的判不成立；只是库缓存来源名不同不报；缺原厂订货页记资料不足。关闭条件：每个关键/特殊器件身份唯一且与所引手册一致，常规件值、规格、封装字段一致。",
+    "source": [
+     {
+      "document": "ECSS-Q-HB-30-01A 最坏工况分析",
+      "edition": "2011-01-14",
+      "clause": "5.1.1.1、5.1.1.2",
+      "page": "15"
+     },
+     {
+      "document": "TOR-2013-00297 Rev.A 电气设计最坏工况分析指南与标准草案",
+      "edition": "2013-06-03",
+      "clause": "3.C",
+      "page": "28–29（14–15）"
+     },
+     {
+      "document": "TI SN74HC164 数据手册（作厂家订货信息示例）",
+      "edition": "SCLS115G",
+      "clause": "Table 5 订货信息（D=SOIC、N=PDIP、PW=TSSOP）",
+      "page": "3"
+     },
+     {
+      "document": "Diodes DFLS1100 数据手册（作厂家订货信息示例）",
+      "edition": "版次待核（abhishek-xi 实板引用）",
+      "clause": "Ordering Information / Mechanical Data（PowerDI123）",
+      "page": "1"
+     }
+    ],
+    "relations": {
+     "related": [
+      "G02-003",
+      "G02-037",
+      "G02-038",
+      "G04-101"
+     ]
+    },
+    "closing_stage": "schematic"
+   },
+   "basis": "DEV-D04/DEV-D01 等身份冲突 39 条（37 条 criteria 为空，28 块板）；G02-003 要求“准确料号”的手册保证值，但没有一条要求身份字段本身唯一。",
+   "confirmed": "待用户确认（草案）；首次出现：a2r-lab--crazyflie_fpga_deck",
+   "evidence": {
+    "true_defects": 39,
+    "criteria_empty": 37,
+    "boards": [
+     "a2r-lab--crazyflie_fpga_deck",
+     "abhishek-xi--isolated-flyback-converter",
+     "anthilla--anthc",
+     "antmicro--jetson-nano-baseboard",
+     "antmicro--rdimm-ddr4-tester",
+     "badgineer--mp2-esc",
+     "ben5049--switch-v4-hardware",
+     "danielmartensson--stm32-plc",
+     "fossasia--pslab-hardware",
+     "g-pereira--greenmobi-bms",
+     "gorkemguven--12v-1a-isolated-flyback-smps",
+     "groupgets--kimchi-micro",
+     "hirusha785--12v-5a-isolated-flyback-smps-kicad",
+     "imike78--home-mini-v1-drop-in-pcb",
+     "loredati-svg--tpa3116d2-class-d-amplifier",
+     "mlab-modules--batdatunit01",
+     "mlab-modules--solarmini01",
+     "moelashmawi--flyback-ac-dc-converter",
+     "neotron-compute--neotron-pico",
+     "newell--hv-flyback-converter",
+     "newell--nixie-clock-esp32c3",
+     "oresat--oresat-c3-hardware",
+     "pionixpublic--reference-hardware",
+     "protocentral--protocentral_ads1293",
+     "s59mz--kicad-led-drv-pmod",
+     "spirit532--studio_mic",
+     "teapotlaboratories--feather-rak3172",
+     "weirdgyn--driverino-shield"
+    ],
+    "items": [
+     "a2r-lab--crazyflie_fpga_deck#F55(DEV-D04)",
+     "badgineer--mp2-esc#F01(DEV-D04)",
+     "badgineer--mp2-esc#F03(DOC-D01)",
+     "g-pereira--greenmobi-bms#F01(DEV-D01)",
+     "g-pereira--greenmobi-bms#F02(DEV-D01)",
+     "g-pereira--greenmobi-bms#F03(DEV-D04)",
+     "groupgets--kimchi-micro#F28(DEV-D04)",
+     "loredati-svg--tpa3116d2-class-d-amplifier#F01(DEV-D04)",
+     "mlab-modules--solarmini01#F12(DEV-D01)",
+     "oresat--oresat-c3-hardware#F61(DEV-D04)",
+     "s59mz--kicad-led-drv-pmod#F01(DEV-D04)",
+     "spirit532--studio_mic#F06(DEV-D04)",
+     "anthilla--anthc#F-U1PKG(DEV-D01)",
+     "anthilla--anthc#F-U10DOC(DEV-D01)",
+     "antmicro--jetson-nano-baseboard#F005(DEV-D04)",
+     "fossasia--pslab-hardware#F-CAP(DOC-D01)",
+     "fossasia--pslab-hardware#F-R22(DEV-C03)",
+     "fossasia--pslab-hardware#F-PGA-DOC(DEV-D04)",
+     "fossasia--pslab-hardware#F-Q-RATING(DEV-D01)",
+     "moelashmawi--flyback-ac-dc-converter#B06(DEV-D04)",
+     "newell--hv-flyback-converter#F02(DEV-D04)",
+     "newell--nixie-clock-esp32c3#F002(DEV-D04)",
+     "antmicro--rdimm-ddr4-tester#F146(DEV-D04)",
+     "ben5049--switch-v4-hardware#D01(DEV-D04)",
+     "ben5049--switch-v4-hardware#D02(DEV-D04)",
+     "danielmartensson--stm32-plc#F044(DEV-D04)",
+     "gorkemguven--12v-1a-isolated-flyback-smps#F02(DEV-D04)",
+     "mlab-modules--batdatunit01#D03(DEV-D01)",
+     "neotron-compute--neotron-pico#F002(DEV-D04)",
+     "pionixpublic--reference-hardware#F003(CLK-C01)",
+     "pionixpublic--reference-hardware#F004(DEV-D04)",
+     "teapotlaboratories--feather-rak3172#F26(DEV-D04)",
+     "weirdgyn--driverino-shield#F04(DEV-D04)",
+     "abhishek-xi--isolated-flyback-converter#F01(DEV-D04)",
+     "abhishek-xi--isolated-flyback-converter#F02(DEV-D04)",
+     "hirusha785--12v-5a-isolated-flyback-smps-kicad#F03(DEV-D02)",
+     "hirusha785--12v-5a-isolated-flyback-smps-kicad#F04(DEV-D04)",
+     "imike78--home-mini-v1-drop-in-pcb#F42(DEV-D04)",
+     "protocentral--protocentral_ads1293#F02(DEV-D04)"
+    ]
+   },
+   "placement_note": "放 G02 是因为它是 G02-003“准确料号”的前提；G09（制造与可测试性）成文后可迁移，编号不复用。"
+  },
+  {
+   "entry": {
+    "id": "G02-037",
+    "title": "原理图、BOM 与发布图纸同版一致",
+    "spec": "G02",
+    "version": "1.0",
+    "status": "active",
+    "nature": "shall",
+    "applies_when": {
+     "board": true,
+     "text": "交付或审查的原理图、BOM（含装配/采购表）与发布 PDF/README 接口表"
+    },
+    "not_applicable": "",
+    "tailoring": "",
+    "inputs": [
+     "同一版本的原生原理图、BOM、发布 PDF 与接口说明"
+    ],
+    "asg_action": "交付前把 BOM、发布图与原生原理图按位号逐项对齐：位号集合、Value、料号、封装、贴/不贴状态一致；README 或图注里的接口针表与网表一致。证据：对齐报告与版本/哈希。",
+    "sr_check": "按位号做双向差集与字段比对；同一提交内 BOM 与图指定不同器件（如 OPA4991↔OPA1664、STM32G431↔STM32G473）、贴装状态矛盾、BOM 漏列图上贴装件、发布针表与网表错位的判不成立；只有格式差异不报。关闭条件：差集为空或每处差异有书面依据。",
+    "source": [
+     {
+      "document": "ECSS-Q-HB-30-01A 最坏工况分析",
+      "edition": "2011-01-14",
+      "clause": "4.5",
+      "page": "14"
+     },
+     {
+      "document": "TOR-2013-00297 Rev.A 电气设计最坏工况分析指南与标准草案",
+      "edition": "2013-06-03",
+      "clause": "附录 A.5.A.1、A.7",
+      "page": "76；86"
+     }
+    ],
+    "relations": {
+     "related": [
+      "G02-026",
+      "G02-036"
+     ]
+    },
+    "closing_stage": "schematic"
+   },
+   "basis": "DEV-D04 图纸/BOM 一致性 8 条（3 块板）criteria 为空；另有 DOC-Q01 7 条引用 G02-026，但 G02-026 只要求分析证据绑定原理图版本，不要求 BOM 与图本身一致。",
+   "confirmed": "待用户确认（草案）；首次出现：loudifier--openrefmic",
+   "evidence": {
+    "true_defects": 15,
+    "criteria_empty": 8,
+    "boards": [
+     "badgineer--mp2-esc",
+     "copperpilot--jetson-ai-cam-copperpilot",
+     "gyrocopterllc--flatmcu",
+     "loudifier--openrefmic",
+     "mlab-modules--batdatunit01",
+     "mlab-modules--qfhmix01",
+     "rmingon--chlinknet",
+     "solderedelectronics--gnss-gps-l86-m33-breakout-hardware-design",
+     "tonydefilippis--poepico",
+     "weirdgyn--driverino-shield"
+    ],
+    "items": [
+     "loudifier--openrefmic#F01(DEV-D04)",
+     "gyrocopterllc--flatmcu#F027(DEV-D04)",
+     "gyrocopterllc--flatmcu#F028(DEV-D04)",
+     "gyrocopterllc--flatmcu#F029(DEV-D04)",
+     "gyrocopterllc--flatmcu#F030(DEV-D04)",
+     "gyrocopterllc--flatmcu#F031(DEV-D04)",
+     "gyrocopterllc--flatmcu#F032(DEV-D04)",
+     "tonydefilippis--poepico#F40(DEV-D04)",
+     "badgineer--mp2-esc#F02(DOC-Q01)",
+     "mlab-modules--qfhmix01#F27(DOC-Q01)",
+     "mlab-modules--batdatunit01#D04(DOC-Q01)",
+     "weirdgyn--driverino-shield#F03(DOC-Q01)",
+     "copperpilot--jetson-ai-cam-copperpilot#F46(DOC-Q01)",
+     "rmingon--chlinknet#F065(DOC-Q01)",
+     "solderedelectronics--gnss-gps-l86-m33-breakout-hardware-design#F02(DOC-Q01)"
+    ]
+   },
+   "placement_note": "标准级出处借用 G02-026 已核条目（证据绑定构型）；制造数据包一致性的专门条款待 G09 成文时补。"
+  },
+  {
+   "entry": {
+    "id": "G02-038",
+    "title": "交付的器件值不得为占位值或未定档",
+    "spec": "G02",
+    "version": "1.0",
+    "status": "active",
+    "nature": "shall",
+    "applies_when": {
+     "board": true,
+     "text": "交付或冻结的原理图与 BOM"
+    },
+    "not_applicable": "",
+    "tailoring": "",
+    "inputs": [
+     "实例 Value 与规格字段",
+     "未定值的 TBR 登记（G01）"
+    ],
+    "asg_action": "交付图中每个贴装器件给出可采购、可复算的值或料号：不留库默认名（R_Small、C、Crystal_GND24）、通配后缀（BZT52Bxx、BQ769x2、xx）、只写类别（TVS、PMOS、NPN）或缺电压/输出档的系列名；确未定的按 G01 TBR 登记估计值、理由、责任方与关闭条件，并在图上标 TBR。证据：占位值清单为空或全部有 TBR 编号。",
+    "sr_check": "扫描 Value/料号字段的库默认名、通配符、纯类别名与缺档系列名；决定电压、时序或钳位的占位值判不成立，其余判风险；有 TBR 登记的记输入缺口不判缺陷。关闭条件：无未登记占位值。",
+    "source": [
+     {
+      "document": "NASA SP-2016-6105 Rev.2 系统工程手册",
+      "edition": "Rev.2 2016",
+      "clause": "附录 C.3",
+      "page": "250（印刷 237）"
+     },
+     {
+      "document": "ECSS-Q-HB-30-01A 最坏工况分析",
+      "edition": "2011-01-14",
+      "clause": "5.1.1.1、5.1.1.2",
+      "page": "15"
+     }
+    ],
+    "relations": {
+     "related": [
+      "G01-007",
+      "G02-003",
+      "G02-036"
+     ]
+    },
+    "closing_stage": "schematic"
+   },
+   "basis": "DOC-D01/DEV-D01/ANA-D01/RST-A01 等占位值 14 条（13 条 criteria 为空，10 块板）。",
+   "confirmed": "待用户确认（草案）；首次出现：blkburn--zigbee",
+   "evidence": {
+    "true_defects": 14,
+    "criteria_empty": 13,
+    "boards": [
+     "blkburn--zigbee",
+     "g-pereira--greenmobi-bms",
+     "hasanberkdasar--bms-can-bus",
+     "mlab-modules--solarmini01",
+     "moelashmawi--flyback-ac-dc-converter",
+     "rmingon--chlinknet",
+     "rmingon--rs485-spy-injector",
+     "solderedelectronics--breadboard-power-supply-board-hardware-design",
+     "solderedelectronics--io-expander-mcp23017-breakout-hardware-design",
+     "vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project"
+    ],
+    "items": [
+     "blkburn--zigbee#F03(DEV-D04)",
+     "g-pereira--greenmobi-bms#F04(DEV-D01)",
+     "g-pereira--greenmobi-bms#F05(DEV-D01)",
+     "g-pereira--greenmobi-bms#F06(ANA-D01)",
+     "mlab-modules--solarmini01#F11(DOC-D01)",
+     "solderedelectronics--breadboard-power-supply-board-hardware-design#F24(DEV-D04)",
+     "vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project#F01(DEV-D01)",
+     "hasanberkdasar--bms-can-bus#F-CVALUE(DOC-D01)",
+     "hasanberkdasar--bms-can-bus#F-IDENTITY(DEV-D01)",
+     "moelashmawi--flyback-ac-dc-converter#B05(DOC-D02)",
+     "rmingon--rs485-spy-injector#F-VALUES(DOC-D01)",
+     "rmingon--rs485-spy-injector#S39(RST-A01)",
+     "solderedelectronics--io-expander-mcp23017-breakout-hardware-design#F01(DEV-D01/DEV-D04)",
+     "rmingon--chlinknet#F064(DOC-D01)"
+    ]
+   },
+   "placement_note": "放 G02：占位值使 G02-003 的参数无从取值；与 G01-007 TBR 机制衔接。"
+  },
+  {
+   "entry": {
+    "id": "G02-039",
+    "title": "器件工作在手册推荐工作条件内",
+    "spec": "G02",
+    "version": "1.0",
+    "status": "active",
+    "nature": "shall",
+    "applies_when": {
+     "device_kinds": [
+      "ic",
+      "crystal"
+     ],
+     "text": "集成电路与有源振荡器：供电、输入电平与跃迁时间、外接定时/设定元件、负载、频率、温度等级"
+    },
+    "not_applicable": "",
+    "tailoring": "",
+    "inputs": [
+     "准确料号手册的推荐工作条件表与外接元件允许范围",
+     "实际电路的电压、边沿、负载与外接元件值"
+    ],
+    "asg_action": "逐项核器件在推荐工作条件内：标准 CMOS 输入的跃迁率（如 ≤5 ns/V）不被慢 RC 边沿破坏、输入电平/上拉电压不超推荐范围、定时或设定电阻在允许区间、振荡器输出负载不超手册测试负载。证据：推荐条件对照行。",
+    "sr_check": "按手册推荐工作条件表逐项比较；超出且手册不保证功能的判不成立；只超典型值不报；在绝对最大额定内但超推荐条件的不能以“未损坏”放行；缺推荐条件表记资料不足。关闭条件：逐项落在保证条件内。",
+    "source": [
+     {
+      "document": "TOR-2013-00297 Rev.A 电气设计最坏工况分析指南与标准草案",
+      "edition": "2013-06-03",
+      "clause": "3.C",
+      "page": "28–29（14–15）"
+     },
+     {
+      "document": "TI SN74HC 系列数据手册（标准 CMOS 输入跃迁率，作厂家示例）",
+      "edition": "SCES224S",
+      "clause": "推荐工作条件 Δt/Δv",
+      "page": "5"
+     },
+     {
+      "document": "TXC 7C 系列振荡器数据手册（输出负载条件，作厂家示例）",
+      "edition": "Rev1.05-a",
+      "clause": "Electrical Characteristics CL=15 pF",
+      "page": "1"
+     }
+    ],
+    "relations": {
+     "related": [
+      "G02-003",
+      "G02-004",
+      "G02-023"
+     ]
+    },
+    "closing_stage": "schematic"
+   },
+   "basis": "DEV-C05 7 条（5 条 criteria 为空，6 块板）：慢边沿进标准 CMOS、定时电阻越界、I²C 上拉到 5 V、振荡器 47 pF 对 15 pF 负载。",
+   "confirmed": "待用户确认（草案）；首次出现：antmicro--hdmi-mipi-bridge",
+   "evidence": {
+    "true_defects": 7,
+    "criteria_empty": 5,
+    "boards": [
+     "antmicro--hdmi-mipi-bridge",
+     "antmicro--jetson-nano-baseboard",
+     "gorkemguven--12v-1a-isolated-flyback-smps",
+     "pionixpublic--reference-hardware",
+     "satya777777--esp32-industrial-io-controller",
+     "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design"
+    ],
+    "items": [
+     "antmicro--hdmi-mipi-bridge#F29(DEV-C05)",
+     "antmicro--jetson-nano-baseboard#F003(DEV-C05)",
+     "gorkemguven--12v-1a-isolated-flyback-smps#F01(DEV-C05)",
+     "pionixpublic--reference-hardware#F001(DEV-C05)",
+     "pionixpublic--reference-hardware#F002(DEV-C05)",
+     "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design#F02(DEV-C05)",
+     "satya777777--esp32-industrial-io-controller#F003(DEV-C05)"
+    ]
+   },
+   "placement_note": "放 G02：与 G02-003/004“保证限值与测试条件”同属参数保证口径。"
+  },
+  {
+   "entry": {
+    "id": "G03-059",
+    "title": "内补偿变换器的外部前馈电容与反馈网络在手册给定窗内",
+    "spec": "G03",
+    "version": "1.0",
+    "status": "active",
+    "nature": "method",
+    "applies_when": {
+     "circuit_types": [
+      "POWER_CONVERTER"
+     ],
+     "text": "内补偿开关变换器，手册给出外部前馈电容（Cff）或反馈网络的取值窗、推荐值"
+    },
+    "not_applicable": "",
+    "tailoring": "",
+    "inputs": [
+     "准确料号手册的 Cff/反馈电阻取值窗与推荐例",
+     "实际 FB 网络的元件值"
+    ],
+    "asg_action": "按手册给定窗选 Cff 与反馈电阻；区分手册的推荐例值、给定范围与保证边界。证据：FB 网络对照行（手册页）。",
+    "sr_check": "按手册核 Cff 与反馈电阻在给定窗内；越出手册给定范围判不成立（如 AP3441 给 10–470 pF 而用 4.7 nF）；只偏离推荐例值、仍在范围内的不报；手册未给窗口且无环路数据的记资料不足，不自动断言不稳定。关闭条件：在手册给定窗内。",
+    "source": [
+     {
+      "document": "Diodes AP3441 数据手册（内补偿降压，作厂家示例）",
+      "edition": "DS39754 Rev.3-2",
+      "clause": "Setting the Output Voltage / Figure 1（前馈电容 10–470 pF）",
+      "page": "9（PDF）"
+     }
+    ],
+    "relations": {
+     "related": [
+      "G03-005",
+      "G03-006"
+     ]
+    },
+    "closing_stage": "schematic"
+   },
+   "basis": "criterion_issue rapidanalysis--xerxes F60 与真缺陷 F34：G03-005 只承接手册给 LC/穿越频率式的情形，G03-006～009 是外补偿；厂家给定 Cff 窗无条目承接。",
+   "confirmed": "待用户确认（草案）；首次出现：rapidanalysis--xerxes",
+   "evidence": {
+    "true_defects": 1,
+    "criteria_empty": 1,
+    "boards": [
+     "rapidanalysis--xerxes"
+    ],
+    "items": [
+     "rapidanalysis--xerxes#F34(PWR-C15)"
+    ]
+   },
+   "placement_note": ""
+  },
+  {
+   "entry": {
+    "id": "G04-101",
+    "title": "符号脚集合、脚号与电气类型按准确订货封装的官方脚表",
+    "spec": "G04",
+    "version": "1.0",
+    "status": "active",
+    "nature": "shall",
+    "applies_when": {
+     "device_kinds": [
+      "ic",
+      "diode",
+      "tvs",
+      "bridge_rectifier",
+      "crystal"
+     ],
+     "text": "有封装变体或自建符号的器件"
+    },
+    "not_applicable": "",
+    "tailoring": "",
+    "inputs": [
+     "准确订货封装的官方脚表（含 EP、隐藏电源脚、变体专用脚）",
+     "符号脚号、脚名与电气类型"
+    ],
+    "asg_action": "按准确订货封装（非同系列别的封装）的官方脚表建符号：脚集合双向一致（不缺 VDD2、EP，不多脚）、脚号对应、变体专用脚名正确（如 RESET#/HOLD#）、电气类型与方向同官方（输出不声明为输入，开漏标开漏，二极管极性与脚名一致）。证据：脚表双向差集与类型对照。",
+    "sr_check": "官方脚与符号脚双向差集，加脚号/脚名/类型逐脚比对；脚号错位或缺电源/EP 脚判不成立；只影响电气类型的判风险（会误导 ERC 与驱动推断）；缺准确封装脚表记资料不足。关闭条件：差集为空或每处差异有依据。",
+    "source": [
+     {
+      "document": "NXP PCA9517A 数据手册（封装变体脚序不同，作厂家示例）",
+      "edition": "版次待核（hdmi-mipi-bridge 实板引用）",
+      "clause": "Fig.4、Table 3 HWSON8 脚位",
+      "page": "3–4"
+     },
+     {
+      "document": "TI DRV8353R 数据手册（输出/开漏脚类型，作厂家示例）",
+      "edition": "SLVSDY6A",
+      "clause": "引脚功能表",
+      "page": "8–9"
+     }
+    ],
+    "relations": {
+     "related": [
+      "G02-036",
+      "G04-102"
+     ]
+    },
+    "closing_stage": "schematic"
+   },
+   "basis": "DEV-D02 脚表差集 8 条、自建符号脚类型/极性 3 条（共 11 条，10 条 criteria 为空，8 块板）。",
+   "confirmed": "待用户确认（草案）；首次出现：antmicro--hdmi-mipi-bridge",
+   "evidence": {
+    "true_defects": 11,
+    "criteria_empty": 10,
+    "boards": [
+     "anthilla--anthc",
+     "antmicro--hdmi-mipi-bridge",
+     "antmicro--m2-smart-iot-module",
+     "blkburn--zigbee",
+     "gyrocopterllc--flatmcu",
+     "jasonsbeer--amiga-2000-eatx",
+     "satya777777--esp32-industrial-io-controller",
+     "solderedelectronics--gnss-gps-l86-m33-breakout-hardware-design"
+    ],
+    "items": [
+     "antmicro--hdmi-mipi-bridge#F27(DEV-D02)",
+     "blkburn--zigbee#F01(DEV-D02)",
+     "blkburn--zigbee#F02(DEV-D04)",
+     "anthilla--anthc#F-U2PIN(DEV-D02)",
+     "anthilla--anthc#F-U9PIN(DEV-D02)",
+     "anthilla--anthc#F-PESDPIN(DEV-D02)",
+     "antmicro--m2-smart-iot-module#F001(DEV-D02)",
+     "gyrocopterllc--flatmcu#F033(DEV-D04)",
+     "jasonsbeer--amiga-2000-eatx#F076(DEV-E01)",
+     "satya777777--esp32-industrial-io-controller#F002(DEV-D02)",
+     "solderedelectronics--gnss-gps-l86-m33-breakout-hardware-design#F01(DEV-D04)"
+    ]
+   },
+   "placement_note": ""
+  },
+  {
+   "entry": {
+    "id": "G04-102",
+    "title": "未用脚、保留脚与专用脚按手册处置",
+    "spec": "G04",
+    "version": "1.0",
+    "status": "active",
+    "nature": "shall",
+    "applies_when": {
+     "device_kinds": [
+      "ic"
+     ],
+     "text": "有未用输入、NC/DNU/RSVD 脚、配置脚、片内稳压旁路脚或模拟专用脚的集成电路"
+    },
+    "not_applicable": "",
+    "tailoring": "",
+    "inputs": [
+     "官方脚表对每脚（含未用时）的处置要求",
+     "网表中该脚的实际连接"
+    ],
+    "asg_action": "逐脚按手册处置：未用 CMOS 输入接固定电平或手册允许的上下拉，不悬空；RSVD/DNU 按手册接地或悬空；配置脚、检测脚按所选变体接（固定输出版不接可调分压）；VCAP/REXT/PFIL 等专用脚的外接元件按手册值；电源脚即使功能未用也按手册接（如 FPGA VCCADC 不得接地）。证据：逐脚处置表。",
+    "sr_check": "按官方脚表逐脚核；悬空的 CMOS 输入、按手册必须接地/接电源却悬空或反接、专用脚外接元件偏离手册要求的判不成立；手册允许悬空或片内有保证上下拉的不报；缺脚表记资料不足。关闭条件：每脚处置都有手册依据。",
+    "source": [
+     {
+      "document": "ECSS-E-ST-20C Rev.2 Electrical and electronic",
+      "edition": "2022-04-08",
+      "clause": "4.2.4 h（未用电路不产生也不受工作噪声影响；航天 shall，默认基线下作方法依据）",
+      "page": "38"
+     },
+     {
+      "document": "TI SN74HC595 数据手册（未用输入处置，作厂家示例）",
+      "edition": "SCLS041J",
+      "clause": "§6.3 注 1；§11",
+      "page": "4、15"
+     },
+     {
+      "document": "TI ADS1299 数据手册（未用 GPIO 与专用脚，作厂家示例）",
+      "edition": "手册版次待核（Wiki raw/Datasheet 现存版）",
+      "clause": "引脚功能表 GPIO1–4；§9.3.2.3",
+      "page": "6、27"
+     }
+    ],
+    "relations": {
+     "related": [
+      "G03-035",
+      "G04-010",
+      "G04-101"
+     ]
+    },
+    "closing_stage": "schematic"
+   },
+   "basis": "NET-A07 22、DEV-D05 13 等引脚处置 41 条（40 条 criteria 为空，19 块板）；G04-010 只管上电/复位时的关键输出，没有条目管输入与专用脚。",
+   "confirmed": "待用户确认（草案）；首次出现：a2r-lab--crazyflie_fpga_deck",
+   "evidence": {
+    "true_defects": 41,
+    "criteria_empty": 40,
+    "boards": [
+     "a2r-lab--crazyflie_fpga_deck",
+     "antmicro--hdmi-mipi-bridge",
+     "antmicro--kria-k26-devboard",
+     "antmicro--m2-smart-iot-module",
+     "antmicro--poe-usb-c-pd-converter",
+     "copperpilot--jetson-ai-cam-copperpilot",
+     "hasanberkdasar--bms-can-bus",
+     "imike78--home-mini-v1-drop-in-pcb",
+     "jasonsbeer--amiga-2000-eatx",
+     "moelashmawi--flyback-ac-dc-converter",
+     "neumi--fastlogic",
+     "newell--nixie-clock-esp32c3",
+     "prajyotdaphal--home_automation-module",
+     "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design",
+     "solderedelectronics--soldered-inkplate-6-motion-hardware-design",
+     "sparkfun--sparkfun_gnssdo",
+     "theushen--eegfrontier",
+     "tonydefilippis--poepico",
+     "weirdgyn--driverino-shield"
+    ],
+    "items": [
+     "a2r-lab--crazyflie_fpga_deck#F22(PWR-A02)",
+     "antmicro--hdmi-mipi-bridge#F28(DEV-D05)",
+     "antmicro--poe-usb-c-pd-converter#F01(NET-A07)",
+     "antmicro--poe-usb-c-pd-converter#F03(DEV-D05)",
+     "neumi--fastlogic#F002(DEV-D05)",
+     "sparkfun--sparkfun_gnssdo#F13(NET-A07)",
+     "antmicro--m2-smart-iot-module#F003(DEV-D05)",
+     "antmicro--m2-smart-iot-module#F004(DEV-D05)",
+     "antmicro--m2-smart-iot-module#F005(DEV-D05)",
+     "hasanberkdasar--bms-can-bus#F-REGIN(DEV-D05)",
+     "moelashmawi--flyback-ac-dc-converter#B01(PWR-A02)",
+     "newell--nixie-clock-esp32c3#F001(NET-A07)",
+     "prajyotdaphal--home_automation-module#F01(DEV-D05)",
+     "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design#F01(DEV-D05)",
+     "theushen--eegfrontier#F02(NET-A07)",
+     "theushen--eegfrontier#F03(CLK-D01)",
+     "theushen--eegfrontier#F04(DEV-D05)",
+     "theushen--eegfrontier#F06(DEV-D05)",
+     "theushen--eegfrontier#F07(NET-A07)",
+     "weirdgyn--driverino-shield#F01(DEV-D05)",
+     "antmicro--kria-k26-devboard#F219(NET-A07)",
+     "copperpilot--jetson-ai-cam-copperpilot#F23(NET-A07)",
+     "copperpilot--jetson-ai-cam-copperpilot#F44(PWR-C02)",
+     "imike78--home-mini-v1-drop-in-pcb#F41(DEV-D05)",
+     "jasonsbeer--amiga-2000-eatx#F064(NET-A07)",
+     "jasonsbeer--amiga-2000-eatx#F065(NET-A07)",
+     "jasonsbeer--amiga-2000-eatx#F066(NET-A07)",
+     "jasonsbeer--amiga-2000-eatx#F067(NET-A07)",
+     "jasonsbeer--amiga-2000-eatx#F068(NET-A07)",
+     "jasonsbeer--amiga-2000-eatx#F069(NET-A07)",
+     "jasonsbeer--amiga-2000-eatx#F070(NET-A07)",
+     "jasonsbeer--amiga-2000-eatx#F071(NET-A07)",
+     "jasonsbeer--amiga-2000-eatx#F072(NET-A07)",
+     "jasonsbeer--amiga-2000-eatx#F073(NET-A07)",
+     "jasonsbeer--amiga-2000-eatx#F074(NET-A07)",
+     "jasonsbeer--amiga-2000-eatx#F075(NET-A07)",
+     "solderedelectronics--soldered-inkplate-6-motion-hardware-design#F077(NET-A07)",
+     "solderedelectronics--soldered-inkplate-6-motion-hardware-design#F078(NET-A07)",
+     "tonydefilippis--poepico#F12(NET-A01)",
+     "tonydefilippis--poepico#F15(NET-A06)",
+     "tonydefilippis--poepico#F16(NET-A07)"
+    ]
+   },
+   "placement_note": ""
+  },
+  {
+   "entry": {
+    "id": "G04-103",
+    "title": "USB 数据线外围按所选控制器手册",
+    "spec": "G04",
+    "version": "1.0",
+    "status": "active",
+    "nature": "shall",
+    "applies_when": {
+     "circuit_types": [
+      "USB"
+     ],
+     "text": "USB 控制器/桥接芯片的 D+/D− 串阻、上拉、REXT 与 VBUS 检测脚外围"
+    },
+    "not_applicable": "",
+    "tailoring": "",
+    "inputs": [
+     "所选控制器手册对串阻、上拉（阻值、上拉电压）、REXT、VBUS 检测脚分压/限流的要求"
+    ],
+    "asg_action": "D+/D− 串阻、全速 D+ 上拉、REXT 与 VBUS 检测脚分压按所选控制器手册取值，不照搬别的平台（如 RP2350 要求 27 Ω、STM32F103 全速 D+ 1.5 kΩ 上拉）。证据：外围对照行。",
+    "sr_check": "按手册核阻值与接法；偏离手册明确要求的判不成立；手册只给推荐范围的按范围判；缺手册记资料不足。关闭条件：比较通过。",
+    "source": [
+     {
+      "document": "ST STM32F103 数据手册（全速 D+ 上拉，作厂家示例）",
+      "edition": "DS5319 Rev.20",
+      "clause": "Table 45 注 2",
+      "page": "73（PDF）"
+     },
+     {
+      "document": "Raspberry Pi RP2350 数据手册（USB 串联端接，作厂家示例）",
+      "edition": "版次待核（cellkeeper 实板引用）",
+      "clause": "Table 2 USB DM/DP 27 Ω",
+      "page": "17（PDF）"
+     }
+    ],
+    "relations": {
+     "related": [
+      "G01-030",
+      "G04-005"
+     ]
+    },
+    "closing_stage": "schematic"
+   },
+   "basis": "SIG-D07 串阻/上拉 2 条与 SIG-C08 CP2102N VBUS 检测脚直连 1 条（3 块板）；SIG-D07 的 BASIS 只映射 G01-030（Type-C 断开检测），与这类缺陷不对题。",
+   "confirmed": "待用户确认（草案）；首次出现：neumi--fastlogic",
+   "evidence": {
+    "true_defects": 3,
+    "criteria_empty": 1,
+    "boards": [
+     "bondus--klippertoolboard",
+     "cellkeeper-bms--cellkeeper-hardware",
+     "neumi--fastlogic"
+    ],
+    "items": [
+     "neumi--fastlogic#F003(SIG-C08)",
+     "bondus--klippertoolboard#F12(SIG-D07)",
+     "cellkeeper-bms--cellkeeper-hardware#F-USB-TERM(SIG-D07)"
+    ]
+   },
+   "placement_note": ""
+  },
+  {
+   "entry": {
+    "id": "G04-104",
+    "title": "USB Type-C 端口 CC 按端口角色端接",
+    "spec": "G04",
+    "version": "1.0",
+    "status": "active",
+    "nature": "shall",
+    "applies_when": {
+     "circuit_types": [
+      "USB"
+     ],
+     "text": "Type-C 插座；无 CC 控制器、靠电阻声明角色的端口"
+    },
+    "not_applicable": "",
+    "tailoring": "",
+    "inputs": [
+     "端口角色（Sink/Source/DRP）",
+     "CC1、CC2 的端接网络"
+    ],
+    "asg_action": "Sink 端口 CC1、CC2 各自独立接 Rd（5.1 kΩ 到 GND，±20% 只作默认、要检测供电能力用 ±10%）；Source 端口各接 Rp；不并接、不悬空。证据：CC 端接对照。",
+    "sr_check": "按角色核 CC1/CC2 端接；Sink 缺 Rd 或两 CC 共用一只电阻判不成立；CC 悬空或只标 NC 判不成立；有 CC/PD 控制器的按其手册。关闭条件：比较通过。",
+    "source": [
+     {
+      "document": "USB Type-C Cable and Connector Specification",
+      "edition": "R2.5 2026-03",
+      "clause": "表 4-28 Sink CC Termination (Rd)",
+      "page": "245"
+     },
+     {
+      "document": "USB Type-C Cable and Connector Specification",
+      "edition": "R2.5 2026-03",
+      "clause": "4.4.2（VBUS 按 USB 2.0/3.2；传统连接器例外）",
+      "page": "152"
+     }
+    ],
+    "relations": {
+     "related": [
+      "G01-029",
+      "G01-030",
+      "G01-031"
+     ]
+    },
+    "closing_stage": "schematic"
+   },
+   "basis": "rmingon--rs485-spy-injector SIG-D04/NET-A01 3 条：J4 CC 无 Rd。G01-030 写“协议与 CC 逻辑交 G04”，但 G04 没有 CC 条目。",
+   "confirmed": "待用户确认（草案）；首次出现：rmingon--rs485-spy-injector",
+   "evidence": {
+    "true_defects": 3,
+    "criteria_empty": 3,
+    "boards": [
+     "rmingon--rs485-spy-injector"
+    ],
+    "items": [
+     "rmingon--rs485-spy-injector#F-CC(SIG-D04)",
+     "rmingon--rs485-spy-injector#S03(NET-A01)",
+     "rmingon--rs485-spy-injector#S04(NET-A01)"
+    ]
+   },
+   "placement_note": ""
+  }
+ ],
+ "tool_not_criterion": [
+  {
+   "item": "fossasia--pslab-hardware CI-HUMAN-RESULT REQ-D03",
+   "cites": [
+    "G01-001",
+    "G01-002"
+   ],
+   "verdict": "准则没问题，归工具",
+   "where": "scripts/results_model.py OPEN_KINDS/KIND_CAUSE；references/results-format.md",
+   "what": "结果 schema 只有 VENDOR_DATUM/REVIEW_INCOMPLETE，缺“作者/系统输入待确认”种类与逐对象关闭清单"
+  },
+  {
+   "item": "hasanberkdasar--bms-can-bus CI-RESULT-CONTRACT REQ-D03",
+   "cites": [
+    "G01-001",
+    "G01-002"
+   ],
+   "verdict": "准则没问题，归工具",
+   "where": "scripts/results_model.py；scripts/review_functions.py；references/results-format.md",
+   "what": "同上；另允许以官方脚义+连接图证明结构性失败，无需伪造 shall 句"
+  },
+  {
+   "item": "pionixpublic--cb-eval-board F044 SIG-C17",
+   "cites": [
+    "G04-036",
+    "G04-037",
+    "G04-039"
+   ],
+   "verdict": "检查器误用（附带准则补 not_applicable）",
+   "where": "scripts/catalog.py SIG-C17 对象展开",
+   "what": "泛 ISOLATION 展开到隔离高压输入的磁珠 FB1；按数字/模拟/磁性/隔离电源分子判据"
+  },
+  {
+   "item": "copperpilot--jetson-ai-cam F53 PRO-E02（G05-030/032/033/034 部分）",
+   "cites": [
+    "G05-030",
+    "G05-032",
+    "G05-033",
+    "G05-034"
+   ],
+   "verdict": "检查器误用",
+   "where": "scripts/catalog.py PRO-E02 判据",
+   "what": "这四条是 TVS 自身窗口，与后级耐受无关；“同网最低耐受”是 PRO-E02 的实现口径"
+  },
+  {
+   "item": "jasonsbeer--amiga-2000-eatx F080 SIG-D10",
+   "cites": [],
+   "verdict": "需要人判（词表）",
+   "where": "scripts/catalog.py CIRCUIT_TYPES STORAGE/SIG-D10；references/shared/vocabulary.json STORAGE 标题",
+   "what": "STORAGE 标题“eMMC/SD”与 SR 按用途归类不一致；并行 SRAM/EPROM 子型与问句归 SR"
+  },
+  {
+   "item": "PWR-D02 去耦接法（5 条真缺陷，3 条 criteria 为空）",
+   "cites": [
+    "G03-035"
+   ],
+   "verdict": "准则已有，SR 未映射",
+   "where": "scripts/catalog.py BASIS 增 PWR-D02→G03-035",
+   "what": "G03-035“手册要求的电源脚去耦齐全”正对题"
+  },
+  {
+   "item": "SIG-D07 USB 物理层",
+   "cites": [
+    "G01-030"
+   ],
+   "verdict": "SR 映射不全",
+   "where": "scripts/catalog.py BASIS SIG-D07 增 G04-103（新）",
+   "what": "串阻/上拉缺陷被挂到 Type-C 断开检测"
+  },
+  {
+   "item": "DEV-D01/D02/D04/D05、NET-A07、DEV-C05 等无 BASIS",
+   "cites": [],
+   "verdict": "准则入库后 SR 补映射",
+   "where": "scripts/catalog.py BASIS",
+   "what": "DEV-D01/D04→G02-036，DOC-Q01 增 G02-037，DOC-D01/D02/ANA-D01→G02-038，DEV-C05→G02-039，DEV-D02→G04-101，DEV-D05/NET-A07/PWR-A02/CLK-D01→G04-102，SIG-D04→G04-104，PWR-C15 增 G03-059"
+  }
+ ],
+ "datasheets_to_collect": [
+  {
+   "part": "HERMAPHRODITIC_MOLEX_203456-0003_CUSTOM_JETSON_AGX_THOR_H8MM",
+   "gaps": 25,
+   "boards": [
+    "antmicro--jetson-agx-thor-baseboard"
+   ],
+   "symbol": "antmicroB2BConnectors:Hermaphroditic_Molex_203456-0003_CUSTOM_Jetson_AGX_Thor_H8mm",
+   "sr_rules": {
+    "NET-A07": 25
+   },
+   "collect": "NVIDIA Jetson AGX Thor 模组针表/载板设计指南（非器件手册）"
+  },
+  {
+   "part": "74LVC1G17",
+   "gaps": 22,
+   "boards": [
+    "pionixpublic--cb-eval-board"
+   ],
+   "symbol": "cb-eval-lib:74LVC1G17",
+   "sr_rules": {
+    "SIG-C07": 12,
+    "DEV-D01": 10
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "MAX3051EKA",
+   "gaps": 18,
+   "boards": [
+    "antmicro--jetson-nano-baseboard"
+   ],
+   "symbol": "antmicroInterfaceDriversReceiversTransceivers:MAX3051EKA",
+   "sr_rules": {
+    "SIG-C07": 15,
+    "RST-E01": 1,
+    "RST-T04": 1,
+    "SIG-C13": 1
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "TPS27S100ARRKR",
+   "gaps": 18,
+   "boards": [
+    "pionixpublic--cb-eval-board"
+   ],
+   "symbol": "cb-eval-lib:TPS27S100ARRKR",
+   "sr_rules": {
+    "PWR-C09": 9,
+    "SIG-C07": 9
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "BSS138PW",
+   "gaps": 16,
+   "boards": [
+    "antmicro--jetson-nano-baseboard"
+   ],
+   "symbol": "antmicroTransistorsFETsMOSFETsSingle:BSS138PW",
+   "sr_rules": {
+    "DEV-D01": 8,
+    "DRV-C02": 8
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "USB-MICRO-B_MOLEX_473460001",
+   "gaps": 12,
+   "boards": [
+    "antmicro--jetson-nano-baseboard",
+    "antmicro--scalenode-cm4-baseboard"
+   ],
+   "symbol": "scalenode-cm4-baseboard:USB-Micro-B_Molex_473460001",
+   "sr_rules": {
+    "DEV-D02": 3,
+    "SIG-C07": 3,
+    "DEV-E01": 2,
+    "SIG-C05": 2,
+    "DEV-D03": 2
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "NCP380LSNAJAAT1G",
+   "gaps": 11,
+   "boards": [
+    "antmicro--jetson-nano-baseboard"
+   ],
+   "symbol": "antmicroPMICPowerDistributionSwitchesLoadDrivers:NCP380LSNAJAAT1G",
+   "sr_rules": {
+    "SIG-C07": 4,
+    "DEV-D02": 2,
+    "RST-C01": 2,
+    "RST-T01": 2,
+    "DRV-C02": 1
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "GS2971A",
+   "gaps": 9,
+   "boards": [
+    "antmicro--sdi-mipi-bridge-hw"
+   ],
+   "symbol": "sdi-mipi-bridge:GS2971A",
+   "sr_rules": {
+    "SIG-E02": 3,
+    "SIG-T03": 3,
+    "PWR-D01": 1,
+    "RST-A01": 1,
+    "SIG-A02": 1
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "XMC1404",
+   "gaps": 8,
+   "boards": [
+    "tinkerforge--evse-v2-bricklet"
+   ],
+   "symbol": "tinkerforge:XMC1XXX48",
+   "sr_rules": {
+    "PRO-E02": 7,
+    "DEV-D01": 1
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "JST_SH_1X4_SM04B-SRSS-TB-LF-SN",
+   "gaps": 8,
+   "boards": [
+    "antmicro--jetson-nano-baseboard"
+   ],
+   "symbol": "antmicroWire2BoardConnectors:JST_SH_1x4_SM04B-SRSS-TB-LF-SN",
+   "sr_rules": {
+    "DEV-D02": 2,
+    "DEV-E01": 2,
+    "DEV-D03": 2,
+    "SIG-C07": 2
+   },
+   "collect": "所接 Qwiic/STEMMA 外设约定"
+  },
+  {
+   "part": "74LVC1G07QW5-7",
+   "gaps": 8,
+   "boards": [
+    "pionixpublic--reference-hardware"
+   ],
+   "symbol": "CM4IO:74LVC1G07_copy",
+   "sr_rules": {
+    "DEV-C01": 2,
+    "DEV-C02": 2,
+    "DEV-D02": 1,
+    "DEV-D05": 1,
+    "DEV-E01": 1
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "PESD3V3L1BA",
+   "gaps": 7,
+   "boards": [
+    "tinkerforge--evse-v2-bricklet"
+   ],
+   "symbol": "tinkerforge:TVS",
+   "sr_rules": {
+    "PRO-E02": 7
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "1206FUSE-500MA",
+   "gaps": 7,
+   "boards": [
+    "solderedelectronics--connect-programmer-hardware-design",
+    "solderedelectronics--usb-uart-ch340c-converter-board-hardware-design"
+   ],
+   "symbol": "e-radionica.com schematics:1206FUSE",
+   "sr_rules": {
+    "DEV-C01": 5,
+    "DEV-D04": 1,
+    "PRO-C08": 1
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "MAX2831",
+   "gaps": 7,
+   "boards": [
+    "greatscottgadgets--hackrf-pro"
+   ],
+   "symbol": "praline:MAX2831",
+   "sr_rules": {
+    "NET-A07": 7
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "MOLEX-93628-3721",
+   "gaps": 7,
+   "boards": [
+    "pionixpublic--reference-hardware"
+   ],
+   "symbol": "Pionix:Molex-93628-3721",
+   "sr_rules": {
+    "SIG-C19": 1,
+    "ANA-C03": 1,
+    "DEV-C01": 1,
+    "DEV-C02": 1,
+    "DEV-D01": 1
+   },
+   "collect": "所接模块针表"
+  },
+  {
+   "part": "BUS_M.2_2199230-2",
+   "gaps": 6,
+   "boards": [
+    "antmicro--jetson-agx-thor-baseboard"
+   ],
+   "symbol": "antmicroPciConnectors:Bus_M.2_2199230-2",
+   "sr_rules": {
+    "NET-A07": 6
+   },
+   "collect": "所插 M.2 模块规格（PCI-SIG M.2）"
+  },
+  {
+   "part": "SMF4L13CA",
+   "gaps": 6,
+   "boards": [
+    "tinkerforge--evse-bricklet",
+    "tinkerforge--evse-v2-bricklet"
+   ],
+   "symbol": "tinkerforge:TVS",
+   "sr_rules": {
+    "PRO-E02": 6
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "USB-C_WE_632723300011",
+   "gaps": 6,
+   "boards": [
+    "antmicro--jetson-nano-baseboard"
+   ],
+   "symbol": "antmicroUSBConnectors:USB-C_WE_632723300011",
+   "sr_rules": {
+    "SIG-C07": 2,
+    "DEV-D02": 1,
+    "DEV-E01": 1,
+    "SIG-C05": 1,
+    "DEV-D03": 1
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "TPS7A0518P_SOT23-5",
+   "gaps": 6,
+   "boards": [
+    "antmicro--jetson-nano-baseboard"
+   ],
+   "symbol": "antmicroPMICVoltageRegulatorsLinear:TPS7A0518P_SOT23-5",
+   "sr_rules": {
+    "RST-E01": 2,
+    "RST-T01": 2,
+    "SIG-C07": 2
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "SIC477ED-T1-GE3",
+   "gaps": 6,
+   "boards": [
+    "antmicro--jetson-nano-baseboard"
+   ],
+   "symbol": "antmicroDCDCConverters:SIC477ED-T1-GE3",
+   "sr_rules": {
+    "DEV-D02": 1,
+    "PWR-A05": 1,
+    "PWR-C09": 1,
+    "RST-E01": 1,
+    "RST-T01": 1
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "NRF52840",
+   "gaps": 6,
+   "boards": [
+    "antmicro--m2-smart-iot-module"
+   ],
+   "symbol": "m2-smart-iot-module:NRF52840",
+   "sr_rules": {
+    "SIG-C07": 5,
+    "ANA-C03": 1
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "INA333AIDGKR",
+   "gaps": 6,
+   "boards": [
+    "pionixpublic--cb-eval-board"
+   ],
+   "symbol": "cb-eval-lib:INA333xxDGK",
+   "sr_rules": {
+    "SIG-C07": 4,
+    "ANA-C03": 2
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "AP22804AW5-7",
+   "gaps": 6,
+   "boards": [
+    "pionixpublic--reference-hardware"
+   ],
+   "symbol": "Pionix:AP22804AW5",
+   "sr_rules": {
+    "DEV-C01": 1,
+    "DEV-C02": 1,
+    "DEV-D01": 1,
+    "DEV-D02": 1,
+    "DEV-D05": 1
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "690-008-221-904",
+   "gaps": 6,
+   "boards": [
+    "pionixpublic--reference-hardware"
+   ],
+   "symbol": "CM4IO:USB_67298-4090",
+   "sr_rules": {
+    "DEV-C01": 1,
+    "DEV-C02": 1,
+    "DEV-D01": 1,
+    "DEV-D02": 1,
+    "DEV-D05": 1
+   },
+   "collect": "连接器原厂图"
+  },
+  {
+   "part": "USB2514_48PIN",
+   "gaps": 6,
+   "boards": [
+    "pionixpublic--reference-hardware"
+   ],
+   "symbol": "ev-devboard:USB2514_48pin",
+   "sr_rules": {
+    "DEV-C01": 1,
+    "DEV-C02": 1,
+    "DEV-D01": 1,
+    "DEV-D02": 1,
+    "DEV-D05": 1
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "SDINBDG4-8G",
+   "gaps": 5,
+   "boards": [
+    "groupgets--kimchi-micro"
+   ],
+   "symbol": "mxenc:SDINBDG4-8G",
+   "sr_rules": {
+    "NET-A01": 4,
+    "PWR-A01": 1
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "IMX8MM",
+   "gaps": 5,
+   "boards": [
+    "groupgets--kimchi-micro"
+   ],
+   "symbol": "mxenc:MIMX8MM6DVTLZAA",
+   "sr_rules": {
+    "NET-A07": 3,
+    "PRO-E02": 2
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "PESD2USB5UV-TR",
+   "gaps": 5,
+   "boards": [
+    "antmicro--jetson-nano-baseboard"
+   ],
+   "symbol": "antmicroTVSDiodes:PESD2USB5UV-TR",
+   "sr_rules": {
+    "DEV-D01": 5
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "1N4148WS",
+   "gaps": 5,
+   "boards": [
+    "antmicro--jetson-nano-baseboard"
+   ],
+   "symbol": "antmicroDiodesRectifiersSingle:1N4148WS",
+   "sr_rules": {
+    "DEV-D02": 5
+   },
+   "collect": "准确料号原厂数据手册（含订货信息、完整脚表、推荐工作条件）"
+  },
+  {
+   "part": "BUS_DDR4_SODIMM_CUSTOM_JETSON-NANO-H9.2MM-SOCKET",
+   "gaps": 5,
+   "boards": [
+    "antmicro--jetson-nano-baseboard"
+   ],
+   "symbol": "antmicroSoMConnectors:Bus_DDR4_SODIMM_CUSTOM_Jetson-Nano-H9.2mm-socket",
+   "sr_rules": {
+    "DEV-D02": 1,
+    "DEV-E01": 1,
+    "NET-A07": 1,
+    "RST-E01": 1,
+    "DEV-D03": 1
+   },
+   "collect": "Jetson Nano 模组针表/载板设计指南"
+  },
+  {
+   "part": "USB 2.0 Specification / USB 3.2 Specification",
+   "gaps": null,
+   "boards": [
+    "mlab-modules--usbi2c01",
+    "antmicro--scalenode-cm4-baseboard",
+    "pionixpublic--reference-hardware",
+    "rmingon--chlinknet",
+    "tonydefilippis--poepico",
+    "brainsmoke--usb2_hub",
+    "nabucasa--yellow",
+    "pionixpublic--reference-hardware"
+   ],
+   "symbol": "",
+   "sr_rules": {
+    "SIG-C05": null
+   },
+   "collect": "标准原文：传统 USB 连接器的 VBUS 电压窗、入口电容与浪涌条款（G01-026/029/030/031 修订后的“另核”依据；Type-C R2.5 §4.4.2 p152 指向它们）"
+  }
+ ],
+ "needs_human": [
+  {
+   "item": "G01-028 USB Sink 承受 24 V VBUS",
+   "why": "出处 PD 表 4.7 vSprMax，同样只对 PD 端口成立；本轮 14 条未直接点名，建议同批把 applies_when.text/not_applicable 限定为 PD/Type-C，待确认后再写入 amend"
+  },
+  {
+   "item": "是否在 vocabulary.json 新增 USB_TYPEC 电路类型",
+   "why": "本草案只用 text/not_applicable/sr_check 限定连接器类型（词表不动）；若要选规则阶段就排除传统 USB，须改共用层词表与 SR/ASG 的类型推断"
+  },
+  {
+   "item": "STORAGE 词表标题与范围",
+   "why": "“eMMC/SD”与 SR 按用途归 STORAGE（含并行 SRAM/EPROM）不一致；改标题属共用层词表，且并行存储器尚无准则出处"
+  },
+  {
+   "item": "新准则放 G02/G04 还是等 G09 成文",
+   "why": "G02-036～038 本质是制造数据包/构型一致，G09 尚无登记表；草案放 G02 以便本版可用，迁移时编号不复用"
+  },
+  {
+   "item": "图面标注类缺陷（DOC-V01/V02 15 条）不起草准则",
+   "why": "属图纸卫生与可读性（ASG 可读性检查、未来 G09），不是电气设计准则；如需入库请指示"
+  }
+ ]
+}

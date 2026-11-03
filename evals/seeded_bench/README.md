@@ -94,3 +94,75 @@ C/D 规则由审查员判定，工具不下结论，所以新增的是 A 规则�
 
 这些判据是外包络：超出才报，落在包络内的不等于合格，具体数值仍由审查员按对应 C 规则算。
 `resonare-lcc` 的 `VBUS` 是逆变器直流母线，直挂 249.6 µF，曾被 SIG-A05 误报，因此要求板上有 USB 证据；已有单元测试和变异锁住。
+
+## 四板合并 1 的配对种子（2026-11-02）
+
+登记 **5 个新类型、7 个位点**，其中 `D-XTAL-LOAD` 复用已有类型。来源为已完成归因的四块板，
+元数据见 `boards-merge1.json`；第三方 XML 只读用户缓存，不进入仓库。
+原板已有错误时，`Mutation.baseline` 保存仅修正目标缺陷的合成参数合同，比较相同电压合同下的正确/错误两侧；
+不把有缺陷的原板当干净负例，也不伪造可订购物料。`contract` 记录准确 MPN、厂家条款或额定出处。
+
+```sh
+TMPDIR=/tmp/codex-work/boards-merge-1 python3 -B evals/seeded_bench/run.py --offline \
+  --boards-cache ~/.cache/sr-boards --compare <before/results.json> --out <after目录>
+```
+
+先创建上述临时目录。除目标轨的明确电压合同外，其余新发现供电网只登记拓扑身份，电压保持未知。
+基线或变异运行错误退出非零；错误不能算漏报或命中。
+
+| 类型 | 来源位点 | 合同与操作 | 自动目标提示 / 位点 |
+|---|---|---|---:|
+| D-TVS-VRWM | Thor D54；STM32 D22 | 合成合格 VRWM 合同换为 TPD1E0B04DPYR 的 3.6 V、PTVS9V0S1UR 的 9 V；分别固定 5 V、15 V 工作合同。统一收纳原归因的 D-TVS-VRWM-BELOW-PD 别名 | 2/2 |
+| D-MLCC-RATING-BELOW-PD | STM32 C139/C140 | 合成 25 V MLCC 换准确 TDK C1005X6S1A105K050BC（10 V），保留 15 V 合同和 TDK 资格记录，两颗作为一个位点 | 0/1 |
+| D-SHUNT-MPN-CONFLICT | RDIMM R199 | 合成 5 mΩ 合同仅把 MPN 换为 CR1206-J/-000ELF；保留 5 mΩ 值及 Kelvin 连线 | 0/1 |
+| D-I2C-ADDRESS-COLLISION | RDIMM U19/U20 | 同一 SCL/SDA、准确 PAC1954 身份下，U20 ADDRSEL.6 从 GND（0x10）移到 VDD（0x1F），U19 保持 0x1F | 0/1 |
+| D-CMOS-UNUSED-IN-FLOAT | Kria U36.13 | 由 GND 改 NC，只改未用输入，输出和 DAP 的 NC 保持 | 1/1 |
+| D-XTAL-LOAD（已有） | RDIMM Y2/C190/C193 | 将既有 18 pF 电容改 1 µF，记录 ABM8G 的 CL=18 pF；不新造晶体 | 0/1 |
+
+TVS 的目标命中是原有 PRO-E02 **窗口复核提示**，不是自动完成 VRWM 违规的电气判定。
+MLCC 额定、分流电阻 MPN、地址冲突与晶体负载仍有自动层缺口；其位点/合同已保存，不能把其他规则指向当目标检出。
+现有 247 个位点逐位点比较无退化，仍为 177 个目标提示；新增 7 个位点有 3 个目标提示、0 个运行错误。
+受控结果见 `boards-merge1-results.json`，包含逐位点自动提示、其他提示和计划指向。
+
+## 合并 2B：外部端点、ADC 与 PMIC 输出覆盖种子（2026-11-02）
+
+`boards-merge2b.json` 登记4块已归因板的来源，第三方网表仍只读缓存。`--boards-cache` 同时加载 merge1 与 merge2b。
+新4类各1个位点，均使用显式配对基线：
+
+| 类型 | 真实物理位点 | 网表变换 / 目标规则 |
+|---|---|---|
+| D-EXTERNAL-INJECTION-BYPASS | Amalthea J1.28/U1.43 `/PICO` | 去掉合成10kΩ串阻，恢复原直连；SIG-C08 |
+| D-POWER-BRANCH-BYPASS | connect-programmer K1 VBUS/F1 | 0Ω跨接真实保险丝；PRO-C04/C01/C05 |
+| D-ADC-SHUNT-RANGE | bq27441 U1.SRP/SRN、R6 | 10mΩ改1Ω；ANA-C03 |
+| D-PMIC-OUTPUT-COUT | kimchi U4.55 MUXSW、C113/C54 | 合成22.22µF名义基线换原1.22µF；PWR-C04/C09 |
+
+这些C规则仍由审查员计算判定，**计划指向不算自动检出**。运行器新增 `planned_targets`，只列点名位点的目标规则；
+原 `auto` 仍只计算新扫描发现，`pointed` 仍为任意规则指向。注入源5V/关机钳位0.3V/1mA、ADC的1A/20mV
+均明确是合成测试合同，不冒充AT86RF215或BQ27441的保证值；保险丝动作能量和22.22µF全环境有效值仍需独立核验。
+PMIC的11–33µF窗口来自ROHM BD71847AMWV Rev003 p110 Table5-36，原1.22µF名义点已低于下限。
+
+2B 最终固定版实测：既有 254 位点逐点保留、目标自动 225→225，新增 4 类/4 位点均有目标 C 计划（自动 0），合计 258 位点/225 自动/0 错误。数据见 `boards-merge2b-results.json`；不把计划覆盖算自动检出。首轮曾暴露自定义 `Oscillator_SMD` 的无源晶体误识别与 PMIC `-E2` 种子漏选，修正后全量重跑，未改原种子来隐藏丢失位点。
+
+
+## 合并步 3 的四个受控位点
+
+`boards-merge3.json` 只登记已归因公开板的来源、commit 和许可证，原始电路不复制进仓库。`--boards-cache` 会把这四个位点加入既有语料：
+
+- Xerxes U7：同物理脚表的 5.5 V 四通道 TVS 换成 3.3 V TVS，正常窗固定为合成的 4.75–5.25 V；要求四个独立 PRO-E02 对象。自动计数只代表逐通道取证提示，工作窗/残压仍须专家判定。
+- MP2 QA1：原生脚名在两侧均为空，完整 CRST030N10N 官方 G/D/S 表是唯一脚义输入；仅变异侧将真实栅极断开，目标 DRV-A03。
+- flyback-ac-dc U3：完整 EL817 A/K/E/C 表贯通后断开 R4 LED 供电；要求仍有 FEEDBACK-OPEN 的逐对象单故障问题，不能冒充自动判坏。
+- isolated-flyback C12：额定 16 V 改为 4 V，分析侧刻意不提供 VIN/VCC 窗；合同外部真值取 TI SNVSA03E p6 的 VIN=24 V、ICC=20 mA、VCC=6.47–8.52 V 条件。装配状态显式锁定，避免因装配未核先覆盖成 unknown 而掩盖零伏预判；分析必须保留 unknown 和电源依赖，不能给零伏/PASS。
+
+`contract_guards` 单独记录通道对象、反馈故障问题及未知应力预判，不计为自动发现。`--compare` 同时按 `(board, defect, site)` 拒绝任一既有自动目标丢失，新增位点不能抵消旧位点退化。原始板本身的其他缺陷保留，配对基线不表示整板正确。
+
+
+## 合并步 4 的四个受控位点（2026-11-02）
+
+`boards-merge4.json` 只登记来源、commit 和许可证。四个位点分别对应合并步 4 的第 1、2、3、7 项：
+
+- pslab R29（D-FRACTION-POWER-NO-PASS）：47Ω 跨合成 5 V 窗（约 0.59 W），配对基线额定 2W，变异侧改为 `1/16W 5%`。新 guard `guard_no_pass` 要求 DEV-C01 行存在且不预判 PASS；不计自动检出，过载结论仍由审查员给出。
+- openrefmic R21（D-MIDPOINT-GROUND-NO-PASS）：配对基线把 R20/R21 分压中点命名为 VMID，变异侧用原名 VGND。沿用 `guard_no_proposal_pass`：中点不得当 0 V，必须保留 AMP_VDD 依赖。
+- gnssdo U19/R63（D-BIAS-FEED-REMOVED）：删去 PCA9306 VREF2/EN 的 200k 偏置电阻，弱驱动由 INFO 变为无驱动，目标 PWR-A02 自动报出。
+- hdmi-mipi J6.38（D-NC-FLAG-REMOVED）：去掉 FFC 空脚的原生 no-connect 标记，目标 NET-A01 重新报出；配对基线里该脚只有 INFO。
+
+实测：旧 262 位点逐点保留、自动目标 227→229（新增 bias/NC 两位点），合计 266 位点/229 自动/0 错误；两个 no-PASS 位点只算 guard 通过，不算自动检出。

@@ -6,6 +6,7 @@
 默认闭合都不是状态证据：没有声明就保留缺口，不当作已核实。
 """
 from board_intent import requires_assemblies
+from part_words import board_copper
 
 SECTION_SCHEMA_VERSION = 2
 
@@ -16,7 +17,7 @@ def _text(value):
 
 def as_built(db):
     """无声明时的按图状态：只用网表 nc，装配证据缺口照常登记。"""
-    fitted = sorted(ref for ref, part in db.get('parts', {}).items() if not part.get('nc'))
+    fitted = sorted(ref for ref, part in db.get('parts', {}).items() if not part.get('nc') or board_copper(ref, part))
     return [{
         'id': 'as-built',
         'citation': None,
@@ -38,7 +39,9 @@ def resolve(db, assemblies):
         jumpers = state.get('jumpers', {}) or {}
         gaps, fitted = [], []
         for ref in sorted(parts):
-            if ref in population:
+            if board_copper(ref, parts[ref]):
+                fitted.append(ref)
+            elif ref in population:
                 if population[ref]:
                     fitted.append(ref)
             else:

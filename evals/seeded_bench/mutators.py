@@ -39,6 +39,9 @@ class Mutation:
     nets: tuple
     note: str
     db: dict = field(repr=False)
+    baseline: dict = field(default=None, repr=False)
+    intent: dict = field(default=None, repr=False)
+    contract: dict = field(default_factory=dict)
 
     @property
     def site(self):
@@ -470,3 +473,263 @@ def mutations(db, per_operator=4):
             if seen.get(mutation.defect, 0) < per_operator:
                 seen[mutation.defect] = seen.get(mutation.defect, 0) + 1
                 yield mutation
+
+
+# Controlled pairs from the four adjudicated boards. Corrected baselines are
+# synthetic parameter contracts, never a claim that the source board was clean.
+def board_mutations(db):
+    g = ng.NetGraph(db)
+    from solve_dividers import parse_resistor
+
+    def present(ref):
+        return ref in db.get('parts', {}) and fitted(db, ref)
+
+    def model(ref):
+        return str(db.get('parts', {}).get(ref, {}).get('part', ''))
+
+    def rail_intent(net, voltage, citation):
+        return {'schema_version': 5, 'power_rails': {net: {
+            'voltage_v': {'min': voltage, 'max': voltage}, 'citation': citation}}}
+
+    for ref, pattern, voltage, rating, source in (
+            ('D54', r'TPD1E0B04DPYR', 5.0, 3.6, 'TI TPD1E0B04 datasheet recommended working range, adjudication lane-1 F058'),
+            ('D22', r'PTVS9V0S1UR,115', 15.0, 9.0, 'Nexperia PTVS9V0S1UR VRWM=9V, adjudication lane-2 F49')):
+        if not present(ref) or not re.fullmatch(pattern, model(ref)):
+            continue
+        nets = g.nets_of(ref)
+        rails = [n for n in nets if not ng.is_ground(n)]
+        if len(rails) != 1 or not any(ng.is_ground(n) for n in nets):
+            continue
+        base = copy.deepcopy(db)
+        # Explicit synthetic compliant TVS, without inventing an orderable MPN.
+        base['parts'][ref].update(part='SEED_PARAMETER_CONTRACT_TVS', prim='Device:D_TVS',
+                                  value='TVS VRWM=%gV' % (voltage + 3))
+        contract = {'normal_v': voltage, 'mutant_vrwm_v': rating, 'source': source,
+                    'baseline': 'synthetic TVS working-voltage contract, not an orderable MPN'}
+        yield Mutation('D-TVS-VRWM', ('PRO-E02',), (ref,), tuple(rails),
+                       'replace compliant working-voltage contract with ' + model(ref), copy.deepcopy(db),
+                       baseline=base, intent=rail_intent(rails[0], voltage, 'SEED contract: source schematic operating mode p1'),
+                       contract=contract)
+
+    caps = ('C139', 'C140')
+    if all(present(r) and model(r) == 'C1005X6S1A105K050BC' for r in caps):
+        common = set(g.nets_of(caps[0])) & set(g.nets_of(caps[1]))
+        rails = [n for n in common if not ng.is_ground(n)]
+        if len(rails) == 1 and any(ng.is_ground(n) for n in common):
+            base, out = copy.deepcopy(db), copy.deepcopy(db)
+            for ref in caps:
+                base['parts'][ref].update(part='SEED_PARAMETER_CONTRACT_MLCC_25V', value='1u/25V')
+                # Rating is bound by the exact manufacturer record below, not inferred from the model digits.
+                out['parts'][ref]['value'] = '1u/10V'
+            yield Mutation('D-MLCC-RATING-BELOW-PD', ('DEV-A01', 'DEV-C01'), caps, tuple(rails),
+                           '25V synthetic contract -> exact TDK 10V MLCC under controlled 15V mode', out,
+                           baseline=base, intent=rail_intent(rails[0], 15, 'SEED contract: source schematic 15V3A p8'),
+                           contract={'normal_v': 15, 'rating_v': 10, 'mpn': 'C1005X6S1A105K050BC',
+                                     'source': 'https://product.tdk.com/en/search/capacitor/ceramic/mlcc/info?part_no=C1005X6S1A105K050BC'})
+
+    if (present('R199') and model('R199') == 'CR1206-J/-000ELF' and len(g.nets_of('R199')) == 2
+            and (parse_resistor(db['parts']['R199'].get('value')) or {}).get('kohm') == .000005):
+        base = copy.deepcopy(db)
+        base['parts']['R199']['part'] = 'SEED_PARAMETER_CONTRACT_5mOhm'
+        yield Mutation('D-SHUNT-MPN-CONFLICT', ('DEV-D04',), ('R199',), tuple(g.nets_of('R199')),
+                       'keep 5mOhm value and Kelvin topology, replace MPN with 0Ohm CR1206-J/-000ELF', copy.deepcopy(db),
+                       baseline=base, contract={'value_ohm': .005, 'mpn_ohm': 0,
+                                               'source': 'Bourns CR1206-J/-000ELF qualification; lane-3 F146'})
+
+    if (all(present(r) and model(r) == 'PAC1954T-E/4MX' for r in ('U19', 'U20'))
+            and db['pin2net'].get('U19.6') == db['pin2net'].get('U20.6') == '3V3_SYS'
+            and all(db.get('pinname', {}).get(r + '.6') == 'ADDRSEL' for r in ('U19','U20'))
+            and all(db['pin2net'].get('U19.' + pin) == db['pin2net'].get('U20.' + pin)
+                    and db['pin2net'].get('U19.' + pin) not in (None, 'GND')
+                    for pin in ('4','5'))):
+        base = moved(db, 'U20.6', 'GND')
+        yield Mutation('D-I2C-ADDRESS-COLLISION', ('SIG-D01',), ('U19', 'U20'), ('3V3_SYS',),
+                       'U20 ADDRSEL GND (0x10) -> VDD (0x1F), matching U19', copy.deepcopy(db), baseline=base,
+                       contract={'pin': 'ADDRSEL.6', 'baseline_addresses': [31, 16], 'mutant_addresses': [31, 31],
+                                 'source': 'Microchip PAC1954 DS20006539D address selection; lane-3 F147'})
+
+    if (present('U36') and model('U36') == '74LCX07BQX'
+            and 'U36.13' in db.get('no_connect_nodes', [])):
+        base = moved(db, 'U36.13', 'GND')
+        base['no_connect_nodes'] = [n for n in base.get('no_connect_nodes', []) if n != 'U36.13']
+        yield Mutation('D-CMOS-UNUSED-IN-FLOAT', ('NET-A07', 'DEV-D05'), ('U36',), (),
+                       'disconnect unused input A5.13; retain output O5.12 and DAP NC markers', copy.deepcopy(db), baseline=base,
+                       contract={'input': 'U36.13', 'source': 'onsemi 74LCX07/D Rev2 p3 note4, lane-4 F219'})
+
+    if present('Y2') and model('Y2') == 'ABM8G-12.000MHZ-18-D2Y-T':
+        for mutation in crystal_load(db):
+            if 'Y2' in mutation.refs and {'C190', 'C193'} <= set(mutation.refs):
+                mutation.contract = {'cl_pf': 18, 'capacitors': ['C190', 'C193'],
+                                     'source': 'Abracon ABM8G ordering code CL=18pF, lane-3 M01'}
+                yield mutation
+                break
+
+    yield from merge2b_mutations(db)
+    yield from merge3_mutations(db)
+    yield from merge4_mutations(db)
+
+
+def merge2b_mutations(db):
+    """Four physical, controlled coverage probes from the adjudicated merge-2B boards.
+
+    Target C rules remain expert questions. A planned target is recorded separately from an automatic finding.
+    """
+    parts, p2n = db.get('parts', {}), db.get('pin2net', {})
+
+    def model(ref):
+        return str(parts.get(ref, {}).get('part') or '')
+
+    if (model('U1') == 'AT86RF215IQ-ZU' and p2n.get('U1.43') == p2n.get('J1.28') == '/PICO'):
+        base = moved(db, 'J1.28', 'SEED_PEER_PICO')
+        base['parts']['R90001'] = {'part': 'R', 'prim': 'Device:R', 'value': '10k', 'nc': False}
+        base['pin2net'].update({'R90001.1': 'SEED_PEER_PICO', 'R90001.2': '/PICO'})
+        rebuild(base)
+        yield Mutation('D-EXTERNAL-INJECTION-BYPASS', ('SIG-C08',), ('J1', 'U1'), ('/PICO',),
+                       'bypass a synthetic 10k injection-limiting resistor at the real J1.28/U1.43 interface',
+                       copy.deepcopy(db), baseline=base,
+                       contract={'source': 'lane-1 amalthea M01; AT86RF215 digital input and J1.28 pin map',
+                                 'test_contract_only': 'external source 5V while local supply is 0V; clamp 0.3V and permitted injection 1mA are synthetic probe assumptions, not AT86RF215 guarantees',
+                                 'baseline': 'synthetic 10k series limiter; mutant is original direct net'})
+
+    if (model('U1') == 'CH340C' and model('U2') == 'SE5218' and 'F1' in parts
+            and p2n.get('F1.1') == 'VUSB' and p2n.get('F1.2') == p2n.get('K1.A4')):
+        out = copy.deepcopy(db)
+        out['parts']['R90002'] = {'part': 'R', 'prim': 'Device:R', 'value': '0R', 'nc': False}
+        out['pin2net'].update({'R90002.1': p2n['F1.1'], 'R90002.2': p2n['F1.2']})
+        rebuild(out)
+        yield Mutation('D-POWER-BRANCH-BYPASS', ('PRO-C04', 'PRO-C01', 'PRO-C05'), ('F1', 'K1'), (p2n['F1.2'],),
+                       'short around the real input fuse; verify branch protection even when USB owns F1',
+                       out, baseline=copy.deepcopy(db),
+                       contract={'source': 'lane-2 connect-programmer M01; F1/K1 VBUS netlist',
+                                 'scope': 'physical bypass of the sole local fuse; upstream fault source and clearing-energy limits remain explicit expert inputs, no fuse-time guarantee inferred'})
+
+    if (re.fullmatch(r'BQ27441.*', model('U1')) and 'R6' in parts
+            and p2n.get('U1.8') == p2n.get('R6.1') == 'VCC'
+            and p2n.get('U1.7') == p2n.get('R6.2') == 'VSYS'):
+        base, out = copy.deepcopy(db), copy.deepcopy(db)
+        base['parts']['R6']['value'] = '0R01'
+        out['parts']['R6']['value'] = '1R'
+        yield Mutation('D-ADC-SHUNT-RANGE', ('ANA-C03',), ('U1', 'R6'), ('VCC', 'VSYS'),
+                       'raise the physical SRP/SRN shunt 10mOhm to 1Ohm; input-range question must remain located',
+                       out, baseline=base,
+                       contract={'source': 'lane-3 bq27441 M01, SLUSBH1C SRP/SRN pin functions',
+                                 'test_contract_only': '1A load and allowed differential 20mV are synthetic coverage-probe requirements; they are not a claimed BQ27441 guaranteed limit',
+                                 'baseline_diff_v': .01, 'mutant_diff_v': 1.0})
+
+    if (re.fullmatch(r'BD71847A?MWV(?:-E2)?', model('U4')) and p2n.get('U4.55') == 'NVCC_SD2'
+            and all(r in parts for r in ('C113', 'C54'))
+            and p2n.get('C113.2') == p2n.get('C54.1') == 'NVCC_SD2'):
+        base = copy.deepcopy(db)
+        base['parts']['C113']['value'] = '22uF'
+        out = copy.deepcopy(db)
+        out['parts']['C113']['value'] = '1uF';out['parts']['C54']['value'] = '0.22uF'
+        yield Mutation('D-PMIC-OUTPUT-COUT', ('PWR-C04', 'PWR-C09'), ('U4', 'C113', 'C54'), ('NVCC_SD2',),
+                       'replace synthetic 22uF+0.22uF nominal baseline by original MUXSW 1.22uF',
+                       out, baseline=base,
+                       contract={'source': 'lane-1 kimchi F29/M01; ROHM BD71847AMWV Rev003 p110 Table5-36',
+                                 'required_effective_uF': [11, 33], 'mutant_nominal_uF': 1.22,
+                                 'baseline': 'synthetic nominal 22.22uF; DC-bias/temperature qualification is not certified by this probe'})
+
+def merge3_mutations(db):
+    """Four controlled physical probes; pin tables and operating contracts are explicit."""
+    parts, pins = db.get('parts', {}), db.get('pin2net', {})
+    model = lambda ref: str(parts.get(ref, {}).get('part') or '')
+    if model('U7') == 'CDDFN10-3324P' and all('U7.' + p in pins for p in ('1','2','3','4','5','8')):
+        base, out = copy.deepcopy(db), copy.deepcopy(db)
+        base['parts']['U7'].update(part='TPD4E05U06QDQARQ1', value='TPD4E05U06QDQARQ1', prim='Device:D_TVS',
+                                  fields={'MPN':'TPD4E05U06QDQARQ1'})
+        nets=tuple(sorted({pins['U7.'+p] for p in ('1','2','4','5')}))
+        intent={'schema_version':5,'power_rails':{n:{'voltage_v':{'min':4.75,'max':5.25},
+                    'citation':'SEED controlled normal signal window; not the source board operating specification'} for n in nets}}
+        yield Mutation('D-ARRAY-TVS-LOW-VRWM', ('PRO-E02',), ('U7',), nets,
+            'four-channel pin-compatible 5.5V TVS -> 3.3V TVS under a controlled 4.75..5.25V window',out,baseline=base,intent=intent,
+            contract={'source':'TI SLVSCO7C p3 pin map, p5 VRWM=5.5V; Bourns CDDFN10-3324P p2 VRWM=3.3V',
+                      'normal_v':[4.75,5.25],'baseline_vrwm_v':5.5,'mutant_vrwm_v':3.3,
+                      'physical_pins':{'signal':['1','2','4','5'],'return':['3','8'],'nc':['6','7','9','10']},
+                      'min_channel_rows':{'ref':'U7','rule':'PRO-E02','count':4},
+                      'limit':'per-channel evidence retrieval is automatic; VRWM/clamp coordination remains an expert decision'})
+    if model('QA1') == 'MDP10N027' and str(parts['QA1'].get('value')) == 'CRST030N10N' and all('QA1.'+p in pins for p in ('1','2','3')):
+        device={'mpn':'CRST030N10N','package':'TO-220','identity_citation':'source schematic QA1 VALUE CRST030N10N; MDP10N027 is symbol identity',
+                'citation':'CRST030N10N Rev4 p1 TO220 graphic pin1 G pin2 D pin3 S','pinout_complete':True,
+                'pins':{p:{'name':n,'role':'other'} for p,n in [('1','G'),('2','D'),('3','S')]}}
+        base=copy.deepcopy(db)
+        for p in ('1','2','3'):base.get('pinname',{}).pop('QA1.'+p,None)
+        out=moved(base,'QA1.1','SEED_QA1_GATE_OPEN')
+        out['no_connect_nodes']=[n for n in out.get('no_connect_nodes',[]) if n!='QA1.1']
+        yield Mutation('D-OFFICIAL-MOS-GATE-OPEN',('DRV-A03',),('QA1',),('SEED_QA1_GATE_OPEN',),
+            'disconnect the actual QA1 gate; recover G/D/S solely from the complete cited manufacturer table',out,baseline=base,
+            intent={'schema_version':5,'devices':{'QA1':device}},contract={'source':device['citation'],'raw_names':'intentionally absent on both sides'})
+    if model('U3')=='EL817' and model('U1')=='VIPer22ADIP-E' and 'R4' in parts:
+        device={'mpn':'EL817','package':'DIP-4','identity_citation':'source U3 EL817, family-common pin map only; CTR suffix unconfirmed',
+                'citation':'Everlight DPC-0000011 Rev11 p1 Pin Configuration, EL817 family-common map only','pinout_complete':True,
+                'pins':{p:{'name':n,'role':'other'} for p,n in [('1','A'),('2','K'),('3','E'),('4','C')]}}
+        base=copy.deepcopy(db)
+        for p in ('1','2','3','4'):base.get('pinname',{}).pop('U3.'+p,None)
+        out=moved(base,'R4.1','SEED_FEEDBACK_LED_OPEN')
+        yield Mutation('D-OFFICIAL-OPTO-FEEDBACK-OPEN',('PRO-C01',),('U3','R4'),('SEED_FEEDBACK_LED_OPEN',),
+            'open the real R4 LED-feed path; official A/K/E/C must retain the controller feedback-open fault question',out,baseline=base,
+            intent={'schema_version':5,'devices':{'U3':device}},
+            contract={'source':device['citation'],'required_plan_prefix':'PRO-C01.FEEDBACK-OPEN','limit':'source board other faults remain; this pair isolates only an LED-feed opening'})
+    if model('U1')=='LM5160DNT' and 'C12' in parts and pins.get('C12.1')==pins.get('U1.9'):
+        base,out=copy.deepcopy(db),copy.deepcopy(db)
+        base['parts']['C12']['value']='1uF/16V';out['parts']['C12']['value']='1uF/4V'
+        yield Mutation('D-UNKNOWN-SUPPLY-NO-PASS',('DEV-C01',),('C12',),(pins['C12.1'],),
+            'reduce the capacitor 16V to4V while withholding VIN/VCC window from analysis; never infer 0V/PASS',out,baseline=base,
+            intent={'schema_version':5,'assemblies':[{'id':'run','citation':'SEED controlled assembly p1; original procurement population, voltages withheld',
+                    'population':{ref:not bool(part.get('nc')) for ref,part in parts.items()},'jumpers':{}}]},
+            contract={'guard_no_proposal_pass':['C12'],
+               'source':'TI LM5160 SNVSA03E p6 VCC regulator electrical characteristics; source U1.9 VCC/C12 topology',
+               'external_test_truth_only':{'VIN_v':24,'ICC_mA':20,'VCC_window_v':[6.47,8.52]},
+               'limit':'physical 4V rating is insufficient under this controlled external condition; analysis deliberately lacks that condition and must request evidence'})
+
+
+def merge4_mutations(db):
+    """Four controlled probes for boards-merge4 items 1, 2, 3 and 7; operating windows are synthetic and stated."""
+    parts, pins = db.get('parts', {}), db.get('pin2net', {})
+    model = lambda ref: str(parts.get(ref, {}).get('part') or '')
+    if (model('R22') == 'RR0816P-103-D' and 'R29' in parts and pins.get('R29.1') == '/OSC_REF2'
+            and pins.get('R29.2') == 'GND'):
+        base, out = copy.deepcopy(db), copy.deepcopy(db)
+        for side, rating in ((base, '2W 5%'), (out, '1/16W 5%')):
+            side['parts']['R29']['value'] = '47R'
+            side['bom'] = {'parts': {'R29': {'Description': rating}}}
+        intent = {'schema_version': 5, 'power_rails': {'/OSC_REF2': {'voltage_v': {'min': 4.75, 'max': 5.25},
+                  'citation': 'SEED controlled 5V window on the R29 node; not the source board operating point'}},
+                  'assemblies': [{'id': 'run', 'citation': 'SEED controlled assembly p1; original procurement population',
+                                  'population': {ref: not bool(part.get('nc')) for ref, part in parts.items()}, 'jumpers': {}}]}
+        yield Mutation('D-FRACTION-POWER-NO-PASS', ('DEV-C01',), ('R29',), ('/OSC_REF2',),
+                       'BOM rating 2W -> 1/16W on a 47R across a controlled 5V window; 1/16W must not read as 16W',
+                       out, baseline=base, intent=intent,
+                       contract={'guard_no_pass': ['R29'], 'source': 'pslab R29 0603 footprint, BOM Description column style',
+                                 'stress_w': 0.59, 'mutant_rating_w': 0.0625,
+                                 'limit': 'automatic layer must withhold PASS; the overload verdict remains the reviewer\'s'})
+    if (pins.get('U1.5') == 'VGND' and pins.get('R21.1') == 'VGND' and pins.get('R21.2') == 'GND'
+            and pins.get('R20.2') == 'VGND'):
+        base = copy.deepcopy(db)
+        for node, net in list(base['pin2net'].items()):
+            if net == 'VGND':
+                base['pin2net'][node] = 'VMID'
+        rebuild(base)
+        yield Mutation('D-MIDPOINT-GROUND-NO-PASS', ('DEV-C01',), ('R21',), ('VGND',),
+                       'name the R20/R21 divider midpoint VGND (ground-like) instead of VMID; it must not become 0 V',
+                       copy.deepcopy(db), baseline=base,
+                       contract={'guard_no_proposal_pass': ['R21'], 'source': 'openrefmic R20/R21 7.15k divider, U1 + inputs (U1 symbol TL074/OPA4991 BOM)',
+                                 'limit': 'AMP_VDD window withheld; the midpoint stress must stay unknown with its dependency'})
+    if model('U19') == 'PCA9306' and 'R63' in parts and pins.get('R63.2') == pins.get('U19.7'):
+        out = copy.deepcopy(db)
+        del out['parts']['R63']
+        for node in [n for n in out['pin2net'] if n.startswith('R63.')]:
+            del out['pin2net'][node]
+        rebuild(out)
+        yield Mutation('D-BIAS-FEED-REMOVED', ('PWR-A02',), ('U19',), (pins['U19.7'],),
+                       'remove the 200k VREF2/EN bias feed R63; the weak drive becomes no drive at all',
+                       out, baseline=copy.deepcopy(db),
+                       contract={'source': 'NXP PCA9306 Rev9.5 p9-10 reference circuit (200k VREF2 bias); gnssdo U19/R63'})
+    if 'J6.38' in db.get('no_connect_nodes', []) and pins.get('J6.38') == '/CSI/CSI2_CLK_N':
+        out = copy.deepcopy(db)
+        out['no_connect_nodes'] = [n for n in out['no_connect_nodes'] if n != 'J6.38']
+        yield Mutation('D-NC-FLAG-REMOVED', ('NET-A01',), ('J6',), ('/CSI/CSI2_CLK_N',),
+                       'drop the native no-connect flag on the labelled single-node J6.38; the open pin must be asked again',
+                       out, baseline=copy.deepcopy(db),
+                       contract={'source': 'hdmi-mipi-bridge J6 FFC spare pin with native NC flag'})
+

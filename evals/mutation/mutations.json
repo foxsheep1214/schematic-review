@@ -549,7 +549,7 @@
   "id": "M91",
   "name": "SIG-C08 asked on every interface net, not only where supplies differ",
   "file": "scripts/interfaces.py",
-  "old": "                    if entry['cross_supply']:",
+  "old": "                    if entry['cross_supply'] or (kind == 'EXTERNAL' and not entry.get('power_node') and not ng.is_ground(entry['net'])):",
   "new": "                    if True:"
  },
  {
@@ -1347,15 +1347,15 @@
   "id": "M205",
   "name": "a rated power is not read",
   "file": "scripts/solve_dividers.py",
-  "old": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
-  "new": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(V)\\s*', remainder)"
+  "old": "        rating = fraction or re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
+  "new": "        rating = fraction or re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(V)\\s*', remainder)"
  },
  {
   "id": "M206",
   "name": "a rated voltage is not read",
   "file": "scripts/solve_dividers.py",
-  "old": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
-  "new": "        rating = re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W)\\s*', remainder)"
+  "old": "        rating = fraction or re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W|V)\\s*', remainder)",
+  "new": "        rating = fraction or re.fullmatch(r'(.*?)\\s*/\\s*(\\d+(?:\\.\\d+)?)\\s*(M?W)\\s*', remainder)"
  },
  {
   "id": "M207",
@@ -1368,8 +1368,8 @@
   "id": "M208",
   "name": "milliwatts are read as watts",
   "file": "scripts/solve_dividers.py",
-  "old": "        amount = float(rating.group(2)) / (1000.0 if rating.group(3) == 'MW' else 1.0)",
-  "new": "        amount = float(rating.group(2))"
+  "old": "        amount = float(rating.group(2)) / denominator / (1000.0 if unit_rating == 'MW' else 1.0)",
+  "new": "        amount = float(rating.group(2)) / denominator"
  },
  {
   "id": "M209",
@@ -1650,13 +1650,6 @@
   "file": "scripts/review_quality.py",
   "old": "'UNIFORM_SEVERITY_WITHIN_RULE', 'TEMPLATED_PASS_RATIONALE')",
   "new": "'UNIFORM_SEVERITY_WITHIN_RULE')"
- },
- {
-  "id": "M251",
-  "name": "P1: the passive-stress inventory does not save the devices section",
-  "file": "scripts/checkers/passive_stress.py",
-  "old": "                         context_keys=('devices', 'derating'))   # R8: the level sets RES-SMD-P",
-  "new": "                         context_keys=('derating',))   # R8: the level sets RES-SMD-P"
  },
  {
   "id": "M252",
@@ -2607,7 +2600,7 @@
   "id": "M403",
   "name": "deriving again drops the bom constraint and requirement clauses",
   "file": "scripts/derive_rows.py",
-  "old": "            for field in ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings',\n                          'bom_constraint', 'requirement_clauses'):",
+  "old": "            for field in ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings',\n                          'bom_constraint', 'requirement_clauses', 'proposal_override'):",
   "new": "            for field in ('manual_verification', 'notes', 'handoff_evidence', 'applicability_evidence', 'settings'):"
  },
  {
@@ -3664,15 +3657,15 @@
   "id": "M577",
   "name": "a TVS on an internal node is skipped like a zener",
   "file": "scripts/protective_clamps.py",
-  "old": "    if graph.kind(ref) == pw.ZENER and functional_clamp(graph, rails[0], intent):",
-  "new": "    if graph.kind(ref) in (pw.ZENER, pw.TVS) and functional_clamp(graph, rails[0], intent):"
+  "old": "        if graph.kind(ref) == pw.ZENER and functional_clamp(graph, live, intent):",
+  "new": "        if False and graph.kind(ref) == pw.ZENER and functional_clamp(graph, live, intent):"
  },
  {
   "id": "M578",
   "name": "a connector on the clamped node no longer makes the clamp protective",
   "file": "scripts/protective_clamps.py",
-  "old": "        if kind in (pw.CONNECTOR, pw.TESTPOINT):\n            return False",
-  "new": "        if False:\n            return False"
+  "old": "    if port_connectors(graph, net):\n        return False",
+  "new": "    if False:\n        return False"
  },
  {
   "id": "M579",
@@ -3853,8 +3846,8 @@
   "id": "M605",
   "name": "the clamp row does not name the protected pins",
   "file": "scripts/lint.py",
-  "old": "f'型号提示={_fmt_v(clamp_volt(blob))}。{self._protected_pins_text(rail, ref)}'",
-  "new": "f'型号提示={_fmt_v(clamp_volt(blob))}。'"
+  "old": " + ''.join(self._protected_pins_text(n, ref) for n in channel['nets']) +",
+  "new": " + '' +"
  },
  {
   "id": "M606",
@@ -4574,15 +4567,15 @@
   "id": "M716",
   "name": "the clamp scan reports under a rule that cannot carry a margin",
   "file": "scripts/lint.py",
-  "old": "            self.add('PRO-E02', '防护器件工作/击穿/钳位窗口待复核',",
-  "new": "            self.add('PRO-A01', '防护器件工作/击穿/钳位窗口待复核',"
+  "old": "                self.add('PRO-E02', '防护器件工作/击穿/钳位窗口待复核',",
+  "new": "                self.add('PRO-C02', '防护器件工作/击穿/钳位窗口待复核',"
  },
  {
   "id": "M717",
   "name": "an energy clamp across a switch node is taken for a protective clamp",
   "file": "scripts/protective_clamps.py",
-  "old": "    if switch_node(graph, rails[0], intent):",
-  "new": "    if False:"
+  "old": "        if any(switch_node(graph, n, intent) for n in window_nets):",
+  "new": "        if False:"
  },
  {
   "id": "M718",
@@ -5097,10 +5090,10 @@
  },
  {
   "id": "M793",
-  "name": "the title area never falls back to page 1",
+  "name": "semantic description is never consulted",
   "file": "scripts/datasheet_kinds.py",
-  "old": "return title if cues(title) else text",
-  "new": "return title"
+  "old": "return ' '.join(line for line in title + description if not re.fullmatch(r'(?i)diodes(?: incorporated| inc\\.?)?', line))",
+  "new": "return ' '.join(title)"
  },
  {
   "id": "M794",
@@ -5608,10 +5601,10 @@
  },
  {
   "id": "M866",
-  "name": "SIG-A06 reports an unfitted transceiver",
-  "file": "scripts/board_scans.py",
-  "old": "        if part.get('nc') or lint.graph.kind(ref) != IC:\n            continue\n        nodes = {CAN_PIN_RE",
-  "new": "        if lint.graph.kind(ref) != IC:\n            continue\n        nodes = {CAN_PIN_RE"
+  "name": "unfitted parts keep their pins and pin names in the scans",
+  "file": "scripts/lint.py",
+  "old": "        self.pin2net = {node: net for node, net in self.pin2net.items() if self.graph.is_fitted(node.partition('.')[0])}\n        self.pinname = {node: name for node, name in self.pinname.items() if self.graph.is_fitted(node.partition('.')[0])}\n",
+  "new": "        self.pin2net = dict(self.pin2net)\n        self.pinname = dict(self.pinname)\n"
  },
  {
   "id": "M867",
@@ -5719,10 +5712,1242 @@
   "new": "                       }"
  },
  {
-  "id": "M882",
-  "name": "CLK-A02 counts an unfitted IC",
+  "id": "M883",
+  "name": "KiCad Val loses priority over library Value",
+  "file": "scripts/parse_kicad.py",
+  "old": "value = fields[val_field] if val_field else original_value",
+  "new": "value = original_value"
+ },
+ {
+  "id": "M884",
+  "name": "packaged resistor name is unreadable again",
+  "file": "scripts/solve_dividers.py",
+  "old": "    if packaged:\n",
+  "new": "    if False:\n"
+ },
+ {
+  "id": "M885",
+  "name": "milliohm shunts interrupt supply provenance again",
+  "file": "scripts/checkers/powertree.py",
+  "old": "or (resistor and 0 <= resistor['kohm'] <= 0.001)",
+  "new": "or (resistor and resistor['kohm'] == 0)"
+ },
+ {
+  "id": "M886",
+  "name": "unfitted nodes take part in electrical scans",
+  "file": "scripts/lint.py",
+  "old": "if self.graph.is_fitted(node.partition('.')[0])])",
+  "new": "if True])"
+ },
+ {
+  "id": "M887",
+  "name": "DNP fields are no longer assembly evidence",
+  "file": "scripts/parse_kicad.py",
+  "old": "for source, entries in (('property', properties), ('field', fields)):",
+  "new": "for source, entries in (('property', properties),):"
+ },
+ {
+  "id": "M888",
+  "name": "unfitted resistors reappear in protected pin paths",
+  "file": "scripts/lint.py",
+  "old": "elif self.graph.is_fitted(ref) and self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2",
+  "new": "elif self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2"
+ },
+ {
+  "id": "M889",
+  "name": "interface default states are empty again",
+  "file": "scripts/catalog.py",
+  "old": "**{name: ('idle', 'active') for name in",
+  "new": "**{name: () for name in"
+ },
+ {
+  "id": "M890",
+  "name": "passive crystal rows are hidden by functional ownership again",
+  "file": "scripts/plan_circuits.py",
+  "old": "['passive-crystal:' + ref])",
+  "new": "['passive-crystal:' + ref]) if False else None"
+ },
+ {
+  "id": "M891",
+  "name": "numbered matrix contacts form a transistor again",
+  "file": "scripts/part_words.py",
+  "old": "if len(pins) > 8 or any(re.fullmatch(r'[BCEGDS]0\\d+', normalize(name)) for name, pin in pins):",
+  "new": "if False:"
+ },
+ {
+  "id": "M892",
+  "name": "ideal diode controller words make a discrete diode again",
+  "file": "scripts/part_words.py",
+  "old": "if ic_ref and pin_count is not None and pin_count >= 4 and {'GATE', 'SENSE', 'IN'} <= controller_pins:",
+  "new": "if False:"
+ },
+ {
+  "id": "M893",
+  "name": "pulls are counted backwards on supply rails",
+  "file": "scripts/lint.py",
+  "old": "if ng.is_rail(net) or net in declared_supply_nets(self.graph, self.intent):",
+  "new": "if False:"
+ },
+ {
+  "id": "M894",
+  "name": "enable source discovery ignores zero ohm peers",
+  "file": "scripts/checkers/power_up.py",
+  "old": "peers = graph.low_resistance_peers(enable_net)",
+  "new": "peers = {enable_net: []}"
+ },
+ {
+  "id": "M895",
+  "name": "internal input bias policy is ignored",
   "file": "scripts/board_scans.py",
-  "old": "            if lint.parts[ic].get('nc') or lint.graph.kind(ic) != IC:",
-  "new": "            if lint.graph.kind(ic) != IC:"
+  "old": "if declared_nc and permission:",
+  "new": "if False:"
+ },
+ {
+  "id": "M896",
+  "name": "multi digit bus indexes become misspellings again",
+  "file": "scripts/lint.py",
+  "old": "            or re.sub(r'\\d+', '#', la) == re.sub(r'\\d+', '#', lb))",
+  "new": "            or False)"
+ },
+ {
+  "id": "M897",
+  "name": "small supply bias is no driver for a transistor",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "        if supply:\n            found.append(",
+  "new": "        if False:\n            found.append("
+ },
+ {
+  "id": "M898",
+  "name": "wired open drain flag policy is ignored",
+  "file": "scripts/lint.py",
+  "old": "drain_only = len(drivers) > 1 and all(self._wired_open_drain(node) for node in outputs)",
+  "new": "drain_only = False"
+ },
+ {
+  "id": "M899",
+  "name": "SiC437 VOUT sense is a power source again",
+  "file": "scripts/checkers/powertree.py",
+  "old": "and pin == '18')  # SiC437 pin18 VOUT senses the output; SW delivers energy",
+  "new": "and False)  # SiC437 pin18 VOUT senses the output; SW delivers energy"
+ },
+ {
+  "id": "M900",
+  "name": "unknown resistor supply paths are called opens again",
+  "file": "scripts/lint.py",
+  "old": "            if unknown and source:",
+  "new": "            if False:"
+ },
+ {
+  "id": "M901",
+  "name": "a connector wins over the internal supply",
+  "file": "scripts/checkers/powertree.py",
+  "old": "                    off_board = off_board or {'source': node, 'path': list(reversed(path)),",
+  "new": "                    return {'source': node, 'path': list(reversed(path)),"
+ },
+ {
+  "id": "M902",
+  "name": "hyphenated KiCad net ties interrupt supply again",
+  "file": "scripts/checkers/powertree.py",
+  "old": "or pw.copper_tie(ref, part)",
+  "new": "or bool(re.search(r'(?:^|:)NetTie(?:_|$)', str(part.get('prim') or ''), re.I))"
+ },
+ {
+  "id": "M903",
+  "name": "output sense feedback looks like an inductor input supply again",
+  "file": "scripts/checkers/powertree.py",
+  "old": "if not re.search(r'(?:SNS|SENSE)(?:$|[_0-9])', str(graph.pinname.get(node, '')), re.I)",
+  "new": "if True"
+ },
+ {
+  "id": "M904",
+  "name": "adjudicated TVS pairs have no corrected baseline",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "baseline=base, intent=rail_intent(rails[0], voltage,",
+  "new": "baseline=None, intent=rail_intent(rails[0], voltage,"
+ },
+ {
+  "id": "M905",
+  "name": "the original faulty board hides paired seed detection",
+  "file": "evals/seeded_bench/run.py",
+  "old": "paired_seen = {(f['rule'], f['detail']) for f in paired}",
+  "new": "paired_seen = seen"
+ },
+ {
+  "id": "M906",
+  "name": "a controlled seed forgets unrelated supply identity declarations",
+  "file": "evals/seeded_bench/run.py",
+  "old": "for net in rail_candidates(db, bound):",
+  "new": "for net in ():"
+ },
+ {
+  "id": "M907",
+  "name": "seed runtime errors pass silently",
+  "file": "evals/seeded_bench/run.py",
+  "old": "return 1 if regressions or any('error' in row for row in records) or any('error' in row for row in baselines.values()) else 0",
+  "new": "return 0"
+ },
+ {
+  "id": "M908",
+  "name": "KiCad inline subscripts hide functional pin names",
+  "file": "scripts/part_words.py",
+  "old": "add(re.sub(r'_\\{([A-Za-z0-9]+)\\}', r'\\1', candidate))",
+  "new": "pass"
+ },
+ {
+  "id": "M909",
+  "name": "unused input policies use styled raw names again",
+  "file": "scripts/board_scans.py",
+  "old": "pin_names = pin_aliases(lint.pinname.get(node), node.partition('.')[2])",
+  "new": "pin_names = (str(lint.pinname.get(node, '')).upper(),)"
+ },
+ {
+  "id": "M910",
+  "name": "fixed MPSSE buffering becomes an open drain bus by name",
+  "file": "scripts/board_scans.py",
+  "old": "if not resistors and ftdi and buffer and set(ics) == set(ftdi + buffer) and not declared_bus:",
+  "new": "if False:"
+ },
+ {
+  "id": "M911",
+  "name": "PoE VSS must be shorted to the main return again",
+  "file": "scripts/lint.py",
+  "old": "if not ng.is_ground(n) and not pd_return:",
+  "new": "if not ng.is_ground(n):"
+ },
+ {
+  "id": "M912",
+  "name": "declared relay switch again anchors converter",
+  "file": "scripts/circuit_candidates.py",
+  "old": "and self.converter_topology(switch):",
+  "new": ":"
+ },
+ {
+  "id": "M913",
+  "name": "rejected candidate retains members",
+  "file": "scripts/circuit_decisions.py",
+  "old": "                owner = next((k for k, m in members.items() if ref in m and decided.get(k) != 'reject'), None)",
+  "new": "                owner = next((k for k, m in members.items() if ref in m), None)"
+ },
+ {
+  "id": "M914",
+  "name": "input capacitor loses its unlimited reference allowance",
+  "file": "scripts/circuit_candidates.py",
+  "old": "SUPPLY_CAP_ROLES = frozenset({'input_capacitor', 'output_capacitor', 'decoupling', 'storage_capacitor'})",
+  "new": "SUPPLY_CAP_ROLES = frozenset({'output_capacitor', 'decoupling', 'storage_capacitor'})"
+ },
+ {
+  "id": "M915",
+  "name": "undeclared shared VIN no longer stops walks",
+  "file": "scripts/checkers/domains.py",
+  "old": "supplies = set(rails) | powertree.supply_candidates(graph, intent)",
+  "new": "supplies = set(rails)"
+ },
+ {
+  "id": "M916",
+  "name": "connector walks through its shared supply seed",
+  "file": "scripts/circuit_candidates.py",
+  "old": "            if net in self.stops:\n                caps = self.ground_caps(net)      # a converter's input rail ends the input: its capacitors are the input's, whatever their value\n            if caps or net in self.stops:",
+  "new": "            if hops and net in self.stops:\n                caps = self.ground_caps(net)\n            if caps or (hops and net in self.stops):"
+ },
+ {
+  "id": "M917",
+  "name": "isolation package unions both reference sides",
+  "file": "scripts/checkers/domains.py",
+  "old": "groups = [x['nets'] for x in side['sides']] if side['mechanism'] not in ('transformer', 'relay') else []",
+  "new": "groups = [graph.nets_of(ref)]"
+ },
+ {
+  "id": "M918",
+  "name": "megohm bleed merges domains",
+  "file": "scripts/checkers/domains.py",
+  "old": "value is None or value['kohm'] >= 1000",
+  "new": "value is None or value['kohm'] >= 1e9"
+ },
+ {
+  "id": "M919",
+  "name": "common-ground isolation objects disappear",
+  "file": "scripts/checkers/domains.py",
+  "old": "if len(touched) > 1 or ref in side_models:",
+  "new": "if len(touched) > 1:"
+ },
+ {
+  "id": "M920",
+  "name": "passive barrier gets digital isolation questions",
+  "file": "scripts/plan_circuits.py",
+  "old": "if passive_barrier and rule in",
+  "new": "if False and rule in"
+ },
+ {
+  "id": "M921",
+  "name": "AMC3311 loses its independent side model",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "(r'AMC3311[A-Z0-9/-]*', 'isolated_amplifier',",
+  "new": "(r'NEVER3311[A-Z0-9/-]*', 'isolated_amplifier',"
+ },
+ {
+  "id": "M922",
+  "name": "a ground net reference is no longer a domain alias",
+  "file": "scripts/checkers/domains.py",
+  "old": "derived != declared_label",
+  "new": "derived != declared"
+ },
+ {
+  "id": "M923",
+  "name": "duplicate ground leaves share a domain without a wire",
+  "file": "scripts/checkers/domains.py",
+  "old": "initial_labels.count(labels[net]) > 1",
+  "new": "False"
+ },
+ {
+  "id": "M924",
+  "name": "connector spanning both isolation sides loses endpoint coverage",
+  "file": "scripts/circuit_candidates.py",
+  "old": "if all(nets & set(s['nets']) for s in sides):",
+  "new": "if False:"
+ },
+ {
+  "id": "M925",
+  "name": "4k7 enable source is cut by a low-impedance threshold",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "def signal_source_peers(self, net, max_ohm=10000.0, max_hops=3, stop_nets=()):",
+  "new": "def signal_source_peers(self, net, max_ohm=1000.0, max_hops=3, stop_nets=()):"
+ },
+ {
+  "id": "M926",
+  "name": "gate source discovery borrows drivers from ground or shared rail",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "if value is None or value['kohm'] < 0 or other in stops or is_ground(other) or is_rail(other):",
+  "new": "if value is None or value['kohm'] < 0:"
+ },
+ {
+  "id": "M927",
+  "name": "upstream buck storage inductor is treated as an input filter",
+  "file": "scripts/checkers/input_filter.py",
+  "old": "if storage_source:",
+  "new": "if False:"
+ },
+ {
+  "id": "M928",
+  "name": "input filter rows exist without a filter",
+  "file": "scripts/checkers/input_filter.py",
+  "old": "if not item['series_elements'] and not any(g.startswith('series-element-topology:') for g in item['gaps']):",
+  "new": "if False:"
+ },
+ {
+  "id": "M929",
+  "name": "verified load switch gets LDO dropout model",
+  "file": "scripts/checkers/power_up.py",
+  "old": "load_switch = (graph.role_kind(ref) == 'load_switch' or",
+  "new": "load_switch = (False or"
+ },
+ {
+  "id": "M930",
+  "name": "passive balun without switching energy becomes a coil load",
+  "file": "scripts/checkers/inductive_load.py",
+  "old": "if kind != pw.RELAY and ref not in self.declared and not energy_driver:",
+  "new": "if False:"
+ },
+ {
+  "id": "M931",
+  "name": "Bridged jumper again matches a protective rectifier",
+  "file": "scripts/circuit_candidates.py",
+  "old": "r'THERMISTOR|FUSE|\\bGDT\\b|SPARK'",
+  "new": "r'THERMISTOR|FUSE|BRIDGE|\\bGDT\\b|SPARK'"
+ },
+ {
+  "id": "M932",
+  "name": "AMC output pin no longer supplies its own isolated-side LDO input",
+  "file": "scripts/checkers/powertree.py",
+  "old": "if side and pin in side.get('power_outputs', []):",
+  "new": "if False and side and pin in side.get('power_outputs', []):"
+ },
+ {
+  "id": "M933",
+  "name": "gate protection zener becomes a linear regulator reference",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        return bool(gate and source and source not in self.grounds and self.ground_caps(source) and any(\n            self.graph.kind(r) == pw.ZENER and any(n in self.grounds for n in self.graph.nets_of(r) if n != gate)\n            for r in self.graph.refs_on(gate)) and self.graph.between(gate, drain, {pw.RESISTOR}))",
+  "new": "        return bool(gate and any(self.graph.kind(r) == pw.ZENER for r in self.graph.refs_on(gate)))"
+ },
+ {
+  "id": "M934",
+  "name": "walk bypass caps lose their unlimited supply-reference role",
+  "file": "scripts/circuit_candidates.py",
+  "old": "role = 'decoupling'   # a ground bypass",
+  "new": "role = 'capacitor'   # a ground bypass"
+ },
+ {
+  "id": "M935",
+  "name": "relay coil evidence counts as converter magnetics",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        return bool(net) and any(\n            self.graph.kind(r) in (pw.INDUCTOR, pw.TRANSFORMER, pw.COUPLED_INDUCTOR) for r in self.graph.refs_on(net))",
+  "new": "        return bool(net) and (net in self.winding_nets or any(\n            self.graph.kind(r) in (pw.INDUCTOR, pw.TRANSFORMER, pw.COUPLED_INDUCTOR) for r in self.graph.refs_on(net)))"
+ },
+ {
+  "id": "M936",
+  "name": "integrated SW no longer preserves transformer winding review",
+  "file": "scripts/checkers/inductive_load.py",
+  "old": "self._is_converter_node(n) for n in graph.nets_of(ref)",
+  "new": "False for n in graph.nets_of(ref)"
+ },
+ {
+  "id": "M937",
+  "name": "fractional watt rating cuts the real MCU driver path",
+  "file": "scripts/solve_dividers.py",
+  "old": "rating = fraction or re.fullmatch",
+  "new": "rating = None or re.fullmatch"
+ },
+ {
+  "id": "M938",
+  "name": "EN on a real supplied rail becomes floating when its supply pin alias is SUP",
+  "file": "scripts/checkers/power_up.py",
+  "old": "if supplied:\n            return 'supplied', supplied",
+  "new": "if False:\n            return 'supplied', supplied"
+ },
+ {
+  "id": "M960",
+  "name": "native assembly fields ignore Populate DNP",
+  "file": "scripts/parse_kicad.py",
+  "old": "(key in POPULATION_FIELDS and mark in UNFITTED_MARKS)",
+  "new": "(False)"
+ },
+ {
+  "id": "M961",
+  "name": "material grouping ignores the explicit native MPN",
+  "file": "scripts/audit_datasheets.py",
+  "old": "if MPN_FIELD.match(name) and _text(value):",
+  "new": "if False:"
+ },
+ {
+  "id": "M962",
+  "name": "easyC contacts revert to relay prefix",
+  "file": "scripts/part_words.py",
+  "old": "(?:^|:)EASYC(?:[-_]|$)",
+  "new": "(?:^|:)NOT_EASYC(?:[-_]|$)"
+ },
+ {
+  "id": "M963",
+  "name": "TCXO again inherits its crystal footprint",
+  "file": "scripts/part_words.py",
+  "old": "        return IC, 'part-keyword'\n    if re.search(r'(?:^|:)SW_DIP",
+  "new": "        return CRYSTAL, 'part-keyword'\n    if re.search(r'(?:^|:)SW_DIP"
+ },
+ {
+  "id": "M964",
+  "name": "datasheet discovery reads all first page application words",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "    return semantic_identity_text(text)",
+  "new": "    return text or ''"
+ },
+ {
+  "id": "M965",
+  "name": "maker Diodes becomes a diode cue",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "    text = re.sub(r'(?im)^\\s*diodes\\s*$|\\bdiodes\\s+(?:incorporated|inc\\.?)\\b', '', str(text or ''))",
+  "new": "    text = str(text or '')"
+ },
+ {
+  "id": "M966",
+  "name": "native connectors again need IC bypass groups",
+  "file": "scripts/decoupling.py",
+  "old": "return kind if basis == 'part-keyword' and kind in NO_SUPPLY_PARTS else 'unmodeled'",
+  "new": "return 'unmodeled'"
+ },
+ {
+  "id": "M967",
+  "name": "relay contact suffixes cease to form one channel triple",
+  "file": "scripts/lint.py",
+  "old": "re.fullmatch(r'(NC|COM|NO)(\\d*)', contact(node, net))",
+  "new": "re.fullmatch(r'(NC|COM|NO)()', contact(node, net))"
+ },
+ {
+  "id": "M968",
+  "name": "CH340 own unused-input clause is ignored",
+  "file": "scripts/part_words.py",
+  "old": "if re.fullmatch(r'CH340[CG]', model, re.I):",
+  "new": "if False:"
+ },
+ {
+  "id": "M969",
+  "name": "unused-input permission propagates onto a loaded net",
+  "file": "scripts/part_words.py",
+  "old": "if net is not None and len((db.get('nets') or {}).get(net, [])) > 1:",
+  "new": "if False:"
+ },
+ {
+  "id": "M970",
+  "name": "TPS709 permitted open enable loses its internal-bias source",
+  "file": "scripts/checkers/power_up.py",
+  "old": "if source == 'unknown' and permission:",
+  "new": "if False:"
+ },
+ {
+  "id": "M971",
+  "name": "high-side load switches revert to LDO dropout",
+  "file": "scripts/checkers/power_up.py",
+  "old": "'kind': 'load_switch' if load_switch else ('switching' if switches else 'linear'),",
+  "new": "'kind': 'switching' if switches else 'linear',"
+ },
+ {
+  "id": "M972",
+  "name": "gate pulldown reaches grounded test contacts as drivers",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "if value is None or value['kohm'] < 0 or other in stops or is_ground(other) or is_rail(other):",
+  "new": "if value is None or value['kohm'] < 0 or is_rail(other):"
+ },
+ {
+  "id": "M973",
+  "name": "a differential shunt capacitor becomes a series coupling capacitor",
+  "file": "scripts/checkers/diff_levels.py",
+  "old": "if other not in self.grounds and other != other_leg]",
+  "new": "if other not in self.grounds]"
+ },
+ {
+  "id": "M974",
+  "name": "rectifier supply pins become a differential data link",
+  "file": "scripts/checkers/diff_levels.py",
+  "old": "if ((re.fullmatch(r'(?:.*/)?V[+-]', net, re.I)",
+  "new": "if ((False and re.fullmatch(r'(?:.*/)?V[+-]', net, re.I)"
+ },
+ {
+  "id": "M975",
+  "name": "FB-valued inductive symbols cease to be ferrite beads",
+  "file": "scripts/part_words.py",
+  "old": "and normalize(part.get('value')) == 'FB':",
+  "new": "and False:"
+ },
+ {
+  "id": "M976",
+  "name": "a maker name in the package becomes device type evidence",
+  "file": "scripts/part_words.py",
+  "old": "blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim'))",
+  "new": "blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim', 'jedec'))"
+ },
+ {
+  "id": "M978",
+  "name": "PDF content order overrides actual title geometry",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "        geometric = pdf_title_text(document_path)",
+  "new": "        geometric = None"
+ },
+ {
+  "id": "M980",
+  "name": "external peer supply unknown suppresses the injection question again",
+  "file": "scripts/interfaces.py",
+  "old": "if entry['cross_supply'] or (kind == 'EXTERNAL' and not entry.get('power_node') and not ng.is_ground(entry['net'])):",
+  "new": "if entry['cross_supply']:"
+ },
+ {
+  "id": "M981",
+  "name": "a port without a protection component gets no branch question",
+  "file": "scripts/interfaces.py",
+  "old": "                    row = self._ready_check('PRO-C04', {'interface': iid, 'ref': ref, 'node': node, 'net': net},",
+  "new": "                    row = self._ready_check('PRO-D04', {'interface': iid, 'ref': ref, 'node': node, 'net': net},"
+ },
+ {
+  "id": "M982",
+  "name": "ADC and current sense pins lose their individual injection and range questions",
+  "file": "scripts/plan_circuits.py",
+  "old": "if (sense or divider_hint) and net and net not in pseudo:",
+  "new": "if False:"
+ },
+ {
+  "id": "M983",
+  "name": "PMIC named outputs lose their own capacitor stability question",
+  "file": "scripts/plan_circuits.py",
+  "old": "            for node, net in sorted(outputs.items()):",
+  "new": "            for node, net in []:"
+ },
+ {
+  "id": "M984",
+  "name": "Type-A and Micro-B ports acquire Type-C CC questions",
+  "file": "scripts/catalog.py",
+  "old": "    ('USB', 'SIG-D04'): 'USB_CC',",
+  "new": ""
+ },
+ {
+  "id": "M985",
+  "name": "USB circuit fuse ownership suppresses protection coordination",
+  "file": "scripts/interfaces.py",
+  "old": "                    for fuse in sorted(fuses):",
+  "new": "                    for fuse in []:"
+ },
+ {
+  "id": "M986",
+  "name": "I2S SDA spelling becomes an I2C pullup net again",
+  "file": "scripts/board_scans.py",
+  "old": "    if re.search(r'(?:^|[^A-Z0-9])I2S(?:[^A-Z0-9]|$)', str(net).upper()):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M987",
+  "name": "power rails and I2S signals become I2C inventory seeds",
+  "file": "scripts/i2c_topology.py",
+  "old": "if net in self.pseudo or self.rail(net) or re.search(r'(?:^|[/_-])I2S(?:[/_-]|$)', net, re.I):",
+  "new": "if net in self.pseudo:"
+ },
+ {
+  "id": "M988",
+  "name": "dual diode common cathode interrupts upstream supply search",
+  "file": "scripts/part_words.py",
+  "old": "if str(part.get('part') or '').upper() == 'BAT54C' and set(pins) == {'1', '2', '3'}:",
+  "new": "if False:"
+ },
+ {
+  "id": "M989",
+  "name": "feedthrough capacitors no longer pass only their through terminals",
+  "file": "scripts/part_words.py",
+  "old": "if re.fullmatch(r'C_Feedthrough(?:_Small)?', primitive, re.I) and set(pins) == {'1', '2', '3'}:",
+  "new": "if False:"
+ },
+ {
+  "id": "M990",
+  "name": "TPS5430 PH output is still an input when the symbol is wrong",
+  "file": "scripts/checkers/powertree.py",
+  "old": "if (re.fullmatch(r'TPS5430(?:DDA[RT]?)?', str(part.get('part', '')), re.I)",
+  "new": "if (False and re.fullmatch(r'TPS5430(?:DDA[RT]?)?', str(part.get('part', '')), re.I)"
+ },
+ {
+  "id": "M991",
+  "name": "seed records lose their specifically planned target rules",
+  "file": "evals/seeded_bench/run.py",
+  "old": "if c['rule'] in m.targets",
+  "new": "if False"
+ },
+ {
+  "id": "M992",
+  "name": "the PMIC seed has no compliant nominal paired baseline",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "base['parts']['C113']['value'] = '22uF'",
+  "new": "base['parts']['C113']['value'] = '1uF'"
+ },
+ {
+  "id": "M993",
+  "name": "source-pin model knowledge applies to unrelated diode arrays",
+  "file": "scripts/part_words.py",
+  "old": "str(part.get('part') or '').upper() == 'BAT54C'",
+  "new": "str(part.get('part') or '').upper().startswith('BAT54')"
+ },
+ {
+  "id": "M994",
+  "name": "relay distribution branches collapse into a single port check",
+  "file": "scripts/interfaces.py",
+  "old": "                    for link, far in graph.neighbors(net, pw.PASSIVE_LINKS):",
+  "new": "                    for link, far in []:"
+ },
+ {
+  "id": "M995",
+  "name": "the actual easyC SMD connector reverts to relay classification",
+  "file": "scripts/part_words.py",
+  "old": "EASYC(?:[-_]|$)",
+  "new": "EASYC(?:_|$)"
+ },
+ {
+  "id": "M996",
+  "name": "a declared connector pin map recreates implicit IC bypass groups",
+  "file": "scripts/decoupling.py",
+  "old": "or self.kind(ref) in {'connector', 'testpoint'}",
+  "new": "or False"
+ },
+ {
+  "id": "M997",
+  "name": "HY931147C rectified PoE terminals become a data pair",
+  "file": "scripts/checkers/diff_levels.py",
+  "old": "if any(str(self.graph.parts[r].get('part', '')).upper() == 'HY931147C'",
+  "new": "if any(False and str(self.graph.parts[r].get('part', '')).upper() == 'HY931147C'"
+ },
+ {
+  "id": "M998",
+  "name": "custom passive crystal package name becomes an active oscillator",
+  "file": "scripts/part_words.py",
+  "old": "primitive.startswith('OSCILLATOR:')",
+  "new": "re.search(r'(?:^|:)OSCILLATOR(?::|_)|^OSCILLATOR:', primitive)"
+ },
+ {
+  "id": "M999",
+  "name": "PMIC output probe drops the actual orderable E2 MPN",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "r'BD71847A?MWV(?:-E2)?', model('U4')",
+  "new": "r'BD71847A?MWV', model('U4')"
+ },
+ {
+  "id": "M1000",
+  "name": "official missing pin names not merged",
+  "file": "scripts/board_intent.py",
+  "old": "names[node] = official",
+  "new": "names[node] = ''"
+ },
+ {
+  "id": "M1001",
+  "name": "native named pin loses priority",
+  "file": "scripts/board_intent.py",
+  "old": "if native and native != '~':",
+  "new": "if False:"
+ },
+ {
+  "id": "M1002",
+  "name": "pin map context lost on replay",
+  "file": "scripts/board_intent.py",
+  "old": "('input_sha256', 'assemblies', 'devices') + tuple(extra)",
+  "new": "('input_sha256', 'assemblies') + tuple(extra)"
+ },
+ {
+  "id": "M1003",
+  "name": "array channels collapse into one package",
+  "file": "scripts/protective_clamps.py",
+  "old": "    for group in groups:",
+  "new": "    for group in groups[:1]:"
+ },
+ {
+  "id": "M1004",
+  "name": "optional NC routing pads become channels",
+  "file": "scripts/protective_clamps.py",
+  "old": "(('1',), ('2',), ('4',), ('5',)), ('3', '8'), ('6', '7', '9', '10'),",
+  "new": "(('1',), ('2',), ('4',), ('5',), ('6',)), ('3', '8'), ('7', '9', '10'),"
+ },
+ {
+  "id": "M1005",
+  "name": "USB flow-through loses its far physical pin",
+  "file": "scripts/protective_clamps.py",
+  "old": "(('1', '6'), ('3', '4'), ('5',)), ('2',), (),",
+  "new": "(('1',), ('3',), ('5',)), ('2',), (),"
+ },
+ {
+  "id": "M1006",
+  "name": "verified TVS kind discarded without text keywords",
+  "file": "scripts/protective_clamps.py",
+  "old": "protective = graph.kind(ref) == pw.TVS or rule is not None",
+  "new": "protective = False"
+ },
+ {
+  "id": "M1007",
+  "name": "unknown supply falls back to zero volts",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "                    top = 'power_rails.%s.voltage_v' % net",
+  "new": "                    top = 0.0"
+ },
+ {
+  "id": "M1008",
+  "name": "ground alone bounds a passive island",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "                            if fixed != (0.0, 0.0):",
+  "new": "                            if True:"
+ },
+ {
+  "id": "M1009",
+  "name": "derive drops proposal override",
+  "file": "scripts/derive_rows.py",
+  "old": "'bom_constraint', 'requirement_clauses', 'proposal_override'):",
+  "new": "'bom_constraint', 'requirement_clauses'):"
+ },
+ {
+  "id": "M1010",
+  "name": "strip/materialize drops proposal override stub",
+  "file": "scripts/results_model.py",
+  "old": "'bom_constraint', 'requirement_clauses', 'proposal_override')",
+  "new": "'bom_constraint', 'requirement_clauses')"
+ },
+ {
+  "id": "M1011",
+  "name": "DNP removes fabricated copper from default graph",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "if not part.get('nc') or board_copper(ref, part)}",
+  "new": "if not part.get('nc')}"
+ },
+ {
+  "id": "M1012",
+  "name": "population flag removes fabricated copper",
+  "file": "scripts/checkers/states.py",
+  "old": "            if board_copper(ref, parts[ref]):",
+  "new": "            if False:"
+ },
+ {
+  "id": "M1013",
+  "name": "I2C treats DNP net tie as removable component",
+  "file": "scripts/i2c_topology.py",
+  "old": "            if board_copper(ref, self.parts.get(ref, {})):",
+  "new": "            if False:"
+ },
+ {
+  "id": "M1014",
+  "name": "test pads disappear with procurement marks",
+  "file": "scripts/part_words.py",
+  "old": "    return copper_tie(ref, part) or bool(re.search(r'(?:^|:)TestPoint_Pad(?:_|$)', str(part.get('jedec') or ''), re.I))",
+  "new": "    return copper_tie(ref, part)"
+ },
+ {
+  "id": "M1015",
+  "name": "I2C replay loses declared power rail stops",
+  "file": "scripts/i2c_topology.py",
+  "old": "board_intent.context(intent, 'i2c_topology', extra=('power_rails',))",
+  "new": "board_intent.context(intent, 'i2c_topology')"
+ },
+ {
+  "id": "M1016",
+  "name": "net tie classified as arbitrary active/unknown part",
+  "file": "scripts/part_words.py",
+  "old": "    if copper_tie(ref, part):\n        return JUMPER, 'part-keyword'",
+  "new": "    if False:\n        return JUMPER, 'part-keyword'"
+ },
+ {
+  "id": "M1017",
+  "name": "U-designated Trafo becomes an IC short",
+  "file": "scripts/part_words.py",
+  "old": "    if any(re.search(r'(?:^|:)TRAFO(?:_\\d+)?$', normalize(part.get(k))) for k in ('part', 'value', 'prim')):",
+  "new": "    if False:"
+ },
+ {
+  "id": "M1018",
+  "name": "graph-only side model loses official source table",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "((intent or {}).get('devices') or graph.db.get('devices') or {}).get(ref, {})",
+  "new": "((intent or {}).get('devices') or {}).get(ref, {})"
+ },
+ {
+  "id": "M1019",
+  "name": "connector makes passive transformer a digital isolator",
+  "file": "scripts/plan_circuits.py",
+  "old": "or graph.kind(ref) in (CAPACITOR, RESISTOR, CONNECTOR, TESTPOINT)",
+  "new": "or graph.kind(ref) in (CAPACITOR, RESISTOR)"
+ },
+ {
+  "id": "M1020",
+  "name": "isolation side silently overrides a named native pin",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "graph.pinname.get(ref + '.' + p, '') or official.get('pins', {}).get(p, {}).get('name')",
+  "new": "official.get('pins', {}).get(p, {}).get('name') or graph.pinname.get(ref + '.' + p, '')"
+ },
+ {
+  "id": "M1021",
+  "name": "exposed-pad aliases become false pin conflicts",
+  "file": "scripts/board_intent.py",
+  "old": "{'PAD', 'EP', 'EPAD', 'EXPOSED_PAD', 'EXPOSEDPAD'}",
+  "new": "set()"
+ },
+ {
+  "id": "M1022",
+  "name": "explicit-unit resistor component prefixes are not decoded",
+  "file": "scripts/solve_dividers.py",
+  "old": "    if prefix:\n        parsed = parse_resistor",
+  "new": "    if False:\n        parsed = parse_resistor"
+ },
+ {
+  "id": "M1023",
+  "name": "capacitance component prefix is not decoded",
+  "file": "scripts/decoupling.py",
+  "old": "    token = re.sub(r'^C_?(?=\\d)', '', token)",
+  "new": "    token = token"
+ },
+ {
+  "id": "M1024",
+  "name": "comma decimal voltage truncates to last digit",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "    text = re.sub(r'(?<=\\d),(?=\\d)', '.', str(value or ''))",
+  "new": "    text = str(value or '')"
+ },
+ {
+  "id": "M1025",
+  "name": "BOM comma decimal voltage truncates",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        text = re.sub(r'(?<=\\d),(?=\\d)', '.', str(text or ''))",
+  "new": "        text = str(text or '')"
+ },
+ {
+  "id": "M1026",
+  "name": "consistent component-prefix board never reports R330 ambiguity",
+  "file": "scripts/parse_kicad.py",
+  "old": "    if len(prefixed) < 3 or len(prefixed) * 2 <= len(resistors):",
+  "new": "    if True:"
+ },
+ {
+  "id": "M1027",
+  "name": "ambiguous effective resistance still parses numerically",
+  "file": "scripts/parse_kicad.py",
+  "old": "        part['value'] = raw + ' [ambiguous RKM/component-prefix]'",
+  "new": "        part['value'] = raw"
+ },
+ {
+  "id": "M1028",
+  "name": "mechanical package returns as active circuit",
+  "file": "scripts/part_words.py",
+  "old": "    if mechanical_part(part) and not signature:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M1029",
+  "name": "socket K designator becomes relay",
+  "file": "scripts/part_words.py",
+  "old": "        return CONNECTOR, 'part-keyword'\n    if normalize(part.get('part')) == 'HY931147C':",
+  "new": "        return RELAY, 'part-keyword'\n    if normalize(part.get('part')) == 'HY931147C':"
+ },
+ {
+  "id": "M1030",
+  "name": "exact MC14093 pin direction table is discarded",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "            rule = official_pin_types(part)",
+  "new": "            rule = None"
+ },
+ {
+  "id": "M1031",
+  "name": "mechanical testpoint enters debug candidate",
+  "file": "scripts/circuit_candidates.py",
+  "old": "if kind == pw.TESTPOINT and not pw.mechanical_part(self.graph.parts[ref]) and self.graph.pins_of(ref):",
+  "new": "if kind == pw.TESTPOINT:"
+ },
+ {
+  "id": "M1032",
+  "name": "mechanical standard triggers industrial input",
+  "file": "scripts/plan_circuits.py",
+  "old": "        if pw.mechanical_part(part):\n            continue",
+  "new": "        if False:\n            continue"
+ },
+ {
+  "id": "M1033",
+  "name": "zero-pin objects receive owned part stress checks",
+  "file": "scripts/plan_circuits.py",
+  "old": "if graph.is_fitted(ref) and graph.pins_of(ref)]",
+  "new": "if graph.is_fitted(ref)]"
+ },
+ {
+  "id": "M1034",
+  "name": "footprint-only copper tie loses power route",
+  "file": "scripts/checkers/powertree.py",
+  "old": "pw.copper_tie(ref, part)",
+  "new": "False"
+ },
+ {
+  "id": "M1035",
+  "name": "numbered ground names collapse into same pin role",
+  "file": "scripts/board_intent.py",
+  "old": "                if all(numbered) and numbered[0].group(1) == numbered[1].group(1) and numbered[0].group(2) != numbered[1].group(2):",
+  "new": "                if False:"
+ },
+ {
+  "id": "M1036",
+  "name": "memory-card load socket becomes external supply",
+  "file": "scripts/checkers/powertree.py",
+  "old": " and not pw.load_socket(part):",
+  "new": ":"
+ },
+ {
+  "id": "M1037",
+  "name": "series IC endpoints no longer reach interface inventory",
+  "file": "scripts/interfaces.py",
+  "old": "        series = [] if power else self.series_ends(net)",
+  "new": "        series = []"
+ },
+ {
+  "id": "M1038",
+  "name": "core supplies replace the explicit IO domain",
+  "file": "scripts/interfaces.py",
+  "old": "for pattern in (r'V(?:CC|DD)IO\\d*', r'V(?:DD|CC)\\d*'):",
+  "new": "for pattern in ():"
+ },
+ {
+  "id": "M1039",
+  "name": "declared bias rail is traversed as a signal",
+  "file": "scripts/interfaces.py",
+  "old": "self.grounds | self.declared_rails | self.signal_rail_stops | {",
+  "new": "self.grounds | self.declared_rails | {"
+ },
+ {
+  "id": "M1040",
+  "name": "grounded crystal case makes passive crystal active",
+  "file": "scripts/plan_circuits.py",
+  "old": "if any(not netgraph_ground(net) and not re.fullmatch(r'GND\\d*|VSS|CASE|SHIELD', str(connector_graph.pinname.get(ref + '.' + pin, '')), re.I)",
+  "new": "if any(True"
+ },
+ {
+  "id": "M1041",
+  "name": "merge3 controlled pairs are not exposed to board runner",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "    yield from merge3_mutations(db)",
+  "new": "    yield from ()"
+ },
+ {
+  "id": "M1042",
+  "name": "unknown proposal PASS slips through seed guard",
+  "file": "evals/seeded_bench/run.py",
+  "old": "if not rows or any(c.get('proposal', {}).get('result') is not None for c in rows):",
+  "new": "if not rows:"
+ },
+ {
+  "id": "M1043",
+  "name": "four channel contract accepts one whole package row",
+  "file": "evals/seeded_bench/run.py",
+  "old": "if len(rows) < wanted['count']:",
+  "new": "if False:"
+ },
+ {
+  "id": "M1044",
+  "name": "new site compensates lost old automatic target",
+  "file": "evals/seeded_bench/run.py",
+  "old": "elif 'error' in new or not set(old.get('auto', [])) <= set(new.get('auto', [])):",
+  "new": "elif 'error' in new:"
+ },
+ {
+  "id": "M1045",
+  "name": "feedback-open seed obligation is discarded",
+  "file": "evals/seeded_bench/run.py",
+  "old": "    if prefix:\n        observations['fault_rows']",
+  "new": "    if False:\n        observations['fault_rows']"
+ },
+ {
+  "id": "M1046",
+  "name": "MOS seed never opens the physical gate",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out=moved(base,'QA1.1','SEED_QA1_GATE_OPEN')",
+  "new": "out=copy.deepcopy(base)"
+ },
+ {
+  "id": "M1047",
+  "name": "signal transformer suppresses the verified TVS channel again",
+  "file": "scripts/protective_clamps.py",
+  "old": "and graph.is_fitted(node.partition('.')[0]) and power_winding(node.partition('.')[0]))",
+  "new": "and graph.is_fitted(node.partition('.')[0]))"
+ },
+ {
+  "id": "M1048",
+  "name": "shared DC drain collects bus divider as every snubber",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        if drain in self.supplies and not switch.get('switch_node_evidence'):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M1049",
+  "name": "recovered high-side drain crosses the shared bus during candidate walk",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                    stops.add(bus)",
+  "new": "                    pass"
+ },
+ {
+  "id": "M1050",
+  "name": "shared DC input drain becomes a switching net",
+  "file": "scripts/circuit_candidates.py",
+  "old": "if switch.get('drain_net') and not bus:",
+  "new": "if switch.get('drain_net'):"
+ },
+ {
+  "id": "M1051",
+  "name": "unknown-voltage seed hides behind unverified assembly",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "'population':{ref:not bool(part.get('nc')) for ref,part in parts.items()},'jumpers':{}}]}",
+  "new": "'population':{},'jumpers':{}}]}"
+ },
+ {
+  "id": "M1100",
+  "name": "fractional BOM power split into a whole-watt segment",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        text = FRACTION_W_RE.sub(' ', text)\n",
+  "new": "        found['power_w'].clear()\n"
+ },
+ {
+  "id": "M1101",
+  "name": "unread BOM power falls back to the package floor and may pass",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if bom.get('power_unread') and not parsed.get('power_w'):\n",
+  "new": "        if False:\n"
+ },
+ {
+  "id": "M1102",
+  "name": "a ground-named divider midpoint is fixed at 0 V",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if _ground_name(net) and not self.midpoint(net):\n",
+  "new": "        if _ground_name(net):\n"
+ },
+ {
+  "id": "M1103",
+  "name": "an IC return pin does not keep a ground real",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "                    or ng.is_ground(name)):\n                return False\n            continue\n",
+  "new": "                    or ng.is_ground(name)) and False:\n                return False\n            continue\n"
+ },
+ {
+  "id": "M1104",
+  "name": "one resistor to ground alone makes a midpoint",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "    return to_ground and to_other\n",
+  "new": "    return to_ground\n"
+ },
+ {
+  "id": "M1105",
+  "name": "a divider midpoint becomes a reference domain",
+  "file": "scripts/checkers/domains.py",
+  "old": "        if not zero and passive_stress.midpoint_ground(graph, net):\n",
+  "new": "        if False:\n"
+ },
+ {
+  "id": "M1106",
+  "name": "a pin fed through a kilo-ohm resistor is reported undriven",
+  "file": "scripts/lint.py",
+  "old": "                    elif weak:\n",
+  "new": "                    elif False:\n"
+ },
+ {
+  "id": "M1107",
+  "name": "a rail fed through a kilo-ohm resistor is reported undriven",
+  "file": "scripts/lint.py",
+  "old": "                elif weak := self.powertree.weak_source(n):\n",
+  "new": "                elif False:\n"
+ },
+ {
+  "id": "M1108",
+  "name": "a weak feed needs no source on the far side",
+  "file": "scripts/checkers/powertree.py",
+  "old": "            found = self.source_of(other) or feed.source_of(other)\n",
+  "new": "            found = {'source': other, 'path': []}\n"
+ },
+ {
+  "id": "M1110",
+  "name": "a PMIC output port from the family pin table is no source",
+  "file": "scripts/checkers/powertree.py",
+  "old": "                if pw.supply_port(part, graph.pinname.get(node), pin, 'outputs'):\n",
+  "new": "                if False:\n"
+ },
+ {
+  "id": "M1111",
+  "name": "a grounded PMIC output port is reported as a grounded supply pin",
+  "file": "scripts/lint.py",
+  "old": "                if pw.supply_port(self.parts.get(ref, {}), pn, node.partition('.')[2], 'outputs'):\n",
+  "new": "                if False:\n"
+ },
+ {
+  "id": "M1112",
+  "name": "PMIC output ports get no per-output PWR-C04",
+  "file": "scripts/plan_circuits.py",
+  "old": "            family = pw.supply_ports(connector_graph.parts[ref])\n",
+  "new": "            family = None\n"
+ },
+ {
+  "id": "M1113",
+  "name": "family switch/feedback ports do not satisfy the preconditions",
+  "file": "scripts/plan_circuits.py",
+  "old": "                if pw.supply_port(graph.parts.get(ref), names.get(ref + '.' + pin), pin, which)\n",
+  "new": "                if False\n"
+ },
+ {
+  "id": "M1114",
+  "name": "a TOPSwitch valued TOP227 on a TOP204 symbol is not the family",
+  "file": "scripts/part_words.py",
+  "old": "    for key in ('part', 'value'):\n        model = str((part or {}).get(key) or '')\n",
+  "new": "    for key in ('value',):\n        model = str((part or {}).get(key) or '')\n"
+ },
+ {
+  "id": "M1115",
+  "name": "an isolated DC/DC module is not modelled from its pin names",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "    if groups is None and ISOLATED_MODULE_RE.match(mpn) and (sides := _module_sides(names, actual)):\n",
+  "new": "    if False:\n"
+ },
+ {
+  "id": "M1116",
+  "name": "-Vout of a single-output module counts as a power output",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "             or (common and named(MODULE_NEGATIVE_OUT_RE, p))]",
+  "new": "             or named(MODULE_NEGATIVE_OUT_RE, p)]"
+ },
+ {
+  "id": "M1117",
+  "name": "module pin names are read without their subscript spelling",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "    spelled = {p: pw.pin_aliases(names[p]) or (names[p],) for p in actual}\n",
+  "new": "    spelled = {p: (names[p],) for p in actual}\n"
+ },
+ {
+  "id": "M1118",
+  "name": "a dual MOS keeps only its first gate",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "        if len(gates) < 2:\n",
+  "new": "        if True:\n"
+ },
+ {
+  "id": "M1119",
+  "name": "a shared D12 drain belongs to no channel",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "                                and (m.group(1) == index.group(1) or (len(m.group(1)) > 1 and index.group(1) in m.group(1)))):\n",
+  "new": "                                and m.group(1) == index.group(1)):\n"
+ },
+ {
+  "id": "M1120",
+  "name": "unindexed dual-MOS channels guess their drain and source",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "            else:\n                gaps.append('channel-pin-map:' + ref)\n",
+  "new": "            else:\n                nodes.update(drain=graph.node_named(ref, 'drain'), source=graph.node_named(ref, 'source'))\n"
+ },
+ {
+  "id": "M1121",
+  "name": "lettered isolator sides fall back to channel digits",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "        if {lettered.get(p) for p in actual if re.fullmatch(r'(?:VCC|VDD)[AB]', names[p], re.I)} == {'A', 'B'}:\n",
+  "new": "        if False:\n"
+ },
+ {
+  "id": "M1122",
+  "name": "a native no-connect flag does not soften NET-A01",
+  "file": "scripts/lint.py",
+  "old": "                if nds[0] in no_connect and (self.graph.kind(ref) in (CONNECTOR, pw.TESTPOINT)\n",
+  "new": "                if False and (self.graph.kind(ref) in (CONNECTOR, pw.TESTPOINT)\n"
+ },
+ {
+  "id": "M1123",
+  "name": "a no-connect flag softens NET-A01 on an input of unknown direction",
+  "file": "scripts/lint.py",
+  "old": "                                             or self.graph.native_pintype.get(nds[0]) in NC_OPEN_PINTYPES):\n",
+  "new": "                                             or True):\n"
+ },
+ {
+  "id": "M1124",
+  "name": "an MPN /NC ordering suffix marks the part DNP",
+  "file": "scripts/parse_kicad.py",
+  "old": "    return '' if mpn and letters(text) == letters(mpn) else text\n",
+  "new": "    return text\n"
+ },
+ {
+  "id": "M1125",
+  "name": "a plus sign vanishes from function ids",
+  "file": "scripts/checkers/planutil.py",
+  "old": "    value = str(value or '').replace('+', '-PLUS-')\n",
+  "new": "    value = str(value or '')\n"
+ },
+ {
+  "id": "M1126",
+  "name": "a carried function binding is not rebuilt as a member",
+  "file": "scripts/plan_review.py",
+  "old": "            if bound is not None and bound.get('circuit') and check['id'] not in {m['check_id'] for m in bound['members']}:\n",
+  "new": "            if False:\n"
+ },
+ {
+  "id": "M1127",
+  "name": "a row bound to a missing frame passes silently",
+  "file": "scripts/plan_review.py",
+  "old": "        if stale:\n            raise ValueError(",
+  "new": "        if stale and False:\n            raise ValueError("
+ },
+ {
+  "id": "M1128",
+  "name": "an isolator supply group takes both sides' returns",
+  "file": "scripts/decoupling.py",
+  "old": "                if len(side) == 1:   # an isolator's supply pairs with its own side's return (VCCA/GNDA), never across\n",
+  "new": "                if False:\n"
+ },
+ {
+  "id": "M1129",
+  "name": "MAX14850 is not recognised as a digital isolator",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "|CA-IS\\d|MAX1485\\d)', mpn)",
+  "new": "|CA-IS\\d)', mpn)"
+ },
+ {
+  "id": "M1130",
+  "name": "merge4 no-PASS guard accepts a PASS proposal",
+  "file": "evals/seeded_bench/run.py",
+  "old": "if not rows or any(c.get('proposal', {}).get('result') == 'PASS' for c in rows):",
+  "new": "if not rows:"
+ },
+ {
+  "id": "M1131",
+  "name": "NC-flag seed keeps the native no-connect flag",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out['no_connect_nodes'] = [n for n in out['no_connect_nodes'] if n != 'J6.38']",
+  "new": "out['no_connect_nodes'] = list(out['no_connect_nodes'])"
  }
 ]

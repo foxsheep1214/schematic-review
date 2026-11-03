@@ -27,7 +27,7 @@ SECTION_SCHEMA_VERSION = 4
 # Datasheet-verified device kinds (intent.device_kinds) that have no IC supply pins to bypass.
 NO_SUPPLY_KINDS = {'bridge_rectifier', 'transformer', 'connector'}
 # Netlist kinds that carry no IC supply pin (checkers.netgraph kinds).
-NO_SUPPLY_PARTS = {'inductor', 'transformer', 'ferrite', 'resistor', 'capacitor', 'fuse', 'bridge_rectifier'}
+NO_SUPPLY_PARTS = {'connector', 'testpoint', 'switch', 'jumper', 'inductor', 'transformer', 'ferrite', 'resistor', 'capacitor', 'fuse', 'bridge_rectifier'}
 REQUIREMENT_KINDS = {'connection', 'capacitance', 'rating'}
 # 组用途：普通旁路；按原厂条款不需要直接电容（如高压启动/检测脚）；片内稳压器输出电容（如 V5/VCAP）。
 # 后两类必须有对应的 connection 条款作出处。
@@ -59,7 +59,9 @@ def parse_capacitance(value):
     """
     if not isinstance(value, str):
         return None
-    match = CAP_TOKEN.match(value.strip())
+    token = re.sub(r'(?<=\d),(?=\d)', '.', value.strip())
+    token = re.sub(r'^C_?(?=\d)', '', token)   # CAP_TOKEN still requires an explicit unit
+    match = CAP_TOKEN.match(token)
     if not match:
         return None
     a, exponent, unit, b, unit_b, c, unit_c, fraction = match.groups()
@@ -276,7 +278,9 @@ class Inventory:
                               (r'^L\d', 'inductor'), (r'^JP\d', 'jumper')):
             if re.match(pattern, ref, re.I):
                 return kind
-        return 'unmodeled'
+        from part_words import classify
+        kind, basis = classify(ref, self.parts.get(ref, {}), len(self.nodes.get(ref, ())))
+        return kind if basis == 'part-keyword' and kind in NO_SUPPLY_PARTS else 'unmodeled'
 
     def two_terminal(self, ref):
         """A two-pin part (diode/TVS/LED/thermistor/varistor/fuse...) or a pinless symbol (mounting hole,
@@ -325,7 +329,8 @@ class Inventory:
         groups = []
         for ref, device in sorted(self.devices.items()):
             # A verified connector, bridge or transformer has no IC supply to bypass; an explicit entry still wins.
-            explicit_only = self.verified_kinds.get(ref, {}).get('kind') in NO_SUPPLY_KINDS
+            explicit_only = (self.verified_kinds.get(ref, {}).get('kind') in NO_SUPPLY_KINDS
+                             or self.kind(ref) in {'connector', 'testpoint'})
             by_net = defaultdict(list)
             for node in supply_pins(ref, device.get('pins')):
                 by_net[self.pin2net.get(node) or 'UNCONNECTED:' + node].append(node)
@@ -365,11 +370,25 @@ class Inventory:
                 if self.role(node) == 'power':
                     by_net[self.pin2net.get(node) or 'UNCONNECTED:' + node].append(node)
             returns = sorted(n for n in nodes if self.role(n) == 'return')
+            sides = self.isolation_sides(ref)
             for net, supplies in sorted(by_net.items()):
+                own = returns
+                side = [set(s) for s in sides if any(n.partition('.')[2] in s for n in supplies)]
+                if len(side) == 1:   # an isolator's supply pairs with its own side's return (VCCA/GNDA), never across
+                    own = [n for n in returns if n.partition('.')[2] in side[0]]
                 groups.append({'id': 'candidate:' + ref + ':' + net, 'ref': ref,
-                               'supply_nodes': supplies, 'return_nodes': returns,
+                               'supply_nodes': supplies, 'return_nodes': own,
                                'origin': 'candidate', 'requirements': []})
         return groups
+
+    def isolation_sides(self, ref):
+        """Physical pin sets of a resolved two-sided isolating part (checkers/isolation_sides), else []."""
+        from checkers import isolation_sides
+        from checkers.netgraph import NetGraph
+        if not hasattr(self, '_graph'):
+            self._graph = NetGraph(self.db)
+        model = isolation_sides.model(self._graph, ref)
+        return [s['pins'] for s in model['sides']] if model and model.get('resolved') else []
 
     def device_inventory(self):
         output = []

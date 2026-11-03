@@ -9,16 +9,17 @@ import catalog
 import check_key
 import circuit_decisions
 import device_kinds
+import part_words as pw
 import protective_clamps
 import row_owner
 from audit_datasheets import datasheet_entry_for_ref
-from checkers import powertree
+from checkers import powertree, isolation_sides
 from checkers.netgraph import RAIL_RE, NetGraph, is_analog_sense_pair, is_ground
-from part_words import (BJT, BRIDGE_RECTIFIER, CAPACITOR, COMMON_MODE_CHOKE, CONNECTOR, COUPLED_INDUCTOR, DIODE, FUSE, IC,
+from part_words import (BJT, BRIDGE_RECTIFIER, CAPACITOR, COMMON_MODE_CHOKE, CONNECTOR, COUPLED_INDUCTOR, CRYSTAL, DIODE, FUSE, IC,
                         INDUCTOR, MOSFET, OPTO,
                         PASSIVE_LINKS, RESISTOR, SWITCH, TESTPOINT, TRANSFORMER, TVS, UNKNOWN, ZENER, ELECTROLYTIC_RE,
                         LED_RE, NTC, NTC_RE, POLARIZED_SYMBOL_RE, TANTALUM_RE, VARISTOR, VARISTOR_RE, name_matches,
-                        normalize)
+                        normalize, usb_connector_type)
 from checkers.netgraph import is_ground as netgraph_ground
 from checkers.planutil import frame_slug
 from electrical_contract import bounded, finite
@@ -78,9 +79,12 @@ def _database_blobs(db):
     for node, pin in db.get('pinname', {}).items():
         blobs.append(f'PIN:{node}:{pin}')
     for ref, part in db.get('parts', {}).items():
+        if pw.mechanical_part(part):
+            continue
+        footprint = re.sub(r'DIN[-_ ]?\d{3,}', '', str(part.get('jedec', '')), flags=re.I)
         blobs.append('PART:' + ':'.join([
             ref, str(part.get('part', '')), str(part.get('value', '')),
-            str(part.get('prim', '')), str(part.get('jedec', ''))]))
+            str(part.get('prim', '')), footprint]))
     return blobs
 
 def _feature_hits(db, pattern):
@@ -168,12 +172,12 @@ ENABLE_LINK_CRITERION = ('光耦 %s 使能或关断 %s（%s 脚）：核上电�
 # Circuit-rule preconditions (consistency proposals of 2026-10-23, item 2; catalog.SUBJECT_REQUIRES): the pins and
 # parts each one looks for. A regulator output pin of an IC in the circuit stands for an internal loop and its
 # output-capacitor condition; a feedback or drive pin also counts on an IC outside the circuit wired to it.
-FEEDBACK_NAME_RE = re.compile(r'(V?FB\w*|COMP\w*|VCTRL|VC|ITH|ADJ|VSENSE|VOSNS|FEEDBACK)$', re.I)
+FEEDBACK_NAME_RE = re.compile(r'((?:BUCK\d+_)?V?FB\w*|COMP\w*|VCTRL|VC|ITH|ADJ|VSENSE|VOSNS|FEEDBACK)$', re.I)
 DRIVE_NAME_RE = re.compile(r'(GATE\w*|G?DRV\w*|GD\w*|HO|LO|HG|LG|OUT[AB]?|SW\d*|LX\d*|PH|PHASE\d*)$', re.I)
-REGULATOR_OUT_RE = re.compile(r'(V?OUT\d*|VO|VREG\w*)$', re.I)
+REGULATOR_OUT_RE = re.compile(r'((?:LDO\d*_)?V?OUT\d*|VO|VREG\w*|MUXSW_VOUT|BUCK\d+_VOUT)$', re.I)
 PROTECT_NAME_RE = re.compile(r'(UV\w*|OV\w*|ILIM\w*|OCP\w*|OTP\w*|FAULT\w*|EN|ENABLE|SHDN|SHUTDOWN)$', re.I)
 ANALOG_NAME_RE = re.compile(r'(AIN\w*|ADC\w*|VREF\w*|REF(IN|OUT)?|[+-]IN\w*|IN[+-PN]\w*|V?IN[AB]?[+-]|OPA\w*|CS[PN+-]\w*'
-                            r'|ISENSE\w*|ISNS\w*|NTC\w*|THERM\w*|TEMP\w*|VTEMP|TS)$', re.I)
+                            r'|SR[PN]|SENSE\d+[PN]|IN\d+[PN]|ISENSE\w*|ISNS\w*|NTC\w*|THERM\w*|TEMP\w*|VTEMP|TS)$', re.I)
 # a controller's enable/disable/UVLO pin is a start pin too (R8: PFC U201.DIS formed STARTUP-U201.DIS and was asked nothing)
 START_NAME_RE = re.compile(r'(N?RST\w*|N?RESET\w*|MR|POR\w*|BOOT\w*|STRAP\w*|EN|CHIP_EN|CHIP_PU|PWRON\w*|MODE\d*|CFG\w*'
                            r'|ENABLE|EN_?UVLO|UVLO|INH|INHIBIT|DIS|DISABLE|SHDN|N?SD)$', re.I)
@@ -235,6 +239,13 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
                 and any(name_matches(p, names.get(ref + '.' + pin), pin) for p in patterns)]
         return list(dict.fromkeys(hits))
 
+    def family_ports(which):
+        """ICs of the circuit whose exact family pin table names a switch/feedback port wired here (TPS65023 L1-L3,
+        TOPSwitch DRAIN/CONTROL), whatever the symbol's short pin names (boards-merge4)."""
+        return [ref for ref, pin in ic_pins(False)
+                if pw.supply_port(graph.parts.get(ref), names.get(ref + '.' + pin), pin, which)
+                and not is_ground(graph.pin2net.get(ref + '.' + pin, ''))]
+
     def dividers():
         """ICs with a signal pin on a circuit net that two circuit resistors divide (to two different nets)."""
         hits = []
@@ -266,9 +277,10 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
                 found.append(ref)
     elif requires == 'FEEDBACK_PIN':   # a loop: a feedback pin, an output sensed through a divider or an optocoupler
         found = list(dict.fromkeys(with_pin((FEEDBACK_NAME_RE,), adjacent=True) + with_pin((REGULATOR_OUT_RE,)) + dividers()
-                                   + [ref for ref in fitted if graph.kind(ref) == OPTO]))
+                                   + [ref for ref in fitted if graph.kind(ref) == OPTO] + family_ports('feedback')))
     elif requires == 'SWITCH_PIN':
-        found = list(dict.fromkeys(with_pin((DRIVE_NAME_RE,), adjacent=True) + with_pin((REGULATOR_OUT_RE,))))
+        found = list(dict.fromkeys(with_pin((DRIVE_NAME_RE,), adjacent=True) + with_pin((REGULATOR_OUT_RE,))
+                                   + family_ports('switch')))
     elif requires == 'CONNECTOR_INPUT':   # the power path: an IC's signal pin on a connector is no input path
         reach = set()
         for net in {n for ref in fitted if graph.kind(ref) != IC for n in graph.nets_of(ref) if not is_ground(n)} | (
@@ -288,7 +300,23 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
         found = list(dict.fromkeys(found + sensing_ntcs() + dividers() + with_pin((PROTECT_PIN_RE, SENSE_NAME_RE))))
     elif requires == 'ANALOG_PIN':
         found = sorted(set(with_pin((ANALOG_NAME_RE,))) | set(sensing_ntcs())
-                       | {ref for ref in ics if graph.role_kind(ref) == 'opamp_comparator'})
+                       | {ref for ref in ics if graph.role_kind(ref) in ('opamp_comparator', 'adc_dac')}
+                       | {ref for ref in ics if re.search(r'BQ(?:27441|27520)|PAC1954', text_of(ref), re.I)
+                          and graph.named_pins(ref, re.compile(r'^(?:BAT|VBAT|SR[PN]|V?SENSE\d*[PN]?)$', re.I))})
+        found += [r for r in fitted if graph.kind(r) == CONNECTOR and any(
+            re.search(r'(?:^|[_/])ADC\d*(?:_IN\d+)?$', str(names.get(r + '.' + pin, '')), re.I)
+            for pin in graph.pins_of(r))]
+        unread = sorted(set(unread) | (set(dividers()) - set(found)))  # GPIO mux/function still needs evidence
+    elif requires == 'USB_CC':
+        ports = [r for r in fitted if graph.kind(r) == CONNECTOR]
+        found = [r for r in ports if usb_connector_type(graph.parts[r]) == 'Type-C']
+        found += [r for r in ics if graph.role_kind(r) == 'pd_controller' or
+                  graph.named_pins(r, re.compile(r'^CC[12]$', re.I))]
+        unread += [r for r in ports if usb_connector_type(graph.parts[r]) is None]
+    elif requires == 'PASSIVE_CRYSTAL':
+        found = [r for r in fitted if graph.kind(r) == CRYSTAL]
+    elif requires == 'RTC_BACKUP':
+        found = [r for r in fitted if re.search(r'RTC|REAL.?TIME|DS323\d|PCF85\d\d|RV.?3028', text_of(r), re.I)]
     elif requires == 'START_PIN':
         found = sorted(set(with_pin((START_NAME_RE,))) | {ref for ref in ics if graph.role_kind(ref) == 'mcu'})
     elif requires == 'RESCUE_PIN':
@@ -419,13 +447,27 @@ class CircuitPlanning:
         names = dict(self.db.get('declared_pinname') or {}, **(self.db.get('pinname') or {}))
         for circuit in circuits:
             refs = circuit['refs']
+            if tuple(catalog.CANDIDATE_STATES.get(kind.name, ())) == ('idle', 'active'):
+                self.diagnostics.append({'code': 'DEFAULT_CIRCUIT_STATES', 'circuit': circuit['id'],
+                                         'states': ['idle', 'active'],
+                                         'detail': '默认状态，未经需求确认；按需求核对状态覆盖，不作需求依据'})
             gaps = [f'datasheet:{ref}' for ref in refs
                     if not (datasheet_entry_for_ref(self.datasheet_audit, ref) or {}).get('status') == 'AVAILABLE']
             gaps += [f'unknown ref:{ref}' for ref in refs if ref not in self.db.get('parts', {})]
             trigger = f'intent.circuits:{circuit["citation"]}'
             asked = {}   # rule -> (object ref, requires) for the rules whose precondition holds
             not_asked[circuit['id']] = []
+            side_models = [isolation_sides.model(graph, ref, self.kind_intent) for ref in refs] if kind.name == 'ISOLATION' else []
+            non_digital = {'transformer', 'ethernet_magnetics', 'isolated_dcdc', 'isolated_amplifier', 'relay'}
+            passive_barrier = bool(side_models) and any(m for m in side_models) and all(
+                (m is not None and m['mechanism'] in non_digital) or graph.kind(ref) in (CAPACITOR, RESISTOR, CONNECTOR, TESTPOINT)
+                for ref, m in zip(refs, side_models))
             for rule in kind.subjects:
+                if passive_barrier and rule in ('RST-T04', 'SIG-C09', 'SIG-C13', 'SIG-C17', 'PRO-C01'):
+                    not_asked[circuit['id']].append({'rule': rule, 'aspect': catalog.title(rule),
+                        'requires': 'active digital isolation or protection mechanism',
+                        'why': '被动变压器侧别只证明隔离对象；没有数字默认态/速率/CMTI或防护协调链'})
+                    continue
                 if not catalog.baseline_asks(rule, self.intent):
                     continue
                 requires = catalog.SUBJECT_REQUIRES.get((kind.name, rule))
@@ -534,8 +576,8 @@ class CircuitPlanning:
 
         i2c_nets = set()
         for net, nodes in nets.items():
-            if I2C_RE.search(net) or any(
-                    I2C_RE.search(str(pinname.get(node, ''))) for node in nodes):
+            if not re.search(r'(?:^|[/_-])I2S(?:[/_-]|$)', net, re.I) and (I2C_RE.search(net) or any(
+                    I2C_RE.search(str(pinname.get(node, ''))) for node in nodes)):
                 i2c_nets.add(net)
         # one device and its test pads is a fixture access, not a bus (R8: U601 GPIO to TP601): no on-board pull-up is asked,
         # SIG-T02's fixture-only criterion covers it; a second device or a pull-up keeps the check, as in i2c_topology
@@ -553,7 +595,7 @@ class CircuitPlanning:
         # 连接器：pin map、对端定义、未用针处置与对外防护逐个一项。
         connector_graph = NetGraph(board_intent.graph_db(db, self.kind_intent))
         for ref, part in sorted(db.get('parts', {}).items()):
-            if part.get('nc') or not (CONNECTOR_RE.match(ref) or connector_graph.kind(ref) == CONNECTOR):
+            if part.get('nc') or connector_graph.kind(ref) != CONNECTOR:
                 continue
             connector_trigger = [f'refdes:{ref}',
                                  f'connector-kind:{connector_graph.basis(ref)}']
@@ -658,6 +700,64 @@ class CircuitPlanning:
                 # a protective clamp's working voltage and temperature grade are its PRO-E02 row (2026-10-26)
                 self._ready_check('DEV-C05', {'ref': ref}, gaps + self._materials_gap(['requirements']), trigger)
 
+        # Every fitted passive crystal has its own load/start-up review, regardless of USB/CLOCK ownership.
+        for ref in sorted(db.get('parts', {})):
+            if not connector_graph.is_fitted(ref) or connector_graph.kind(ref) != CRYSTAL:
+                continue
+            if any(not netgraph_ground(net) and not re.fullmatch(r'GND\d*|VSS|CASE|SHIELD', str(connector_graph.pinname.get(ref + '.' + pin, '')), re.I)
+                   and (connector_graph.native_pintype.get(ref + '.' + pin) == 'power_in'
+                        or re.fullmatch(r'VDD|VCC|VCCO', str(connector_graph.pinname.get(ref + '.' + pin, '')), re.I))
+                   for pin, net in connector_graph.pins_of(ref).items()):
+                continue  # an active oscillator has a supply; no passive load network is required
+            if any(c['rule'] == 'CLK-C01' and ref in
+                   ([c.get('object', {}).get('ref')] + c.get('object', {}).get('refs', [])) for c in self.checks):
+                continue
+            self._ready_check('CLK-C01', {'ref': ref, 'refs': [ref], 'nets': connector_graph.nets_of(ref)},
+                              self._materials_gap(['datasheets', 'requirements']), ['passive-crystal:' + ref])
+        for ref in sorted(connector_graph.parts):
+            if not connector_graph.is_fitted(ref) or connector_graph.kind(ref) != IC:
+                continue
+            outputs = connector_graph.named_pins(ref, REGULATOR_OUT_RE)
+            family = pw.supply_ports(connector_graph.parts[ref])
+            if family:   # every output port of the exact family pin table is its own supply node (boards-merge4)
+                outputs.update({ref + '.' + pin: net for pin, net in connector_graph.pins_of(ref).items()
+                                if pw.supply_port(connector_graph.parts[ref], pinname.get(ref + '.' + pin), pin, 'outputs')
+                                and not is_ground(net)})
+            if (connector_graph.role_kind(ref) != 'regulator' and not family
+                    and not re.search(r'PF3000|BD71847', str(connector_graph.parts[ref].get('part', '')), re.I)):
+                continue
+            outputs.update(connector_graph.named_pins(ref, re.compile(r'^BUCK\d+_FB$', re.I)))
+            seen_outputs = set()
+            for node, net in sorted(outputs.items()):
+                if net in pseudo or net in seen_outputs:
+                    continue
+                seen_outputs.add(net)
+                row = self._ready_check('PWR-C04', {'ref': ref, 'node': node, 'net': net},
+                                        ['datasheet:该输出的有效容量、ESR、启动与内部补偿条件'], ['regulator-output:' + node], key=node)
+                row['question'] = f'{ref} 的逐输出 {node}（{net}），输出电容有效容量/ESR与启动/补偿条件是否满足该路手册窗口'
+        analog_members = {r for c in self.intent.get('circuits', []) if c.get('type') == 'ANALOG' for r in c.get('refs', [])}
+        for node, name in sorted(pinname.items()):
+            ref, _, pin = node.partition('.')
+            if not connector_graph.is_fitted(ref) or connector_graph.kind(ref) not in (IC, CONNECTOR):
+                continue
+            model = str(db['parts'][ref].get('part', ''))
+            native = str((db.get('native_pintype') or {}).get(node) or (db.get('pintype') or {}).get(node) or '').lower()
+            not_input = native in ('power_in', 'power_out', 'power', 'output', 'out', 'ground')
+            sense = not not_input and (name_matches(re.compile(r'^(?:ADC\w*|AIN\w*|SR[PN]|SENSE\d+[PN+-]|IN\d+[PN])$', re.I), name, pin)
+                                      or bool(re.search(r'(?:^|[_/])ADC\d*(?:_IN\d+)?$', str(name), re.I)))
+            sense |= bool(re.search(r'BQ(?:27441|27426|27520)', model, re.I) and normalize(name) in ('BAT', 'VBAT', 'TS'))
+            net = pin2net.get(node)
+            divider_hint = False
+            if not sense and not not_input and ref in analog_members and net:
+                legs = [far for r, far in connector_graph.neighbors(net, {RESISTOR})]
+                divider_hint = any(is_ground(n) for n in legs) and any(not is_ground(n) and powertree.PowerTree(connector_graph).is_rail(n) for n in legs)
+            if (sense or divider_hint) and net and net not in pseudo:
+                row = self._ready_check('ANA-C03', {'ref': ref, 'node': node, 'net': net},
+                                        ['datasheet:ADC输入量程、共模与掉电注入限值', 'requirements:检测输入包络'],
+                                        ['analog-input:' + node], key=node)
+                if divider_hint:
+                    row['required_inputs'].append('datasheet/mode:该 GPIO 的 ADC 复用能力与实际测量用途；目前仅有已声明 ANALOG 电路中的分压拓扑')
+                row['question'] = ('该分压接点是否作 ADC 检测；若是，' if divider_hint else '') + f'{node}（{name}，{net}）的输入量程、共模/基准误差及异常/掉电时钳位注入电流是否满足限值'
         self.plan_threshold_checks(connector_graph)
 
     def _bom_fields(self, ref):
@@ -784,7 +884,7 @@ class CircuitPlanning:
         graph = NetGraph(board_intent.graph_db(self.db, self.kind_intent))
         circuits = self.intent.get('circuits', [])
         owners = row_owner.part_owners(circuits)
-        fitted = [ref for ref in sorted(graph.parts) if graph.is_fitted(ref)]
+        fitted = [ref for ref in sorted(graph.parts) if graph.is_fitted(ref) and graph.pins_of(ref)]
         for rule in catalog.OWNED_PART_RULES:
             wanted = [ref for ref in fitted if OWNED_PART_KINDS[rule](graph.kind(ref))]
             gaps = self._materials_gap(OWNED_PART_MATERIALS[rule])

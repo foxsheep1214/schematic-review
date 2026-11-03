@@ -13,11 +13,11 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 
 | 文件 | 谁写 | 写在哪一步 | 格式版本 | 内容 |
 |---|---|---|---|---|
-| `db.json` | 工具 | ① 读入 | — | 网表、BOM 列、页、符号脚：图上实际是什么 |
+| `db.json` | 工具 | ① 读入 | — | 网表、BOM 列、页、符号脚：图上实际是什么；KiCad 自定义字段、原始 Value、Val 优先的电气值及解码出处；同板 R 前缀歧义保留候选并阻止数值推断 |
 | `requirement_source`（需求原文抄录） | 工具 | ① 读入 | 1 | 需求文档逐字抄录与 sha256 |
 | `datasheet-audit.json` | 工具 | ① 读入 | — | 每颗物料的资料是否找到、是否核实 |
 | `intent.json` | 审查员 | ①② 的输入 | 5 | 需求理解、需求澄清（问用户的问题与答复）、任务剖面、电源轨、器件类别与配置组、电路取舍、装配状态、规则缺口、产品基线（`guideline_baseline`） |
-| `record/circuit-candidates.json` | 工具 | ② 出计划 | 2 | 候选电路及成员 |
+| `record/circuit-candidates.json` | 工具 | ② 出计划 | 2 | 候选及带物理网的成员、按角色持有/唯一所属、隔离侧别证据；接口附默认工作态（计划标“默认状态，未经需求确认”） |
 | `review-plan.json` | 工具 | ② 出计划 | 7 | 功能树、每个检查项检查、功能框架、各检查器清单、接口；设计准则库有规则时另有 `guidelines`（适用的共用设计准则与覆盖） |
 | `review-results.json` | 审查员 | ③ 判断 | 15 | 功能判定（条件及其位号 `refs`、计算、余量及其推法与公差端、开放项及其单侧定界、失败项）和手填的检查项；绑定功能的检查项不落盘，门禁、报告、打包、对比读取时由功能派生（`results_model.materialize`），审查员的绑定或注记只留 `{id, function_id, aspect}` / `{id, 注记}` 残根 |
 | `review-gate.json` | 工具 | ④ 校验 | — | 对账结果、阻断项、待办 |
@@ -38,8 +38,8 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 
 | 步骤 | 入口 | 工具 | 库 |
 |---|---|---|---|
-| ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`device_kinds.py`（器件类别登记表）、`part_words.py`、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
-| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`guideline_criteria.py`、`stress_check.py`（共用应力核对：降额限值、应力判法、挑规则）（共用设计准则库：校验、选用、覆盖；与 ASG 同字节）、`checkers/` |
+| ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`device_kinds.py`（器件类别登记表）、`part_words.py`（器件身份、PCB 铜与有出处的精确型号脚方向）、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
+| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`（原生事实不变，给 NetGraph 附完整有出处脚表的缺名解析与冲突）、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`guideline_criteria.py`、`stress_check.py`（共用应力核对：降额限值、应力判法、挑规则）（共用设计准则库：校验、选用、覆盖；与 ASG 同字节）、`checkers/` |
 | ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
 | ④ 校验 | `validate_review.py` | `migrate_results.py` | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`validate_remediation.py`、`review_engine.py` |
 | ⑤ 出报告 | `render_report.py`、`pack_review.py` | — | `report_html.py` |
@@ -55,6 +55,11 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 
 | 日期 | 决定 | 为什么 |
 |---|---|---|
+| 2026-11-02 | 合并步 4：读入层料号 NC 订货后缀不当 DNP；PowerTree 穿过一颗可读电阻追到来源记“弱驱动”，按型号脚表把多输出 PMIC/离线开关的输出端口当来源；隔离 DC/DC 模块与 MAX14850 按两侧建域、地名分压中点不当参考地；双 MOS 按栅极序号拆通道；功能 ID 可逆转义，绑到不存在框架报内部错误 | 用户合并步 4：86 块板剩余的系统性误报来自识别与建图，只调整识别和建图，不改判断职责或格式版本 |
+| 2026-11-02 | 合并步 3：读入层只解明确单位和欧式小数，同板 R330 歧义保留原值与两种候选；NetGraph 在原生事实之外应用已核缺名脚义、精确 MC14093 方向与 PCB 铜的装配语义；防护清单按物理通道派项，接口沿有限串阻保留实际 IC 端点/I/O 域/路径，未知供电不产生零伏预判 | 用户：用更多的实际电路板来驱动问题的改进；解析/连图负责证据与对象，工作窗、残压、资格和准出仍由既有审查步骤判定；共用层与 SKILL 不改 |
+| 2026-11-02 | 已核完整物理脚表贯通 NetGraph：原生有名优先、缺名补义、冲突显式记录；分析别名不改原生索引与输入指纹，清单上下文保存脚表出处 | 用户合并步 3：已核脚表贯通到连接图；只调整识别，不改变判断职责或格式版本 |
+| 2026-11-02 | 按用户合并步 2A 授权，候选以磁性储能/控制或线性调整拓扑定分立变换级；共享供电截止、供电电容引用不限而所属唯一，reject 释放后可有据 add；`checkers/isolation_sides.py` 按厂家物理脚模型独立于单一器件角色提供两侧参考/输出源，未知不并域，隔离跨侧连接器也进对象；驱动源发现与低阻等势分开，沿用现有格式的派生证据 | 共 VCC 误扩散、拒绝后成员仍 held、AMC3311/隔离 DC/DC 并地、1 MΩ 泄放和4.7 kΩ驱动被混作连通/断路；用户：候选电路的持有与重归、隔离器件的两侧模型 |
+| 2026-11-02 | 按用户合并步 1 授权，读入层保留 KiCad fields/原始 Value，以 Val 优先解电气值并记字段与方法，未知保留 unknown；计划默认状态须标未经需求确认 | 封装化库名不能代替阻值，接口空态不能阻断计划，也不能伪造需求 |
 | 2026-10-20 | 判断的单位是功能，不是检查项；结果格式 4：缺口只写在功能的开放项上一次，检查项由功能派生并用 `open_ref` 指向它 | 逐项判断让同一缺口抄在几十项，结论互相矛盾 |
 | 2026-10-21 | 计划按功能树组织，每个检查项恰有一个所属；电路由候选和决定推出，不手画 | 两份记录对不上，配对率只有一半 |
 | 2026-10-22 | 只认四类输入，设计方文档不进 | 审查要独立，不能让设计文档设定判据 |
@@ -130,6 +135,10 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 2026-11-02 | 设计准则库 1.6.0（344 条）：新增 G01-051～054，由 `DC_24V` 触发；只有 G01-054（GB/T 17799.2 表 2、表 3）带数值，电压窗、反接、中断都要求项目写明，不设默认值；新增检查项 `PWR-C27`，核器件范围覆盖已声明的 24 V 输入窗，`BASIS` 把 G01-051 映射到 `PWR-D04` 与 `PWR-C27`，G01-052、053、054 分别映射到 `PWR-T05`、`PWR-C18`、`PRO-C01` | 用户 2026-11-02“按建议全部入库”。IEC 61131-2 与 IEC 61000-4-29 未取得原文，延续 2026-10-31 的决定不写 24 V 电压窗与 PS1/PS2；现有 `PWR-C17`、`PWR-C21` 写死了 −48 V 和军车 28 V 的数值，核不了项目声明的窗 |
 | 2026-11-02 | 设计准则库 1.6.1（344 条）：G01-053 按 GB/T 17626.29-2006 修订，要求项目写明选定的暂降与中断组合，中断分高阻抗和低阻抗，仍不设默认等级；`PWR-C18` 增加 24 V 的组合、低阻抗反灌与恢复过压核对 | 用户 2026-11-02“入库并修订”。该标准 §1 把严酷度留给技术委员会、用户或制造商，只能提供可选等级；`PWR-T01` 按电源轨生成，不能挂到 `DC_24V` 的检查项 |
 | 2026-11-02 | 设计准则库 1.7.0（353 条）：86 块开源板归因后新增 G02-036～039（器件身份、文档一致、占位值、推荐工作条件）、G03-059（前馈电容窗）、G04-101～104（官方脚表、未用脚处置、USB 外围、Type-C CC），修订 12 条（USB 四条限定到 Type-C/PD，G04-036/037/039 隔离类型不展开到磁珠，G04-091 改厂家建议，G05-030/031 逐通道并追到滤波后器件）；`BASIS` 把新条目挂到 `DEV-D01/D02/D04/D05`、`DOC-D01/Q01`、`NET-A01/A07`、`DEV-C01`、`PWR-C15`、`SIG-C05` | 用户 2026-11-02“按草案入库”。草案与 14 条裁决见 `docs/proposals/criteria-from-boards-2026-11-02.md`；没有新建检查项，新准则先由已有检查项承接 |
+<<<<<<< HEAD
+=======
+
+>>>>>>> boards-program
 
 ## 四、规则维护
 

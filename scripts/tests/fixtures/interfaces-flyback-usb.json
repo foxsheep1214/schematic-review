@@ -37,7 +37,7 @@
       }
      ],
      "net": "AC_L",
-     "power_node": null
+     "power_node": "ac-port-pin"
     },
     {
      "cross_supply": false,
@@ -200,7 +200,7 @@
       }
      ],
      "net": "VBUS",
-     "power_node": null
+     "power_node": "supply-pin"
     }
    ],
    "owners": [
@@ -359,7 +359,44 @@
       }
      ],
      "net": "VBUS",
-     "power_node": null
+     "power_node": "supply-pin"
+    },
+    {
+     "cross_supply": false,
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "Q2.1",
+       "role": "RECEIVER",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "SEC",
+       "owner": "USB-J2",
+       "pin": "R8.2",
+       "role": "PASSIVE",
+       "supply": []
+      }
+     ],
+     "net": "VBUS_G",
+     "power_node": null,
+     "series_endpoints": [
+      {
+       "basis": "pin-type",
+       "domain": "SEC",
+       "net": "PORT_G",
+       "owner": "ANALOG-U5",
+       "pin": "U5.5",
+       "role": "DRIVER",
+       "series_parts": [
+        "R8"
+       ],
+       "supply": []
+      }
+     ]
     }
    ],
    "owners": [
@@ -436,10 +473,64 @@
       }
      ],
      "net": "FLT_A",
-     "power_node": null
+     "power_node": null,
+     "series_endpoints": [
+      {
+       "basis": "pin-name",
+       "domain": "SEC",
+       "net": "FLT_DRV",
+       "owner": "ANALOG-U5",
+       "pin": "U5.8",
+       "role": "BIDIRECTIONAL",
+       "series_parts": [
+        "R43"
+       ],
+       "supply": []
+      }
+     ]
+    },
+    {
+     "cross_supply": false,
+     "endpoints": [
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "POWER_PROTECTION-U1.FAULT",
+       "pin": "R42.1",
+       "role": "PASSIVE",
+       "supply": []
+      },
+      {
+       "basis": "part-kind",
+       "domain": "PRI",
+       "owner": "POWER_PROTECTION-U1.FAULT",
+       "pin": "U9.3",
+       "role": "DRIVER",
+       "supply": []
+      }
+     ],
+     "net": "FLT_C",
+     "power_node": null,
+     "series_endpoints": [
+      {
+       "basis": null,
+       "domain": "PRI",
+       "net": "FLT",
+       "owner": "POWER_CONVERTER-U1",
+       "pin": "U1.7",
+       "role": null,
+       "series_parts": [
+        "R42"
+       ],
+       "supply": [
+        "VCC"
+       ]
+      }
+     ]
     }
    ],
    "owners": [
+    "ANALOG-U5",
     "POWER_CONVERTER-U1",
     "POWER_PROTECTION-U1.FAULT",
     "USB-J2"

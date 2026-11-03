@@ -1,0 +1,30 @@
+{
+  "lane": "lane-1",
+  "boards": [
+    "antmicro--jetson-agx-thor-baseboard",
+    "solderedelectronics--rs-485-transceiver-breakout-hardware-design",
+    "oresat--oresat-c3-hardware",
+    "greatscottgadgets--amalthea-hardware",
+    "sparkfun--sparkfun_gnssdo",
+    "vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project",
+    "groupgets--kimchi-micro",
+    "tinkerforge--evse-v2-bricklet",
+    "solderedelectronics--breadboard-power-supply-board-hardware-design",
+    "antmicro--poe-usb-c-pd-converter",
+    "s59mz--kicad-led-drv-pmod",
+    "alia5--piccante",
+    "mlab-modules--qfhmix01",
+    "rapidanalysis--xerxes",
+    "badgineer--mp2-esc",
+    "blkburn--zigbee",
+    "neumi--fastlogic",
+    "mlab-modules--solarmini01",
+    "antmicro--hdmi-mipi-bridge",
+    "scottbez1--faderbuddy",
+    "brainsmoke--usb2_hub",
+    "spirit532--studio_mic",
+    "a2r-lab--crazyflie_fpga_deck",
+    "g-pereira--greenmobi-bms",
+    "loredati-svg--tpa3116d2-class-d-amplifier"
+  ]
+}

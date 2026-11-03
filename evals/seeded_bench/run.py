@@ -50,13 +50,25 @@ def below_baseline(summary, baseline):
     return worse
 
 
-def lint(sut, db, work):
+def lint(sut, db, work, intent=None):
     dbp, lp, pp = work / 'db.json', work / 'lint.json', work / 'plan.json'
     dbp.write_text(json.dumps(db), encoding='utf-8')
     for p in (lp, pp):
         p.unlink(missing_ok=True)
+    extra = []
+    if intent is not None:
+        import copy
+        from board_intent import input_fingerprint
+        from plan_review import rail_candidates
+        bound = copy.deepcopy(intent)
+        for net in rail_candidates(db, bound):
+            bound.setdefault('power_rails', {}).setdefault(net, {'citation': 'SEED source topology; voltage unconfirmed'})
+        bound['input_sha256'] = input_fingerprint(db)
+        ip = work / 'intent.json'
+        ip.write_text(json.dumps(bound), encoding='utf-8')
+        extra = ['--intent', str(ip)]
     proc = subprocess.run([sys.executable, '-B', str(sut / 'scripts' / 'lint.py'), str(dbp),
-                           '--json', str(lp), '--plan-json', str(pp)],
+                           '--json', str(lp), '--plan-json', str(pp)] + extra,
                           capture_output=True, text=True, timeout=120)
     if not lp.exists():
         return None, None, proc.stderr[-400:]
@@ -66,6 +78,50 @@ def lint(sut, db, work):
 
 def located(text, tokens):
     return any(re.search(r'(?<![\w.])' + re.escape(t) + r'(?![\w])', text) for t in tokens)
+
+
+
+def contract_guards(contract, checks):
+    """Explicit probe obligations, separate from new automatic findings."""
+    observations, errors = {}, []
+    for ref in contract.get('guard_no_proposal_pass', []):
+        rows = [c for c in checks if c['rule']=='DEV-C01' and c.get('object', {}).get('ref')==ref]
+        observations[ref] = [c.get('proposal') for c in rows]
+        if not rows or any(c.get('proposal', {}).get('result') is not None for c in rows):
+            errors.append(ref + ': unknown supply must have a located unknown proposal')
+        if rows and not any('power_rails.' in str(c.get('proposal', {}).get('bases', [])) + (c.get('proposal', {}).get('note') or '') for c in rows):
+            errors.append(ref + ': unknown supply dependency is missing')
+    for ref in contract.get('guard_no_pass', []):
+        rows = [c for c in checks if c['rule']=='DEV-C01' and c.get('object', {}).get('ref')==ref]
+        observations[ref] = [c.get('proposal') for c in rows]
+        if not rows or any(c.get('proposal', {}).get('result') == 'PASS' for c in rows):
+            errors.append(ref + ': the written rating must not pre-judge PASS')
+    wanted = contract.get('min_channel_rows')
+    if wanted:
+        rows = [c for c in checks if c['rule']==wanted['rule'] and c.get('object', {}).get('ref')==wanted['ref']]
+        observations['channel_objects'] = [c['object'] for c in rows]
+        if len(rows) < wanted['count']:
+            errors.append('array lost individual channel rows')
+    prefix = contract.get('required_plan_prefix')
+    if prefix:
+        observations['fault_rows'] = [c['id'] for c in checks if c['id'].startswith(prefix)]
+        if not observations['fault_rows']:
+            errors.append('official opto map lost feedback-open fault row')
+    return observations, errors
+
+
+def compare_sites(records, before):
+    """Reject losing any previous target at its physical site, even if another site compensates."""
+    key = lambda r: (r['board'], r['defect'], r['site'])
+    current = {key(r): r for r in records}
+    errors = []
+    for old in before.get('records', []):
+        new = current.get(key(old))
+        if new is None:
+            errors.append('missing old site: ' + repr(key(old)))
+        elif 'error' in new or not set(old.get('auto', [])) <= set(new.get('auto', [])):
+            errors.append('old automatic target lost: ' + repr(key(old)))
+    return errors
 
 
 def evaluate(sut, boards):
@@ -81,20 +137,38 @@ def evaluate(sut, boards):
             seen = {(f['rule'], f['detail']) for f in base}
             baselines[board['id']] = {'findings': len(base),
                                       'by_rule': dict(sorted(_count(f['rule'] for f in base).items()))}
-            for m in mutators.mutations(db):
-                findings, checks, err = lint(sut, m.db, work)
+            source = mutators.board_mutations(db) if board.get('board_seeds_only') else mutators.mutations(db)
+            for m in source:
+                paired_seen = seen
+                if m.baseline is not None or m.intent is not None:
+                    paired, _, error = lint(sut, m.baseline if m.baseline is not None else db, work, m.intent)
+                    if paired is None:
+                        records.append({'board': board['id'], 'defect': m.defect, 'site': m.site, 'error': 'paired baseline: ' + str(error)})
+                        continue
+                    paired_seen = {(f['rule'], f['detail']) for f in paired}
+                findings, checks, err = lint(sut, m.db, work, m.intent)
                 rec = {'board': board['id'], 'defect': m.defect, 'site': m.site, 'note': m.note,
                        'targets': list(m.targets)}
+                if m.contract:
+                    rec['contract'] = m.contract
+                    rec['paired_baseline'] = m.baseline is not None
                 if findings is None:
                     rec['error'] = err
                     records.append(rec)
                     continue
                 tokens = m.refs + m.nets
-                new = [f for f in findings if (f['rule'], f['detail']) not in seen and located(f['detail'], tokens)]
+                new = [f for f in findings if (f['rule'], f['detail']) not in paired_seen and located(f['detail'], tokens)]
                 rec['auto'] = sorted({f['rule'] for f in new if f['rule'] in m.targets})
                 rec['other'] = sorted({f['rule'] for f in new if f['rule'] not in m.targets})
                 rec['pointed'] = sorted({c['rule'] for c in checks if 'board' not in c.get('object', {})
                                          and located(json.dumps(c.get('object', {}), ensure_ascii=False), tokens)})
+                rec['planned_targets'] = sorted({c['rule'] for c in checks if c['rule'] in m.targets
+                                                 and located(json.dumps(c.get('object', {}), ensure_ascii=False), tokens)})
+                observations, errors = contract_guards(m.contract, checks)
+                if observations:
+                    rec['contract_guards'] = observations
+                if errors:
+                    rec['error'] = '; '.join(errors)
                 records.append(rec)
     return records, baselines
 
@@ -147,6 +221,7 @@ def main():
     ap.add_argument('--gate', type=Path, help='baseline.json: exit 1 if any defect type detects fewer sites')
     ap.add_argument('--sut', type=Path, default=HERE.parents[1], help='SR checkout under test')
     ap.add_argument('--out', type=Path, required=True)
+    ap.add_argument('--boards-cache', type=Path, help='append the adjudicated merge-board controlled pairs')
     ap.add_argument('--compare', type=Path, help='earlier results.json to show auto-detection deltas')
     args = ap.parse_args()
     if not args.offline and not args.cache:
@@ -155,12 +230,27 @@ def main():
     with tempfile.TemporaryDirectory(prefix='seeded-db-') as dbdir:
         boards = (offline_boards(dbdir) if args.offline
                   else json.loads((args.cache / 'manifest.json').read_text(encoding='utf-8')))
+        if args.boards_cache:
+            manifest = {'boards': []}
+            for name in ('boards-merge1.json', 'boards-merge2b.json', 'boards-merge3.json', 'boards-merge4.json'):
+                manifest['boards'].extend(json.loads((HERE / name).read_text(encoding='utf-8'))['boards'])
+            from parse_kicad import build
+            from parse_netlist import integrity_problems
+            for item in manifest['boards']:
+                source = args.boards_cache / item['id'] / 'netlist.xml'
+                db = build(str(source))
+                db['integrity'] = {'self_check_passed': not integrity_problems(db)}
+                target = Path(dbdir) / (item['id'] + '.json')
+                target.write_text(json.dumps(db), encoding='utf-8')
+                boards.append({'id': item['id'], 'db': str(target), 'board_seeds_only': True})
         records, baselines = evaluate(args.sut.resolve(), boards)
     summary = summarize(records)
-    compare = json.loads(args.compare.read_text(encoding='utf-8'))['summary'] if args.compare else None
+    before = json.loads(args.compare.read_text(encoding='utf-8')) if args.compare else None
+    compare = before['summary'] if before else None
+    regressions = compare_sites(records, before) if before else []
     args.out.mkdir(parents=True, exist_ok=True)
     result = {'sut': str(args.sut), 'seconds': round(time.time() - start, 1), 'boards': boards,
-              'baselines': baselines, 'summary': summary, 'records': records}
+              'baselines': baselines, 'summary': summary, 'records': records, 'site_regressions': regressions}
     (args.out / 'results.json').write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding='utf-8')
     text = report(summary, baselines, compare)
     (args.out / 'report.md').write_text(text, encoding='utf-8')
@@ -169,7 +259,9 @@ def main():
         worse = below_baseline(summary, json.loads(args.gate.read_text(encoding='utf-8')))
         print('\n'.join(worse) or 'gate: no defect type below baseline')
         return 1 if worse else 0
-    return 0
+    if regressions:
+        print('\n'.join(regressions))
+    return 1 if regressions or any('error' in row for row in records) or any('error' in row for row in baselines.values()) else 0
 
 
 if __name__ == '__main__':

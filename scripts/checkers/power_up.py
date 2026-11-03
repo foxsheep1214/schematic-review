@@ -46,19 +46,23 @@ class _Scan:
         self.feed = powertree.PowerTree(self.graph, feed=True)   # supply nets entering through connectors
         self._regulators = None
 
-    def _enable_source(self, enable_net, input_nets):
+    def _enable_source(self, enable_net, input_nets, own_ref=None):
         """使能来源形态；名字不构成结论，只按连接关系归类。"""
         graph = self.graph
-        if enable_net in input_nets:
-            return 'tied-to-input', []
-        to_rail = [(ref, other) for ref, other in graph.neighbors(enable_net, {pw.RESISTOR})
+        peers = graph.low_resistance_peers(enable_net)
+        if set(peers) & input_nets:
+            return 'tied-to-input', sorted({ref for path in peers.values() for ref in path})
+        if any(near in self.grounds for near in peers):
+            return 'pulled', sorted({ref for path in peers.values() for ref in path})
+        to_rail = [(ref, other) for ref, other in (edge for near in peers for edge in graph.neighbors(near, {pw.RESISTOR}))
                    if self.tree.is_rail(other) or (other not in self.grounds and self.feed.driven(other))]
-        to_ground = [(ref, other) for ref, other in graph.neighbors(enable_net, {pw.RESISTOR})
+        to_ground = [(ref, other) for ref, other in (edge for near in peers for edge in graph.neighbors(near, {pw.RESISTOR}))
                      if other in self.grounds]
         caps = [ref for ground in sorted(self.grounds)
-                for ref in graph.between(enable_net, ground, {pw.CAPACITOR})]
+                for near in peers for ref in graph.between(near, ground, {pw.CAPACITOR})]
         drivers = []
-        for node in graph.nodes_on(enable_net):
+        source_peers = graph.signal_source_peers(enable_net)
+        for node in sorted({node for near in source_peers for node in graph.nodes_on(near)}):
             ref = node.partition('.')[0]
             if ref in self.excluded or not graph.is_fitted(ref) or graph.kind(ref) != pw.IC:
                 continue
@@ -68,10 +72,23 @@ class _Scan:
                 drivers.append({'node': node, 'source': 'power-good'})
             elif pintype in {'OUT', 'OUTPUT', 'TRISTATE', '3STATE', 'BI', 'BIDI', 'BIDIR'}:
                 drivers.append({'node': node, 'source': 'controller-output'})
-        refs = sorted({ref for ref, _ in to_rail + to_ground} | {x for x in caps})
+        refs = sorted({ref for ref, _ in to_rail + to_ground} | {x for x in caps}
+                      | {ref for path in peers.values() for ref in path})
+        for driver in drivers:
+            path = source_peers.get(graph.pin2net.get(driver['node']), [])
+            if path:
+                driver['via'] = path
         if drivers:
             return ('sequenced' if any(x['source'] == 'power-good' for x in drivers)
                     else 'controlled'), drivers
+        supplied = []
+        for near, path in peers.items():
+            source = self.tree.source_of(near)
+            if source and source['source'].partition('.')[0] != own_ref:
+                supplied.append({'node': source['source'], 'source': 'supply-output',
+                                 'via': source['path'] + path})
+        if supplied:
+            return 'supplied', supplied  # source identity, even when this device calls its supply SUP or V+
         if to_rail and to_ground:
             return 'uvlo-divider', refs
         if to_rail and caps:
@@ -86,7 +103,7 @@ class _Scan:
         inputs.update(self.graph.named_pins(ref, re.compile(r'^IN\d*$', re.I)))
         # VI can also mean a signal/video input. Only directional native power
         # evidence admits this alias; canonical POWER conflates inputs/outputs.
-        native_types = self.graph.db.get('native_pintype') or {}
+        native_types = self.graph.native_pintype
         for node, net in self.graph.named_pins(ref, re.compile(r'^VI$', re.I)).items():
             if str(native_types.get(node, '')).lower() == 'power_in':
                 inputs[node] = net
@@ -108,12 +125,18 @@ class _Scan:
                 continue
             inputs = self._supply_inputs(ref)
             for node, enable_net in enables.items():
-                source, evidence = self._enable_source(enable_net, set(inputs.values()))
+                source, evidence = self._enable_source(enable_net, set(inputs.values()), ref)
+                permission = pw.unused_input_permission(graph.db, node)
+                if source == 'unknown' and permission:
+                    source, evidence = 'internal-bias', [permission]
+                identity = str(graph.parts[ref].get('part') or '')
+                load_switch = (graph.role_kind(ref) == 'load_switch' or
+                               re.fullmatch(r'MIC94164[A-Z0-9/-]*|TPS27S100[A-Z0-9/-]*', identity, re.I))
                 found.append({
                     'id': slug(ref + '-' + enable_net),
                     'ref': ref,
                     'basis': 'declared' if ref in self.declared else 'topology',
-                    'kind': 'switching' if switches else 'linear',
+                    'kind': 'load_switch' if load_switch else ('switching' if switches else 'linear'),
                     'enable_node': node,
                     'enable_net': enable_net,
                     'enable_source': source,
@@ -222,9 +245,9 @@ class PowerUpChecker(Checker):
                         'datasheet: PWR-E02 输入下限、最坏压差与负载要求下限'])),
                     trigger=['power-up:' + item['id']])
                 check['inventory_gaps'] = gaps
-            else:
+            elif item['kind'] == 'switching':
                 check = planner.add_check(
-                    'PWR-D03', dict(obj), key=item['id'], readiness='WAITING_EVIDENCE',
+                    'PWR-C13' if item['kind'] == 'load_switch' else 'PWR-D03', dict(obj), key=item['id'], readiness='WAITING_EVIDENCE',
                     required_inputs=sorted(set(gaps + [
                         'datasheet:预偏置启动与软启动条款', 'intent:输出并联/保持电路'])),
                     trigger=['power-up:' + item['id']])

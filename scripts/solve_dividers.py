@@ -12,6 +12,20 @@ from fractions import Fraction
 def parse_resistor(value, default_tol=None, exact=False):
     """解析 R/K/M、显式毫欧单位与公差；exact=True 保留十进制分数。"""
     raw = str(value or '').strip()
+    raw = re.sub(r'(?<=\d),(?=\d)', '.', raw)   # explicit European decimal comma
+    # Bounded library name, never a part-number substring. Keep the decode method.
+    packaged = re.fullmatch(r'R_([0-9]+(?:\.[0-9]+)?[RrKkMm](?:[0-9]+)?)(?:_[0-9]+(?:\.[0-9]+)?A)?_(01005|0201|0402|0603|0805|1206|1210|1812|2010|2512)', raw)
+    if packaged:
+        result = parse_resistor(packaged.group(1), default_tol=default_tol, exact=exact)
+        if result is not None:
+            result['method'] = 'packaged-RKM'
+        return result
+    prefix = re.match(r'^R_?(?=\d+(?:\.\d+)?\s*(?:[RrKkMm]|(?i:ohms?)))', raw)
+    if prefix:
+        parsed = parse_resistor(raw[prefix.end():], default_tol=default_tol, exact=exact)
+        if parsed is not None:
+            parsed['method'] = 'component-prefix'
+        return parsed
     upper = raw.upper().replace('Ω', 'R')
     # Preserve the SI prefix's case before uppercasing: lowercase m is milli
     # (10mR, 10mohm, bare 10m, RKM 7m5 = 7.5 mOhm); uppercase M is mega (4M7).
@@ -62,11 +76,16 @@ def parse_resistor(value, default_tol=None, exact=False):
     # megawatts. Any other word still makes the value unreadable.
     ratings = {}
     while True:
-        rating = re.fullmatch(r'(.*?)\s*/\s*(\d+(?:\.\d+)?)\s*(M?W|V)\s*', remainder)
+        fraction = re.fullmatch(r'(.*?)\s*/\s*(\d+(?:\.\d+)?)\s*/\s*(\d+(?:\.\d+)?)\s*(M?W)\s*', remainder)
+        rating = fraction or re.fullmatch(r'(.*?)\s*/\s*(\d+(?:\.\d+)?)\s*(M?W|V)\s*', remainder)
         if not rating:
             break
-        field = 'voltage_v' if rating.group(3) == 'V' else 'power_w'
-        amount = float(rating.group(2)) / (1000.0 if rating.group(3) == 'MW' else 1.0)
+        unit_rating = rating.group(4) if fraction else rating.group(3)
+        denominator = float(fraction.group(3)) if fraction else 1.0
+        if denominator <= 0:
+            return None
+        field = 'voltage_v' if unit_rating == 'V' else 'power_w'
+        amount = float(rating.group(2)) / denominator / (1000.0 if unit_rating == 'MW' else 1.0)
         if field in ratings or not (math.isfinite(amount) and amount > 0):
             return None
         ratings[field] = amount

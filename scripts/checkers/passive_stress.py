@@ -82,6 +82,41 @@ def ground_name(net):
 _ground_name = ground_name
 
 
+def midpoint_ground(graph, net):
+    """A ground-named net that is a divider midpoint (VGND, GNDA as a half supply, boards-merge4): no IC return or
+    supply pin and no connector contact on it, one fitted resistor (> 1 ohm) to another ground and one to a non-ground
+    net. Its potential is set by the divider or the op-amp, never 0 V; a finite resistor to GND is no bond (KCL)."""
+    if graph is None or net in graph.pseudo or not ground_name(net):
+        return False
+    to_ground = to_other = False
+    for node in graph.nodes_on(net):
+        ref, _, pin = node.partition('.')
+        if not graph.is_fitted(ref):
+            continue
+        kind = graph.kind(ref)
+        if kind == pw.CONNECTOR:
+            return False
+        if kind == pw.IC:
+            name = graph.pinname.get(node, '')
+            role = ((graph.db.get('devices') or {}).get(ref, {}).get('pins', {}).get(pin, {}) or {}).get('role')
+            if (role in ('return', 'power') or graph.native_pintype.get(node) in POWER_PINTYPES
+                    or ng.is_ground(name)):
+                return False
+            continue
+        ends = graph.nets_of(ref)
+        if kind != pw.RESISTOR or len(ends) != 2:
+            continue
+        parsed = parse_resistor_noted(graph.parts.get(ref, {}).get('value'))
+        if not parsed or parsed['kohm'] * 1000 <= 1:
+            continue
+        other = ends[0] if ends[1] == net else ends[1]
+        if ground_name(other):
+            to_ground = True
+        elif other not in graph.pseudo:
+            to_other = True
+    return to_ground and to_other
+
+
 def _declared_rails(intent):
     """{net: ((min, max), domain)}；domain 取 power_rails.<net>.domain，未声明为 None。"""
     rails = {}
@@ -98,14 +133,19 @@ class _Bounds:
 
     def __init__(self, graph, rails):
         self.graph, self.rails = graph, rails
-        self._cluster, self._ic = {}, {}
+        self._cluster, self._ic, self._midpoint = {}, {}, {}
 
     def _fixed(self, net):
         if net in self.rails:
             return self.rails[net][0]
-        if _ground_name(net):
+        if _ground_name(net) and not self.midpoint(net):
             return (0.0, 0.0)
         return None
+
+    def midpoint(self, net):
+        if net not in self._midpoint:
+            self._midpoint[net] = midpoint_ground(self.graph, net)
+        return self._midpoint[net]
 
     def domain(self, net):
         """参考地分区：声明的 domain 优先；GND/AGND 等通用地名同属 GND 域，其余地名（P_GND、PORT_GND）
@@ -114,6 +154,8 @@ class _Bounds:
             declared = self.rails[net][1]
             if declared or self.rails[net][0] != (0.0, 0.0):
                 return declared
+        if self.midpoint(net):
+            return None           # a divider midpoint named like a ground is a node, not a reference
         if ng.is_ground(net):
             return 'GND'          # 通用地名沿用旧行为：视为同一参考
         return pw.normalize(net) if _ground_name(net) else None
@@ -121,11 +163,23 @@ class _Bounds:
     def ic_supply(self, ref):
         if ref not in self._ic:
             graph, top = self.graph, None
+            official = (graph.db.get('devices') or {}).get(ref, {}).get('pins', {})
+            native = graph.native_pintype
             for pin, net in graph.pins_of(ref).items():
+                node = ref + '.' + pin
+                name = graph.pinname.get(node, '')
+                role = official.get(pin, {}).get('role')
+                if role == 'return' or _ground_name(net) or ng.is_ground(name):
+                    continue   # a known return is not a source voltage bound
+                supply = (role == 'power' or native.get(node) in POWER_PINTYPES
+                          or pw.name_matches(re.compile(r'^(?:VIN\w*|VCC\w*|VDD\w*|AVDD\w*|DVDD\w*)$', re.I), name, pin)
+                          or ng.is_rail(net))
+                if not supply:
+                    continue
                 fixed = self._fixed(net)
                 if fixed is not None:
                     top = fixed[1] if top is None else max(top, fixed[1])
-                elif graph.pintype.get(ref + '.' + pin) in POWER_PINTYPES or ng.is_rail(net):
+                else:
                     top = 'power_rails.%s.voltage_v' % net
                     break
             self._ic[ref] = top
@@ -170,7 +224,8 @@ class _Bounds:
                             continue
                         fixed = self._fixed(other)
                         if fixed is not None:
-                            tops.append(fixed[1])
+                            if fixed != (0.0, 0.0):
+                                tops.append(fixed[1])
                             domains |= {self.domain(other)} - {None}
                             continue
                         ac = ac or kind == pw.CAPACITOR
@@ -328,7 +383,7 @@ def _series_chains(graph, bounds):
     anything else on a tap leaves the string to the cluster bound. Between taps the resistors divide the voltage
     across the segment; a capacitor-held tap stays within its divider ratio of the end windows (an RC ladder with
     grounded capacitors never overshoots its DC gain), so a segment spans at most the difference of its ends' ranges."""
-    native = graph.db.get('native_pintype') or {}
+    native = graph.native_pintype
 
     def ohms(ref):
         parsed = parse_resistor_noted(graph.parts.get(ref, {}).get('value'), default_tol=DEFAULT_TOL)
@@ -527,6 +582,10 @@ def _proposal(entry):
             calc['procurement_min_power_w'] = round(calc['p_max_w'] / share, 9)
             need = '；功耗要考虑而 BOM 没写额定功率：BOM 须写明额定功率 ≥ %.4g W（应力 ÷ %s 级降额 %g%%，%s%s），记 bom_constraint（DEV-D04 汇总）' % (
                 calc['procurement_min_power_w'], level, share * 100, SMD_POWER_RULE, unset)
+        if bom.get('power_unread') and not parsed.get('power_w'):
+            calc['bom_power'] = 'unread'
+            return None, calc, ('BOM 写了额定功率但读不出完整数值（分数写法残缺），额定功率按 unknown 处理，不预判 PASS；'
+                                '由审查者按 BOM 原文核' + need)
         if not ok:
             return None, calc, '超出预判边界（最弱档 × %s 级 %s/%s%s），按 commodity-floors 判定表由审查者判定' % (
                 level, SMD_POWER_RULE, SMD_VOLTAGE_RULE, unset) + need
@@ -573,22 +632,45 @@ SEGMENT_SPLIT_RE = re.compile(r'[/，,；;、\s]+')
 def rated_voltage(value):
     """The rated voltage a value writes as a segment of its own (100n/10V, 47u/35V/X7R, 4.7uF 10V); None without one,
     or when two different voltages are written (10uF/16V/25V is not read). Every module reads a rating here."""
-    found = {float(m.group(1)) for m in (WRITTEN_V_RE.match(seg) for seg in SEGMENT_SPLIT_RE.split(str(value or ''))) if m}
+    text = re.sub(r'(?<=\d),(?=\d)', '.', str(value or ''))
+    found = {float(m.group(1)) for m in (WRITTEN_V_RE.match(seg) for seg in SEGMENT_SPLIT_RE.split(text)) if m}
     return found.pop() if len(found) == 1 else None
 
 
+# A fractional power rating (1/16W, 1/10 W, 1/8mW) is one token; split on "/" it would read as 16 W.
+FRACTION_W_RE = re.compile(r'(?<![\d.])(\d+)\s*/\s*(\d+)\s*(m?W)\b', re.I)
+HALF_READ_W_RE = re.compile(r'\d\s*/\s*\d+(?:\.\d+)?\s*m?W\b', re.I)
+
+
 def bom_ratings(fields):
-    """Ratings the BOM writes as segments of their own (`…/160V/…`, `…，2W，…`); a voltage or power written twice, or
-    inside a sentence, is not read."""
+    """Ratings the BOM writes as segments of their own (`…/160V/…`, `…，2W，…`, `1/16W 5%`); a voltage or power written
+    twice, or inside a sentence, is not read. A power written as a fraction that cannot be read whole (0.1/16W, 1/0W)
+    is `power_unread`: no power floor is taken from it and the pre-judgement gives no PASS (boards-merge4, pslab
+    1/16W read as 16 W)."""
     found = {'voltage_v': set(), 'power_w': set()}
+    unread = False
     for text in (fields or {}).values():
-        for segment in SEGMENT_SPLIT_RE.split(str(text or '')):
+        text = re.sub(r'(?<=\d),(?=\d)', '.', str(text or ''))
+        for m in FRACTION_W_RE.finditer(text):
+            denominator = float(m.group(2))
+            if denominator > 0:
+                found['power_w'].add(float(m.group(1)) / denominator / (1000.0 if m.group(3).lower() == 'mw' else 1.0))
+            else:
+                unread = True
+        text = FRACTION_W_RE.sub(' ', text)
+        half_read = bool(HALF_READ_W_RE.search(text))
+        unread = unread or half_read
+        for segment in SEGMENT_SPLIT_RE.split(text):
             v, w = WRITTEN_V_RE.match(segment), WRITTEN_W_RE.match(segment)
             if v:
                 found['voltage_v'].add(float(v.group(1)))
-            if w:
+            if w and not half_read:
                 found['power_w'].add(float(w.group(1)))
-    return {k: next(iter(vals)) for k, vals in found.items() if len(vals) == 1}
+    ratings = {k: next(iter(vals)) for k, vals in found.items() if len(vals) == 1}
+    if unread:
+        ratings.pop('power_w', None)
+        ratings['power_unread'] = True
+    return ratings
 
 
 def assumed_package_refs(inventory):
@@ -652,7 +734,7 @@ def rail_gaps(plan):
 def ground_domains(db, intent):
     """{参考地分区: [地网]}：本预判按 0 V 处理的全部网及其参考地分区，供审查者核对与改正 domain。"""
     nets = set((db or {}).get('nets') or {})
-    bounds = _Bounds(None, _declared_rails(intent))
+    bounds = _Bounds(ng.NetGraph(db) if db else None, _declared_rails(intent))
     found = {}
     for net in sorted(nets):
         if bounds._fixed(net) == (0.0, 0.0):

@@ -16,6 +16,7 @@ import board_intent
 from board_intent import validate_db_shape
 from electrical_contract import db_fingerprint, finite, load_json
 from solve_dividers import parse_resistor
+from part_words import board_copper, copper_tie
 
 MAX_TRACE_NETS = 1024
 SECTION_SCHEMA_VERSION = 2
@@ -167,6 +168,8 @@ class Inventory:
             self.input_gaps.add('netlist-integrity/export')
 
     def kind(self, ref):
+        if copper_tie(ref, self.parts.get(ref, {})):
+            return 'jumper'
         if ref in self.components:
             return self.components[ref]['kind']
         if re.match(r'^R\d', ref, re.I):
@@ -195,7 +198,7 @@ class Inventory:
         hints = defaultdict(lambda: {'sda': set(), 'scl': set()})
         loose = set()
         for net, nodes in sorted(self.nets.items()):
-            if net in self.pseudo:
+            if net in self.pseudo or self.rail(net) or re.search(r'(?:^|[/_-])I2S(?:[/_-]|$)', net, re.I):
                 continue
             for label, anchor in [(net, 'net:')] + [(str(self.pinname.get(n, '')), 'pin:' + n.split('.', 1)[0] + ':') for n in nodes]:
                 match = SIGNAL.search(label)
@@ -216,6 +219,8 @@ class Inventory:
         sid, population, jumpers = state['id'], state.get('population', {}), state.get('jumpers', {})
         edges, adjacency, potential = {}, defaultdict(list), defaultdict(set)
         def present(ref):
+            if board_copper(ref, self.parts.get(ref, {})):
+                return jumpers.get(ref) != 'open'
             return population.get(ref)  # nc=False is deliberately not assembly proof.
         for ref, nodes in sorted(self.nodes.items()):
             kind = self.kind(ref)
@@ -233,7 +238,7 @@ class Inventory:
                 reason = None
                 if present(ref) is not True:
                     reason = 'not-fitted' if present(ref) is False else 'population-unverified'
-                elif kind == 'jumper' and jumpers.get(ref) != 'closed':
+                elif kind == 'jumper' and jumpers.get(ref) != 'closed' and not copper_tie(ref, self.parts[ref]):
                     reason = 'open' if jumpers.get(ref) == 'open' else 'jumper-state-unverified'
                 elif kind == 'resistor' and ohms is None:
                     reason = 'resistance-unparsed'
@@ -457,12 +462,13 @@ def build_i2c_topology(db, intent=None):
     errors = validate_db_shape(db) or board_intent.validate(intent, db) or validate_i2c_intent(intent, db)
     if errors:
         raise ValueError('; '.join(errors))
-    cfg = (intent or {}).get('i2c_topology')
+    cfg = deepcopy((intent or {}).get('i2c_topology') or {})
+    cfg['rails'] = {**{net: row.get('citation', 'top-level power_rails') for net, row in (intent or {}).get('power_rails', {}).items()}, **cfg.get('rails', {})}
     inv = Inventory(db, cfg)
     buses, confirmed = inv.seeds()
     states = (intent or {}).get('assemblies') or [{'id': 'UNSPECIFIED', 'population': {}, 'jumpers': {}}]
     result = {'schema_version': 1, 'db_sha256': db_fingerprint(db),
-              'context': deepcopy(board_intent.context(intent, 'i2c_topology')),
+              'context': deepcopy(board_intent.context(intent, 'i2c_topology', extra=('power_rails',))),
               'scope': 'connectivity inventory only; no voltage/timing/SIG-E01 equivalent or PASS',
               'states': [inv.state_inventory(s, buses, confirmed) for s in sorted(states, key=lambda x: x['id'])]}
     result['digest'] = digest(result)

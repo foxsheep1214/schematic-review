@@ -1,0 +1,41 @@
+{
+ "note": "Four controlled physical probes; source artifacts remain read-only in board cache. Operating contracts are synthetic; C-rule prompts and unknown guards are not hardware verdicts.",
+ "boards": [
+  {
+   "id": "rapidanalysis--xerxes",
+   "source": {
+    "repo": "rapidanalysis/xerxes",
+    "commit": "43abf5730d092358bc6d10e9faa7233818b5412e",
+    "schematic": "Xerxes/Xerxes.kicad_sch",
+    "license": "Apache-2.0"
+   }
+  },
+  {
+   "id": "badgineer--mp2-esc",
+   "source": {
+    "repo": "badgineer/MP2-ESC",
+    "commit": "b35a76b2e42295465f11120ea94c14c4919edb2c",
+    "schematic": "Kicad_Project/CCC_ESC.kicad_sch",
+    "license": "BSD-3-Clause"
+   }
+  },
+  {
+   "id": "moelashmawi--flyback-ac-dc-converter",
+   "source": {
+    "repo": "MoElashmawi/Flyback-AC-DC-Converter",
+    "commit": "e49dd6d442a6b73541927b72768db991146012fc",
+    "schematic": "AC-DC Wandler.kicad_sch",
+    "license": "MIT"
+   }
+  },
+  {
+   "id": "abhishek-xi--isolated-flyback-converter",
+   "source": {
+    "repo": "abhishek-xi/isolated-flyback-converter",
+    "commit": "3a607ea7c57de247771ef8a28ee6209deeb620e5",
+    "schematic": "Hardware/prj1.kicad_sch",
+    "license": "MIT"
+   }
+  }
+ ]
+}

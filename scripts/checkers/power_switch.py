@@ -101,7 +101,9 @@ class _Scan:
             pin = node.partition('.')[2]
             pintype = pw.normalize(self.graph.pintype.get(node))
             if kind == pw.IC and (pw.name_matches(DRIVER_PIN_RE, self.graph.pinname.get(node), pin)
-                                  or pintype in OUT_PINTYPES):
+                                  or pintype in OUT_PINTYPES
+                                  or (self.graph.role_kind(ref) == 'supervisor' and
+                                      pw.name_matches(re.compile(r'^N?(RESET|RST)\w*$', re.I), self.graph.pinname.get(node), pin))):
                 found.append({'node': node, 'via': via, 'source': 'driver-pin'})
             elif kind in SWITCH_KINDS and self.graph.role(node) == 'drain':
                 found.append({'node': node, 'via': via, 'source': 'discrete-stage'})
@@ -113,8 +115,12 @@ class _Scan:
 
     def drivers(self, gate_net):
         found = self._driver_pins(gate_net, 'direct')
-        for ref, other in self.graph.neighbors(gate_net, pw.PASSIVE_LINKS):
-            found.extend(self._driver_pins(other, 'series:' + ref))
+        supply = self.tree.source_of(gate_net)
+        if supply:
+            found.append({'node': supply['source'], 'via': 'supply:' + ','.join(supply['path']), 'source': 'supply-bias'})
+        for other, path in self.graph.signal_source_peers(gate_net).items():
+            if path:
+                found.extend(self._driver_pins(other, 'series:' + ','.join(path)))
         unique = {item['node'] + '|' + item['via']: item for item in found}
         return [unique[key] for key in sorted(unique)]
 
@@ -130,13 +136,16 @@ class _Scan:
         return found
 
     def chained_drivers(self, gate_net, hops=CHAIN_HOPS):
-        """驱动脚经最多 hops 级电阻（不限阻值）可达：电平移位/分压驱动网络。不进入地与电源轨，
+        """驱动脚经最多 hops 级电阻（每段小于1MΩ）可达：电平移位/分压驱动网络。不进入地与电源轨，
         不算作 drivers；只让 DRV-A03 冷判从 FINDING 降为 CANDIDATE（2026-10-20 第 1 轮裁决 relax:DRV-A03）。"""
         seen, frontier, found = {gate_net}, [gate_net], []
         for _ in range(hops):
             nxt = []
             for net in frontier:
                 for ref, other in self.graph.neighbors(net, {pw.RESISTOR}):
+                    value = parse_resistor(self.graph.parts.get(ref, {}).get('value'))
+                    if value is None or not 0 <= value['kohm'] < 1000:
+                        continue
                     if other in seen or other in self.grounds or self.tree.is_rail(other):
                         continue
                     seen.add(other)
@@ -434,6 +443,32 @@ class _Scan:
                 'primary_on_duty': 'reverse blocking; channel must be off',
                 'dynamic_status': 'not verified: diode intervals, turn-off overlap/reverse current, repetition and thermal duty'}, []
 
+    def channels(self, ref):
+        """[(channel, {gate, drain, source: node}, gaps)] of one package. A dual MOS (two gate pins) is one channel per
+        gate: G1/D1/S1 and G2/D2/S2 by the pin-name index, a shared drain D12 belongs to both (FS8205A, boards-merge4).
+        Without indexed names (two plain G pins) each gate is its own channel with its drain/source unresolved, never
+        the first G paired with whichever S sorts first."""
+        graph = self.graph
+        gates = [ref + '.' + pin for pin in sorted(graph.pins_of(ref)) if graph.role(ref + '.' + pin) == 'gate']
+        if len(gates) < 2:
+            return [(None, {role: graph.node_named(ref, role) for role in ('gate', 'drain', 'source')}, [])]
+        found = []
+        for gate in gates:
+            index = re.fullmatch(r'G(?:ATE)?[_-]?(\d+)', pw.normalize(graph.pinname.get(gate)))
+            nodes, gaps = {'gate': gate, 'drain': None, 'source': None}, []
+            if index:
+                for role, letter in (('drain', 'D'), ('source', 'S')):
+                    for pin in sorted(graph.pins_of(ref)):
+                        m = re.fullmatch(letter + r'[A-Z]*[_-]?(\d+)', pw.normalize(graph.pinname.get(ref + '.' + pin)))
+                        if (graph.role(ref + '.' + pin) == role and m
+                                and (m.group(1) == index.group(1) or (len(m.group(1)) > 1 and index.group(1) in m.group(1)))):
+                            nodes[role] = ref + '.' + pin
+                            break
+            else:
+                gaps.append('channel-pin-map:' + ref)
+            found.append((index.group(1) if index else gate.partition('.')[2], nodes, gaps))
+        return found
+
     def switches(self):
         graph, found = self.graph, []
         for ref in sorted(graph.parts):
@@ -441,9 +476,14 @@ class _Scan:
                 continue
             if graph.kind(ref) not in SWITCH_KINDS:
                 continue
-            nodes = {role: graph.node_named(ref, role)
-                     for role in ('gate', 'drain', 'source')}
-            gaps = list(self.state['gaps'])
+            for channel, nodes, channel_gaps in self.channels(ref):
+                found.append(self._switch(ref, nodes, channel, channel_gaps))
+        return sorted(found, key=lambda item: item['id'])[:MAX_SWITCHES]
+
+    def _switch(self, ref, nodes, channel, channel_gaps):
+        graph = self.graph
+        if True:
+            gaps = list(self.state['gaps']) + channel_gaps
             if not all(nodes.values()):
                 gaps.append('pin-roles:' + ref)
             if pw.kind_gap(graph, ref):
@@ -472,8 +512,8 @@ class _Scan:
             snubbers = self.snubbers(nets['drain'], nets['source'], topology) if nets['drain'] else []
             switch_node = (self._switch_node_evidence(nets['drain'], ref, nets['source'], topology)
                            if nets['drain'] else [])
-            found.append({
-                'id': slug(ref + '-' + (nets['gate'] or 'unresolved')),
+            entry = {
+                'id': slug(ref + ('-CH' + channel if channel is not None else '') + '-' + (nets['gate'] or 'unresolved')),
                 'ref': ref,
                 'kind': graph.kind(ref),
                 'kind_basis': graph.basis(ref),
@@ -496,8 +536,10 @@ class _Scan:
                 'snubbers': snubbers,
                 'switch_node_evidence': switch_node,
                 'gaps': sorted(set(gaps)),
-            })
-        return sorted(found, key=lambda item: item['id'])[:MAX_SWITCHES]
+            }
+            if channel is not None:
+                entry['channel'] = channel
+            return entry
 
 
 def build_inventory(db, intent=None):
@@ -618,25 +660,26 @@ class PowerSwitchChecker(Checker):
             if not switch['gate_net'] or switch.get('role') == LEVEL_SHIFTER_ROLE:
                 continue
             head = '%s（%s，状态 %s）' % (switch['ref'], switch['kind'], state['id'])
+            control = '基极网 ' if switch['kind'] == pw.BJT else '栅极网 '
             if not switch['drivers'] and not switch['gate_pulls']:
                 untyped = self._untyped_ic_pins(lint.graph, switch['gate_net'])
                 if untyped:
                     # Netlists without pin types (OrCAD, hand-drawn libraries): an MCU GPIO may drive the gate.
                     lint.add('DRV-A03', self.cold_rules['DRV-A03'],
-                             head + '：栅极网 ' + switch['gate_net'] + ' 由 ' + '、'.join(untyped[:3])
+                             head + '：' + control + switch['gate_net'] + ' 由 ' + '、'.join(untyped[:3])
                              + ' 驱动，但网表没有引脚方向，且无下拉/上拉；按手册确认该脚是输出，'
                                '并核上电、复位与驱动高阻时栅极状态',
                              switch['ref'], kind='CANDIDATE')
                 elif switch.get('chained_drivers'):
                     chain = switch['chained_drivers'][0]
                     lint.add('DRV-A03', self.cold_rules['DRV-A03'],
-                             head + '：栅极网 ' + switch['gate_net'] + ' 上无直接驱动脚与上下拉，驱动脚 '
+                             head + '：' + control + switch['gate_net'] + ' 上无直接驱动脚与上下拉，驱动脚 '
                              + chain['node'] + ' 经多级电阻（' + chain['via'].partition(':')[2]
                              + ' 等）到达，属电平移位/分压驱动网络；核上电与驱动高阻时的默认态和关断路径',
                              switch['ref'], kind='CANDIDATE')
                 else:
                     lint.add('DRV-A03', self.cold_rules['DRV-A03'],
-                             head + '：栅极网 ' + switch['gate_net']
+                             head + '：' + control + switch['gate_net']
                              + ' 上既无驱动输出脚也无下拉/上拉电阻，上电与驱动高阻时开关状态不确定',
                              switch['ref'])
             if switch['switch_node_evidence'] and not [s for s in switch['snubbers']

@@ -9,6 +9,101 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 准则库 1.7.0 入库：9 条新准则、12 条修订，挂到已有检查项 (2026-11-02)
+
+草案（下一条）经用户确认后入库：HardwareWiki 登记文件 G01 1.5、G02 1.3、G03 1.5、G04 1.2、G05 1.2 与规范正文同步，共用层重建为 1.7.0（353 条），ASG 同字节。`catalog.BASIS` 把 G02-036/038 挂到 DEV-D01、DEV-D04，G02-037/038 挂到 DOC-D01、DOC-Q01，G02-039 挂到 DEV-C01，G03-059 挂到 PWR-C15，G04-101 挂到 DEV-D02、DEV-D04，G04-102 挂到 DEV-D05、NET-A01、NET-A07，G04-103/104 挂到 SIG-C05（G04-104 另挂 NET-A07）；没有新建检查项，USB 四条的连接器类型限定靠 sr_check 文字与合并步 2B 的连接器型号判定。厂家出处核过原件：PCA9517A Rev. 4.1、RP2350 2026-01-10 构建版、ADS1299 SBAS499C、DFLS1100 DS30497 Rev. 14-2；WCH CH32V30x 评估板原理图未取得原件，登记为版次未核。
+
+- Event: user:2026-11-02 (按草案入库)
+- Causes: rule_missing 9, rule_wrong 12
+- Changed: references/shared/guideline-criteria.json, references/shared/shared-layer.md, scripts/catalog.py, references/architecture.md, evals/detection/RESULTS.md, docs/improvement-ledger.md
+- Gates: pytest 2698; mutation --changed aa04201 36 全杀
+
+## 准则库修订草案：86 块实板的准则空白与适用范围（2026-11-02）
+
+只出草案，不入库：14 条 criterion_issue 逐条裁决（准则确有问题 9 条，其中 USB 七条同根因：G01-026/029/030/031 出处是 Type-C/PD，却按 USB 大类套到 Standard-A/Micro-B；另有 G03-005 缺 Cff 承接、G04-091 千兆建议写成通用禁止。检查器误用 1 条；G05-030～034 拆开判，只改 G05-031；REQ-D03 两条归工具；SIG-D10 词表范围需要人判）。201 条真缺陷中 142 条 criteria 为空，按性质聚类后起草新准则 9 条（G02-036～039、G03-059、G04-101～104）。修订 12 条（字段级 39 处），建议库版本 1.7.0。补丁套到登记表副本后汇编、check 通过（353 条）。224 条漏问都有准则引用，全部是“准则存在、SR 没落实”，清单交 SR。知识缺口按器件聚合出前 30 个资料待收集型号。共用层、HardwareWiki、scripts、SKILL.md 未改。Causes 按机制计，不按条数。
+
+- Event: user:2026-11-02 (把这个86块板子上找到的问题，在规则库、ASG和SR技能中进行改进)
+- Causes: rule_missing 9, knowledge_wrong 5
+- Changed: docs/proposals/criteria-from-boards-2026-11-02.md, docs/proposals/criteria-from-boards-2026-11-02.json, docs/improvement-ledger.md
+- Gates: guideline_criteria build+check（副本，1.7.0，353 条）PASS; check_ledger PASS; 未跑 pytest（无代码改动）; 不 push。
+## 合并步 4：分数功率、地名中点、弱驱动、端口语义、隔离模块、通道、NC 与功能 ID（2026-11-02）
+
+22 块点名板冷扫非 INFO 1020→967、已归因误报 327→274（crazyflie 48→24、hdmi-mipi 18→2、anthc 8→4 等），NET-A01 258→237、PWR-A02 92→66、PWR-A01 37→31；DRV-A03 +1 与 leviathan DRV-C02 14→22 是双 MOS 按通道拆出的应问项。54 条已归因真缺陷全部仍报出或可定位，14 条自动检出全保留；全量计划未绑定功能检查项 413→0。新增 4 个种子（分数功率/地名中点 no-PASS guard、偏置电阻删除、NC 标记删除），旧 262 位点逐点保留，总 266/229/0 错误。第 9 项次要模式与连接器级允许悬空表未做，见提案。Causes 按 9 个独立机制计（8 项 + MAX14850 补充），非发现条数。
+
+- Event: user:2026-11-02 (把这个86块板子上找到的问题，在规则库、ASG和SR技能中进行改进)
+- Causes: rule_not_enforced 2, knowledge_missing 3, knowledge_wrong 4
+- Changed: docs/improvement-ledger.md, docs/proposals/boards-merge-4-2026-11-02.md, evals/detection/RESULTS.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/boards-merge4-v1/cases.json, evals/kicad_replay_bench/revisions/boards-merge4-v1/expected.json, evals/kicad_replay_bench/revisions/boards-merge4-v1/manifest.json, evals/kicad_replay_bench/revisions/boards-merge4-v1/sources.json, evals/kicad_replay_bench/run.py, evals/mutation/mutations.json, evals/seeded_bench/README.md, evals/seeded_bench/boards-merge4.json, evals/seeded_bench/mutators.py, evals/seeded_bench/run.py, evals/typical_circuits/cases.json, references/architecture.md, scripts/checkers/domains.py, scripts/checkers/isolation_sides.py, scripts/checkers/passive_stress.py, scripts/checkers/planutil.py, scripts/checkers/power_switch.py, scripts/checkers/powertree.py, scripts/decoupling.py, scripts/lint.py, scripts/parse_kicad.py, scripts/part_words.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/tests/test_boards_merge4.py
+- Gates: pytest 2730 passed, 1 skipped; mutation --changed 5d19609 --tier unit 逐提交 35/47/89/193/199/206/214/256/276 全杀，最终 292 全杀（M1100–M1131，M1109 等价删去）; kicad_replay boards-merge4-v1 195/195; typical 216 DETECTED/197 FIXED/7 KNOWN; seeded 266/229/0 错误，旧 262 位点逐点无退化; detection 已更新; check_ledger PASS; 共用层/SKILL 字节差 0；不 push。
+
+## 合并步 3：物理脚表、通道与未知边界（2026-11-02）
+
+20 块点名板冷扫 454→546、原归因可匹配误报 158→107；总数增加包含 82 条 TVS 通道提示及 59 条脚名差异候选，不是新增已证实缺陷。60 条真缺陷仍报出或逐器件可定位；18/20 完整候选链，另两板保留原决定缺口。官方脚表贯通、按通道钳位、铜与采购分离、未知应力及 override、参数歧义、晶体/串阻 I/O、机械/卡座/方向与磁件得到回归覆盖；补齐信号变压器 TVS 和共享母线误当吸收器的边界。新增 4 个种子，旧 258 位点/225 自动目标均保留，总 262/227。Causes 按 18 个独立机制计：4 个既有要求未贯通、2 个知识缺项、12 个错误模型，非发现条数。详情与逐板/逐规则证据见提案及同名 JSON。
+
+- Event: user:2026-11-02 (用更多的实际电路板来驱动问题的改进; 再多找一些板子…每个板子跑得细致一些)
+- Causes: rule_not_enforced 4, knowledge_missing 2, knowledge_wrong 12
+- Changed: docs/improvement-ledger.md, docs/proposals/boards-merge-3-2026-11-02.json, docs/proposals/boards-merge-3-2026-11-02.md, evals/detection/RESULTS.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/boards-merge3-copper-v1/cases.json, evals/kicad_replay_bench/revisions/boards-merge3-copper-v1/expected.json, evals/kicad_replay_bench/revisions/boards-merge3-copper-v1/manifest.json, evals/kicad_replay_bench/revisions/boards-merge3-copper-v1/sources.json, evals/kicad_replay_bench/revisions/boards-merge3-mechanical-v1/cases.json, evals/kicad_replay_bench/revisions/boards-merge3-mechanical-v1/expected.json, evals/kicad_replay_bench/revisions/boards-merge3-mechanical-v1/manifest.json, evals/kicad_replay_bench/revisions/boards-merge3-mechanical-v1/sources.json, evals/kicad_replay_bench/revisions/boards-merge3-v1/cases.json, evals/kicad_replay_bench/revisions/boards-merge3-v1/expected.json, evals/kicad_replay_bench/revisions/boards-merge3-v1/manifest.json, evals/kicad_replay_bench/revisions/boards-merge3-v1/sources.json, evals/kicad_replay_bench/run.py, evals/mutation/mutations.json, evals/seeded_bench/README.md, evals/seeded_bench/boards-merge3.json, evals/seeded_bench/mutators.py, evals/seeded_bench/run.py, evals/typical_circuits/cases.json, references/architecture.md, scripts/board_intent.py, scripts/checkers/isolation_sides.py, scripts/checkers/netgraph.py, scripts/checkers/passive_stress.py, scripts/checkers/power_up.py, scripts/checkers/powertree.py, scripts/checkers/states.py, scripts/circuit_candidates.py, scripts/decoupling.py, scripts/derive_rows.py, scripts/i2c_topology.py, scripts/interfaces.py, scripts/lint.py, scripts/parse_kicad.py, scripts/part_words.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/protective_clamps.py, scripts/results_model.py, scripts/solve_dividers.py, scripts/tests/fixtures/interfaces-flyback-usb.json, scripts/tests/test_boards_merge.py, scripts/tests/test_boards_merge3_clamps.py, scripts/tests/test_boards_merge3_copper.py, scripts/tests/test_boards_merge3_interfaces.py, scripts/tests/test_boards_merge3_magnetics.py, scripts/tests/test_boards_merge3_mechanical.py, scripts/tests/test_boards_merge3_pins.py, scripts/tests/test_boards_merge3_seeds.py, scripts/tests/test_boards_merge3_shared_bus.py, scripts/tests/test_boards_merge3_stress.py, scripts/tests/test_boards_merge3_values.py, scripts/tests/test_interfaces.py, scripts/tests/test_plan_review.py
+- Gates: pytest 2695 passed, 3 skipped; mutation --changed 最终 51 全杀，前序批次 79/77/57/70/109/105/271/101 全杀（原始 M1033 存活留档，加入零脚有源占位负例后分别干净基线补验全杀）; kicad_replay boards-merge3-v1 195/195; seeded 262/227，旧258/225逐位点无退化; detection 已更新; check_ledger PASS; 共用层/SKILL 字节差0；不 push。
+
+## 合并步 2A 与 2B 合并 (2026-11-02)
+
+两支并行修改在 7 个文件冲突：输入滤波、功率开关驱动源、上电使能源三处取 2A 的储能电感/≤10 kΩ 驱动源模型，保留 2B 的手册允许悬空豁免与负载开关型号判定，`kind` 统一为 `load_switch`（2B 测试同改）。
+变异表 2A（M912–M938）与 2B（M960–M999）并列；M929、M971 重锚到合并后的负载开关判定，M972 重锚到 `netgraph.signal_source_peers` 的地网排除，M977、M979 与 2A 的 M927、M930 等价故删去；2B 多余的 BALUN 预判删去。
+回放基准新建 `boards-merge2-v1`：以 2B 答案为基套用 2A 的 rf2 变化（101→99），manifest 绑定两个父约定，195/195。
+
+- Event: user:2026-11-02 (用更多的实际电路板来驱动问题的改进; 再多找一些板子…每个板子跑得细致一些)
+- Causes: judgment 1
+- Changed: scripts/checkers/input_filter.py, scripts/checkers/power_switch.py, scripts/checkers/power_up.py, scripts/checkers/inductive_load.py, scripts/tests/test_boards_merge2b_roles.py, evals/mutation/mutations.json, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/boards-merge2-v1/, evals/detection/RESULTS.md, docs/improvement-ledger.md
+- Gates: pytest 2642 passed; mutation --changed 3a3d861 全杀（M979 删后重验 M927/M929/M930/M936/M971/M972 全杀）; kicad_replay 195/195; check_ledger PASS
+
+## 候选按角色持有与拒绝后重归、隔离器件两侧模型：合并步2A (2026-11-02)
+
+变换器需拓扑证据，共享供电截止且供电电容引用不限，reject即释放后可有据add；按厂家物理针表独立建立隔离两侧，MΩ泄放不并域，共地光耦与浮置干触点仍列隔离对象；驱动源≤10kΩ总串阻与≤1Ω等势分开，上游输出电感不套输入滤波。补重复的load_switch dropout、无源RF磁件续流与Bridged误认；保留真实储能开关反例。十板冷扫303→287、已归因冷扫误报113→101，15条错误域诊断消失；两板原候选决定失败恢复为十板完整五步成功。题列真缺陷保留或仍可定位，原db/电压窗/装配不变；未知侧别和2B定类/资格残留不冒充已闭环。详见提案及同名JSON。Causes按15个机制计数，非诊断条数；共用层、SKILL与2B指定文件未改。
+
+- Event: user:2026-11-02 (用更多的实际电路板来驱动问题的改进; 再多找一些板子…每个板子跑得细致一些)
+- Causes: rule_not_enforced 5, knowledge_missing 1, knowledge_wrong 9
+- Changed: docs/improvement-ledger.md, docs/proposals/boards-merge-2a-2026-11-02.json, docs/proposals/boards-merge-2a-2026-11-02.md, evals/detection/RESULTS.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/boards-merge2a-v1/cases.json, evals/kicad_replay_bench/revisions/boards-merge2a-v1/expected.json, evals/kicad_replay_bench/revisions/boards-merge2a-v1/manifest.json, evals/kicad_replay_bench/revisions/boards-merge2a-v1/sources.json, evals/kicad_replay_bench/run.py, evals/mutation/mutations.json, references/architecture.md, references/checker-conventions.md, references/intent-format.md, scripts/checkers/domains.py, scripts/checkers/inductive_load.py, scripts/checkers/input_filter.py, scripts/checkers/isolation_sides.py, scripts/checkers/netgraph.py, scripts/checkers/power_switch.py, scripts/checkers/power_up.py, scripts/checkers/powertree.py, scripts/circuit_candidates.py, scripts/circuit_decisions.py, scripts/lint.py, scripts/plan_circuits.py, scripts/solve_dividers.py, scripts/tests/test_boards_merge2a.py, scripts/tests/test_circuit_candidates.py, scripts/tests/test_circuit_decisions.py, scripts/tests/test_domains.py, scripts/tests/test_inductive_load.py, scripts/tests/test_isolation_sides.py, scripts/tests/test_render_and_pack.py, scripts/tests/test_source_paths.py
+- Gates: pytest 2604 passed, 2 skipped; mutation --changed unit逐批32/32、116/116、53/53全杀（新增M912–M938）；seeded offline --boards-cache --compare 254位点/225自动/0错误，逐位点无退化；typical 203 DETECTED/185 FIXED/14 KNOWN_FALSE_ALARM/0未分类；KiCad replay 195/195（boards-merge2a-v1仅rf2伪输入滤波两项97→95）；detection RESULTS updated；真缺陷保留断言14条PASS；check_ledger PASS。
+
+## 实际板合并步 2B：器件身份、脚角色与逐端点计划 (2026-11-02)
+
+20 板固定源冷扫与候选/合并链 before/after；标题只读语义区，原生 MPN/装配来源保留，端口/机械/继电器触点/磁性件/时钟/I²C/使能/未用输入/差分/驱动追源按物理语义修正；外部 SIG-C08、供电支路 PRO-C04、USB 持有保险丝、ADC 输入与 PMIC 输出分别逐对象派项。冷扫 722→662，已归因同规则同位置误报内容 193→138，不将未裁决新行算真缺陷；42 条 true_defect 归因记录（有重复）原值/位号保留，点名证据另核。完整候选合并 17/20→12/20，其余阻塞保留，不能冒称全链通过；7 块 after 成功链使用未确认的覆盖重放决定。详情、残留模式与准则问题见提案。共用层/SKILL/2A 候选持有及隔离域模型不改。
+
+原因按独立机制计：未落实 7 项是装配、MPN、外部注入、逐电源支路、跨所有权保险丝、ADC、PMIC 逐输出；错误知识 13 项是标题、接口、机械、触点、磁件、时钟、I²C、开关/LDO、未用输入、差分/耦合、驱动源、多端供电路由、USB 物理类型。阅读门第一步仅为新增三个生成资格行增加 266 字节（170810→171076）。实际 ASG 历史配对提交 5e7c969 用于共用层只读比对，未用本地副本伪装匹配。
+
+- Event: user:2026-11-02 (用更多的实际电路板来驱动问题的改进; 再多找一些板子…每个板子跑得细致一些)
+- Causes: rule_not_enforced 7, knowledge_wrong 13
+- Changed: docs/improvement-ledger.md, docs/proposals/boards-merge-2b-2026-11-02.json, docs/proposals/boards-merge-2b-2026-11-02.md, evals/detection/RESULTS.md, evals/kicad_replay_bench/revisions/boards-merge2b-v1/cases.json, evals/kicad_replay_bench/revisions/boards-merge2b-v1/expected.json, evals/kicad_replay_bench/revisions/boards-merge2b-v1/manifest.json, evals/kicad_replay_bench/revisions/boards-merge2b-v1/sources.json, evals/kicad_replay_bench/run.py, evals/mutation/README.md, evals/mutation/mutations.json, evals/seeded_bench/README.md, evals/seeded_bench/boards-merge2b-results.json, evals/seeded_bench/boards-merge2b.json, evals/seeded_bench/mutators.py, evals/seeded_bench/run.py, evals/typical_circuits/cases.json, references/check-catalog.md, references/checker-conventions.md, references/review-vocabulary.md, scripts/audit_datasheets.py, scripts/board_scans.py, scripts/catalog.py, scripts/checkers/decoupling.py, scripts/checkers/diff_levels.py, scripts/checkers/inductive_load.py, scripts/checkers/input_filter.py, scripts/checkers/power_switch.py, scripts/checkers/power_up.py, scripts/checkers/powertree.py, scripts/datasheet_kinds.py, scripts/decoupling.py, scripts/i2c_topology.py, scripts/interfaces.py, scripts/lint.py, scripts/parse_kicad.py, scripts/part_words.py, scripts/plan_circuits.py, scripts/tests/fixtures/interfaces-flyback-usb.json, scripts/tests/ledger4.py, scripts/tests/test_boards_merge2b_coverage.py, scripts/tests/test_boards_merge2b_identity.py, scripts/tests/test_boards_merge2b_roles.py, scripts/tests/test_boards_merge2b_seeds.py, scripts/tests/test_catalog.py, scripts/tests/test_circuit_decisions.py, scripts/tests/test_interface_rows.py, scripts/tests/test_optical_library.py, scripts/tests/test_part_kind_evidence.py, scripts/tests/test_part_number_families.py, scripts/tests/test_reading_path.py
+- Gates: pytest 2612 passed, 3 skipped (真实配对 ASG 5e7c969，只读比较); mutation --changed 单元层前两组 56/56、116/116，最终主运行 224 条加 4 条独立复验、覆盖 227 唯一变异全杀（40 新增 M960–M999）；seeded 254 既有位点/225 自动逐点无退化，新增 4 类/4 位点目标计划、自动 0，合计 258/225/0错误；typical 198 DETECTED/190 FIXED/14 KNOWN_FALSE_ALARM；KiCad replay 195/195；detection RESULTS updated；check_ledger PASS；受限路径字节未变。
+
+## 合并步 1 并入 main，流水线每板前自动并入 boards-program (2026-11-02)
+
+把 main（设计准则库 1.6.1、8 类种子的 A 规则）并进 `boards-program`：分支新增的 29 条变异与 main 撞号，重编为 M883–M911；检出表按合并后重生成。
+合并后 `lint.py` 建 pin2net/pinname 时已滤掉未贴装器件，`board_scans.py` 里 SIG-A06、CLK-A02 的 `nc` 判断成了死代码，
+守它们的 M866、M882 变成等价变异而存活：删掉这两处死判断，M866 重锚到 `lint.py` 的 pin2net/pinname 过滤（由 `test_an_unfitted_transceiver_is_not_reported` 杀死），M882 删去。
+`run_lane.sh` 加 `--merge-from`（默认 `boards-program`）：每块板开始前先并入，起始行记下所用 SR 提交，后面的板子都跑在修好的 SR 上。
+
+- Event: user:2026-11-02 (用更多的实际电路板来驱动问题的改进; 再多找一些板子…每个板子跑得细致一些)
+- Causes: judgment 1
+- Changed: scripts/board_scans.py, evals/mutation/mutations.json, evals/detection/RESULTS.md, evals/boards/_tools/run_lane.sh, docs/improvement-ledger.md
+- Gates: pytest 2579 passed; mutation --changed 全杀（M866 重锚后杀死）; check_ledger PASS
+
+## 四块实际板合并步1：字段、装配、供电与计划误报源 (2026-11-02)
+
+保留KiCad字段/Val解码出处，低阻供电追溯留位号证据，排除DNP电气参与并报告数量，补未经需求确认的默认态及跨所有权逐晶体项；限定纠正重复的网名、偏置、脚名、驱动、型号许可与条件回流误报。四板冷扫638→314，已归因错误内容442→18；新行未裁决不当真缺陷。题列真缺陷全部保留或可定位，新增5类型7真实位点（3目标提示，其余保留自动层缺口），原247位点177目标提示逐位点无退化。详细数表、误报内容复核、计划回放调整及残留模式见提案。共用层与SKILL未改。
+
+- Event: user:2026-11-02 (用更多的实际电路板来驱动问题的改进; 再多找一些板子…每个板子跑得细致一些)
+- Causes: rule_not_enforced 5, knowledge_wrong 10
+- Changed: evals/detection/RESULTS.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/boards-merge1-v1/cases.json, evals/kicad_replay_bench/revisions/boards-merge1-v1/expected.json, evals/kicad_replay_bench/revisions/boards-merge1-v1/manifest.json, evals/kicad_replay_bench/revisions/boards-merge1-v1/sources.json, evals/kicad_replay_bench/revisions/native-fields-v1/cases.json, evals/kicad_replay_bench/revisions/native-fields-v1/expected.json, evals/kicad_replay_bench/revisions/native-fields-v1/manifest.json, evals/kicad_replay_bench/revisions/native-fields-v1/rh-ad8495-thermocouple-pinmap.intent.json, evals/kicad_replay_bench/revisions/native-fields-v1/sources.json, evals/kicad_replay_bench/run.py, evals/mutation/mutations.json, evals/seeded_bench/README.md, evals/seeded_bench/boards-merge1-results.json, evals/seeded_bench/boards-merge1.json, evals/seeded_bench/mutators.py, evals/seeded_bench/run.py, evals/typical_circuits/cases.json, references/architecture.md, scripts/board_scans.py, scripts/catalog.py, scripts/checkers/netgraph.py, scripts/checkers/power_switch.py, scripts/checkers/power_up.py, scripts/checkers/powertree.py, scripts/checkers/supervision.py, scripts/lint.py, scripts/parse_kicad.py, scripts/part_words.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/render_report.py, scripts/solve_dividers.py, scripts/tests/test_board_seed_pairs.py, scripts/tests/test_boards_merge.py, scripts/tests/test_guideline_criteria.py, scripts/tests/test_parse_kicad.py, scripts/tests/test_relay_nc_contact.py, scripts/tests/test_review_v2.py, docs/proposals/boards-merge-1-2026-11-02.md, docs/proposals/boards-merge-1-2026-11-02.json, docs/improvement-ledger.md
+- Gates: pytest 2516 passed, 2 skipped (真实配对ASG提交5e7c969；已安装ASG共用层历史漂移未改); mutation --changed 逐项全杀 (8轮379次执行，29新增变异); seeded --compare 无退化 (247既有位点177自动不变，新增7，合计254/180/0错误); typical 203 DETECTED/185 FIXED/14 KNOWN_FALSE_ALARM; KiCad replay 195/195; detection RESULTS updated; check_ledger PASS。
+
+## 100 块真实开源板目录、固定版本取板与四路分流 (2026-11-02)
+
+搜索 2517 个去重仓库，完成 716 个筛查、235 个实际取板，190 项通过导出/解析/器件数技术门槛，其中 2 项在许可证终核排除；精选 100 个独立仓库，排除 seeded corpus 的同仓库来源。目录只收现代 KiCad、允许的明确许可证及 ≥15 器件的真实板项目，登记固定默认分支 HEAD、根图、源哈希、许可证证据、23 类词表标签及用途（同用途最多 4 块）。标准库取板工具浅拉取、稀疏检出层次源文件并实际导出 kicadxml/解析 db，strict 失败记录日志再回退；最终正式 catalog 全量重放 100/100，56 strict、44 no-strict。四路各 25 块，按类型及器件数平衡；没有启动逐板 SR，也没有改变检查器、共用准则或 seeded corpus。
+
+- Event: user:2026-11-02 (再多找一些板子，比如找100块，在codex里面运行4个对话分别分批来跑)
+- Causes: knowledge_missing 1
+- Changed: evals/boards/README.md, evals/boards/catalog.json, evals/boards/discovery.json, evals/boards/verification.json, evals/boards/_tools/fetch_board.py, evals/boards/_tools/run_lane.sh, evals/boards/_tools/board-prompt.md, evals/boards/_lanes/lane-1.json, evals/boards/_lanes/lane-2.json, evals/boards/_lanes/lane-3.json, evals/boards/_lanes/lane-4.json, scripts/tests/test_boards_tools.py, docs/improvement-ledger.md
+- Gates: pytest 2429 passed, 1 failed, 2 skipped; boards tools 15 passed; catalog replay 100/100; check_ledger PASS. Baseline external ASG shared-layer mismatch (ASG 1.5.0 vs this SR 1.4.1) is outside the authorized references scope and is not suppressed.
 
 ## 准则库 1.7.0 入库：9 条新准则、12 条修订，挂到已有检查项 (2026-11-02)
 
