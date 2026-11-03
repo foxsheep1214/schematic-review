@@ -340,3 +340,24 @@ def test_no_connect_flag_on_an_input_of_unknown_direction_is_still_asked():
     db['no_connect_nodes'] = ['U2.5', 'U2.7']
     flagged = {f['detail'].split(' <- ')[0]: f['kind'] for f in Lint(db).run() if f['rule'] == 'NET-A01'}
     assert flagged['/Charge-IC/ENABLE'] != 'INFO' and flagged['/USB/CTS0'] == 'INFO'
+
+
+# 8. Function ids stay distinct and bound rows are frame members.
+def test_plus_and_minus_refdes_get_two_function_ids():
+    from checkers.planutil import frame_slug
+    assert frame_slug('EXT-J_PACK+1') != frame_slug('EXT-J_PACK-1')
+    assert frame_slug('EXT-J_PACK-1') == 'EXT-J-PACK-1'   # names without a plus keep their id
+
+
+def test_carried_function_binding_is_rebuilt_as_a_member_and_a_dangling_one_is_an_error():
+    import pytest
+    from plan_review import ReviewPlanner
+    planner = ReviewPlanner.__new__(ReviewPlanner)
+    planner.functions = [{'id': 'FN-PORT', 'circuit': 'PORT', 'members': [], 'blind_spots': {}}]
+    row = {'id': 'PRO-E02.D1-1', 'rule': 'PRO-E02', 'function_id': 'FN-PORT', 'object': {'ref': 'D1'}, 'owner': {}}
+    planner.bind_owned_rows([row])
+    assert [m['check_id'] for m in planner.functions[0]['members']] == ['PRO-E02.D1-1']
+    planner.bind_owned_rows([row])   # idempotent
+    assert len(planner.functions[0]['members']) == 1
+    with pytest.raises(ValueError, match='internal error'):
+        planner.bind_owned_rows([dict(row, id='PRO-E02.D2-1', function_id='FN-GONE')])

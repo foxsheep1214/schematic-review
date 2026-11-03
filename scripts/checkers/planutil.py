@@ -12,11 +12,13 @@ def slug(value):
 
 def frame_slug(value):
     """slug for a function id: a name too long for 64 characters keeps its first 55 and an 8-digit hash of the whole
-    name, so two long names that share a prefix never share an id; a name that fits is its slug."""
-    full = re.sub(r'[^A-Za-z0-9]+', '-', str(value or '').upper()).strip('-')
+    name, so two long names that share a prefix never share an id; a name that fits is its slug. A plus sign is spelled
+    out (PLUS) before slugging, so J_PACK+1 and J_PACK-1 stay two ids (boards-merge4)."""
+    value = str(value or '').replace('+', '-PLUS-')
+    full = re.sub(r'[^A-Za-z0-9]+', '-', value.upper()).strip('-')
     if len(full) <= 64:
         return slug(value)
-    return full[:55].rstrip('-') + '-' + hashlib.sha1(str(value).encode('utf-8')).hexdigest()[:8].upper()
+    return full[:55].rstrip('-') + '-' + hashlib.sha1(value.encode('utf-8')).hexdigest()[:8].upper()
 
 
 def empty_handoff():

@@ -6900,5 +6900,26 @@
   "file": "scripts/parse_kicad.py",
   "old": "    return '' if mpn and letters(text) == letters(mpn) else text\n",
   "new": "    return text\n"
+ },
+ {
+  "id": "M1125",
+  "name": "a plus sign vanishes from function ids",
+  "file": "scripts/checkers/planutil.py",
+  "old": "    value = str(value or '').replace('+', '-PLUS-')\n",
+  "new": "    value = str(value or '')\n"
+ },
+ {
+  "id": "M1126",
+  "name": "a carried function binding is not rebuilt as a member",
+  "file": "scripts/plan_review.py",
+  "old": "            if bound is not None and bound.get('circuit') and check['id'] not in {m['check_id'] for m in bound['members']}:\n",
+  "new": "            if False:\n"
+ },
+ {
+  "id": "M1127",
+  "name": "a row bound to a missing frame passes silently",
+  "file": "scripts/plan_review.py",
+  "old": "        if stale:\n            raise ValueError(",
+  "new": "        if stale and False:\n            raise ValueError("
  }
 ]
