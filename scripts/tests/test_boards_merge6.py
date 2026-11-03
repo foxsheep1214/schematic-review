@@ -111,3 +111,12 @@ def test_uvlo_pin_needs_its_own_divider_and_rule_instances_agree():
     assert _rst_a03(db)
     assert PowerUpChecker().rule_instances('RST-A03', build_inventory(_ideal_diode())) == []
     assert PowerUpChecker().rule_instances('RST-A03', build_inventory(db))
+
+
+# F16–F18: datasheet title cues (TI TVS3300 SLVSDO2C p1, Bourns MF-R p1, ST IPS4140HQ DS14694 p1)
+def test_surge_protection_device_title_names_a_tvs_but_not_over_a_varistor():
+    import datasheet_kinds as dk
+    assert dk.cues('TVS3300 33-V Flat-Clamp Surge Protection Device') == {'tvs'}
+    assert dk.cues('SIOV metal oxide varistors, surge protection device') == {'varistor'}
+    assert dk.cues('Bidirectional TVS diode and varistor array') == {'tvs', 'varistor'}
+

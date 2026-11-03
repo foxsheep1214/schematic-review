@@ -70,6 +70,9 @@ def cues(text, specific=True):
     if specific and found & IC_ROLE_CUES:
         # "MOSFET gate driver", "synchronous rectifier controller": the role is the kind, the discrete is its load.
         found -= ROLE_LOADS
+    if specific and {'tvs', 'varistor'} <= found and not any(
+            named_by(w, text, flat) for w in dict(KIND_CUES)['tvs'] if w != 'surgeprotectiondevice'):
+        found.discard('tvs')             # "surge protection device" (TVS3300) is also how MOV makers title a varistor
     if specific and found & {'ntc', 'varistor'}:
         found.discard('fuse')            # a thermistor or varistor datasheet names its thermally fused (ThermoFuse) types
     if specific and 'relaydriver' in flat:

@@ -7201,5 +7201,19 @@
   "file": "scripts/checkers/power_up.py",
   "old": "if item['enable_source'] == wanted and not (rule == 'RST-A03' and item.get('uvlo_pins'))})",
   "new": "if item['enable_source'] == wanted})"
+ },
+ {
+  "id": "M1309",
+  "name": "a surge protection device title no longer names a TVS",
+  "file": "scripts/device_kinds.py",
+  "old": "                        'surgeprotectiondevice'), two_terminal=True",
+  "new": "                        ), two_terminal=True"
+ },
+ {
+  "id": "M1310",
+  "name": "a varistor titled surge protection device is also read as a TVS",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "        found.discard('tvs')             # \"surge protection device\"",
+  "new": "        pass             # \"surge protection device\""
  }
 ]
