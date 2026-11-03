@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 准则库 1.7.0 入库：9 条新准则、12 条修订，挂到已有检查项 (2026-11-02)
+
+草案（下一条）经用户确认后入库：HardwareWiki 登记文件 G01 1.5、G02 1.3、G03 1.5、G04 1.2、G05 1.2 与规范正文同步，共用层重建为 1.7.0（353 条），ASG 同字节。`catalog.BASIS` 把 G02-036/038 挂到 DEV-D01、DEV-D04，G02-037/038 挂到 DOC-D01、DOC-Q01，G02-039 挂到 DEV-C01，G03-059 挂到 PWR-C15，G04-101 挂到 DEV-D02、DEV-D04，G04-102 挂到 DEV-D05、NET-A01、NET-A07，G04-103/104 挂到 SIG-C05（G04-104 另挂 NET-A07）；没有新建检查项，USB 四条的连接器类型限定靠 sr_check 文字与合并步 2B 的连接器型号判定。厂家出处核过原件：PCA9517A Rev. 4.1、RP2350 2026-01-10 构建版、ADS1299 SBAS499C、DFLS1100 DS30497 Rev. 14-2；WCH CH32V30x 评估板原理图未取得原件，登记为版次未核。
+
+- Event: user:2026-11-02 (按草案入库)
+- Causes: rule_missing 9, rule_wrong 12
+- Changed: references/shared/guideline-criteria.json, references/shared/shared-layer.md, scripts/catalog.py, references/architecture.md, evals/detection/RESULTS.md, docs/improvement-ledger.md
+- Gates: pytest 2698; mutation --changed aa04201 36 全杀
+
 ## 准则库修订草案：86 块实板的准则空白与适用范围（2026-11-02）
 
 只出草案，不入库：14 条 criterion_issue 逐条裁决（准则确有问题 9 条，其中 USB 七条同根因：G01-026/029/030/031 出处是 Type-C/PD，却按 USB 大类套到 Standard-A/Micro-B；另有 G03-005 缺 Cff 承接、G04-091 千兆建议写成通用禁止。检查器误用 1 条；G05-030～034 拆开判，只改 G05-031；REQ-D03 两条归工具；SIG-D10 词表范围需要人判）。201 条真缺陷中 142 条 criteria 为空，按性质聚类后起草新准则 9 条（G02-036～039、G03-059、G04-101～104）。修订 12 条（字段级 39 处），建议库版本 1.7.0。补丁套到登记表副本后汇编、check 通过（353 条）。224 条漏问都有准则引用，全部是“准则存在、SR 没落实”，清单交 SR。知识缺口按器件聚合出前 30 个资料待收集型号。共用层、HardwareWiki、scripts、SKILL.md 未改。Causes 按机制计，不按条数。
