@@ -111,3 +111,9 @@
 - CrossLink AUX直接3.3V而CORE经MAX8902B的UVLO/LDO，须核p30顺序；R89实际DNP。USER_SCL/SDA网名反于D1/K2专用脚，J4为I2S却标I2C。
 - LB_CONT浮空、BYP→OUT与105Ω VCO滤波均是合法手册接法；BGA不能枚举数字1–80，Microprocessor Crystal不是MCU，备用I2C触点/上拉岛不等于活动总线。
 - FPGA配置期RST-T04与BYP软启动PWR-D03须单列覆盖；schema15不能承载NEEDS_HUMAN时如实FAIL，未完成条款/绑定也要披露。4份本地PDF与U1/U2在线章节分开记，不以网页可读冒充本地全文。
+
+- 2026-11-02 weirdgyn--driverino-shield：267项(265+2)/41归因(4真13误0准则7知识17人判)/2覆盖漏项；30PASS含7覆盖、43NA、10FAIL同4根因、184待判，native FAIL/NO_GO。
+- 稀疏树另有1-click-bom.tsv与原厂预量产PDF，先git show固定提交取全再read_bom；C4在BOM并入DNF组而图上未DNF，采购CGA3=0603对图0402需分开报。
+- U1.26 AGND必须接系统地；36V标注对U1推荐35V及C2/C3的35V仅判契约冲突，不声称超过40V绝限。PMCT变体未证，旧SLVSF18的10nF别套新版47nF。
+- 无源UNO闲置/透传触点别派断线、跨域注入和空配电；D2蓝灯非反接/eFuse，母线分压非敏感电源。motor_driver补RST-T04先核p36片内偏置，外部ADC RC补ANA-C02。
+- R4原厂ESR03现版0.33W须核温度，不将最弱档采购提示当器件必烧；F1是低压Buck支路PTC非36V入口。schema15待判分类、add电路空nets/跨框架绑定及无条款承载仍FAIL；报告快照不等于pack/准出。
