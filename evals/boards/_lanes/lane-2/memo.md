@@ -116,3 +116,11 @@
 - U16四脚三通道需PRO-E02逐通道；无EN/SS的U6/U21也要启动电流，PVS/PCS实际源输出还缺RST-T04默认态对象。NC的VSET/RSET有合法选项，R61=51k明确停用NTC。
 - 固定BOM175件，原图198含标识/孔/TP；C5/C23、R22、F1、PGA链接、Q额定均有字段冲突，不能择一当实贴。ABS07-166别套通用CL；一页Access Denied不计手册到位。
 - I2C顶层power_rails须显式同值写schema2 rails以免重建过期；914项/75归因(5/11/1/2/56)/3覆盖漏项。needs_human及派生限制保留FAIL，完整记录在外部缓存，未打包。
+
+
+## prajyotdaphal--home_automation-module（2026-11-02）
+- PS1 HLK-10M05的3=-Vo/4=+Vo在原图反接；F2.1/.2同/AC。别让0条lint或正向网名掩盖实际极性/保险旁路，原厂p12（印刷p10）核脚图。
+- SANYOU继电器COM1、COIL2/5与PC817 1A/2K/3E/4C先分侧；交流J9返回和K1–K5 COM接低压GND，不把去耦返回混池当成另一个原板短接。
+- DIN0309电阻封装会触发INDUSTRIAL_DI；零脚孔会触发DEBUG；薄膜/径向电容别默认MLCC，机械触点/光电晶体管别强索数字CMTI。
+- 取板稀疏检出会漏BOM，先查git完整树；本板同版分号CSV/Designation列规范化后read_bom共91电气件，4孔未列、供货列全空；PC817输入330Ω+1kΩ，3.3V下IF≤2.481mA不能套5mA CTR。
+- 476项/30根因（4/8/0/7/11）/3覆盖漏项；needs_human/schema15与其余证据格式拒收564条，保留FAIL/NO_GO未打包，完整记录和Top50在外部缓存。
