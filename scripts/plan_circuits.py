@@ -349,6 +349,22 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
     return found, [ref for ref in unread if ref not in found]
 
 
+def bootstrap_cap_pin(db, node):
+    """A converter BOOT pin is a bootstrap supply, not a strap: its net is the pin and capacitors only, and each
+    capacitor's other end sits on another pin of the same IC (SW/PH/LX), as TPS54202 BOOT-C-SW (merge 5)."""
+    nets, pin2net = db.get('nets', {}), db.get('pin2net', {})
+    ref = node.split('.')[0]
+    others = [n for n in nets.get(pin2net.get(node), []) if n != node]
+    if not others or any(not re.match(r'^C\d', n.split('.')[0]) for n in others):
+        return False
+    for cap_pin in others:
+        cap = cap_pin.split('.')[0]
+        far = [pin2net[n] for n in pin2net if n.split('.')[0] == cap and n != cap_pin]
+        if not any(n != node and n.split('.')[0] == ref for f in far for n in nets.get(f, [])):
+            return False
+    return True
+
+
 class CircuitPlanning:
     """功能电路与器件的检查项。"""
 
@@ -588,7 +604,7 @@ class CircuitPlanning:
                     required_inputs=['datasheet:pin function/Abs Max'],
                     trigger=[f'pinname:{pin}', f'net:{net}'])
             if net and (STRAP_RE.search(upper_pin) or (
-                    STRAP_RE.search(net) and re.match(r'^[UMQ]\d', ref, re.I))):
+                    STRAP_RE.search(net) and re.match(r'^[UMQ]\d', ref, re.I))) and not bootstrap_cap_pin(db, node):
                 obj = {'node': node, 'net': net, 'ref': ref}
                 self.add_check(
                     'RST-E02', obj, readiness='WAITING_EVIDENCE',

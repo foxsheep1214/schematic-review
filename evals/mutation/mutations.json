@@ -7082,5 +7082,19 @@
   "file": "scripts/part_words.py",
   "old": "(?:U|M|IC|J|P|CN|TP|BT|B|R)\\d",
   "new": "(?:U|M|IC|J|P|CN|TP|BT|B)\\d"
+ },
+ {
+  "id": "M1217",
+  "name": "bootstrap BOOT pin is planned as a strap again",
+  "file": "scripts/plan_circuits.py",
+  "old": "STRAP_RE.search(net) and re.match(r'^[UMQ]\\d', ref, re.I))) and not bootstrap_cap_pin(db, node):",
+  "new": "STRAP_RE.search(net) and re.match(r'^[UMQ]\\d', ref, re.I))):"
+ },
+ {
+  "id": "M1218",
+  "name": "bootstrap test accepts a capacitor to another device",
+  "file": "scripts/plan_circuits.py",
+  "old": "if not any(n != node and n.split('.')[0] == ref for f in far for n in nets.get(f, [])):",
+  "new": "if not any(n != node for f in far for n in nets.get(f, [])):"
  }
 ]

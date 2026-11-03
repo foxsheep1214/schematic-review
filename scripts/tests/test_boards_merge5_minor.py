@@ -41,3 +41,31 @@ def test_cell_words_do_not_capture_connectors_ics_or_plain_capacitors():
     assert pw.classify('R35', {'value': '2k', 'part': 'CR0402-FX-2001GLF'}, 2)[0] == pw.RESISTOR   # Bourns CR chip resistor
     assert pw.classify('R5', {'value': '100k BATT sense'}, 2)[0] == pw.RESISTOR                    # a resistor named for its job
     assert pw.classify('X1', {'value': '2k', 'part': 'CR0603-FX-2001ELF'}, 2)[0] != pw.BATTERY       # case size, not a coin cell
+
+
+# 4c: a converter BOOT pin with only a capacitor to its own SW pin is a bootstrap supply, not a strap
+def _boot_db(far_ref='U3', extra=()):
+    nets = {'BOOTN': ['U3.6', 'C20.2', *extra], 'SWN': ['C20.1', 'L4.1', '%s.2' % far_ref]}
+    pin2net = {n: k for k, v in nets.items() for n in v}
+    return {'nets': nets, 'pin2net': pin2net, 'pinname': {'U3.6': 'BOOT', '%s.2' % far_ref: 'SW'}}
+
+
+def test_bootstrap_boot_pin_is_not_a_strap():
+    from plan_circuits import bootstrap_cap_pin
+    assert bootstrap_cap_pin(_boot_db(), 'U3.6')
+    assert not bootstrap_cap_pin(_boot_db(far_ref='U9'), 'U3.6')          # cap goes to another device: may be a strap
+    assert not bootstrap_cap_pin(_boot_db(extra=('R5.1',)), 'U3.6')       # a resistor on BOOT: a real strap
+
+
+def test_plan_asks_no_strap_row_for_a_bootstrap_boot_pin():
+    from plan_review import build_review_plan
+    from test_checkers_framework import whole_board
+    db = whole_board()
+    db['parts'].update({'U7': {'value': 'TPS54202', 'part': 'TPS54202', 'nc': False},
+                        'C70': {'value': '100n', 'part': '100n', 'nc': False}})
+    for node, name, net in (('U7.1', 'BOOT', 'U7_BOOT'), ('C70.1', '1', 'U7_BOOT'), ('C70.2', '2', 'U7_SW'), ('U7.6', 'SW', 'U7_SW')):
+        db['nets'].setdefault(net, []).append(node)
+        db['pin2net'][node], db['pinname'][node] = net, name
+    db['ref2page'] = {ref: 1 for ref in db['parts']}
+    ids = [c['id'] for c in build_review_plan(db)['checks'] if c['rule'] == 'RST-E02']
+    assert not [i for i in ids if 'U7' in i]
