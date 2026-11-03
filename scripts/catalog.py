@@ -1176,6 +1176,9 @@ SUBJECT_PRECONDITIONS = {
     'RTC_BACKUP': '电路里没有 RTC、备份电源或电池充电机制',
     'START_PIN': '电路里没有带复位、使能、禁止或启动配置脚（RESET、EN、DIS、UVLO、BOOT、strap）的 IC',
     'RESCUE_PIN': '电路里没有 MCU，也没有带启动配置脚（BOOT、strap、MODE）的 IC：没有可烧录、可救援的器件',
+    # boards-merge6 F20: a hold-up diode with its storage (D201 → 24V_HOLD) is no eFuse and has one source
+    'INTEGRATED_SWITCH': '电路里没有负载开关/eFuse 角色或带 ILIM/IMON/DVDT 脚的 IC',
+    'MULTI_SOURCE': '电路里没有第二路电源（两个连接器、阴极汇合的两只二极管或两颗通路开关）',
 }
 # 只在某个产品基线才问的规则（共用规范的航天专用规则）：基线不符时不派、不算未问。
 BASELINE_RULES = {'REQ-C02': 'aerospace', 'PWR-C25': 'aerospace', 'SIG-C18': 'aerospace', 'PRO-C10': 'aerospace',
@@ -1197,6 +1200,8 @@ SUBJECT_REQUIRES = {
     ('POWER_PROTECTION', 'PRO-C06'): 'SUPPLY_SWITCH',
     ('POWER_PROTECTION', 'PRO-C08'): 'PROTECTION_PART',
     ('POWER_PROTECTION', 'PRO-C09'): 'PROTECTION_PART',
+    ('POWER_PROTECTION', 'PRO-C07'): 'INTEGRATED_SWITCH',
+    ('POWER_PROTECTION', 'PWR-C23'): 'MULTI_SOURCE',
     ('ANALOG', 'ANA-C05'): 'ANALOG_PIN',
     ('ANALOG', 'ANA-C06'): 'ANALOG_PIN',
     ('POWER_PROTECTION', 'ANA-T01'): 'SENSE_ELEMENT',

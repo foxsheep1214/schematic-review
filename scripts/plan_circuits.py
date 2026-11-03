@@ -339,6 +339,23 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
         found += [r for r in ics if graph.role_kind(r) == 'pd_controller' or
                   graph.named_pins(r, re.compile(r'^CC[12]$', re.I))]
         unread += [r for r in ports if usb_connector_type(graph.parts[r]) is None]
+    elif requires == 'INTEGRATED_SWITCH':
+        found = sorted({ref for ref in ics if graph.role_kind(ref) == 'load_switch'}
+                       | set(with_pin((re.compile(r'^(ILIM|IMON|DVDT|DV/DT)$', re.I),))))
+        unread = sorted(set(unread) | {ref for ref in ics if graph.role_kind(ref) in (None, catalog.GENERIC_IC_ROLE)})
+    elif requires == 'MULTI_SOURCE':
+        connectors = [ref for ref in fitted if graph.kind(ref) == CONNECTOR]
+        switches = [ref for ref in ics if graph.role_kind(ref) in ('load_switch', 'pd_controller')]
+        cathodes = {}
+        for ref in fitted:
+            if graph.kind(ref) == DIODE:
+                anode, cathode = (graph.pin2net.get(graph.node_named(ref, role) or '') for role in ('anode', 'cathode'))
+                if anode and cathode:
+                    cathodes.setdefault(cathode, {})[anode] = ref
+        oring = sorted(ref for anodes in cathodes.values() if len(anodes) > 1 for ref in anodes.values())
+        found = sorted(set(connectors if len(connectors) > 1 else []) | set(switches if len(switches) > 1 else [])
+                       | set(oring) | ({r for r in ics if graph.role_kind(r) == 'pd_controller'} if connectors else set()))
+        unread = sorted(set(unread) | {ref for ref in ics if graph.role_kind(ref) in (None, catalog.GENERIC_IC_ROLE)})
     elif requires == 'PASSIVE_CRYSTAL':
         found = [r for r in fitted if graph.kind(r) == CRYSTAL]
     elif requires == 'RTC_BACKUP':

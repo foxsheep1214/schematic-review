@@ -59,6 +59,8 @@
 | POWER_PROTECTION | PRO-C06 | SUPPLY_SWITCH | 电路里没有 D、S 都不接地的 MOSFET |
 | POWER_PROTECTION | PRO-C08 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |
 | POWER_PROTECTION | PRO-C09 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |
+| POWER_PROTECTION | PRO-C07 | INTEGRATED_SWITCH | 电路里没有负载开关/eFuse 角色或带 ILIM/IMON/DVDT 脚的 IC |
+| POWER_PROTECTION | PWR-C23 | MULTI_SOURCE | 电路里没有第二路电源（两个连接器、阴极汇合的两只二极管或两颗通路开关） |
 | ANALOG | ANA-C05 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
 | ANALOG | ANA-C06 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
 | POWER_PROTECTION | ANA-T01 | SENSE_ELEMENT | 电路里没有采样电阻（<1 Ω）、NTC 或接到 IC 检测脚的分压 |

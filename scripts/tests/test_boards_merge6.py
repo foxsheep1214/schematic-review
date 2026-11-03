@@ -266,3 +266,45 @@ def test_multifunction_boot1_pin_gets_a_strap_row():
     import plan_circuits
     assert plan_circuits.STRAP_RE.search('PB2/BOOT1') and plan_circuits.STRAP_RE.search('/04_MCU/BOOT1')
     assert not plan_circuits.STRAP_RE.search('/CONFIG/SDA')
+
+
+# F20: the hold-up branch (D201 from 24V_BUS to the 24V_HOLD storage) is no eFuse and has one source
+def _pre(db, requires, refs, kinds=None):
+    from plan_circuits import subject_precondition
+    db = dict(db, device_kinds={r: {'kind': k} for r, k in (kinds or {}).items()})
+    return subject_precondition(NetGraph(db), db['pinname'], requires, refs, [])
+
+
+def _holdup():
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    db = empty()
+    add(db, 'D201', 'STPS2L60', [('1', 'A', '24V_BUS'), ('2', 'K', '24V_HOLD')])
+    add(db, 'C201', '470uF', [('1', '', '24V_HOLD'), ('2', '', 'GND')])
+    db['parts']['D201']['prim'] = 'Device:D_Schottky'
+    return db
+
+
+def test_holdup_diode_asks_no_efuse_or_dual_source_rows():
+    assert _pre(_holdup(), 'INTEGRATED_SWITCH', ['D201', 'C201']) == ([], [])
+    assert _pre(_holdup(), 'MULTI_SOURCE', ['D201', 'C201']) == ([], [])
+
+
+def test_efuse_and_dual_source_preconditions_hold_where_the_mechanism_is_there():
+    from test_inductive_load import add
+    db = _holdup()
+    add(db, 'D202', 'STPS2L60', [('1', 'A', 'VAUX'), ('2', 'K', '24V_HOLD')])        # second source ORed in
+    db['parts']['D202']['prim'] = 'Device:D_Schottky'
+    assert _pre(db, 'MULTI_SOURCE', ['D201', 'D202'])[0] == ['D201', 'D202']
+    add(db, 'U1', 'TPS2660', [('1', 'IN', '24V_BUS'), ('2', 'OUT', 'VLOAD'), ('3', 'ILIM', 'ILIM_N'), ('4', 'GND', 'GND')])
+    assert _pre(db, 'INTEGRATED_SWITCH', ['U1'])[0] == ['U1']
+    add(db, 'U2', 'LM74910', [('1', 'A', 'VIN'), ('2', 'C', 'VOUT2'), ('3', 'GND', 'GND')])
+    assert _pre(db, 'INTEGRATED_SWITCH', ['U2'], {'U2': 'load_switch'})[0] == ['U2']
+    assert _pre(db, 'INTEGRATED_SWITCH', ['U2'])[1] == ['U2']                     # role not verified: still asked
+
+
+def test_holdup_circuit_frame_lists_efuse_and_dual_source_as_not_asked():
+    from test_subject_requires import asked, not_asked, plan_of
+    plan = plan_of(_holdup(), 'POWER_PROTECTION', ['D201', 'C201'])
+    assert asked(plan, 'PRO-C07') == [] and asked(plan, 'PWR-C23') == []
+    assert not_asked(plan)['PRO-C07'] == 'INTEGRATED_SWITCH' and not_asked(plan)['PWR-C23'] == 'MULTI_SOURCE'

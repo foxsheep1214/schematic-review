@@ -7285,5 +7285,33 @@
   "file": "scripts/circuit_candidates.py",
   "old": "                        and self.matches(RESET_PIN_RE, c['nets'].get('pin', ''))), None)",
   "new": "                        and False), None)"
+ },
+ {
+  "id": "M1321",
+  "name": "PRO-C07 eFuse rows are asked of every power-protection circuit again",
+  "file": "scripts/catalog.py",
+  "old": "    ('POWER_PROTECTION', 'PRO-C07'): 'INTEGRATED_SWITCH',\n",
+  "new": ""
+ },
+ {
+  "id": "M1322",
+  "name": "PWR-C23 dual-source rows are asked of every power-protection circuit again",
+  "file": "scripts/catalog.py",
+  "old": "    ('POWER_PROTECTION', 'PWR-C23'): 'MULTI_SOURCE',\n",
+  "new": ""
+ },
+ {
+  "id": "M1323",
+  "name": "one diode counts as an ORing of two sources",
+  "file": "scripts/plan_circuits.py",
+  "old": "for ref in anodes.values())\n        found = sorted(set(connectors if len(connectors) > 1 else [])",
+  "new": "for ref in anodes.values())\n        oring = [r for r in fitted if graph.kind(r) == DIODE]\n        found = sorted(set(connectors if len(connectors) > 1 else [])"
+ },
+ {
+  "id": "M1324",
+  "name": "an IC with an unverified role no longer keeps the eFuse question",
+  "file": "scripts/plan_circuits.py",
+  "old": "        unread = sorted(set(unread) | {ref for ref in ics if graph.role_kind(ref) in (None, catalog.GENERIC_IC_ROLE)})\n    elif requires == 'MULTI_SOURCE':",
+  "new": "    elif requires == 'MULTI_SOURCE':"
  }
 ]
