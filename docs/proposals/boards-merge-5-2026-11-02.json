@@ -1,0 +1,6031 @@
+{
+ "note": "boards-merge5 第 2 项：224 条漏问在当前 SR（1cd885b）上重跑原生 XML→冷扫→候选→决定→候选扫描→合并计划后的判定。reported=同规则逐对象计划行或扫描发现点名该位点（排除审查员 rule_gaps 的 GAP- 行）；missed=本板没有该规则的自动行；needs_human=有同规则行但对象粒度需人判。",
+ "misses": [
+  {
+   "board": "a2r-lab--crazyflie_fpga_deck",
+   "id": "M01",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U2",
+    "L1",
+    "L2",
+    "L3",
+    "C26",
+    "C27",
+    "C28"
+   ],
+   "nets": [
+    "+1V0",
+    "+1V8",
+    "+3V3"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PWR-C04.U2-16.U2-16",
+    "PWR-C04.U2-2.U2-2",
+    "PWR-C04.U2-33.U2-33",
+    "PWR-C04.U2-9.U2-9"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C04.GAP-PMIC-COUT.U2"
+   ],
+   "seed": null
+  },
+  {
+   "board": "a2r-lab--crazyflie_fpga_deck",
+   "id": "M02",
+   "criterion": "G03-018",
+   "sr_rule": "PWR-C06",
+   "refs": [
+    "U2",
+    "R26",
+    "U4"
+   ],
+   "nets": [
+    "VBUS",
+    "/VCC",
+    "/En_1V",
+    "/En_1V8",
+    "/En_3V3"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C06.GAP-PMIC-UVLO.U2"
+   ],
+   "seed": null
+  },
+  {
+   "board": "a2r-lab--crazyflie_fpga_deck",
+   "id": "M03",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "U2",
+    "C26",
+    "C27",
+    "C28"
+   ],
+   "nets": [
+    "+1V0",
+    "+1V8",
+    "+3V3"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-D03.GAP-PMIC-START-CURRENT.U2"
+   ],
+   "seed": null
+  },
+  {
+   "board": "a2r-lab--crazyflie_fpga_deck",
+   "id": "M04",
+   "criterion": "G04-017",
+   "sr_rule": "SIG-C01",
+   "refs": [
+    "U1",
+    "U2",
+    "R14",
+    "R15"
+   ],
+   "nets": [
+    "/SCLK_PWR",
+    "/SDAT_PWR"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "SIG-C01.GAP-PMIC-I2C-RC.U2"
+   ],
+   "seed": null
+  },
+  {
+   "board": "alia5--piccante",
+   "id": "M01",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "A1",
+    "R14",
+    "R15"
+   ],
+   "nets": [
+    "VBATT",
+    "Net-(A1-GPIO26_ADC0)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C03.GAP-ADC-VBATT.A1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "alia5--piccante",
+   "id": "M02",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "JPWR1",
+    "U4",
+    "C3",
+    "R15"
+   ],
+   "nets": [
+    "VBATT",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.JPWR1-2.JPWR1-2"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C04.GAP-VBATT-SOURCE.VBATT"
+   ],
+   "seed": null
+  },
+  {
+   "board": "alia5--piccante",
+   "id": "M03",
+   "criterion": "G01-029",
+   "sr_rule": "SIG-C05",
+   "refs": [
+    "A1",
+    "D2",
+    "C4"
+   ],
+   "nets": [
+    "VSYS",
+    "unconnected-(A1-VBUS-Pad40)",
+    "Net-(D2-A)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "SIG-C05.GAP-USB-MODULE.A1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "antmicro--hdmi-mipi-bridge",
+   "id": "M01",
+   "criterion": "G05-030",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "U2",
+    "U5"
+   ],
+   "nets": [
+    "/Channel 1/HDMI1_D0_P",
+    "/Channel 1/HDMI1_D0_N",
+    "/Channel 1/HDMI1_D1_P",
+    "/Channel 1/HDMI1_D1_N",
+    "/Channel 1/HDMI1_D2_P",
+    "/Channel 1/HDMI1_D2_N",
+    "/Channel 2/HDMI2_D0_P",
+    "/Channel 2/HDMI2_D0_N",
+    "/Channel 2/HDMI2_D1_P",
+    "/Channel 2/HDMI2_D1_N",
+    "/Channel 2/HDMI2_D2_P",
+    "/Channel 2/HDMI2_D2_N",
+    "/Channel 1/HDMI1_CLK_P",
+    "/Channel 1/HDMI1_CLK_N",
+    "/Channel 2/HDMI2_CLK_P",
+    "/Channel 2/HDMI2_CLK_N"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-E02.U2-0a3e95",
+    "PRO-E02.U2-435a45",
+    "PRO-E02.U2-9ad12f",
+    "PRO-E02.U2-b55e85",
+    "PRO-E02.U2-bbb56a"
+   ],
+   "lint": [
+    "PRO-E02:U2",
+    "PRO-E02:U2",
+    "PRO-E02:U2",
+    "PRO-E02:U2",
+    "PRO-E02:U2"
+   ],
+   "gap_rows": [
+    "PRO-E02.GAP-ESD-ARRAY-CLAMP.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "antmicro--hdmi-mipi-bridge",
+   "id": "M02",
+   "criterion": "G03-028",
+   "sr_rule": "PWR-C24",
+   "refs": [
+    "U1",
+    "U4",
+    "R3",
+    "R16"
+   ],
+   "nets": [
+    "/Channel 1/CH1_~{RST}",
+    "/Channel 2/CH2_~{RST}"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C24.GAP-BRIDGE-RESET-SEQUENCE.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "antmicro--poe-usb-c-pd-converter",
+   "id": "M01",
+   "criterion": "G04-040",
+   "sr_rule": "PRO-D02",
+   "refs": [
+    "U4"
+   ],
+   "nets": [
+    "GNDD",
+    "GND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--poe-usb-c-pd-converter",
+   "id": "M02",
+   "criterion": "G05-040",
+   "sr_rule": "DRV-C02",
+   "refs": [
+    "U6",
+    "C9",
+    "C10",
+    "C57",
+    "R78",
+    "R73",
+    "J3"
+   ],
+   "nets": [
+    "VBUS",
+    "/USB Power Delivery and Ethernet output/IN+",
+    "/USB Power Delivery and Ethernet output/IN-"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--poe-usb-c-pd-converter",
+   "id": "M03",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "U1",
+    "U4",
+    "U6",
+    "J3",
+    "J4"
+   ],
+   "nets": [
+    "+28V",
+    "VBUS",
+    "/USB Power Delivery and Ethernet output/IN-",
+    "+5V"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.J3-A4.J3-A4",
+    "PRO-C04.J3-A9.J3-A9",
+    "PRO-C04.J3-B4.J3-B4",
+    "PRO-C04.J3-B9.J3-B9",
+    "PRO-C04.J4-2.J4-2"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--poe-usb-c-pd-converter",
+   "id": "M04",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U4",
+    "R76",
+    "C3",
+    "C4",
+    "C5",
+    "C6",
+    "C17",
+    "C18",
+    "C19",
+    "C20"
+   ],
+   "nets": [
+    "Net-(U4-SENSE+)",
+    "+28V"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PWR-C04.DECAP-57151FD9BA076BAB7C7E.NET-U4-SENSE"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "badgineer--mp2-esc",
+   "id": "M01",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "U6",
+    "QA1",
+    "QB1",
+    "QC1"
+   ],
+   "nets": [
+    "VBAT"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C04.GAP-VBAT-SOURCE-PROTECTION.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "badgineer--mp2-esc",
+   "id": "M02",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U6",
+    "C11",
+    "C12",
+    "C13",
+    "C26",
+    "C27",
+    "C28"
+   ],
+   "nets": [
+    "V12V"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C04.GAP-AUX12-OUTPUT-CAP.U6"
+   ],
+   "seed": null
+  },
+  {
+   "board": "badgineer--mp2-esc",
+   "id": "M03",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U1",
+    "U2",
+    "U3",
+    "U5",
+    "QA1",
+    "QA2"
+   ],
+   "nets": [
+    "HIN_A",
+    "LIN_A",
+    "HIN_B",
+    "LIN_B",
+    "HIN_C",
+    "LIN_C",
+    "/AU_GATESIG"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-BRIDGE-RESET-DEFAULT.U5"
+   ],
+   "seed": null
+  },
+  {
+   "board": "blkburn--zigbee",
+   "id": "M01",
+   "criterion": "G05-030",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D6",
+    "R8",
+    "J2",
+    "U3"
+   ],
+   "nets": [
+    "/DIO_24",
+    "Net-(J2-Pad2)",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-E02.D6-412ebd"
+   ],
+   "lint": [
+    "PRO-E02:D6"
+   ],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "blkburn--zigbee",
+   "id": "M02",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "J2",
+    "R8",
+    "R10",
+    "R11",
+    "R12",
+    "U3"
+   ],
+   "nets": [
+    "/DIO_24"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "blkburn--zigbee",
+   "id": "M03",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U3",
+    "U1",
+    "R3",
+    "R1",
+    "R4",
+    "C3",
+    "SW2",
+    "J4",
+    "SW3"
+   ],
+   "nets": [
+    "/XDS_RESET",
+    "/FLASH_CS",
+    "/DIO_23"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "brainsmoke--usb2_hub",
+   "id": "M01",
+   "criterion": "G05-030/G05-031/G05-032",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "U6",
+    "U7",
+    "U8",
+    "U9",
+    "U10"
+   ],
+   "nets": [
+    "5V",
+    "VUSB1",
+    "VUSB2",
+    "VUSB3",
+    "VUSB4"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-E02.U10-575dca",
+    "PRO-E02.U10-bcc87a",
+    "PRO-E02.U10-d4ce9f",
+    "PRO-E02.U6-00bfce",
+    "PRO-E02.U6-2d8d6d"
+   ],
+   "lint": [
+    "PRO-E02:U6",
+    "PRO-E02:U6",
+    "PRO-E02:U6",
+    "PRO-E02:U7",
+    "PRO-E02:U7"
+   ],
+   "gap_rows": [
+    "PRO-E02.GAP-ESD-U10.U10",
+    "PRO-E02.GAP-ESD-U6.U6",
+    "PRO-E02.GAP-ESD-U7.U7"
+   ],
+   "seed": null
+  },
+  {
+   "board": "g-pereira--greenmobi-bms",
+   "id": "M01",
+   "criterion": "G01-030",
+   "sr_rule": "SIG-D07",
+   "refs": [
+    "J2",
+    "U2",
+    "R2",
+    "R3"
+   ],
+   "nets": [
+    "unconnected-(J2-VBUS-PadA4)",
+    "/USB_DN",
+    "/USB_DP"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-D07.USB-J2.J2"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "g-pereira--greenmobi-bms",
+   "id": "M02",
+   "criterion": "G03-028",
+   "sr_rule": "PWR-C24",
+   "refs": [
+    "U3",
+    "U4",
+    "R1",
+    "R15",
+    "U5"
+   ],
+   "nets": [
+    "/Frontend/Shutdown",
+    "+5V",
+    "+3.3V",
+    "Net-(U5-TS2)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PWR-C24.BUCK-5V.C16",
+    "PWR-C24.POWER-CONVERTER-U4.U4"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "g-pereira--greenmobi-bms",
+   "id": "M03",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "J6",
+    "R22",
+    "U5",
+    "F1"
+   ],
+   "nets": [
+    "/Frontend/CEL_16",
+    "Net-(U5-BAT)",
+    "/BAT+",
+    "/Frontend/BAT+"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.CHARGE-PROTECT.C49"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "greatscottgadgets--amalthea-hardware",
+   "id": "M01",
+   "criterion": "G04-009",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "U1",
+    "J1"
+   ],
+   "nets": [
+    "/PICO",
+    "/SCLK",
+    "/~{SELN}",
+    "/~{RSTN}",
+    "/TXCLK_P",
+    "/TXD_P"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-C08.EXT-J1.IRQ",
+    "SIG-C08.EXT-J1.PICO",
+    "SIG-C08.EXT-J1.POCI",
+    "SIG-C08.EXT-J1.RSTN",
+    "SIG-C08.EXT-J1.RXCLK-N"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "greatscottgadgets--amalthea-hardware",
+   "id": "M02",
+   "criterion": "G03-004",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U1",
+    "C4",
+    "C5",
+    "C6"
+   ],
+   "nets": [
+    "Net-(U1-AVDD0)",
+    "Net-(U1-AVDD1)",
+    "Net-(U1-DVDD)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PWR-C04.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1",
+    "PWR-C04.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD",
+    "PWR-C04.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "greatscottgadgets--amalthea-hardware",
+   "id": "M03",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U1",
+    "J1"
+   ],
+   "nets": [
+    "/~{RSTN}",
+    "/~{SELN}",
+    "/IRQ",
+    "/RXCLK_P"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "groupgets--kimchi-micro",
+   "id": "M01",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U4",
+    "C113",
+    "C54"
+   ],
+   "nets": [
+    "NVCC_SD2"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PWR-C04.U4-10.U4-10",
+    "PWR-C04.U4-17.U4-17",
+    "PWR-C04.U4-24.U4-24",
+    "PWR-C04.U4-30.U4-30",
+    "PWR-C04.U4-38.U4-38"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "groupgets--kimchi-micro",
+   "id": "M02",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U12",
+    "R46"
+   ],
+   "nets": [
+    "/Power/PACKP_K",
+    "/Power/CSP"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "ANA-C03.U12-C1.U12-C1",
+    "ANA-C03.U12-C2.U12-C2",
+    "ANA-C03.U12-C3.U12-C3"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "loredati-svg--tpa3116d2-class-d-amplifier",
+   "id": "M01",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "IC2",
+    "R3",
+    "R4"
+   ],
+   "nets": [
+    "Net-(IC2-MUTE)",
+    "Net-(IC2-FAULTZ)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-DEFAULT-AMP.IC2",
+    "RST-T04.GAP-DEFAULT-BT.IC3"
+   ],
+   "seed": null
+  },
+  {
+   "board": "loredati-svg--tpa3116d2-class-d-amplifier",
+   "id": "M02",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "IC3",
+    "R11",
+    "R12",
+    "R13"
+   ],
+   "nets": [
+    "Net-(IC3-MFB)",
+    "Net-(IC3-EAN)",
+    "Net-(IC3-P2_0)",
+    "/02_Bluetooth_Receiver/SYS_PWR"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-DEFAULT-AMP.IC2",
+    "RST-T04.GAP-DEFAULT-BT.IC3"
+   ],
+   "seed": null
+  },
+  {
+   "board": "loredati-svg--tpa3116d2-class-d-amplifier",
+   "id": "M03",
+   "criterion": "G04-007",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "IC2",
+    "IC3",
+    "C1",
+    "C2",
+    "C4",
+    "C5"
+   ],
+   "nets": [
+    "IN_COM",
+    "IN_P_LEFT",
+    "IN_P_RIGHT"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "SIG-C08.GAP-ANALOG-POWEROFF.IC2"
+   ],
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--qfhmix01",
+   "id": "M01",
+   "criterion": "G04-041",
+   "sr_rule": "ANA-C01",
+   "refs": [
+    "U4",
+    "R20",
+    "R21",
+    "R22",
+    "R23"
+   ],
+   "nets": [
+    "Net-(R20-Pad1)",
+    "Net-(R21-Pad1)",
+    "Net-(R22-Pad1)",
+    "Net-(R23-Pad1)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C01.GAP-U4-COMMON-MODE.U4"
+   ],
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--qfhmix01",
+   "id": "M02",
+   "criterion": "G04-007",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "J1",
+    "U1",
+    "U4",
+    "R24",
+    "R25",
+    "R26",
+    "R27"
+   ],
+   "nets": [
+    "CLK_IN_P",
+    "CLK_IN_N",
+    "DEM_OUTA_P",
+    "DEM_OUTA_N",
+    "DEM_OUTB_P",
+    "DEM_OUTB_N"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-C08.EXT-J1.CLK-IN-N",
+    "SIG-C08.EXT-J1.CLK-IN-P",
+    "SIG-C08.EXT-J1.DEM-OUTA-N",
+    "SIG-C08.EXT-J1.DEM-OUTA-P",
+    "SIG-C08.EXT-J1.DEM-OUTB-N"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "SIG-C08.GAP-J1-POWER-OFF.J1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--solarmini01",
+   "id": "M01",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U1",
+    "J3",
+    "R1",
+    "R2",
+    "R3"
+   ],
+   "nets": [
+    "Net-(U1-XSHUT)",
+    "Net-(U1-MPP-SET)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-J3-ENABLE-DEFAULT.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--solarmini01",
+   "id": "M02",
+   "criterion": "G03-018",
+   "sr_rule": "PWR-C06",
+   "refs": [
+    "U1",
+    "R1",
+    "R2",
+    "R6"
+   ],
+   "nets": [
+    "/PV+",
+    "Net-(U1-MPP-SET)",
+    "Net-(U1-ICTRL+)",
+    "Net-(U1-ICTRL-)"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C06.GAP-U1-UVLO-CURRENT.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "neumi--fastlogic",
+   "id": "M01",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "C5",
+    "C6",
+    "C7",
+    "C8",
+    "C9",
+    "C10",
+    "C11",
+    "C12",
+    "C13",
+    "C14",
+    "C15",
+    "C16",
+    "C17",
+    "C18",
+    "C19",
+    "C20",
+    "C21",
+    "C22",
+    "C23",
+    "C24",
+    "C27",
+    "C28",
+    "C29",
+    "C30",
+    "C31",
+    "C32",
+    "C33",
+    "C34",
+    "C35",
+    "C36",
+    "C37",
+    "C38",
+    "C39",
+    "C40",
+    "C41",
+    "C42",
+    "C43",
+    "C44",
+    "C45"
+   ],
+   "nets": [
+    "Net-(U9-VDD)",
+    "Net-(J17-VBUS)"
+   ],
+   "status": "needs_human",
+   "why": "该板本阶段没有计划输出",
+   "matched": null,
+   "lint": null,
+   "gap_rows": null,
+   "seed": null
+  },
+  {
+   "board": "neumi--fastlogic",
+   "id": "M02",
+   "criterion": "G04-007",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "U9",
+    "J17"
+   ],
+   "nets": [
+    "Net-(J17-VBUS)"
+   ],
+   "status": "needs_human",
+   "why": "该板本阶段没有计划输出",
+   "matched": null,
+   "lint": null,
+   "gap_rows": null,
+   "seed": null
+  },
+  {
+   "board": "neumi--fastlogic",
+   "id": "M03",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U6",
+    "U9"
+   ],
+   "nets": [
+    "unconnected-(U6-VCAP_1-Pad49)",
+    "unconnected-(U6-VCAP_2-Pad73)",
+    "Net-(U9-VDD)"
+   ],
+   "status": "needs_human",
+   "why": "该板本阶段没有计划输出",
+   "matched": null,
+   "lint": null,
+   "gap_rows": null,
+   "seed": null
+  },
+  {
+   "board": "neumi--fastlogic",
+   "id": "M04",
+   "criterion": "G04-018",
+   "sr_rule": "SIG-C01",
+   "refs": [
+    "Q4",
+    "Q5",
+    "R5",
+    "R26",
+    "R39",
+    "R4"
+   ],
+   "nets": [
+    "SDA_1",
+    "SDA_5V",
+    "SCL_1",
+    "SCL_5V"
+   ],
+   "status": "needs_human",
+   "why": "该板本阶段没有计划输出",
+   "matched": null,
+   "lint": null,
+   "gap_rows": null,
+   "seed": null
+  },
+  {
+   "board": "oresat--oresat-c3-hardware",
+   "id": "M01",
+   "criterion": "G04-005",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "U1",
+    "U16",
+    "U44",
+    "U31",
+    "U38"
+   ],
+   "nets": [
+    "/L Band/SPI1_MOSI",
+    "/L Band/SPI1_SCLK",
+    "/OSD3358: SIP C/SPI0_MOSI",
+    "3.3V-L",
+    "3.3V-U"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-C08.EXT-J8.NRESET"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "rapidanalysis--xerxes",
+   "id": "M01",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U6",
+    "C3"
+   ],
+   "nets": [
+    "/PoE_5V",
+    "GND"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C04.GAP-POE-COUT.POE-5V"
+   ],
+   "seed": null
+  },
+  {
+   "board": "rapidanalysis--xerxes",
+   "id": "M02",
+   "criterion": "G04-040",
+   "sr_rule": "PRO-D02",
+   "refs": [
+    "U6",
+    "D4",
+    "D5"
+   ],
+   "nets": [
+    "Net-(D4--)",
+    "GND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-D02.GAP-POE-ISOLATION.U6"
+   ],
+   "seed": null
+  },
+  {
+   "board": "rapidanalysis--xerxes",
+   "id": "M03",
+   "criterion": "G05-025",
+   "sr_rule": "PRO-C05",
+   "refs": [
+    "U1",
+    "J1"
+   ],
+   "nets": [
+    "/SD_PWR"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C05.SD-PWR.U1"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "rapidanalysis--xerxes",
+   "id": "M04",
+   "criterion": "G05-030",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D6",
+    "U7",
+    "U8"
+   ],
+   "nets": [
+    "Net-(D4-+)",
+    "Net-(D4--)",
+    "/TRD0_P",
+    "/TRD1_P",
+    "/TRD2_P",
+    "/TRD3_P"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-E02.D6-9cfcb3",
+    "PRO-E02.U7-3357cd",
+    "PRO-E02.U7-aac99e",
+    "PRO-E02.U7-bde922",
+    "PRO-E02.U7-ef8cd2"
+   ],
+   "lint": [
+    "PRO-E02:D6",
+    "PRO-E02:U7",
+    "PRO-E02:U7",
+    "PRO-E02:U7",
+    "PRO-E02:U7"
+   ],
+   "gap_rows": [
+    "PRO-E02.GAP-TVS-CLAMP.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "s59mz--kicad-led-drv-pmod",
+   "id": "M01",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U1",
+    "C4"
+   ],
+   "nets": [
+    "Net-(D1-A)",
+    "GND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C04.GAP-CPO-STABILITY.NET-D1-A"
+   ],
+   "seed": null
+  },
+  {
+   "board": "s59mz--kicad-led-drv-pmod",
+   "id": "M02",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U1",
+    "J1"
+   ],
+   "nets": [
+    "/enrgb"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-ENRGB-DEFAULT.ENRGB"
+   ],
+   "seed": null
+  },
+  {
+   "board": "s59mz--kicad-led-drv-pmod",
+   "id": "M03",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "J1",
+    "C1",
+    "U1"
+   ],
+   "nets": [
+    "+3V3",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.J1-1.J1-1",
+    "PRO-C04.J1-2.J1-2"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C04.GAP-SOURCE-BRANCH.3V3"
+   ],
+   "seed": null
+  },
+  {
+   "board": "scottbez1--faderbuddy",
+   "id": "M01",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U1",
+    "U2"
+   ],
+   "nets": [
+    "/M_1",
+    "/M_2",
+    "/M_SLEEP"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-MOTOR-RESET-SAFE.U2"
+   ],
+   "seed": "D-HBRIDGE-RESET-UNSAFE"
+  },
+  {
+   "board": "scottbez1--faderbuddy",
+   "id": "M02",
+   "criterion": "G04-007",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "U1",
+    "TP2",
+    "TP3"
+   ],
+   "nets": [
+    "/RX",
+    "/TX",
+    "VCC"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-C08.EXT-J1.VCC",
+    "SIG-C08.EXT-J2.VCC",
+    "SIG-C08.EXT-J3.VCC",
+    "SIG-C08.EXT-J4.VCC",
+    "SIG-C08.EXT-J5.VCC"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "SIG-C08.GAP-UART-PROBE-OFF.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "scottbez1--faderbuddy",
+   "id": "M03",
+   "criterion": "G05-025",
+   "sr_rule": "PRO-C05",
+   "refs": [
+    "A1",
+    "U2"
+   ],
+   "nets": [
+    "/MOTOR_A",
+    "/MOTOR_B",
+    "/V_MOT"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C05.GAP-MOTOR-OCP-WITHSTAND.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--breadboard-power-supply-board-hardware-design",
+   "id": "M01",
+   "criterion": "G05-054",
+   "sr_rule": "PRO-D04",
+   "refs": [
+    "K2",
+    "D2"
+   ],
+   "nets": [
+    "Net-(D2-A)",
+    "VIN",
+    "GND"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--rs-485-transceiver-breakout-hardware-design",
+   "id": "M01",
+   "criterion": "G04-005",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "U1",
+    "K2"
+   ],
+   "nets": [
+    "D",
+    "DE",
+    "REn",
+    "R",
+    "5V",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-C08.EXT-K2.D",
+    "SIG-C08.EXT-K2.DE",
+    "SIG-C08.EXT-K2.R",
+    "SIG-C08.EXT-K2.REN"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--rs-485-transceiver-breakout-hardware-design",
+   "id": "M02",
+   "criterion": "G04-009",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "U1",
+    "K2"
+   ],
+   "nets": [
+    "D",
+    "DE",
+    "REn",
+    "R",
+    "5V",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-C08.EXT-K2.D",
+    "SIG-C08.EXT-K2.DE",
+    "SIG-C08.EXT-K2.R",
+    "SIG-C08.EXT-K2.REN"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "sparkfun--sparkfun_gnssdo",
+   "id": "M01",
+   "criterion": "G01-029",
+   "sr_rule": "SIG-C05",
+   "refs": [
+    "J2",
+    "J4",
+    "D4",
+    "D5",
+    "JP6",
+    "F1",
+    "C6",
+    "C7",
+    "C20",
+    "C89",
+    "C98",
+    "C100",
+    "C97",
+    "C99"
+   ],
+   "nets": [
+    "VUSB",
+    "VUSB2",
+    "VBUS"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "sparkfun--sparkfun_gnssdo",
+   "id": "M02",
+   "criterion": "G04-018",
+   "sr_rule": "SIG-C01",
+   "refs": [
+    "U19",
+    "U13",
+    "U1",
+    "R31",
+    "R32",
+    "R60",
+    "R62",
+    "JP22",
+    "JP23"
+   ],
+   "nets": [
+    "ESP18/SDA2",
+    "ESP19/SCL2",
+    "SDA_5V",
+    "SCL_5V"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-C01.I2C-43521CB46E6173F5A01B.NET-JP23-C",
+    "SIG-C01.I2C-7C3894AB9F8434F47D2A.NET-JP23-A",
+    "SIG-C01.I2C-D42194B80E1A1E519481.ESP19-SCL2",
+    "SIG-C01.I2C-EE834E8805125122F2E0.ESP18-SDA2"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "sparkfun--sparkfun_gnssdo",
+   "id": "M03",
+   "criterion": "G04-009",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "U1",
+    "U2",
+    "U5",
+    "U11"
+   ],
+   "nets": [
+    "ESP13/MTX1",
+    "ESP14/MRX1",
+    "ESP23/MRX3",
+    "ESP34/MTX3",
+    "3.3V",
+    "3.3V_P"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-C08.EXT-J10.NET-D16-A2",
+    "SIG-C08.EXT-J5.3-3V-P",
+    "SIG-C08.EXT-J5.RD",
+    "SIG-C08.EXT-J5.RD-2",
+    "SIG-C08.EXT-J5.TD"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "spirit532--studio_mic",
+   "id": "M01",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "J1",
+    "R1",
+    "R2",
+    "R3",
+    "R4"
+   ],
+   "nets": [
+    "Net-(J1-Pad2)",
+    "Net-(J1-Pad3)",
+    "+12V"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C04.GAP-PHANTOM-SOURCE-BRANCH.J1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "spirit532--studio_mic",
+   "id": "M02",
+   "criterion": "G04-009",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "U1",
+    "R13",
+    "C19",
+    "C17",
+    "C18"
+   ],
+   "nets": [
+    "HT",
+    "Net-(MK1-+)",
+    "Net-(U1A-+)",
+    "+6V"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "SIG-C08.GAP-CAPSULE-RETAINED-BIAS.U1-3"
+   ],
+   "seed": null
+  },
+  {
+   "board": "tinkerforge--evse-v2-bricklet",
+   "id": "M01",
+   "criterion": "G04-009",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "P101",
+    "RP101",
+    "U101"
+   ],
+   "nets": [
+    "S-CLK",
+    "S-CS",
+    "S-MOSI",
+    "S-MISO"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-C08.EXT-P101.NET-L103-PAD2",
+    "SIG-C08.EXT-P101.NET-RP101-P1",
+    "SIG-C08.EXT-P101.NET-RP101-P2",
+    "SIG-C08.EXT-P101.NET-RP101-P3",
+    "SIG-C08.EXT-P101.NET-RP101-P4"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "tinkerforge--evse-v2-bricklet",
+   "id": "M02",
+   "criterion": "G04-040",
+   "sr_rule": "PRO-D02",
+   "refs": [
+    "U111"
+   ],
+   "nets": [
+    "L",
+    "N",
+    "VCC",
+    "GND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "tinkerforge--evse-v2-bricklet",
+   "id": "M03",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U110",
+    "C111",
+    "C110"
+   ],
+   "nets": [
+    "3V3",
+    "GND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project",
+   "id": "M01",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "J1",
+    "C4",
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "J2"
+   ],
+   "nets": [
+    "Net-(J1-Pin_2)",
+    "Net-(D3-A)",
+    "Net-(D1-K)",
+    "/5V",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.J2-1.J2-1"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "anthilla--anthc",
+   "id": "M01",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "U3",
+    "C22"
+   ],
+   "nets": [
+    "+3V3",
+    "+5V"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "anthilla--anthc",
+   "id": "M02",
+   "criterion": "G05-030",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D2",
+    "D15",
+    "D17",
+    "D21",
+    "D22",
+    "D25",
+    "D26",
+    "D27",
+    "D28",
+    "D29",
+    "D32",
+    "D33",
+    "D23",
+    "D30",
+    "D35"
+   ],
+   "nets": [
+    "/SDA",
+    "/SCL",
+    "/AIN1",
+    "/AIN2",
+    "/AIN3",
+    "/AIN4",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-E02.D15-3b6ad1",
+    "PRO-E02.D15-e5e88a",
+    "PRO-E02.D17-96e537",
+    "PRO-E02.D17-ae132d",
+    "PRO-E02.D2-af2d7f"
+   ],
+   "lint": [
+    "PRO-E02:D2",
+    "PRO-E02:D2",
+    "PRO-E02:D15",
+    "PRO-E02:D15",
+    "PRO-E02:D17"
+   ],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--jetson-nano-baseboard",
+   "id": "M01",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "IC4",
+    "IC15",
+    "C65",
+    "C66"
+   ],
+   "nets": [
+    "1V8_SYS",
+    "1V8_DBG",
+    "5V0_SYS",
+    "5V0_DBG"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--jetson-nano-baseboard",
+   "id": "M02",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "J12",
+    "J10",
+    "J8",
+    "U6",
+    "U2"
+   ],
+   "nets": [
+    "5V0_SYS",
+    "3V3_SYS"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.J10-1.J10-1",
+    "PRO-C04.J12-2.J12-2",
+    "PRO-C04.J13-1-F4.3V3-SYS",
+    "PRO-C04.J14-2-F5.3V3-SYS",
+    "PRO-C04.J15-251-FB2.5V0-SYS"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--jetson-nano-baseboard",
+   "id": "M03",
+   "criterion": "G05-030",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D3",
+    "D5",
+    "D6",
+    "D7",
+    "D8",
+    "D10",
+    "D11",
+    "D12",
+    "IC2",
+    "IC18"
+   ],
+   "nets": [
+    "/USB/CC1",
+    "/USB/CC2",
+    "OTG_USB_D_P",
+    "OTG_USB_D_N",
+    "/Display/TMDS_SCL_5V0",
+    "/Display/TMDS_SDA_5V0"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-E02.D10-1be554",
+    "PRO-E02.D10-c8340d",
+    "PRO-E02.D11-229dcd",
+    "PRO-E02.D11-8218ef",
+    "PRO-E02.D12-08946a"
+   ],
+   "lint": [
+    "PRO-E02:D10",
+    "PRO-E02:D10",
+    "PRO-E02:D11",
+    "PRO-E02:D11",
+    "PRO-E02:D12"
+   ],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--jetson-nano-baseboard",
+   "id": "M04",
+   "criterion": "G04-087",
+   "sr_rule": "SIG-D11",
+   "refs": [
+    "J3",
+    "J15",
+    "C14"
+   ],
+   "nets": [
+    "ETH0_P",
+    "ETH0_N",
+    "ETH1_P",
+    "ETH1_N",
+    "ETH2_P",
+    "ETH2_N",
+    "ETH3_P",
+    "ETH3_N",
+    "EGND",
+    "GND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--m2-smart-iot-module",
+   "id": "M01",
+   "criterion": "G04-078",
+   "sr_rule": "CLK-C01",
+   "refs": [
+    "Y1"
+   ],
+   "nets": [
+    "Net-(C12-Pad1)",
+    "Net-(IC1-XT2)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "CLK-C01.Y1"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--m2-smart-iot-module",
+   "id": "M02",
+   "criterion": "G04-078",
+   "sr_rule": "CLK-C01",
+   "refs": [
+    "Y2"
+   ],
+   "nets": [
+    "/nRF52840/XC1",
+    "/nRF52840/XC2"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "CLK-C01.Y2"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--m2-smart-iot-module",
+   "id": "M03",
+   "criterion": "G04-078",
+   "sr_rule": "CLK-C01",
+   "refs": [
+    "Y4"
+   ],
+   "nets": [
+    "Net-(U1-OSCI)",
+    "Net-(U1-OSCO)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "CLK-C01.Y4"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--m2-smart-iot-module",
+   "id": "M04",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "U5"
+   ],
+   "nets": [
+    "/CoralAccelerator/1V8_CORAL"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--m2-smart-iot-module",
+   "id": "M05",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "U9"
+   ],
+   "nets": [
+    "1V05"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--m2-smart-iot-module",
+   "id": "M06",
+   "criterion": "G04-007",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "U1",
+    "U4",
+    "R53",
+    "R61",
+    "R71",
+    "R72",
+    "R73",
+    "R74"
+   ],
+   "nets": [
+    "SWCLK",
+    "SWDIO",
+    "nRF_RX",
+    "nRF_TX",
+    "nRF_RST"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--stm32h7-hdmi-board",
+   "id": "M01",
+   "criterion": "G02-027",
+   "sr_rule": "DEV-A01 / DEV-C01 / DEV-C02",
+   "refs": [
+    "C139",
+    "C140"
+   ],
+   "nets": [
+    "/Debug + PD/USB_VBUS",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "DEV-C01.BOARD",
+    "DEV-C02.BOARD"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "fossasia--pslab-hardware",
+   "id": "M-ESD-ARRAY",
+   "criterion": "G05-031",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "U16",
+    "U15",
+    "J12"
+   ],
+   "nets": [
+    "/D+",
+    "/D-",
+    "/VUSBIN",
+    "GND"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "fossasia--pslab-hardware",
+   "id": "M-STARTUP-CURRENT",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "U6",
+    "U21",
+    "C15",
+    "C46",
+    "C49"
+   ],
+   "nets": [
+    "+3.3V",
+    "+5V",
+    "/VINPUT"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PWR-D03.U1-5V.U1-4"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "fossasia--pslab-hardware",
+   "id": "M-SOURCE-DEFAULT",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U20",
+    "U7",
+    "Q1",
+    "U3"
+   ],
+   "nets": [
+    "PVS1",
+    "PVS2",
+    "PVS3",
+    "PCS",
+    "/DAC.2",
+    "CS3"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "leonardoward--dpp-architecture-pcb",
+   "id": "M01",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U1",
+    "J3",
+    "Q1",
+    "R1",
+    "R2"
+   ],
+   "nets": [
+    "Net-(J3-Pin_2)",
+    "Net-(J3-Pin_3)",
+    "Net-(U1-OUT*)",
+    "Net-(Q1-G)",
+    "GND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--usbi2c01",
+   "id": "M01",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "X1",
+    "C2",
+    "C3"
+   ],
+   "nets": [
+    "+3.3V",
+    "GND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--usbi2c01",
+   "id": "M02",
+   "criterion": "G03-032",
+   "sr_rule": "PWR-C05",
+   "refs": [
+    "X1",
+    "SV1",
+    "SV3",
+    "SV6"
+   ],
+   "nets": [
+    "+3.3V",
+    "+5V",
+    "Net-(X1-VIO)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--usbi2c01",
+   "id": "M03",
+   "criterion": "G05-031",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D4",
+    "X1",
+    "X2"
+   ],
+   "nets": [
+    "+5V",
+    "GND",
+    "Net-(X1-D+)",
+    "Net-(X1-D-)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-E02.D4-202f34",
+    "PRO-E02.D4-27e78a",
+    "PRO-E02.D4-c69fbd"
+   ],
+   "lint": [
+    "PRO-E02:D4",
+    "PRO-E02:D4",
+    "PRO-E02:D4"
+   ],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--usbi2c01",
+   "id": "M04",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "X1",
+    "C2",
+    "C3",
+    "SV3"
+   ],
+   "nets": [
+    "+5V",
+    "+3.3V"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--usbi2c01",
+   "id": "M05",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "X1",
+    "SV4",
+    "SV5",
+    "SV7"
+   ],
+   "nets": [
+    "Net-(X1-GPIO2)",
+    "Net-(X1-GPIO3)",
+    "Net-(X1-GPIO7-CLK)",
+    "Net-(X1-/SUSPEND)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--usbi2c01",
+   "id": "M06",
+   "criterion": "G04-007",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "X1",
+    "SV4",
+    "SV5",
+    "SV7"
+   ],
+   "nets": [
+    "Net-(X1-GPIO2)",
+    "Net-(X1-GPIO3)",
+    "Net-(X1-GPIO4)",
+    "Net-(X1-GPIO5)",
+    "Net-(X1-GPIO6)",
+    "Net-(X1-GPIO7-CLK)",
+    "Net-(X1-/SUSPEND)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-C08.EXT-SV1.NET-X1-VIO",
+    "SIG-C08.EXT-SV2.NET-X1-SCL",
+    "SIG-C08.EXT-SV2.NET-X1-SDA",
+    "SIG-C08.EXT-SV4.NET-D2-C",
+    "SIG-C08.EXT-SV4.NET-D3-C"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--usbi2c01",
+   "id": "M07",
+   "criterion": "G05-022",
+   "sr_rule": "DEV-C04",
+   "refs": [
+    "X2",
+    "P1"
+   ],
+   "nets": [
+    "Net-(X2-+5V)",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "DEV-C04.P1"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "moelashmawi--flyback-ac-dc-converter",
+   "id": "M01",
+   "criterion": "G03-038",
+   "sr_rule": "PRO-C01",
+   "refs": [
+    "U1",
+    "U3",
+    "C6",
+    "C7"
+   ],
+   "nets": [
+    "Net-(U1-FB)",
+    "Net-(D5-K)",
+    "Net-(J2-Pin_1)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C01.FEEDBACK-OPEN.U1-3",
+    "PRO-C01.ISOLATION-U3-RUN.U3"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "motordynamicslab--leviathanext",
+   "id": "M01",
+   "criterion": "G05-087",
+   "sr_rule": "PWR-T05",
+   "refs": [
+    "Q1",
+    "Q12",
+    "D2",
+    "D14",
+    "R3",
+    "R53",
+    "J1",
+    "J2"
+   ],
+   "nets": [
+    "VMOT_1",
+    "Net-(J1-Pin_1)",
+    "Net-(D14-K)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": "D-REVERSE-PMOS-DS"
+  },
+  {
+   "board": "motordynamicslab--leviathanext",
+   "id": "M02",
+   "criterion": "G05-057",
+   "sr_rule": "PWR-C26",
+   "refs": [
+    "D1",
+    "Q1",
+    "Q12",
+    "F1",
+    "J1",
+    "J2"
+   ],
+   "nets": [
+    "VMOT_1",
+    "Net-(J1-Pin_1)",
+    "Net-(D14-K)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "motordynamicslab--leviathanext",
+   "id": "M03",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "U1",
+    "U2",
+    "C13",
+    "C37",
+    "R9",
+    "R26"
+   ],
+   "nets": [
+    "Net-(U1B-5VOUT)",
+    "Net-(U2B-5VOUT)",
+    "Net-(U1B-VCC)",
+    "Net-(U2B-VCC)"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "motordynamicslab--leviathanext",
+   "id": "M04",
+   "criterion": "G03-016",
+   "sr_rule": "DRV-C02",
+   "refs": [
+    "Q2",
+    "Q3",
+    "Q4",
+    "Q5",
+    "Q6",
+    "Q7",
+    "Q8",
+    "Q9"
+   ],
+   "nets": [
+    "Net-(Q2B-S)",
+    "Net-(Q4B-S)",
+    "Net-(Q6B-S)",
+    "Net-(Q8B-S)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "DRV-C02.Q2-CH1-NET-Q2A-G.Q2-1",
+    "DRV-C02.Q2-CH8-NET-Q2B-G.Q2-8",
+    "DRV-C02.Q3-CH1-NET-Q3A-G.Q3-1",
+    "DRV-C02.Q3-CH8-NET-Q3B-G.Q3-8",
+    "DRV-C02.Q4-CH1-NET-Q4A-G.Q4-1"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "motordynamicslab--leviathanext",
+   "id": "M05",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "Q10",
+    "Q11",
+    "Q13",
+    "R47",
+    "R49",
+    "R61",
+    "J5"
+   ],
+   "nets": [
+    "PWM_FAN4",
+    "PWM_FAN5",
+    "PWM_BUZZER",
+    "Net-(Q10-G)",
+    "Net-(Q11-G)",
+    "Net-(Q13-G)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "nabucasa--yellow",
+   "id": "M01",
+   "criterion": "G04-040",
+   "sr_rule": "DOC-D01",
+   "refs": [
+    "U23",
+    "T1",
+    "D18"
+   ],
+   "nets": [
+    "GND",
+    "GNDS",
+    "GND1"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "nabucasa--yellow",
+   "id": "M02",
+   "criterion": "G03-032",
+   "sr_rule": "DOC-D01",
+   "refs": [
+    "U1",
+    "U17",
+    "U19",
+    "U26",
+    "L2"
+   ],
+   "nets": [
+    "+3V3",
+    "+3.3VP"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "nabucasa--yellow",
+   "id": "M03",
+   "criterion": "G04-078",
+   "sr_rule": "CLK-C01",
+   "refs": [
+    "Y1",
+    "Y2",
+    "U7",
+    "U21",
+    "U25",
+    "C7",
+    "C8"
+   ],
+   "nets": [
+    "Net-(U7-XIN)",
+    "Net-(U7-XOUT)",
+    "Net-(U21-OSCI)",
+    "Net-(U21-OSCO)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "CLK-C01.Y1",
+    "CLK-C01.Y2"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "newell--nixie-clock-esp32c3",
+   "id": "M01",
+   "criterion": "G01-027",
+   "sr_rule": "SIG-C05",
+   "refs": [
+    "J1",
+    "D4",
+    "SW3",
+    "U2",
+    "D7",
+    "J7"
+   ],
+   "nets": [
+    "Net-(D3-A1)",
+    "/ESP32-C3/VBUS",
+    "+5V"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "newell--nixie-clock-esp32c3",
+   "id": "M02",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "U2",
+    "C2",
+    "C13",
+    "C14"
+   ],
+   "nets": [
+    "+5V",
+    "+3.3V"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "newell--nixie-clock-esp32c3",
+   "id": "M03",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "J2",
+    "J7",
+    "SW3"
+   ],
+   "nets": [
+    "+5V",
+    "+3.3V",
+    "HVEN"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.J10-3.J10-3",
+    "PRO-C04.J2-1.J2-1",
+    "PRO-C04.J2-3.J2-3",
+    "PRO-C04.J7-1.J7-1",
+    "PRO-C04.J9-3.J9-3"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "newell--nixie-clock-esp32c3",
+   "id": "M04",
+   "criterion": "G04-009",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "Q35",
+    "R50",
+    "R51",
+    "R52",
+    "R53",
+    "D7",
+    "U1"
+   ],
+   "nets": [
+    "RGB",
+    "Net-(Q35-G)",
+    "Net-(Q35-D)",
+    "Net-(D7-DIN)",
+    "+3.3V",
+    "+5V"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-C08.EXT-J10.3-3V",
+    "SIG-C08.EXT-J2.3-3V",
+    "SIG-C08.EXT-J4.RGB",
+    "SIG-C08.EXT-J9.3-3V"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "pionixpublic--cb-eval-board",
+   "id": "M01",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "J10",
+    "J7",
+    "J11",
+    "U13",
+    "U21"
+   ],
+   "nets": [
+    "+24V"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.J10-1.J10-1",
+    "PRO-C04.J11-1.J11-1",
+    "PRO-C04.J7-10.J7-10",
+    "PRO-C04.J7-11.J7-11",
+    "PRO-C04.J7-6.J7-6"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "pionixpublic--cb-eval-board",
+   "id": "M02",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U1",
+    "R25",
+    "R26",
+    "C3"
+   ],
+   "nets": [
+    "+24V",
+    "Net-(U1D-EXT_ADC3)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "ANA-C03.U1-44.U1-44",
+    "ANA-C03.U1-71.U1-71",
+    "ANA-C03.U1-73.U1-73"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "pionixpublic--cb-eval-board",
+   "id": "M03",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "U37",
+    "C10",
+    "C8",
+    "R63"
+   ],
+   "nets": [
+    "+3.3V",
+    "/30V > 3.3V Power Supply/CB_VCC"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "prajyotdaphal--home_automation-module",
+   "id": "M01",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "PS1",
+    "C4",
+    "D18",
+    "R30",
+    "K1",
+    "K2",
+    "K3",
+    "K4",
+    "K5",
+    "K6",
+    "K7",
+    "K8"
+   ],
+   "nets": [
+    "/VCC",
+    "GND",
+    "/BUZZER",
+    "Net-(C4-Pad2)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "prajyotdaphal--home_automation-module",
+   "id": "M02",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "J4",
+    "J5",
+    "J6",
+    "J7",
+    "J8",
+    "J9",
+    "K1",
+    "K2",
+    "K3",
+    "K4",
+    "K5",
+    "K6",
+    "K7",
+    "K8"
+   ],
+   "nets": [
+    "GND",
+    "/9",
+    "/10",
+    "/11",
+    "/12",
+    "/13",
+    "/AC",
+    "/16"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "prajyotdaphal--home_automation-module",
+   "id": "M03",
+   "criterion": "G04-040",
+   "sr_rule": "PRO-D02",
+   "refs": [
+    "PS1",
+    "J3",
+    "J9"
+   ],
+   "nets": [
+    "Net-(PS1-AC/L)",
+    "Net-(J3-Pin_2)",
+    "/VCC",
+    "GND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--capacitive-soil-sensor-hardware-design",
+   "id": "M01",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "U2",
+    "C3",
+    "C6",
+    "U1"
+   ],
+   "nets": [
+    "3V3",
+    "Net-(U2-EN)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": "D-LDO-STARTUP-COVERAGE"
+  },
+  {
+   "board": "solderedelectronics--connect-programmer-hardware-design",
+   "id": "M01",
+   "criterion": "G04-007",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "U1",
+    "K2",
+    "D1",
+    "D2",
+    "R3",
+    "R4"
+   ],
+   "nets": [
+    "RXD0",
+    "TXD0",
+    "+3V3"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-C08.EXT-K2.3V3",
+    "SIG-C08.EXT-K2.IO0",
+    "SIG-C08.EXT-K2.RESET",
+    "SIG-C08.EXT-K2.RXD0",
+    "SIG-C08.EXT-K2.TXD0"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--connect-programmer-hardware-design",
+   "id": "M02",
+   "criterion": "G05-048",
+   "sr_rule": "PRO-C01",
+   "refs": [
+    "F1",
+    "K1",
+    "U2",
+    "K2"
+   ],
+   "nets": [
+    "Net-(F1-Pad2)",
+    "VUSB"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C01.F1.NET-F1-PAD2"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--connect-programmer-hardware-design",
+   "id": "M03",
+   "criterion": "G05-025",
+   "sr_rule": "PRO-C05",
+   "refs": [
+    "F1",
+    "U2",
+    "K2"
+   ],
+   "nets": [
+    "VUSB",
+    "+3V3"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C05.F1.NET-F1-PAD2"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--io-expander-mcp23017-breakout-hardware-design",
+   "id": "M01",
+   "criterion": "G05-054",
+   "sr_rule": "PRO-D04/PWR-T05",
+   "refs": [
+    "K1",
+    "K3"
+   ],
+   "nets": [
+    "3V3",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-D04.K1",
+    "PRO-D04.K3"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--rdimm-ddr4-tester",
+   "id": "M01",
+   "criterion": "G04-078",
+   "sr_rule": "CLK-C01",
+   "refs": [
+    "Y2",
+    "U7",
+    "C190",
+    "C193"
+   ],
+   "nets": [
+    "Net-(U7-OSCI)",
+    "Net-(U7-OSCO)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "CLK-C01.Y2"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--rdimm-ddr4-tester",
+   "id": "M02",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U19",
+    "U20",
+    "R199",
+    "R201"
+   ],
+   "nets": [
+    "/Supply/VDDQ_SEN_+",
+    "/Supply/VDDQ_SEN_-",
+    "/Supply/5V0_SEN_+",
+    "/Supply/5V0_SEN_-"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--scalenode-cm4-baseboard",
+   "id": "M01",
+   "criterion": "G04-040",
+   "sr_rule": "PRO-D02",
+   "refs": [
+    "U7"
+   ],
+   "nets": [
+    "GNDD",
+    "GND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-D02.GAP-ETHERNET-MAGNETICS-L3.L3",
+    "PRO-D02.GAP-ISOLATED-MODULE-U7.U7"
+   ],
+   "seed": null
+  },
+  {
+   "board": "antmicro--scalenode-cm4-baseboard",
+   "id": "M02",
+   "criterion": "G04-040",
+   "sr_rule": "PRO-D02",
+   "refs": [
+    "L3"
+   ],
+   "nets": [
+    "GND",
+    "Earth"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-D02.GAP-ETHERNET-MAGNETICS-L3.L3",
+    "PRO-D02.GAP-ISOLATED-MODULE-U7.U7"
+   ],
+   "seed": null
+  },
+  {
+   "board": "antmicro--scalenode-cm4-baseboard",
+   "id": "M03",
+   "criterion": "G05-030",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D3"
+   ],
+   "nets": [
+    "/Interfaces/CONN_USB_N",
+    "/Interfaces/CONN_USB_P",
+    "/Interfaces/VBus_Slave"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-E02.GAP-MULTIPIN-ESD-D2.D2",
+    "PRO-E02.GAP-MULTIPIN-ESD-D3.D3"
+   ],
+   "seed": null
+  },
+  {
+   "board": "antmicro--scalenode-cm4-baseboard",
+   "id": "M04",
+   "criterion": "G05-030",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D2"
+   ],
+   "nets": [
+    "SD_CLK",
+    "SD_CMD",
+    "SD_DAT0",
+    "SD_DAT1",
+    "SD_DAT2",
+    "SD_DAT3"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-E02.GAP-MULTIPIN-ESD-D2.D2",
+    "PRO-E02.GAP-MULTIPIN-ESD-D3.D3"
+   ],
+   "seed": null
+  },
+  {
+   "board": "antmicro--scalenode-cm4-baseboard",
+   "id": "M05",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "Q6",
+    "U1",
+    "U5"
+   ],
+   "nets": [
+    "PROG_MODE",
+    "Net-(Q6-G)",
+    "USBOTG_ID",
+    "/Compute module/nRPi_BOOT"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-BOOT-SELECT-DEFAULT.Q6"
+   ],
+   "seed": null
+  },
+  {
+   "board": "antmicro--scalenode-cm4-baseboard",
+   "id": "M06",
+   "criterion": "G03-016",
+   "sr_rule": "DRV-C02",
+   "refs": [
+    "U8",
+    "C26",
+    "C28",
+    "C29",
+    "C32"
+   ],
+   "nets": [
+    "/PoE/VDD_POE_IN",
+    "VSS",
+    "GNDD"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "DRV-C02.GAP-PD-INTERNAL-HOTSWAP-SOA.U8"
+   ],
+   "seed": null
+  },
+  {
+   "board": "antmicro--sdi-mipi-bridge-hw",
+   "id": "M01",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U4",
+    "U2",
+    "R98",
+    "R105",
+    "R109",
+    "R107",
+    "R111"
+   ],
+   "nets": [
+    "/~{RST_TRST}",
+    "/~{RST_TRST_SOFT}",
+    "/STANDBY",
+    "/~{RC_BYP}",
+    "/JTAG_~{HOST}"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "antmicro--sdi-mipi-bridge-hw",
+   "id": "M02",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "U1",
+    "C10",
+    "C15",
+    "C25",
+    "C42",
+    "C52"
+   ],
+   "nets": [
+    "Net-(U1-BYP)",
+    "+1V2"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "ben5049--switch-v4-hardware",
+   "id": "M01",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U802",
+    "U2601",
+    "R307",
+    "R309",
+    "R607",
+    "R608",
+    "R2211",
+    "R2212",
+    "R2222",
+    "R2223"
+   ],
+   "nets": [
+    "/Power/VIN_VMON",
+    "/Power/VIN_ISO_VMON",
+    "/CDNs & PoDL/PODL1.DET_V+",
+    "/CDNs & PoDL/PODL2.DET_V+"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C03.GAP-ADC-U2601.U2601",
+    "ANA-C03.GAP-ADC-U802.U802"
+   ],
+   "seed": null
+  },
+  {
+   "board": "ben5049--switch-v4-hardware",
+   "id": "M02",
+   "criterion": "G05-030",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "U301",
+    "U601",
+    "Z2201",
+    "Z2202"
+   ],
+   "nets": [
+    "/Power/Power In/VIN_RAW",
+    "/Power/Power In (Isolated)/VIN_RAW",
+    "/CDNs & PoDL/PODL1.DET_V+",
+    "/CDNs & PoDL/PODL2.DET_V+"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-E02.D1902-682779",
+    "PRO-E02.D1903-415ff0",
+    "PRO-E02.D2002-2fcc91",
+    "PRO-E02.D2003-216a48",
+    "PRO-E02.D2102-60c42e"
+   ],
+   "lint": [
+    "PRO-E02:D301",
+    "PRO-E02:U301",
+    "PRO-E02:D601",
+    "PRO-E02:U601",
+    "PRO-E02:D1902"
+   ],
+   "gap_rows": [
+    "PRO-E02.GAP-CLAMP-U301.U301",
+    "PRO-E02.GAP-CLAMP-U601.U601",
+    "PRO-E02.GAP-CLAMP-Z2201.Z2201"
+   ],
+   "seed": null
+  },
+  {
+   "board": "danielmartensson--stm32-plc",
+   "id": "M01",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U4"
+   ],
+   "nets": [
+    "PB0",
+    "PB1",
+    "PB2",
+    "PE7",
+    "PE8",
+    "PE9",
+    "PE10",
+    "PE11",
+    "PE12",
+    "PE13",
+    "PE14",
+    "PE15",
+    "PD8",
+    "PD9",
+    "PD10",
+    "PD11",
+    "PD12",
+    "PD13",
+    "PD14",
+    "PD15",
+    "PB14",
+    "PB15"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C03.GAP-MCU-ADC.U4"
+   ],
+   "seed": null
+  },
+  {
+   "board": "danielmartensson--stm32-plc",
+   "id": "M02",
+   "criterion": "G05-031",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D18",
+    "D19",
+    "D22",
+    "D23",
+    "D29",
+    "D35",
+    "D36",
+    "D37",
+    "D38",
+    "D39",
+    "D2",
+    "D3",
+    "D4",
+    "D5",
+    "D20",
+    "D21",
+    "D24",
+    "D25",
+    "D30",
+    "D31",
+    "D33",
+    "D34"
+   ],
+   "nets": [
+    "PB0",
+    "PB1",
+    "PB14",
+    "PB15",
+    "PB2",
+    "PD10",
+    "PD11",
+    "PD12",
+    "PD13",
+    "PD14",
+    "PD15",
+    "PD8",
+    "PD9",
+    "PE10",
+    "PE11",
+    "PE12",
+    "PE13",
+    "PE14",
+    "PE15",
+    "PE7",
+    "PE8",
+    "PE9"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-E02.GAP-CLAMP-D18.D18",
+    "PRO-E02.GAP-CLAMP-D19.D19",
+    "PRO-E02.GAP-CLAMP-D2.D2"
+   ],
+   "seed": null
+  },
+  {
+   "board": "danielmartensson--stm32-plc",
+   "id": "M03",
+   "criterion": "G05-031",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D28"
+   ],
+   "nets": [
+    "/CAN/CAN+",
+    "/CAN/CAN-",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-E02.D28-cf6f01",
+    "PRO-E02.D28-d258a7"
+   ],
+   "lint": [
+    "PRO-E02:D28",
+    "PRO-E02:D28"
+   ],
+   "gap_rows": [
+    "PRO-E02.GAP-CLAMP-D18.D18",
+    "PRO-E02.GAP-CLAMP-D19.D19",
+    "PRO-E02.GAP-CLAMP-D2.D2"
+   ],
+   "seed": null
+  },
+  {
+   "board": "gorkemguven--12v-1a-isolated-flyback-smps",
+   "id": "M01",
+   "criterion": "G04-040",
+   "sr_rule": "PRO-D02",
+   "refs": [
+    "U1",
+    "AT2",
+    "C26"
+   ],
+   "nets": [
+    "/E",
+    "GND",
+    "/D+"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-D02.GAP-U1-ISO-BRIDGE.U1"
+   ],
+   "seed": "D-ISO-BRIDGE"
+  },
+  {
+   "board": "greatscottgadgets--cynthion-hardware",
+   "id": "M01",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U1",
+    "R1",
+    "R2",
+    "R42",
+    "R59"
+   ],
+   "nets": [
+    "CONTROL_SENSE+",
+    "CONTROL_SENSE-",
+    "TARGET_A_SENSE+",
+    "TARGET_A_SENSE-",
+    "AUX_SENSE+",
+    "AUX_SENSE-",
+    "TARGET_C_SENSE+",
+    "TARGET_C_SENSE-"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "ANA-C03.U1-10.U1-10",
+    "ANA-C03.U1-11.U1-11",
+    "ANA-C03.U1-12.U1-12",
+    "ANA-C03.U1-13.U1-13",
+    "ANA-C03.U1-14.U1-14"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "greatscottgadgets--cynthion-hardware",
+   "id": "M02",
+   "criterion": "G05-087",
+   "sr_rule": "PWR-T05",
+   "refs": [
+    "Q9",
+    "Q12",
+    "D8",
+    "D1"
+   ],
+   "nets": [
+    "CONTROL_VBUS_IN",
+    "AUX_VBUS_IN",
+    "Net-(D8-A)",
+    "Net-(D1-A)",
+    "+5V"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "greatscottgadgets--cynthion-hardware",
+   "id": "M03",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "IC1",
+    "R12",
+    "R13",
+    "R14",
+    "R40",
+    "R41",
+    "Q3",
+    "Q11"
+   ],
+   "nets": [
+    "/Debugger/FPGA_CONFIG.~{PROGRAM}",
+    "/Debugger/FPGA_CONFIG.~{INIT}",
+    "/Debugger/FPGA_CONFIG.DONE",
+    "/FPGA Bank 8 and Configuration Flash/FPGA_CFG0",
+    "/FPGA Bank 8 and Configuration Flash/FPGA_CFG1",
+    "/FPGA Bank 8 and Configuration Flash/FPGA_CFG2",
+    "/FPGA Banks 6 and 7/CONTROL_VBUS_EN"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "greatscottgadgets--hackrf-pro",
+   "id": "M01",
+   "criterion": "G04-078",
+   "sr_rule": "CLK-C01",
+   "refs": [
+    "X2",
+    "X3",
+    "C157",
+    "C158",
+    "C118",
+    "C164"
+   ],
+   "nets": [
+    "/Microcontroller/XTAL1",
+    "/Microcontroller/RTCX1"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "CLK-C01.X2",
+    "CLK-C01.X3"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "greatscottgadgets--hackrf-pro",
+   "id": "M02",
+   "criterion": "G05-087",
+   "sr_rule": "PWR-T05",
+   "refs": [
+    "Q4",
+    "Q5",
+    "Q9",
+    "Q10",
+    "D12",
+    "D13"
+   ],
+   "nets": [
+    "/Power/VBUS",
+    "/Power/VIN",
+    "Net-(D11-K)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-T05.GAP-INPUT-FET-REVERSE.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "greatscottgadgets--hackrf-pro",
+   "id": "M03",
+   "criterion": "G03-016",
+   "sr_rule": "DRV-C02",
+   "refs": [
+    "Q4",
+    "Q5",
+    "C143",
+    "C147"
+   ],
+   "nets": [
+    "/Power/VBUS",
+    "/Power/VIN"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "DRV-C02.Q4-NET-Q4-G.Q4-1",
+    "DRV-C02.Q5-NET-Q5-G.Q5-1"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "DRV-C02.GAP-INPUT-FET-SOA.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "greatscottgadgets--hackrf-pro",
+   "id": "M04",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U16",
+    "U23",
+    "R145"
+   ],
+   "nets": [
+    "/FPGA/FPGA_CONFIG.~{CRESET}",
+    "/FPGA/FPGA_CONFIG.CDONE"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-FPGA-CRESET-DEFAULT.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--batdatunit01",
+   "id": "M01",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U18",
+    "U8"
+   ],
+   "nets": [
+    "3v3_SD_CTRL"
+   ],
+   "status": "needs_human",
+   "why": "该板本阶段没有计划输出",
+   "matched": null,
+   "lint": null,
+   "gap_rows": null,
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--batdatunit01",
+   "id": "M02",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U13",
+    "TH2",
+    "R57",
+    "R58"
+   ],
+   "nets": [
+    "Net-(U13-TS)",
+    "Net-(U13-TS_BIAS)"
+   ],
+   "status": "needs_human",
+   "why": "该板本阶段没有计划输出",
+   "matched": null,
+   "lint": null,
+   "gap_rows": null,
+   "seed": null
+  },
+  {
+   "board": "mlab-modules--batdatunit01",
+   "id": "M03",
+   "criterion": "G05-031",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "U2",
+    "J1",
+    "U1"
+   ],
+   "nets": [
+    "/D+",
+    "/D-",
+    "USB_D+",
+    "USB_D-",
+    "VBUS",
+    "GND"
+   ],
+   "status": "needs_human",
+   "why": "该板本阶段没有计划输出",
+   "matched": null,
+   "lint": null,
+   "gap_rows": null,
+   "seed": null
+  },
+  {
+   "board": "neotron-compute--neotron-pico",
+   "id": "M01",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U1001",
+    "R1001",
+    "R1002",
+    "R1005",
+    "R1006",
+    "R1007"
+   ],
+   "nets": [
+    "/Slots and Peripherals/BMC/MON_3V3",
+    "/Slots and Peripherals/BMC/MON_5V"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C03.GAP-BMC-ADC.U1001",
+    "ANA-C03.GAP-CODEC-ADC.U801"
+   ],
+   "seed": null
+  },
+  {
+   "board": "neotron-compute--neotron-pico",
+   "id": "M02",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U801",
+    "C810",
+    "C811",
+    "C818"
+   ],
+   "nets": [
+    "/Audio/LLineIn",
+    "/Audio/RLineIn",
+    "/Audio/MicIn"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C03.GAP-BMC-ADC.U1001",
+    "ANA-C03.GAP-CODEC-ADC.U801"
+   ],
+   "seed": null
+  },
+  {
+   "board": "neotron-compute--neotron-pico",
+   "id": "M03",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U201",
+    "U301",
+    "U302",
+    "R305"
+   ],
+   "nets": [
+    "/IO Expander/~{OUTPUT_EN}",
+    "/IO Expander/~{SPI_CS}"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-PICO-DEFAULT.U201"
+   ],
+   "seed": null
+  },
+  {
+   "board": "neotron-compute--neotron-pico",
+   "id": "M04",
+   "criterion": "G05-030",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D1302",
+    "U1301",
+    "Q1302",
+    "R1304"
+   ],
+   "nets": [
+    "/Power Supply/PSU_CTRL"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-E02.GAP-CTRL-ZENER.D1302"
+   ],
+   "seed": null
+  },
+  {
+   "board": "neotron-compute--neotron-pico",
+   "id": "M05",
+   "criterion": "G05-036",
+   "sr_rule": "PRO-C02",
+   "refs": [
+    "D1301",
+    "Q1301",
+    "R1301"
+   ],
+   "nets": [
+    "Net-(D1301-A)",
+    "Net-(D1301-K)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C02.GAP-GATE-ZENER.D1301"
+   ],
+   "seed": null
+  },
+  {
+   "board": "pionixpublic--reference-hardware",
+   "id": "M01",
+   "criterion": "G05-030",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D5",
+    "D6",
+    "D8",
+    "D9",
+    "U1",
+    "U3",
+    "U16"
+   ],
+   "nets": [
+    "/External Connectors/CAN_H",
+    "/External Connectors/CAN_L",
+    "/USB2-HUB/USBD_P",
+    "/USB2-HUB/HD1_P"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-E02.D5-449a78",
+    "PRO-E02.D5-b7ad99",
+    "PRO-E02.D6-42d35c",
+    "PRO-E02.D6-5d944d",
+    "PRO-E02.D8-46596b"
+   ],
+   "lint": [
+    "PRO-E02:D9",
+    "PRO-E02:D5",
+    "PRO-E02:D5",
+    "PRO-E02:D6",
+    "PRO-E02:D6"
+   ],
+   "gap_rows": [
+    "PRO-E02.GAP-TVS-D5.D5",
+    "PRO-E02.GAP-TVS-D6.D6",
+    "PRO-E02.GAP-TVS-D8.D8"
+   ],
+   "seed": null
+  },
+  {
+   "board": "pionixpublic--reference-hardware",
+   "id": "M02",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U7",
+    "U8",
+    "Module2"
+   ],
+   "nets": [
+    "/GLOBAL_EN",
+    "/CM4_GPIO ( Ethernet, GPIO, SDCARD)/RUN_PG"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-WAKE-DEFAULT-U7.U7",
+    "RST-T04.GAP-WAKE-DEFAULT-U8.U8"
+   ],
+   "seed": null
+  },
+  {
+   "board": "pionixpublic--reference-hardware",
+   "id": "M03",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "Module2",
+    "J5"
+   ],
+   "nets": [
+    "/CM4_GPIO ( Ethernet, GPIO, SDCARD)/AIN0",
+    "/CM4_GPIO ( Ethernet, GPIO, SDCARD)/AIN1"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C03.GAP-CM4-AIN-94.MODULE2",
+    "ANA-C03.GAP-CM4-AIN-96.MODULE2"
+   ],
+   "seed": null
+  },
+  {
+   "board": "pionixpublic--reference-hardware",
+   "id": "M04",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U2",
+    "C46",
+    "C47"
+   ],
+   "nets": [
+    "Net-(U2-PLLFILT)",
+    "Net-(U2-CRFILT)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C04.GAP-USB-HUB-16.U2",
+    "PWR-C04.GAP-USB-HUB-17.U2"
+   ],
+   "seed": null
+  },
+  {
+   "board": "s59mz--kicad-pmod_rs485",
+   "id": "M01",
+   "criterion": "G04-040",
+   "sr_rule": "PRO-D02",
+   "refs": [
+    "U1"
+   ],
+   "nets": [
+    "GND",
+    "/GND2",
+    "/GND3"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-D02.GAP-U1-ISO-BOUNDARY.U1"
+   ],
+   "seed": "D-ISO-BRIDGE"
+  },
+  {
+   "board": "s59mz--kicad-pmod_rs485",
+   "id": "M02",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U1",
+    "C6",
+    "C8",
+    "FB1",
+    "FB2"
+   ],
+   "nets": [
+    "/Visoout",
+    "/Visoin",
+    "/GND3",
+    "/GND2"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C04.GAP-U1-ISO-COUT.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "s59mz--kicad-pmod_rs485",
+   "id": "M03",
+   "criterion": "G03-018",
+   "sr_rule": "PWR-C06",
+   "refs": [
+    "U1",
+    "J1",
+    "FB1",
+    "FB2"
+   ],
+   "nets": [
+    "+3V3",
+    "/Visoin"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C06.GAP-U1-ISO-UVLO.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--1s-li-ion-battery-protection-hardware-design",
+   "id": "M01",
+   "criterion": "G05-040",
+   "sr_rule": "DRV-C02",
+   "refs": [
+    "U1",
+    "U2"
+   ],
+   "nets": [
+    "OC",
+    "OD",
+    "GND",
+    "GND_ISO"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "DRV-C02.U2-CH1-OD.U2-4",
+    "DRV-C02.U2-CH2-OC.U2-5"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--1s-li-ion-battery-protection-hardware-design",
+   "id": "M02",
+   "criterion": "G05-025",
+   "sr_rule": "PRO-C05",
+   "refs": [
+    "U1",
+    "U2",
+    "R2"
+   ],
+   "nets": [
+    "Net-(U1-CS)",
+    "OD",
+    "GND",
+    "GND_ISO"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design",
+   "id": "M01",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U1",
+    "R6"
+   ],
+   "nets": [
+    "VCC",
+    "VSYS"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "ANA-C03.U1-6.U1-6",
+    "ANA-C03.U1-7.U1-7",
+    "ANA-C03.U1-8.U1-8"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--fuel-gauge-bq27441-breakout-hardware-design",
+   "id": "M03",
+   "criterion": "G05-054",
+   "sr_rule": "PRO-D04",
+   "refs": [
+    "K4",
+    "K5",
+    "U3"
+   ],
+   "nets": [
+    "3V3",
+    "GND",
+    "SDA3,3",
+    "SCL3,3"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-D04.K4",
+    "PRO-D04.K5"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--i2c-multiplexer-tca9548a-breakout-hardware-design",
+   "id": "M01",
+   "criterion": "G04-007",
+   "sr_rule": "PRO-D04",
+   "refs": [
+    "K1",
+    "K2",
+    "K6",
+    "K7",
+    "K10",
+    "K11",
+    "K14",
+    "K15",
+    "K18",
+    "K19"
+   ],
+   "nets": [
+    "VCC",
+    "GND",
+    "SCL",
+    "SDA",
+    "SCL0",
+    "SCL1",
+    "SCL2",
+    "SCL3",
+    "SCL4",
+    "SCL5",
+    "SCL6",
+    "SCL7",
+    "SDA0",
+    "SDA1",
+    "SDA2",
+    "SDA3",
+    "SDA4",
+    "SDA5",
+    "SDA6",
+    "SDA7"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-D04.K1",
+    "PRO-D04.K10",
+    "PRO-D04.K11",
+    "PRO-D04.K14",
+    "PRO-D04.K15"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "PRO-D04.GAP-K1-PRO-D04.K1",
+    "PRO-D04.GAP-K10-PRO-D04.K10",
+    "PRO-D04.GAP-K11-PRO-D04.K11"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--i2c-multiplexer-tca9548a-breakout-hardware-design",
+   "id": "M02",
+   "criterion": "G02-022",
+   "sr_rule": "RST-C02",
+   "refs": [
+    "U1",
+    "R4",
+    "C1",
+    "C2"
+   ],
+   "nets": [
+    "VCC",
+    "Net-(U1-nRESET)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-C02.GAP-U1-POR-TIMING.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--i2c-multiplexer-tca9548a-breakout-hardware-design",
+   "id": "M03",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "K1",
+    "K2",
+    "K3",
+    "K4",
+    "K5",
+    "K6",
+    "K7",
+    "K8",
+    "K9",
+    "K10",
+    "K11",
+    "K12",
+    "K13",
+    "K14",
+    "K15",
+    "K16",
+    "K17",
+    "K18",
+    "K19"
+   ],
+   "nets": [
+    "VCC",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.K1-3.K1-3",
+    "PRO-C04.K10-3.K10-3",
+    "PRO-C04.K11-3.K11-3",
+    "PRO-C04.K12-2.K12-2",
+    "PRO-C04.K13-2.K13-2"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C04.GAP-VCC-BRANCH-PROTECTION.VCC"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--usb-uart-ch340c-converter-board-hardware-design",
+   "id": "M01",
+   "criterion": "G04-005",
+   "sr_rule": "SIG-C08",
+   "refs": [
+    "U1",
+    "K2",
+    "K3"
+   ],
+   "nets": [
+    "RXD0",
+    "CTS",
+    "DSR",
+    "RI",
+    "DCD",
+    "R232"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "SIG-C08.EXT-K2.CTS",
+    "SIG-C08.EXT-K2.DCD",
+    "SIG-C08.EXT-K2.DSR",
+    "SIG-C08.EXT-K2.R232",
+    "SIG-C08.EXT-K2.RI"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "SIG-C08.GAP-M01-UART-OFFPOWER.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--usb-uart-ch340c-converter-board-hardware-design",
+   "id": "M02",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U1",
+    "D1",
+    "D2",
+    "K3"
+   ],
+   "nets": [
+    "TXD0",
+    "RXD0",
+    "DTR",
+    "RTS"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-M02-UART-RESET-IO.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "teapotlaboratories--feather-rak3172",
+   "id": "M01",
+   "criterion": "G04-055",
+   "sr_rule": "ANA-C02",
+   "refs": [
+    "U1",
+    "R9",
+    "R10",
+    "C11",
+    "JP1",
+    "JP4"
+   ],
+   "nets": [
+    "+BATT",
+    "Net-(JP1-A)",
+    "/A4"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C02.GAP-BAT-ADC-ACQUISITION.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "theushen--eegfrontier",
+   "id": "M01",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U1",
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "C5",
+    "C6"
+   ],
+   "nets": [
+    "3V3_D"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C04.GAP-MODULE-LDO-COUT.3V3-D"
+   ],
+   "seed": null
+  },
+  {
+   "board": "theushen--eegfrontier",
+   "id": "M02",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U1",
+    "U2",
+    "R1"
+   ],
+   "nets": [
+    "EEG_RESET",
+    "EEG_START",
+    "SPI_CS"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-RESET-DEFAULT.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "theushen--eegfrontier",
+   "id": "M03",
+   "criterion": "G01-029",
+   "sr_rule": "SIG-C05",
+   "refs": [
+    "U1"
+   ],
+   "nets": [
+    "VBUS",
+    "3V3_D"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "SIG-C05.GAP-MODULE-USB-SINK.VBUS"
+   ],
+   "seed": null
+  },
+  {
+   "board": "weirdgyn--driverino-shield",
+   "id": "M01",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U1",
+    "P3",
+    "P4",
+    "R10",
+    "R11",
+    "R14",
+    "R16"
+   ],
+   "nets": [
+    "/DRVOFF",
+    "/SLEEP",
+    "/BRAKE",
+    "/PWM"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-MOTOR-DEFAULT.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "weirdgyn--driverino-shield",
+   "id": "M02",
+   "criterion": "G04-055",
+   "sr_rule": "ANA-C02",
+   "refs": [
+    "R7",
+    "R8",
+    "C8",
+    "P2"
+   ],
+   "nets": [
+    "/A1"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C02.GAP-ADC-SETTLE.P2-2"
+   ],
+   "seed": null
+  },
+  {
+   "board": "abhishek-xi--isolated-flyback-converter",
+   "id": "M01",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "U1",
+    "T1",
+    "D1",
+    "J1",
+    "J2"
+   ],
+   "nets": [
+    "Net-(D1-K)",
+    "Net-(J2-Pin_1)"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C04.GAP-OUTPUT-PROTECT-J1.NET-D1-K",
+    "PRO-C04.GAP-OUTPUT-PROTECT-J2.NET-J2-PIN-1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "abhishek-xi--isolated-flyback-converter",
+   "id": "M02",
+   "criterion": "G03-001",
+   "sr_rule": "PWR-C01",
+   "refs": [
+    "T1",
+    "D1",
+    "J1",
+    "J2"
+   ],
+   "nets": [
+    "Net-(D1-K)",
+    "Net-(J2-Pin_1)"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C01.GAP-OUTPUT-PWR-C01-J1.NET-D1-K",
+    "PWR-C01.GAP-OUTPUT-PWR-C01-J2.NET-J2-PIN-1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "abhishek-xi--isolated-flyback-converter",
+   "id": "M03",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "U1",
+    "C13",
+    "C10",
+    "C11"
+   ],
+   "nets": [
+    "Net-(U1-SS)",
+    "Net-(J2-Pin_1)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PWR-D03.U1-NET-U1-EN-UVLO.U1-4"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "PWR-D03.GAP-SOFTSTART-SS.NET-U1-SS"
+   ],
+   "seed": null
+  },
+  {
+   "board": "abhishek-xi--isolated-flyback-converter",
+   "id": "M04",
+   "criterion": "G05-025",
+   "sr_rule": "PRO-C05",
+   "refs": [
+    "U1",
+    "T1",
+    "D1",
+    "J1",
+    "J2"
+   ],
+   "nets": [
+    "/VIN",
+    "Net-(J2-Pin_1)",
+    "Net-(D1-K)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C05.GAP-INTERNAL-FAULT-TIME.NET-J2-PIN-1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "angelnu--lorawansensor",
+   "id": "M01",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "BT1",
+    "J1",
+    "J2",
+    "U1",
+    "U2"
+   ],
+   "nets": [
+    "+3V3",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.J1-1-FB1.VDDA",
+    "PRO-C04.J1-1.J1-1",
+    "PRO-C04.J2-1-FB1.VDDA",
+    "PRO-C04.J2-1.J2-1"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "angelnu--lorawansensor",
+   "id": "M02",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U1",
+    "U2"
+   ],
+   "nets": [
+    "NSS",
+    "RESET",
+    "+3V3",
+    "GND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "bondus--klippertoolboard",
+   "id": "M01",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U2",
+    "C4"
+   ],
+   "nets": [
+    "Net-(U2-5VOUT)"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C04.GAP-M01.U2"
+   ],
+   "seed": null
+  },
+  {
+   "board": "bondus--klippertoolboard",
+   "id": "M02",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U5",
+    "J3",
+    "R2",
+    "R31",
+    "R5",
+    "R30",
+    "C25",
+    "C36"
+   ],
+   "nets": [
+    "THERM",
+    "THERM2",
+    "AREF",
+    "GNDA"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "ANA-C03.ANALOG-THERM-FAULT.U1",
+    "ANA-C03.ANALOG-THERM-RUN.U1"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C03.GAP-M02.U5"
+   ],
+   "seed": null
+  },
+  {
+   "board": "bondus--klippertoolboard",
+   "id": "M03",
+   "criterion": "G05-031",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D7",
+    "U6"
+   ],
+   "nets": [
+    "CANH",
+    "CANL",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-E02.D7-8826ff",
+    "PRO-E02.D7-e49262"
+   ],
+   "lint": [
+    "PRO-E02:D7",
+    "PRO-E02:D7"
+   ],
+   "gap_rows": [
+    "PRO-E02.GAP-M03.D7"
+   ],
+   "seed": null
+  },
+  {
+   "board": "bondus--klippertoolboard",
+   "id": "M04",
+   "criterion": "G03-018",
+   "sr_rule": "PWR-C06",
+   "refs": [
+    "U2"
+   ],
+   "nets": [
+    "ST_VS",
+    "Net-(U2-5VOUT)"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C06.GAP-M04.U2"
+   ],
+   "seed": null
+  },
+  {
+   "board": "bondus--klippertoolboard",
+   "id": "M05",
+   "criterion": "G05-025",
+   "sr_rule": "PRO-C05",
+   "refs": [
+    "U3",
+    "L4"
+   ],
+   "nets": [
+    "ST_VS",
+    "Net-(U3-SW)",
+    "+5V"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C05.GAP-M05.U3"
+   ],
+   "seed": null
+  },
+  {
+   "board": "cellkeeper-bms--cellkeeper-hardware",
+   "id": "M01",
+   "criterion": "G04-040",
+   "sr_rule": "PRO-D02",
+   "refs": [
+    "U5",
+    "U4",
+    "TR1",
+    "R145",
+    "R146"
+   ],
+   "nets": [
+    "GND",
+    "GND CAN",
+    "IsoSPI+"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "cellkeeper-bms--cellkeeper-hardware",
+   "id": "M02",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "U3",
+    "FB2",
+    "D42",
+    "J9"
+   ],
+   "nets": [
+    "+5V",
+    "Net-(D42-A)",
+    "/Serial API 5V Diode"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.J9-A4.J9-A4",
+    "PRO-C04.J9-A9.J9-A9",
+    "PRO-C04.J9-B4.J9-B4",
+    "PRO-C04.J9-B9.J9-B9"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "cellkeeper-bms--cellkeeper-hardware",
+   "id": "M03",
+   "criterion": "G03-018",
+   "sr_rule": "PWR-C06",
+   "refs": [
+    "U3",
+    "D15",
+    "R18",
+    "R19"
+   ],
+   "nets": [
+    "V_{in}",
+    "unconnected-(U3-ENA-Pad5)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "copperpilot--jetson-ai-cam-copperpilot",
+   "id": "M01",
+   "criterion": "G05-030",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D1",
+    "D3",
+    "D5",
+    "D6",
+    "D7",
+    "D8",
+    "D9",
+    "D10",
+    "D11",
+    "D12",
+    "IC2",
+    "IC18"
+   ],
+   "nets": [
+    "USB1_D_P",
+    "USB1_D_N",
+    "/USB/C_CC1",
+    "/Display/ML_C_LANE0_P",
+    "/Display/TMDS_C1_D0_P"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-E02.D1-2f9b41",
+    "PRO-E02.D10-5abb0c",
+    "PRO-E02.D10-af8f29",
+    "PRO-E02.D11-2a1228",
+    "PRO-E02.D11-3823f7"
+   ],
+   "lint": [
+    "PRO-E02:D10",
+    "PRO-E02:D10",
+    "PRO-E02:D11",
+    "PRO-E02:D11",
+    "PRO-E02:D12"
+   ],
+   "gap_rows": [
+    "PRO-E02.GAP-ESD-CLAMP-D1.D1",
+    "PRO-E02.GAP-ESD-CLAMP-D10.D10",
+    "PRO-E02.GAP-ESD-CLAMP-D11.D11"
+   ],
+   "seed": null
+  },
+  {
+   "board": "copperpilot--jetson-ai-cam-copperpilot",
+   "id": "M02",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "J1",
+    "J2",
+    "J10",
+    "J12"
+   ],
+   "nets": [
+    "HDMI_PWR",
+    "DP_PWR",
+    "3V3_SYS",
+    "5V0_SYS"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.J1-16.J1-16",
+    "PRO-C04.J1-19.J1-19",
+    "PRO-C04.J10-1.J10-1",
+    "PRO-C04.J12-2.J12-2",
+    "PRO-C04.J13-1-F4.3V3-SYS"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C04.GAP-BRANCH-J1.HDMI-PWR",
+    "PRO-C04.GAP-BRANCH-J10.3V3-SYS",
+    "PRO-C04.GAP-BRANCH-J12.5V0-SYS"
+   ],
+   "seed": null
+  },
+  {
+   "board": "greatscottgadgets--urti-mainboard",
+   "id": "M01",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "J4",
+    "J6",
+    "Q8",
+    "FB4"
+   ],
+   "nets": [
+    "3V3FPGA",
+    "+3V3"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.J3-1.J3-1",
+    "PRO-C04.J4-12.J4-12",
+    "PRO-C04.J4-6.J4-6",
+    "PRO-C04.J6-15.J6-15",
+    "PRO-C04.J6-16.J6-16"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "greatscottgadgets--urti-mainboard",
+   "id": "M02",
+   "criterion": "G04-041",
+   "sr_rule": "ANA-C01",
+   "refs": [
+    "U15",
+    "R73",
+    "R74",
+    "R75",
+    "R76"
+   ],
+   "nets": [
+    "3V3RX",
+    "GND",
+    "/Radio/Receive Path/RX Gain DAC/DAC_OUT"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "gyrocopterllc--flatmcu",
+   "id": "M01",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U4",
+    "R23",
+    "R24",
+    "R26",
+    "R27",
+    "R30",
+    "R31"
+   ],
+   "nets": [
+    "/MCU/VA",
+    "/MCU/VB",
+    "/MCU/VC"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "ANA-C03.ANALOG-SENSORS-FAULT.U4",
+    "ANA-C03.ANALOG-SENSORS-RUN.U4"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C03.GAP-PHASE-ADC-RANGE.U4"
+   ],
+   "seed": null
+  },
+  {
+   "board": "gyrocopterllc--flatmcu",
+   "id": "M02",
+   "criterion": "G04-041",
+   "sr_rule": "ANA-C01",
+   "refs": [
+    "U3",
+    "R18",
+    "R22",
+    "R28",
+    "NT1",
+    "NT2",
+    "NT3"
+   ],
+   "nets": [
+    "/ThreePhaseBridge and Power/SPA",
+    "/ThreePhaseBridge and Power/SNA",
+    "/ThreePhaseBridge and Power/SPB",
+    "/ThreePhaseBridge and Power/SNB",
+    "/ThreePhaseBridge and Power/SPC",
+    "/ThreePhaseBridge and Power/SNC"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C01.GAP-CSA-INPUT-RANGE.U3"
+   ],
+   "seed": null
+  },
+  {
+   "board": "hirusha785--12v-5a-isolated-flyback-smps-kicad",
+   "id": "M01",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U1"
+   ],
+   "nets": [
+    "Net-(U1-C)",
+    "Net-(D3-A)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C04.GAP-TOP-SWITCH-TIMING.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "hirusha785--12v-5a-isolated-flyback-smps-kicad",
+   "id": "M02",
+   "criterion": "G03-006",
+   "sr_rule": "PWR-C15",
+   "refs": [
+    "U1"
+   ],
+   "nets": [
+    "Net-(U1-C)",
+    "Net-(D3-A)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C15.GAP-TOP-FEEDBACK.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "hirusha785--12v-5a-isolated-flyback-smps-kicad",
+   "id": "M03",
+   "criterion": "G03-018",
+   "sr_rule": "PWR-C06",
+   "refs": [
+    "U1"
+   ],
+   "nets": [
+    "Net-(U1-C)",
+    "Net-(D3-A)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C06.GAP-TOP-UVLO.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "hirusha785--12v-5a-isolated-flyback-smps-kicad",
+   "id": "M04",
+   "criterion": "G03-013",
+   "sr_rule": "PWR-C13",
+   "refs": [
+    "TH1"
+   ],
+   "nets": [
+    "IN AC +",
+    "Net-(C1-Pad2)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C13.GAP-MAINS-INRUSH.TH1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "hirusha785--12v-5a-isolated-flyback-smps-kicad",
+   "id": "M05",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "H3"
+   ],
+   "nets": [
+    "Net-(D5-K)",
+    "OUT DC +"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C04.GAP-OUTPUT-BRANCH.H3"
+   ],
+   "seed": null
+  },
+  {
+   "board": "hirusha785--12v-5a-isolated-flyback-smps-kicad",
+   "id": "M06",
+   "criterion": "G03-038",
+   "sr_rule": "PRO-C01",
+   "refs": [
+    "U1"
+   ],
+   "nets": [
+    "Net-(U1-C)",
+    "Net-(D3-A)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C01.GAP-TOP-FB-OPEN.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "hirusha785--12v-5a-isolated-flyback-smps-kicad",
+   "id": "M07",
+   "criterion": "G02-027",
+   "sr_rule": "DRV-C01",
+   "refs": [
+    "R5"
+   ],
+   "nets": [
+    "Net-(D3-K)",
+    "Net-(D1-+)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "DRV-C01.GAP-TOP-RCD.R5"
+   ],
+   "seed": null
+  },
+  {
+   "board": "hirusha785--12v-5a-isolated-flyback-smps-kicad",
+   "id": "M08",
+   "criterion": "G03-021",
+   "sr_rule": "PWR-D03",
+   "refs": [
+    "U1"
+   ],
+   "nets": [
+    "Net-(U1-C)",
+    "Net-(D3-A)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-D03.GAP-TOP-STARTUP-CURRENT.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "hirusha785--12v-5a-isolated-flyback-smps-kicad",
+   "id": "M09",
+   "criterion": "G05-054",
+   "sr_rule": "PRO-D04",
+   "refs": [
+    "H3"
+   ],
+   "nets": [
+    "Net-(D5-K)",
+    "OUT DC +"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-D04.GAP-OUTPUT-ABNORMAL-PORT.H3"
+   ],
+   "seed": null
+  },
+  {
+   "board": "imike78--home-mini-v1-drop-in-pcb",
+   "id": "M01",
+   "criterion": "G05-030",
+   "sr_rule": "PRO-E02",
+   "refs": [
+    "D4",
+    "J1",
+    "FB1"
+   ],
+   "nets": [
+    "Net-(D4-A2)",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-E02.D2-946030",
+    "PRO-E02.D3-2011e3"
+   ],
+   "lint": [
+    "PRO-E02:D2",
+    "PRO-E02:D3"
+   ],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "imike78--home-mini-v1-drop-in-pcb",
+   "id": "M02",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U6",
+    "U14",
+    "R74",
+    "R76",
+    "R77",
+    "C98"
+   ],
+   "nets": [
+    "AUDIO_PA_EN",
+    "Net-(R74-Pad2)",
+    "/AUDIO/AMP_CTL"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "jasonsbeer--amiga-2000-eatx",
+   "id": "M01",
+   "criterion": "G03-025",
+   "sr_rule": "PWR-T04",
+   "refs": [
+    "XU1",
+    "U805",
+    "U100"
+   ],
+   "nets": [
+    "+5V",
+    "/Serial/RESET",
+    "_KBRST"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "jasonsbeer--amiga-2000-eatx",
+   "id": "M02",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "CN1",
+    "J9003"
+   ],
+   "nets": [
+    "+12V",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.CN1-1.CN1-1",
+    "PRO-C04.CN1-10.CN1-10",
+    "PRO-C04.CN1-11.CN1-11",
+    "PRO-C04.CN1-12.CN1-12",
+    "PRO-C04.CN1-13.CN1-13"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "rmingon--chlinknet",
+   "id": "M01",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "U3",
+    "J2",
+    "J3"
+   ],
+   "nets": [
+    "+3V3",
+    "GND"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.J2-1.J2-1",
+    "PRO-C04.J3-1.J3-1",
+    "PRO-C04.J3-2.J3-2",
+    "PRO-C04.J3-4.J3-4",
+    "PRO-C04.U1-P-3.U1-P-3"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "rmingon--chlinknet",
+   "id": "M02",
+   "criterion": "G04-040",
+   "sr_rule": "PRO-D02",
+   "refs": [
+    "U1",
+    "J3",
+    "U28"
+   ],
+   "nets": [
+    "RD_P",
+    "RD_N",
+    "TD_P",
+    "TD_N",
+    "V+",
+    "V-",
+    "+3V3",
+    "GND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "satya777777--esp32-industrial-io-controller",
+   "id": "M01",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U1",
+    "R16",
+    "R17",
+    "R18",
+    "R19",
+    "D6",
+    "D7"
+   ],
+   "nets": [
+    "ANALOG_0_10V",
+    "ANALOG_4_20mA"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C03.GAP-ADC-RANGE.GLOBAL"
+   ],
+   "seed": "D-MCU-ADC-DIVIDER"
+  },
+  {
+   "board": "satya777777--esp32-industrial-io-controller",
+   "id": "M02",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "J1",
+    "Q3",
+    "F1",
+    "Buck1",
+    "K1",
+    "J2",
+    "D2"
+   ],
+   "nets": [
+    "24V PROTECTED",
+    "SYS_5V",
+    "VBUS"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.J2-A4.J2-A4",
+    "PRO-C04.J2-A9.J2-A9",
+    "PRO-C04.J2-B4.J2-B4",
+    "PRO-C04.J2-B9.J2-B9"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C04.GAP-INPUT-BRANCH.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "satya777777--esp32-industrial-io-controller",
+   "id": "M03",
+   "criterion": "G05-087",
+   "sr_rule": "PWR-T05",
+   "refs": [
+    "J1",
+    "Q3",
+    "D4",
+    "R10",
+    "F1"
+   ],
+   "nets": [
+    "Net-(D4-K)",
+    "Net-(Q3-D)",
+    "24V PROTECTED"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-T05.GAP-REVERSE-Q3.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "satya777777--esp32-industrial-io-controller",
+   "id": "M04",
+   "criterion": "G04-040",
+   "sr_rule": "PRO-D02",
+   "refs": [
+    "K1",
+    "J3",
+    "Q4"
+   ],
+   "nets": [
+    "Net-(J3-COM)",
+    "Net-(J3-NC)",
+    "Net-(J3-NO)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-D02.GAP-RELAY-BARRIER.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--4-channel-relay-board-hardware-design",
+   "id": "M01",
+   "criterion": "G04-040",
+   "sr_rule": "PRO-D02",
+   "refs": [
+    "U1",
+    "U2",
+    "U3",
+    "U4",
+    "K2",
+    "K3",
+    "K6",
+    "K7"
+   ],
+   "nets": [
+    "GND",
+    "VCC",
+    "COM1",
+    "NC1",
+    "NO1",
+    "COM2",
+    "NC2",
+    "NO2",
+    "COM3",
+    "NC3",
+    "NO3",
+    "COM4",
+    "NC4",
+    "NO4"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--4-channel-relay-board-hardware-design",
+   "id": "M02",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "K1",
+    "R7",
+    "R8",
+    "R15",
+    "R16",
+    "R5",
+    "R6",
+    "R13",
+    "R14",
+    "K2",
+    "K3",
+    "K6",
+    "K7"
+   ],
+   "nets": [
+    "VCC",
+    "GND",
+    "Net-(D3-K)",
+    "Net-(D4-K)",
+    "Net-(D7-K)",
+    "Net-(D8-K)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.K1-1-R15.NET-D7-K",
+    "PRO-C04.K1-1-R16.NET-D8-K",
+    "PRO-C04.K1-1-R7.NET-D3-K",
+    "PRO-C04.K1-1-R8.NET-D4-K",
+    "PRO-C04.K1-1.K1-1"
+   ],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--gnss-gps-l86-m33-breakout-hardware-design",
+   "id": "M01",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U2",
+    "Q1",
+    "R1",
+    "R2",
+    "R5",
+    "R6"
+   ],
+   "nets": [
+    "FORCE_ON",
+    "RESET",
+    "Net-(U2-FORCE_ON)",
+    "Net-(Q1-C)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-GNSS-DEFAULT.U2"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--gnss-gps-l86-m33-breakout-hardware-design",
+   "id": "M02",
+   "criterion": "G03-028",
+   "sr_rule": "PWR-C24",
+   "refs": [
+    "D1",
+    "D2",
+    "K2",
+    "U2"
+   ],
+   "nets": [
+    "3V3",
+    "Net-(D2-A)",
+    "V_BCKP",
+    "GND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--gnss-gps-l86-m33-breakout-hardware-design",
+   "id": "M03",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "K2",
+    "D2",
+    "U2"
+   ],
+   "nets": [
+    "Net-(D2-A)",
+    "V_BCKP",
+    "GND"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C04.GAP-BATTERY-BRANCH.NET-D2-A"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--load-cell-ampfilier-hx711-board-hardware-design",
+   "id": "M01",
+   "criterion": "G04-041",
+   "sr_rule": "ANA-C01",
+   "refs": [
+    "U1",
+    "R1",
+    "R2",
+    "K1",
+    "K2"
+   ],
+   "nets": [
+    "Net-(U1-INNA-)",
+    "Net-(U1-INPA+)",
+    "Net-(U1-INNB-)",
+    "Net-(U1-INPB+)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "ANA-C01.ANALOG-U1-FAULT.U1",
+    "ANA-C01.ANALOG-U1-RUN.U1"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C01.GAP-HX-COMMON.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--load-cell-ampfilier-hx711-board-hardware-design",
+   "id": "M02",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C03",
+   "refs": [
+    "U1",
+    "K1",
+    "K2",
+    "C4"
+   ],
+   "nets": [
+    "Net-(U1-INNA-)",
+    "Net-(U1-INPA+)",
+    "Net-(U1-INNB-)",
+    "Net-(U1-INPB+)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "ANA-C03.ANALOG-U1-FAULT.U1",
+    "ANA-C03.ANALOG-U1-RUN.U1"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C03.GAP-HX-FULLSCALE.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--load-cell-ampfilier-hx711-board-hardware-design",
+   "id": "M03",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U1",
+    "Q1",
+    "R5",
+    "C1",
+    "C2"
+   ],
+   "nets": [
+    "Net-(Q1-C)",
+    "Net-(C1-Pad2)"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PWR-C04.DECAP-77893A8D1D2EFAB9B7E9.NET-Q1-C"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C04.GAP-HX-REG-COUT.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--load-cell-ampfilier-hx711-board-hardware-design",
+   "id": "M04",
+   "criterion": "G03-032",
+   "sr_rule": "PWR-C05",
+   "refs": [
+    "U1",
+    "Q1",
+    "R5",
+    "C2"
+   ],
+   "nets": [
+    "VCC",
+    "Net-(Q1-C)",
+    "Net-(C1-Pad2)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C05.GAP-HX-REG-REVERSE.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--load-cell-ampfilier-hx711-board-hardware-design",
+   "id": "M05",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "Q1",
+    "R5",
+    "K1"
+   ],
+   "nets": [
+    "Net-(Q1-C)",
+    "Net-(C1-Pad2)"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C04.GAP-HX-BRANCH.Q1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--load-cell-ampfilier-hx711-board-hardware-design",
+   "id": "M06",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U1",
+    "K3"
+   ],
+   "nets": [
+    "Net-(U1-PD_SCK)"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-HX-DEFAULT.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--soldered-inkplate-6-motion-hardware-design",
+   "id": "M01",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "U1",
+    "K2",
+    "K35",
+    "PAD1"
+   ],
+   "nets": [
+    "VDDH",
+    "VEE",
+    "VPOS",
+    "VNEG",
+    "VIN",
+    "3V3"
+   ],
+   "status": "reported",
+   "why": "同规则逐对象行或扫描发现点名该位点",
+   "matched": [
+    "PRO-C04.K17-1.K17-1",
+    "PRO-C04.K2-34-R1.E-PAPER-POWER-SUPPLY-VDDH-FB",
+    "PRO-C04.K2-34.K2-34",
+    "PRO-C04.K2-6.K2-6",
+    "PRO-C04.K23-4-JP1.3V3"
+   ],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C04.GAP-EPD-OUTPUT-BRANCHES.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--soldered-inkplate-6-motion-hardware-design",
+   "id": "M02",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U15",
+    "U1",
+    "Q9",
+    "Q13",
+    "Q14"
+   ],
+   "nets": [
+    "/PWRUP",
+    "/WAKEUP",
+    "/VCOM-CTRL",
+    "/SD-EN",
+    "/AS5600-EN"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-GPIO-POWER-DEFAULTS.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--soldered-inkplate-6-motion-hardware-design",
+   "id": "M03",
+   "criterion": "G04-054",
+   "sr_rule": "ANA-C01",
+   "refs": [
+    "Q7",
+    "Q8",
+    "R35",
+    "R36",
+    "R37",
+    "K35"
+   ],
+   "nets": [
+    "VBAT",
+    "/BAT-V"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "ANA-C01.GAP-BATTERY-ADC-DIVIDER.GLOBAL"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--soldered-inkplate-6-motion-hardware-design",
+   "id": "M04",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U10",
+    "C57"
+   ],
+   "nets": [
+    "VBAT"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C04.GAP-CHARGER-COUT.VBAT"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--stepper-motor-driver-drv8825-board-hardware-design",
+   "id": "M01",
+   "criterion": "G03-018",
+   "sr_rule": "PWR-C06",
+   "refs": [
+    "U1",
+    "K2"
+   ],
+   "nets": [
+    "VMM"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PWR-C06.GAP-M01-UVLO.VMM"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--stepper-motor-driver-drv8825-board-hardware-design",
+   "id": "M02",
+   "criterion": "G04-010",
+   "sr_rule": "RST-T04",
+   "refs": [
+    "U1",
+    "K1",
+    "R6",
+    "R8"
+   ],
+   "nets": [
+    "~{RESET}",
+    "~{SLEEP}",
+    "~{EN}",
+    "~{FAULT}"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "RST-T04.GAP-M02-DEFAULT.U1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--stepper-motor-driver-drv8825-board-hardware-design",
+   "id": "M03",
+   "criterion": "G05-019",
+   "sr_rule": "PRO-C04",
+   "refs": [
+    "K2",
+    "U1",
+    "JP1",
+    "R7",
+    "D1"
+   ],
+   "nets": [
+    "VMM"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-C04.GAP-M03-BRANCH.VMM"
+   ],
+   "seed": null
+  },
+  {
+   "board": "solderedelectronics--stepper-motor-driver-drv8825-board-hardware-design",
+   "id": "M04",
+   "criterion": "G04-003",
+   "sr_rule": "SIG-C07",
+   "refs": [
+    "K1",
+    "U1"
+   ],
+   "nets": [
+    "DIR",
+    "STEP"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "SIG-C07.GAP-M04-LEVEL.K1"
+   ],
+   "seed": null
+  },
+  {
+   "board": "tinkerforge--evse-bricklet",
+   "id": "M01",
+   "criterion": "G04-040",
+   "sr_rule": "PRO-D02",
+   "refs": [
+    "U102"
+   ],
+   "nets": [
+    "GND",
+    "AGND"
+   ],
+   "status": "missed",
+   "why": "本板没有该规则的自动行（只有审查员 rule_gaps 补问行）",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [
+    "PRO-D02.GAP-U102-ISOLATION.U102"
+   ],
+   "seed": null
+  },
+  {
+   "board": "tonydefilippis--poepico",
+   "id": "M01",
+   "criterion": "G01-029",
+   "sr_rule": "PWR-C13",
+   "refs": [
+    "J1",
+    "C15",
+    "C59",
+    "C60",
+    "C64"
+   ],
+   "nets": [
+    "+5V0",
+    "GND"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  },
+  {
+   "board": "tonydefilippis--poepico",
+   "id": "M02",
+   "criterion": "G03-003",
+   "sr_rule": "PWR-C04",
+   "refs": [
+    "U6",
+    "C28",
+    "C29",
+    "C33",
+    "C38"
+   ],
+   "nets": [
+    "/MicroController/VDD_CORE",
+    "GND"
+   ],
+   "status": "needs_human",
+   "why": "本板有同规则行，但对象没点名漏问位号/网络，粒度需人判",
+   "matched": [],
+   "lint": [],
+   "gap_rows": [],
+   "seed": null
+  }
+ ]
+}

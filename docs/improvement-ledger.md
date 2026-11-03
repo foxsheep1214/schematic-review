@@ -9,6 +9,14 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 合并步 5：两块新板归因、224 条漏问核对、抽查反馈三条、次要模式 7 项（2026-11-02）
+
+faderbuddy 与 singularity 补做归因（真缺陷 0/1、误报 7/10）。224 条漏问在 before 上逐条重跑：现已报出 79、仍漏 103、需人判 42，仍漏中可用网表表达的落成 6 个种子（M1200–M1205，当前自动 0，留作靶子）；终版重跑仍为 79/103/42，本步修的是误报与抽查反馈，不覆盖漏问。抽查反馈：文档/订货一致性缺陷须写有无电气后果、无则 P3；网名推定电压记“按网名推定”不给 PASS（78 板 697 行）；放宽 SIG-T04 连接门禁同时，晶体缺频率/CL 仍在 CLK-C01 要资料（25 行），加回归。次要模式做了 7 项（允许悬空 TPS54202 EN/TMC2209 VREF、电池/电池座、BOOT 自举脚、PoE 中心抽头、SPI 双模别名、未连脚单脚网、Microprocessor Crystal），78 板冷扫非 INFO -6、计划项 -71、RST-E02 114→103、REQ-Q07 588→568；带点位号、CM4/M.2 脚表、升压方向等未做，原因见提案。④ 字节棘轮 124000→124430（定级小节）。外部：ASG main 162a38e 把共用层升到 1.7.1，`test_asg_holds_the_same_shared_layer` 在本分支（不许动共用层）失败，门禁以 `SR_ASG_SHARED_ROOT` 指向 ASG 1.7.0 运行，合并前需同步共用层。gnss L86 缓存 intent 删去 K2 带理由声明（分类器已能读出电池）。
+
+- Event: user:2026-11-02 (再帮我执行"已识别但没做的改进")
+- Causes: rule_not_enforced 4, judgment 3, knowledge_missing 2, rule_missing 5
+- Changed: evals/boards/scottbez1--faderbuddy/, evals/boards/the-flame-trench--singularity/, evals/boards/_lanes/, evals/seeded_bench/boards-merge5.json, evals/seeded_bench/mutators.py, evals/seeded_bench/run.py, evals/seeded_bench/README.md, evals/mutation/run.py, evals/mutation/mutations.json, evals/detection/RESULTS.md, scripts/validate_review.py, scripts/checkers/passive_stress.py, scripts/plan_circuits.py, scripts/review_functions.py, scripts/part_words.py, scripts/checkers/diff_levels.py, scripts/i2c_topology.py, scripts/datasheet_kinds.py, scripts/tests/test_boards_merge5_seeds.py, scripts/tests/test_boards_merge5_spotcheck.py, scripts/tests/test_boards_merge5_minor.py, scripts/tests/test_reading_path.py, references/verdicts-and-release.md, references/architecture.md, docs/proposals/boards-merge-5-2026-11-02.md, docs/proposals/boards-merge-5-2026-11-02.json, docs/improvement-ledger.md
+- Gates: pytest 2754（SR_ASG_SHARED_ROOT=ASG 1.7.0）; mutation --changed 1cd885b 391 全杀; kicad_replay 195/195; seeded 272 位点 / 自动 229 / 0 错误、无退化; check_ledger PASS; 不 push
 ## 准则库 1.7.1：G04-091 的 WCH 出处核过原件 (2026-11-02)
 
 `docs/proposals/g06-g07-registry-draft-2026-11-02.md` 第七节的核对结果入库：G04-091 第二条出处的 `edition` 由"版次未核"改为 `openwch/ch32v307 EVT V3.0（仓库提交 bb6ee13，2026-04-16）`，page 改 `9（ETH 区）`，条目版本不变，G04 登记文件 1.3，共用层重建为 1.7.1（353 条），ASG 同字节。G06/G07 登记表草案（29 条）仍是草案，待用户确认。

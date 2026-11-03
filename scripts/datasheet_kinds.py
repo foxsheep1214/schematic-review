@@ -76,6 +76,8 @@ def cues(text, specific=True):
         found.discard('relay')           # a relay driver drives the coil; no IC role names generic load drivers
     if specific and 'supervisor' in found:
         found.discard('mcu')             # "microprocessor supervisor" watches an MCU, it is not one
+    if specific and re.search(r'micro(?:processor|controller)s?\W+crystal', text, re.I):
+        found.discard('mcu')             # "Ceramic SMD Microprocessor Crystal" (sdi-mipi Y1 RevT p1) names its application
     if specific and 'isolator' in found and 'gate_driver' in found:
         found.discard('gate_driver')     # an isolated gate driver is declared by its barrier
     if specific and 'regulator' in found and found & {'pwm_controller', 'sr_controller', 'pd_controller', 'charger'}:

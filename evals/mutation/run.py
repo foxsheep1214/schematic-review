@@ -31,6 +31,8 @@ def IGNORE(directory, names):
     """What the working copy leaves out: VCS/cache dirs and the top-level review runs."""
     rel = Path(directory).resolve().relative_to(ROOT.resolve()) if Path(directory).resolve() != ROOT.resolve() else Path('.')
     skip = {n for n in names if n in ('.git', '.claude', '__pycache__', '.pytest_cache')}
+    skip |= {n for n in names if (Path(directory) / n).is_symlink()
+             and not (Path(directory) / n).resolve().is_relative_to(ROOT.resolve())}   # board records that link the cache
     if rel == Path('.'):
         skip |= {n for n in names if n == 'runs'}
     return skip

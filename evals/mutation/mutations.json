@@ -227,8 +227,8 @@
   "id": "M44",
   "name": "a function with no cited clause accepted",
   "file": "scripts/review_functions.py",
-  "old": "            if conditions_by_id and fid not in document_only and not any(\n                    clause(c) and c['id'] in cited for c in conditions_by_id.values()):",
-  "new": "            if False and conditions_by_id and fid not in document_only and not any(\n                    clause(c) and c['id'] in cited for c in conditions_by_id.values()):"
+  "old": "            if conditions_by_id and fid not in document_only and not any(\n                    clause(c) and c['id'] in cited for c in conditions_by_id.values()) and not (",
+  "new": "            if False and conditions_by_id and fid not in document_only and not any(\n                    clause(c) and c['id'] in cited for c in conditions_by_id.values()) and not ("
  },
  {
   "id": "M45",
@@ -6949,5 +6949,194 @@
   "file": "evals/seeded_bench/mutators.py",
   "old": "out['no_connect_nodes'] = [n for n in out['no_connect_nodes'] if n != 'J6.38']",
   "new": "out['no_connect_nodes'] = list(out['no_connect_nodes'])"
+ },
+ {
+  "id": "M1200",
+  "name": "merge5 H-bridge seed leaves IN2 on its net",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out['pin2net'].update({'U2.7': 'VCC', 'U2.6': 'VCC', 'U2.5': 'GND'})",
+  "new": "out['pin2net'].update({'U2.7': 'VCC', 'U2.6': 'VCC'})"
+ },
+ {
+  "id": "M1201",
+  "name": "merge5 bridge part is unfitted",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "'nc': False, 'original_value': '0R', 'fields': {}}",
+  "new": "'nc': True, 'original_value': '0R', 'fields': {}}"
+ },
+ {
+  "id": "M1202",
+  "name": "merge5 bridge second end lands on the first net",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out['pin2net'][ref + '.1'], out['pin2net'][ref + '.2'] = a, b",
+  "new": "out['pin2net'][ref + '.1'], out['pin2net'][ref + '.2'] = a, a"
+ },
+ {
+  "id": "M1203",
+  "name": "merge5 ADC seed keeps the 10K bottom leg",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out['parts']['R18'].update(value='100K', original_value='100K')",
+  "new": "out['parts']['R18'].update(original_value='100K')"
+ },
+ {
+  "id": "M1204",
+  "name": "merge5 PMOS seed does not swap D/S",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out['pin2net']['Q1.2'], out['pin2net']['Q1.3'] = pins['Q1.3'], pins['Q1.2']",
+  "new": "out['pin2net']['Q1.2'], out['pin2net']['Q1.3'] = pins['Q1.2'], pins['Q1.3']"
+ },
+ {
+  "id": "M1205",
+  "name": "merge5 LDO startup seed keeps the original capacitor",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out['parts']['C6'].update(value='1000uF', original_value='1000uF')",
+  "new": "out['parts']['C6'].update(original_value='1000uF')"
+ },
+ {
+  "id": "M1206",
+  "name": "doc-consistency defect with no electrical consequence keeps P2",
+  "file": "scripts/validate_review.py",
+  "old": "        if item.get(\"severity\") != \"P3\":\n            return [f\"{fid}: a document/ordering",
+  "new": "        if False:\n            return [f\"{fid}: a document/ordering"
+ },
+ {
+  "id": "M1207",
+  "name": "doc-consistency defect may stay silent on its electrical consequence",
+  "file": "scripts/validate_review.py",
+  "old": "    if \"电气后果\" not in said:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M1208",
+  "name": "a requirement-backed point window counts as name-inferred",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if not isinstance(window, dict) or 'requirement' in window:\n            continue\n        lo, hi, said",
+  "new": "        if not isinstance(window, dict):\n            continue\n        lo, hi, said"
+ },
+ {
+  "id": "M1209",
+  "name": "a name-inferred voltage still pre-judges PASS",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "    if result == 'PASS':\n        return None, calc, said",
+  "new": "    if False:\n        return None, calc, said"
+ },
+ {
+  "id": "M1210",
+  "name": "a crystal's missing frequency/CL is not requested",
+  "file": "scripts/plan_circuits.py",
+  "old": "self._materials_gap(['datasheets', 'requirements']) + missing,",
+  "new": "self._materials_gap(['datasheets', 'requirements']),"
+ },
+ {
+  "id": "M1211",
+  "name": "an ordering code no longer stands in for a stated CL",
+  "file": "scripts/plan_circuits.py",
+  "old": "    if not CRYSTAL_CL_RE.search(words) and not ordered:",
+  "new": "    if not CRYSTAL_CL_RE.search(words):"
+ },
+ {
+  "id": "M1212",
+  "name": "the relaxed connection gate drops the pin-table requirement",
+  "file": "scripts/review_functions.py",
+  "old": "and located(c) and PIN_SECTION_RE.search(c.get('locator') or '')",
+  "new": "and located(c)"
+ },
+ {
+  "id": "M1213",
+  "name": "TPS54202 EN allow-open clause matches the wrong pin",
+  "file": "scripts/part_words.py",
+  "old": "and pin == '5' and 'EN' in aliases",
+  "new": "and pin == '6' and 'EN' in aliases"
+ },
+ {
+  "id": "M1214",
+  "name": "TMC2209 VREF allow-open clause is lost",
+  "file": "scripts/part_words.py",
+  "old": "and pin == '17' and 'VREF' in aliases",
+  "new": "and pin == '71' and 'VREF' in aliases"
+ },
+ {
+  "id": "M1215",
+  "name": "cell keywords no longer make a battery",
+  "file": "scripts/part_words.py",
+  "old": "        return BATTERY, 'part-keyword'\n    controller_pins",
+  "new": "        pass\n    controller_pins"
+ },
+ {
+  "id": "M1216",
+  "name": "cell keywords capture connectors",
+  "file": "scripts/part_words.py",
+  "old": "(?:U|M|IC|J|P|CN|TP|BT|B|R)\\d",
+  "new": "(?:U|M|IC|TP|BT|B|R)\\d"
+ },
+ {
+  "id": "M1225",
+  "name": "chip-resistor case codes read as coin cells",
+  "file": "scripts/part_words.py",
+  "old": "CR(?:1216|1220|1225|1616|1620|1632|2016|2025|2032|2330|2430|2450|2477)",
+  "new": "CR\\d{4}"
+ },
+ {
+  "id": "M1226",
+  "name": "an R refdes can be classified as a battery",
+  "file": "scripts/part_words.py",
+  "old": "(?:U|M|IC|J|P|CN|TP|BT|B|R)\\d",
+  "new": "(?:U|M|IC|J|P|CN|TP|BT|B)\\d"
+ },
+ {
+  "id": "M1217",
+  "name": "bootstrap BOOT pin is planned as a strap again",
+  "file": "scripts/plan_circuits.py",
+  "old": "STRAP_RE.search(net) and re.match(r'^[UMQ]\\d', ref, re.I))) and not bootstrap_cap_pin(db, node):",
+  "new": "STRAP_RE.search(net) and re.match(r'^[UMQ]\\d', ref, re.I))):"
+ },
+ {
+  "id": "M1218",
+  "name": "bootstrap test accepts a capacitor to another device",
+  "file": "scripts/plan_circuits.py",
+  "old": "if not any(n != node and n.split('.')[0] == ref for f in far for n in nets.get(f, [])):",
+  "new": "if not any(n != node for f in far for n in nets.get(f, [])):"
+ },
+ {
+  "id": "M1219",
+  "name": "PoE centre taps are a differential pair again",
+  "file": "scripts/checkers/diff_levels.py",
+  "old": "for r in self.graph.refs_on(net) for n in '123456789'):",
+  "new": "for r in self.graph.refs_on(net) for n in ''):"
+ },
+ {
+  "id": "M1220",
+  "name": "SPI-wired sensor aliases build an I2C bus again",
+  "file": "scripts/i2c_topology.py",
+  "old": "                                                    if not self.spi_wired(n)]:",
+  "new": "                                                    ]:"
+ },
+ {
+  "id": "M1221",
+  "name": "a CS tied to a rail still counts as SPI",
+  "file": "scripts/i2c_topology.py",
+  "old": "and net and not self.rail(net) and any(",
+  "new": "and net and any("
+ },
+ {
+  "id": "M1222",
+  "name": "unwired KiCad pins raise function circuits again",
+  "file": "scripts/plan_circuits.py",
+  "old": "if len(nodes) < 2 and re.match(r'(?:.*/)?unconnected-\\(', net, re.I)}",
+  "new": "if False}"
+ },
+ {
+  "id": "M1223",
+  "name": "named lone nets stop raising function circuits",
+  "file": "scripts/plan_circuits.py",
+  "old": "if len(nodes) < 2 and re.match(r'(?:.*/)?unconnected-\\(', net, re.I)}",
+  "new": "if len(nodes) < 2}"
+ },
+ {
+  "id": "M1224",
+  "name": "Microprocessor Crystal title reads as an MCU again",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "micro(?:processor|controller)s?\\W+crystal",
+  "new": "micro(?:processor|controller)s?\\W+crystalX"
  }
 ]

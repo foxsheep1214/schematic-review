@@ -567,6 +567,7 @@ def board_mutations(db):
     yield from merge2b_mutations(db)
     yield from merge3_mutations(db)
     yield from merge4_mutations(db)
+    yield from merge5_mutations(db)
 
 
 def merge2b_mutations(db):
@@ -732,4 +733,60 @@ def merge4_mutations(db):
                        'drop the native no-connect flag on the labelled single-node J6.38; the open pin must be asked again',
                        out, baseline=copy.deepcopy(db),
                        contract={'source': 'hdmi-mipi-bridge J6 FFC spare pin with native NC flag'})
+
+
+def _bridge(db, ref, a, b):
+    """Add a fitted 0R two-terminal part `ref` between nets a and b."""
+    out = copy.deepcopy(db)
+    out['parts'][ref] = {'value': '0R', 'prim': 'Device:R', 'part': 'R', 'jedec': 'Resistor_SMD:R_0603_1608Metric',
+                         'nc': False, 'original_value': '0R', 'fields': {}}
+    out['pin2net'][ref + '.1'], out['pin2net'][ref + '.2'] = a, b
+    for pin in ('1', '2'):
+        out.setdefault('pintype', {})[ref + '.' + pin] = 'UNSPEC'
+    return rebuild(out)
+
+
+def merge5_mutations(db):
+    """Still-missed probes from the 224-miss recheck of boards-merge5; every site is registered as a current miss of
+    its target rule (C/T rules are judged by the reviewer; a plan row naming the site is counted apart)."""
+    parts, pins = db.get('parts', {}), db.get('pin2net', {})
+    model = lambda ref: str(parts.get(ref, {}).get('part') or parts.get(ref, {}).get('value') or '')
+    if model('U2') == 'DRV8837' and pins.get('U2.7') == '/M_SLEEP' and pins.get('U2.6') == '/M_1':
+        out = copy.deepcopy(db)
+        out['pin2net'].update({'U2.7': 'VCC', 'U2.6': 'VCC', 'U2.5': 'GND'})
+        yield Mutation('D-HBRIDGE-RESET-UNSAFE', ('RST-T04',), ('U2',), ('/M_SLEEP', '/M_1', '/M_2'),
+                       'tie DRV8837 nSLEEP and IN1 high, IN2 low: the bridge drives the motor while the MCU is in reset',
+                       rebuild(out), baseline=copy.deepcopy(db),
+                       contract={'source': 'faderbuddy M01; TI SLVSBA4F p13 truth table, p4 internal pulldowns'})
+    if model('U1') == 'ADM2582E' and pins.get('U1.11') == '/GND3' and pins.get('U1.1') == 'GND':
+        yield Mutation('D-ISO-BRIDGE', ('PRO-D02', 'PRO-A05'), ('U1',), ('GND', '/GND3'),
+                       'fitted 0R from logic GND to the isolated-side /GND3 of the ADM2582E',
+                       _bridge(db, 'RSEED1', 'GND', '/GND3'), baseline=copy.deepcopy(db),
+                       contract={'source': 'kicad-pmod_rs485 M01; ADI ADM2582E isolation barrier GND1/GND2'})
+    if model('U1') == 'Trafo_1' and pins.get('U1.4') == 'GND' and pins.get('U1.7') == '/E':
+        yield Mutation('D-ISO-BRIDGE', ('PRO-D02',), ('U1',), ('GND', '/E'),
+                       'fitted 0R from the flyback secondary return GND to the primary return /E',
+                       _bridge(db, 'RSEED1', 'GND', '/E'), baseline=copy.deepcopy(db),
+                       contract={'source': '12v-1a-isolated-flyback M01; transformer U1 primary pins 1/7, secondary 4/5'})
+    if 'R18' in parts and pins.get('R18.2') == 'ANALOG_0_10V' and pins.get('R18.1') == 'GND':
+        out = copy.deepcopy(db)
+        out['parts']['R18'].update(value='100K', original_value='100K')
+        yield Mutation('D-MCU-ADC-DIVIDER', ('ANA-C03',), ('R18',), ('ANALOG_0_10V',),
+                       'divider bottom R18 10K -> 100K on the 0-10 V ADC input: the ADC node rises well above 3.3 V',
+                       out, baseline=copy.deepcopy(db),
+                       contract={'source': 'esp32-industrial-io M01; ESP32 ADC input range; R18 is the only bottom leg'})
+    if model('Q1') == 'Q_PMOS_GDS' and pins.get('Q1.2') == 'Net-(J1-Pin_1)' and pins.get('Q1.3') == 'Net-(D2-K)':
+        out = copy.deepcopy(db)
+        out['pin2net']['Q1.2'], out['pin2net']['Q1.3'] = pins['Q1.3'], pins['Q1.2']
+        yield Mutation('D-REVERSE-PMOS-DS', ('PWR-T05',), ('Q1',), ('Net-(J1-Pin_1)', 'Net-(D2-K)'),
+                       'swap Q1 drain/source: the reverse-protection PMOS body diode now points backwards',
+                       rebuild(out), baseline=copy.deepcopy(db),
+                       contract={'source': 'leviathanext M01; SUD50P06-15 G/D/S, J1 input to load'})
+    if model('U2') == 'SE5218' and pins.get('C6.2') == '3V3' and pins.get('U2.5') == '3V3':
+        out = copy.deepcopy(db)
+        out['parts']['C6'].update(value='1000uF', original_value='1000uF')
+        yield Mutation('D-LDO-STARTUP-COVERAGE', ('PWR-D03',), ('C6', 'U2'), ('3V3',),
+                       'LDO output capacitor C6 2.2uF -> 1000uF: the start-up charge current must be asked',
+                       out, baseline=copy.deepcopy(db),
+                       contract={'source': 'capacitive-soil-sensor M01; SE5218 has no SS pin, current limit unknown'})
 

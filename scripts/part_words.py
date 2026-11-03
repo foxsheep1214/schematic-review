@@ -256,6 +256,10 @@ def pin_signature(pin_names):
     return None
 
 
+CELL_RE = re.compile(r'(?:^|[\s:_-])BATT(?:ERY)?(?:[\s:_-]|$)|LI[-_ ]?ION|(?:^|[\s:_-])LIPO(?:[\s:_-]|$)|CERACHARGE'
+                     r'|\d(?:\.\d+)?\s*[MU]AH(?:[\s:_-]|$)|(?:^|[\s:_-])CR(?:1216|1220|1225|1616|1620|1632|2016|2025|2032|2330|2430|2450|2477)(?:[\s:_-]|$)|电池', re.I)
+
+
 def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     """返回 (kind, basis)。basis 说明结论的依据：datasheet / part-keyword / pin-names / refdes-prefix。
 
@@ -303,6 +307,11 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
         return CONNECTOR, 'part-keyword'
     blob = ' '.join(normalize(part.get(key)) for key in ('part', 'value', 'prim'))
     ic_ref = re.match(r'^(U|M|IC)\d', ref, re.I)
+    # boards-merge5: a cell or a cell holder drawn under another prefix is a source, not a capacitor or an unknown
+    # (Singularity C25 '100uAH-1V8-…_LIon_batt' TDK CeraCharge; GNSS L86 breakout K2 CR1220_HOLDER with pins 1+/2-).
+    if (CELL_RE.search(blob) and (pin_count is None or pin_count <= 3)
+            and not re.match(r'^(?:U|M|IC|J|P|CN|TP|BT|B|R)\d', ref, re.I)):
+        return BATTERY, 'part-keyword'
     controller_pins = {a for name, pin in pin_names for a in pin_aliases(name, pin)}
     if ic_ref and pin_count is not None and pin_count >= 4 and {'GATE', 'SENSE', 'IN'} <= controller_pins:
         return IC, 'pin-names'  # an ideal-diode controller is not a two-terminal diode
@@ -381,6 +390,12 @@ def unused_input_permission(db, node):
         return 'TI TPS709 SBVS186H p3 Table5-1 / p13 §7.4: EN may float, internal 300nA pull-up'
     if re.fullmatch(r'TPS5430(?:DDA[RT]?)?', model, re.I) and pin == '5' and 'ENA' in aliases:
         return 'TI TPS5430 SLVS632L p3 Table4-1 / p9 §6.3.3: ENA may float, internal 1.5Mohm pull-up'
+    # boards-merge5: the value names the regulator when the symbol was borrowed (klippertoolboard U3 TPS54308 symbol)
+    named = {str(part.get(k) or '') for k in ('part', 'value')}
+    if any(re.fullmatch(r'TPS54202(?:DDC[RT])?', n, re.I) for n in named) and pin == '5' and 'EN' in aliases:
+        return 'TI TPS54202 p3 Pin Functions / p9 §7.3: "Float the EN pin to enable", internal pull-up current source'
+    if re.fullmatch(r'TMC2209(?:-LA)?(?:-T)?', model, re.I) and pin == '17' and 'VREF' in aliases:
+        return 'Trinamic TMC2209 Rev1.08 p53 / p79 VVREFO: VREF open settles at 1.8 V (73 % current scale); unused when GCONF.i_scale_analog=0'
     return None
 
 

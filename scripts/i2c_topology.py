@@ -29,6 +29,8 @@ def _netgraph():
 
 
 SIGNAL = re.compile(r'(^|[_/.-])(SDA\d*|SCL\d*)(?=$|[_/.-])', re.I)
+SPI_ALIAS = re.compile(r'(^|/)(SDI|SDIO|SCLK|SCK|MOSI)(/|$)', re.I)
+CHIP_SELECT = re.compile(r'^(~\{CS\}|~CS|/CS|N?CS|CSB|CS_N|SS|~\{SS\})$', re.I)
 I2C_HINT = re.compile(r'(^|[_/.-])I2C\w*(?=$|[_/.-])', re.I)
 
 
@@ -187,6 +189,19 @@ class Inventory:
     def rail(self, net):
         return bool(net in self.rails or _netgraph().is_rail(net) or _netgraph().is_ground(net))
 
+    def spi_wired(self, node):
+        """A dual-mode SDA/SDI, SCL/SCLK pin of a part whose chip select is driven by another device is SPI (ADXL345 Rev0
+        p8: "In SPI mode, the CS pin is controlled by the bus master"; I2C needs CS tied high), so its SDA/SCL alias builds no I2C bus (merge 5)."""
+        ref = node.split('.', 1)[0]
+        if not SPI_ALIAS.search(str(self.pinname.get(node, ''))):
+            return False
+        for cs in self.nodes.get(ref, []):
+            net = self.pin2net.get(cs)
+            if CHIP_SELECT.match(str(self.pinname.get(cs, ''))) and net and not self.rail(net) and any(
+                    n.split('.', 1)[0] != ref for n in self.nets.get(net, [])):
+                return True
+        return False
+
     def seeds(self):
         buses = [dict(deepcopy(b), origin='declared') for b in self.cfg.get('buses', [])]
         confirmed = {n for b in buses for signal in ('sda', 'scl') for n in b[signal]}
@@ -200,7 +215,8 @@ class Inventory:
         for net, nodes in sorted(self.nets.items()):
             if net in self.pseudo or self.rail(net) or re.search(r'(?:^|[/_-])I2S(?:[/_-]|$)', net, re.I):
                 continue
-            for label, anchor in [(net, 'net:')] + [(str(self.pinname.get(n, '')), 'pin:' + n.split('.', 1)[0] + ':') for n in nodes]:
+            for label, anchor in [(net, 'net:')] + [(str(self.pinname.get(n, '')), 'pin:' + n.split('.', 1)[0] + ':') for n in nodes
+                                                    if not self.spi_wired(n)]:
                 match = SIGNAL.search(label)
                 if match:
                     role = match[2][:3].lower()

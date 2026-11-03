@@ -1,0 +1,59 @@
+{
+ "note": "Six still-missed probes from the boards-merge5 recheck of the 224 lane misses; source artifacts stay read-only in the board cache. Each site is a registered current miss of its target rule, not a hardware verdict on the source board.",
+ "boards": [
+  {
+   "id": "gorkemguven--12v-1a-isolated-flyback-smps",
+   "source": {
+    "repo": "gorkemguven/12V-1A-Isolated-Flyback-SMPS",
+    "commit": "36a78f3d4086a58e2786bb3a77145fbbc47d9f21",
+    "schematic": "flyback trafo devresi.kicad_sch",
+    "license": "MIT"
+   }
+  },
+  {
+   "id": "motordynamicslab--leviathanext",
+   "source": {
+    "repo": "MotorDynamicsLab/LeviathanExt",
+    "commit": "060af34d9eecc6e967473f04f5e677e55a51dda8",
+    "schematic": "KiCad/LV Extension Board.kicad_sch",
+    "license": "GPL-3.0"
+   }
+  },
+  {
+   "id": "s59mz--kicad-pmod_rs485",
+   "source": {
+    "repo": "s59mz/kicad-pmod_rs485",
+    "commit": "ef23a9854416eb4e83576dc1ff50790b182ae9ef",
+    "schematic": "kicad-pmod_rs485.kicad_sch",
+    "license": "GPL-3.0"
+   }
+  },
+  {
+   "id": "satya777777--esp32-industrial-io-controller",
+   "source": {
+    "repo": "Satya777777/ESP32-Industrial-IO-Controller",
+    "commit": "f97651a90ecec7cba8f06120e73fc12392bd8b23",
+    "schematic": "hardware/ESP32_IO_Controller.kicad_sch",
+    "license": "MIT"
+   }
+  },
+  {
+   "id": "scottbez1--faderbuddy",
+   "source": {
+    "repo": "scottbez1/FaderBuddy",
+    "commit": "931ed66d37022cd12d767b05f4d61c14efe61fb8",
+    "schematic": "electronics/fader_buddy_main.kicad_sch",
+    "license": "Apache-2.0"
+   }
+  },
+  {
+   "id": "solderedelectronics--capacitive-soil-sensor-hardware-design",
+   "source": {
+    "repo": "SolderedElectronics/Capacitive-soil-sensor-hardware-design",
+    "commit": "edd7f63a876ae5a7199bb925879c3737e4ba1dc5",
+    "schematic": "CAD/V1.2.2/Capacitive_soil_sensor.kicad_sch",
+    "license": "TAPR-OHL-1.0"
+   }
+  }
+ ]
+}

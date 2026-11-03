@@ -13,6 +13,27 @@ import part_words as pw
 import protective_clamps
 import row_owner
 from audit_datasheets import datasheet_entry_for_ref
+
+CRYSTAL_HZ_RE = re.compile(r'\d+(?:[.,]\d+)?\s*[kKmMgG]?\s*hz', re.I)
+CRYSTAL_CL_RE = re.compile(r'\d+(?:\.\d+)?\s*p\s*f?(?![a-z])|\bC\s*L\b', re.I)
+ORDERING_FIELD_RE = re.compile(r'mpn|part\s*_?num|partnumber|mfr|manufacturer.?part|lcsc|jlc|digikey|mouser', re.I)
+
+
+def crystal_data_gaps(ref, part):
+    """The nominal frequency and load capacitance a passive crystal's own data must state (boards-merge5 spot check,
+    2026-11-02: Y1 'Crystal_GND24' with 10pF caps had neither). A relaxed evidence gate elsewhere must not let a
+    crystal pass without them, so a missing one stays a data request on its CLK-C01 row. The load capacitance is
+    missing only when no text states pF/CL and no ordering code names the exact part to read it from."""
+    fields = part.get('fields') if isinstance(part.get('fields'), dict) else {}
+    words = ' '.join(str(v or '') for v in [part.get('value'), part.get('part'), part.get('original_value')]
+                     + list(fields.values()))
+    ordered = any(ORDERING_FIELD_RE.search(str(k)) and str(v or '').strip() for k, v in fields.items())
+    gaps = []
+    if not CRYSTAL_HZ_RE.search(words):
+        gaps.append('datasheet:%s 晶体标称频率（Value/字段没有写明）' % ref)
+    if not CRYSTAL_CL_RE.search(words) and not ordered:
+        gaps.append('datasheet:%s 晶体负载电容 CL（没有写明，也没有可查的订货码）' % ref)
+    return gaps
 from checkers import powertree, isolation_sides
 from checkers.netgraph import RAIL_RE, NetGraph, is_analog_sense_pair, is_ground
 from part_words import (BJT, BRIDGE_RECTIFIER, CAPACITOR, COMMON_MODE_CHOKE, CONNECTOR, COUPLED_INDUCTOR, CRYSTAL, DIODE, FUSE, IC,
@@ -74,10 +95,15 @@ OWNED_PART_KINDS = {'DEV-C01': lambda kind: kind not in (CONNECTOR, TESTPOINT),
 
 def _database_blobs(db):
     blobs = []
-    for net in db.get('nets', {}):
-        blobs.append(f'NET:{net}')
+    nets, pin2net = db.get('nets', {}), db.get('pin2net', {})
+    alone = {net for net, nodes in nets.items()   # KiCad's own name for a lone unwired pin builds no function (TPA3116 SCLK0)
+             if len(nodes) < 2 and re.match(r'(?:.*/)?unconnected-\(', net, re.I)}
+    for net in nets:
+        if net not in alone:
+            blobs.append(f'NET:{net}')
     for node, pin in db.get('pinname', {}).items():
-        blobs.append(f'PIN:{node}:{pin}')
+        if pin2net.get(node) not in alone:
+            blobs.append(f'PIN:{node}:{pin}')
     for ref, part in db.get('parts', {}).items():
         if pw.mechanical_part(part):
             continue
@@ -328,6 +354,22 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
     return found, [ref for ref in unread if ref not in found]
 
 
+def bootstrap_cap_pin(db, node):
+    """A converter BOOT pin is a bootstrap supply, not a strap: its net is the pin and capacitors only, and each
+    capacitor's other end sits on another pin of the same IC (SW/PH/LX), as TPS54202 BOOT-C-SW (merge 5)."""
+    nets, pin2net = db.get('nets', {}), db.get('pin2net', {})
+    ref = node.split('.')[0]
+    others = [n for n in nets.get(pin2net.get(node), []) if n != node]
+    if not others or any(not re.match(r'^C\d', n.split('.')[0]) for n in others):
+        return False
+    for cap_pin in others:
+        cap = cap_pin.split('.')[0]
+        far = [pin2net[n] for n in pin2net if n.split('.')[0] == cap and n != cap_pin]
+        if not any(n != node and n.split('.')[0] == ref for f in far for n in nets.get(f, [])):
+            return False
+    return True
+
+
 class CircuitPlanning:
     """功能电路与器件的检查项。"""
 
@@ -567,7 +609,7 @@ class CircuitPlanning:
                     required_inputs=['datasheet:pin function/Abs Max'],
                     trigger=[f'pinname:{pin}', f'net:{net}'])
             if net and (STRAP_RE.search(upper_pin) or (
-                    STRAP_RE.search(net) and re.match(r'^[UMQ]\d', ref, re.I))):
+                    STRAP_RE.search(net) and re.match(r'^[UMQ]\d', ref, re.I))) and not bootstrap_cap_pin(db, node):
                 obj = {'node': node, 'net': net, 'ref': ref}
                 self.add_check(
                     'RST-E02', obj, readiness='WAITING_EVIDENCE',
@@ -709,11 +751,17 @@ class CircuitPlanning:
                         or re.fullmatch(r'VDD|VCC|VCCO', str(connector_graph.pinname.get(ref + '.' + pin, '')), re.I))
                    for pin, net in connector_graph.pins_of(ref).items()):
                 continue  # an active oscillator has a supply; no passive load network is required
-            if any(c['rule'] == 'CLK-C01' and ref in
-                   ([c.get('object', {}).get('ref')] + c.get('object', {}).get('refs', [])) for c in self.checks):
+            missing = crystal_data_gaps(ref, db.get('parts', {}).get(ref) or {})
+            owned = [c for c in self.checks if c['rule'] == 'CLK-C01' and ref in
+                     ([c.get('object', {}).get('ref')] + c.get('object', {}).get('refs', []))]
+            for row in owned:   # a circuit row on this crystal still says what the part data does not
+                if missing:
+                    row['required_inputs'] = sorted(set(row.get('required_inputs') or []) | set(missing))
+                    row['readiness'] = 'WAITING_EVIDENCE'
+            if owned:
                 continue
             self._ready_check('CLK-C01', {'ref': ref, 'refs': [ref], 'nets': connector_graph.nets_of(ref)},
-                              self._materials_gap(['datasheets', 'requirements']), ['passive-crystal:' + ref])
+                              self._materials_gap(['datasheets', 'requirements']) + missing, ['passive-crystal:' + ref])
         for ref in sorted(connector_graph.parts):
             if not connector_graph.is_fitted(ref) or connector_graph.kind(ref) != IC:
                 continue

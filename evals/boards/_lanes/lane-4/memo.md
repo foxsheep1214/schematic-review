@@ -123,3 +123,5 @@
 - HCPL2731双LED/达林顿不能用单通道opto模板；AQH光输入SSR没有本体线圈，OPA171双电源无GND脚，不能为去耦组造return脚。TPS709 EN可浮、A5950 LSS接地+OCLSEL开路允许。
 - merge-plan带回的7个PRO-E02+1个DRV-A03有function_id却不进members；按全部checks对账并逐ID补判边，不只照框架循环。NA依据要列表、开放key全局唯一。
 - AC反馈LED VR=5V、PEM1每路min5mA、ADC Rth39.172k均需实际边界；230Vrms/249k与钳位额定电流只作条件算例。网页PDF取证不冒充本地全文，SMF4L13CA多厂候选不替实贴保证。
+
+- the-flame-trench--singularity（合并步 5 补做）：121件/612项；TFT 自定义库 IC 必须先写 device_kinds（CAN quote 在 p2），否则只有 DEBUG 候选。TCXO 削顶正弦直连 TMS570 OSCIN 是条款偏离；CeraCharge 被当电容、nPORRST 不认复位输入。
