@@ -43,6 +43,30 @@ CLAUSE_ORDER = {"NA": 0, "PASS": 1, "INSUFFICIENT": 2, "FAIL": 3}
 # Results format 14: each finding text said once (references/results-format.md, 发现项).
 FINDING_TEXTS = ("title", "root_cause", "consequence", "fix", "severity_reason")
 RETIRED_FINDING_FIELDS = {"observed", "criterion", "impact", "scenario", "recommendation", "verification"}
+# Document and ordering consistency (boards-merge5 spot check, 2026-11-02): a defect whose every link is DEV-D01/D02/D04
+# or a DOC rule says in consequence or severity_reason whether it has an electrical consequence. With one (a wrong pin
+# meaning, a wrong rating) it keeps the level of that consequence; a mismatch between fields or an incomplete ordering
+# code with "无电气后果" drops one level from the data class LOCAL_OR_DATA (P2) to P3 (verdicts-and-release.md).
+DOC_CONSISTENCY_RULES = ("DEV-D01", "DEV-D02", "DEV-D04")
+NO_ELECTRICAL_CONSEQUENCE = "无电气后果"
+
+
+def doc_consistency_errors(fid, item, rules):
+    """The electrical-consequence grading of a document/ordering consistency defect."""
+    if item.get("kind") != "DEFECT" or not rules or not all(
+            r in DOC_CONSISTENCY_RULES or str(r).startswith("DOC-") for r in rules):
+        return []
+    said = " ".join(str(item.get(f) or "") for f in ("consequence", "severity_reason"))
+    if NO_ELECTRICAL_CONSEQUENCE in said:
+        if item.get("severity") != "P3":
+            return [f"{fid}: a document/ordering consistency defect with {NO_ELECTRICAL_CONSEQUENCE} drops one level "
+                    f"to P3 (fields disagree or the ordering code is incomplete; no pin meaning or rating is wrong)"]
+        return []
+    if "电气后果" not in said:
+        return [f"{fid}: a document/ordering consistency defect ({'/'.join(sorted(rules))}) says in consequence or "
+                f"severity_reason whether it has an electrical consequence: 电气后果：<wrong pin meaning or rating and "
+                f"what it does> keeps its level; {NO_ELECTRICAL_CONSEQUENCE} drops it to P3"]
+    return []
 
 
 def source_text(planned):
@@ -525,6 +549,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         location = item.get("location", {})
         require(isinstance(location, dict) and all(ids(location.get(k)) for k in ("pages", "refs", "nets")),
                 f"{fid}: location needs pages/refs/nets (use explicit unresolved locator for missing data)")
+        errors.extend(doc_consistency_errors(fid, item, {checks[x].get("rule") for x in linked if x in checks}))
         if item.get("kind") == "DEFECT":
             require(any(checks[x].get("review_result") == "FAIL" and checks[x].get("finding_id") == fid
                         for x in linked if x in checks), f"{fid}: orphan defect")

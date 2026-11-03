@@ -1321,6 +1321,17 @@ def _item_errors(label, item, kind_field, conditions, finding_ids, calculation=N
     return errors
 
 
+def connection_evidence(conditions_by_id, cited):
+    """A function whose every non-NA row is a connection trace (method T, e.g. SIG-T04 direction) is carried by the
+    facts it traces: a cited NETLIST_FACT plus a cited, located official pin-table condition (boards-merge5 spot check,
+    2026-11-02). This relaxes only F1's source check; numeric rows (CLK-C01 load, start-up, stress) are never T and keep
+    needing a clause, and a crystal without its frequency or CL stays a data request on its CLK-C01 row."""
+    used = [c for c in conditions_by_id.values() if c['id'] in cited]
+    return (any(c.get('kind') == 'NETLIST_FACT' for c in used)
+            and any(c.get('kind') != 'NETLIST_FACT' and located(c) and PIN_SECTION_RE.search(c.get('locator') or '')
+                    for c in used))
+
+
 def cited_conditions(fn):
     """Condition ids the verdict actually uses: margin bases, the public bound and what was read before asking a vendor,
     judgements, fail items and gap edges. A clause nobody cites proves nothing (F1)."""
@@ -1349,7 +1360,7 @@ def cited_conditions(fn):
     return out
 
 
-def function_errors(report, document_only=(), db=None, audit=None):
+def function_errors(report, document_only=(), db=None, audit=None, connection_only=()):
     """F1–F10 and the shape of every function verdict; no plan needed. `document_only` names the functions that carry
     document rows only (validate_functions finds them); they need no clause. With `db`, netlist facts name real nets
     and condition refs are parts; with the datasheet `audit`, a condition's refs own the datasheet it quotes."""
@@ -1393,7 +1404,8 @@ def function_errors(report, document_only=(), db=None, audit=None):
                                   % (fid, c['id'], c.get('owner') or 'its owner'))
             cited = cited_conditions(fn)
             if conditions_by_id and fid not in document_only and not any(
-                    clause(c) and c['id'] in cited for c in conditions_by_id.values()):
+                    clause(c) and c['id'] in cited for c in conditions_by_id.values()) and not (
+                    fid in connection_only and connection_evidence(conditions_by_id, cited)):
                 errors.append('%s: no clause carries the verdict — cite at least one NUMERIC_LIMIT or MANDATORY_CLAUSE, '
                               'located (page, table or section, a datasheet section title, a requirement id), in a margin '
                               'basis, a judgement, a fail item or a gap edge; a listed clause nobody uses proves nothing'
@@ -2196,7 +2208,13 @@ def validate_functions(plan, report, checks, history_ids=(), db=None):
     functions = report.get('functions') if isinstance(report.get('functions'), list) else []
     circuits = {fn.get('id') for fn in circuit_functions(functions, list(checks.values()))}
     document_only = {fn.get('id') for fn in functions if isinstance(fn, dict) and fn.get('id') not in circuits}
-    errors = (function_errors(report, document_only, db, plan_datasheet_audit(plan))
+    bound = {}
+    for row in checks.values():
+        if isinstance(row, dict) and row.get('function_id') is not None and row.get('review_result') != 'NA':
+            bound.setdefault(row['function_id'], []).append(row.get('rule'))
+    connection_only = {fid for fid, rules in bound.items()
+                       if rules and all(isinstance(r, str) and catalog.method_of(r) == 'T' for r in rules)}
+    errors = (function_errors(report, document_only, db, plan_datasheet_audit(plan), connection_only)
               + binding_errors(expected, checks, report.get('functions'), history_ids)
               + frame_errors(plan, checks, report.get('functions'))
               + requirement_edge_errors(plan, checks, report.get('functions'))

@@ -227,8 +227,8 @@
   "id": "M44",
   "name": "a function with no cited clause accepted",
   "file": "scripts/review_functions.py",
-  "old": "            if conditions_by_id and fid not in document_only and not any(\n                    clause(c) and c['id'] in cited for c in conditions_by_id.values()):",
-  "new": "            if False and conditions_by_id and fid not in document_only and not any(\n                    clause(c) and c['id'] in cited for c in conditions_by_id.values()):"
+  "old": "            if conditions_by_id and fid not in document_only and not any(\n                    clause(c) and c['id'] in cited for c in conditions_by_id.values()) and not (",
+  "new": "            if False and conditions_by_id and fid not in document_only and not any(\n                    clause(c) and c['id'] in cited for c in conditions_by_id.values()) and not ("
  },
  {
   "id": "M45",
@@ -6991,5 +6991,54 @@
   "file": "evals/seeded_bench/mutators.py",
   "old": "out['parts']['C6'].update(value='1000uF', original_value='1000uF')",
   "new": "out['parts']['C6'].update(original_value='1000uF')"
+ },
+ {
+  "id": "M1206",
+  "name": "doc-consistency defect with no electrical consequence keeps P2",
+  "file": "scripts/validate_review.py",
+  "old": "        if item.get(\"severity\") != \"P3\":\n            return [f\"{fid}: a document/ordering",
+  "new": "        if False:\n            return [f\"{fid}: a document/ordering"
+ },
+ {
+  "id": "M1207",
+  "name": "doc-consistency defect may stay silent on its electrical consequence",
+  "file": "scripts/validate_review.py",
+  "old": "    if \"电气后果\" not in said:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M1208",
+  "name": "a requirement-backed point window counts as name-inferred",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if not isinstance(window, dict) or 'requirement' in window:\n            continue\n        lo, hi, said",
+  "new": "        if not isinstance(window, dict):\n            continue\n        lo, hi, said"
+ },
+ {
+  "id": "M1209",
+  "name": "a name-inferred voltage still pre-judges PASS",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "    if result == 'PASS':\n        return None, calc, said",
+  "new": "    if False:\n        return None, calc, said"
+ },
+ {
+  "id": "M1210",
+  "name": "a crystal's missing frequency/CL is not requested",
+  "file": "scripts/plan_circuits.py",
+  "old": "self._materials_gap(['datasheets', 'requirements']) + missing,",
+  "new": "self._materials_gap(['datasheets', 'requirements']),"
+ },
+ {
+  "id": "M1211",
+  "name": "an ordering code no longer stands in for a stated CL",
+  "file": "scripts/plan_circuits.py",
+  "old": "    if not CRYSTAL_CL_RE.search(words) and not ordered:",
+  "new": "    if not CRYSTAL_CL_RE.search(words):"
+ },
+ {
+  "id": "M1212",
+  "name": "the relaxed connection gate drops the pin-table requirement",
+  "file": "scripts/review_functions.py",
+  "old": "and located(c) and PIN_SECTION_RE.search(c.get('locator') or '')",
+  "new": "and located(c)"
  }
 ]

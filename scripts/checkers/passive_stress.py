@@ -128,12 +128,29 @@ def _declared_rails(intent):
     return rails
 
 
+def name_inferred_rails(intent):
+    """Declared rails whose window is only the net name read as a voltage: a single point (min = max, no tolerance)
+    equal to what the name says (+36V -> 36), with no requirement behind it. Such a voltage is marked 按网名推定 and
+    never confirms a pre-judgement (boards-merge5 spot check, 2026-11-02: +36V was the only source of a 36 V claim)."""
+    named = set()
+    for net, rail in ((intent or {}).get('power_rails') or {}).items():
+        window = rail.get('voltage_v') if isinstance(rail, dict) else None
+        if not isinstance(window, dict) or 'requirement' in window:
+            continue
+        lo, hi, said = window.get('min'), window.get('max'), ng.rail_voltage(net)
+        if (isinstance(lo, (int, float)) and isinstance(hi, (int, float)) and said is not None and lo == hi
+                and abs(hi - said) <= 1e-9 * max(1.0, said)):
+            named.add(net)
+    return named
+
+
 class _Bounds:
     """网的电压窗口上界：地、声明轨，或经无源件连通的同一簇内最高声明供电。"""
 
-    def __init__(self, graph, rails):
-        self.graph, self.rails = graph, rails
+    def __init__(self, graph, rails, named=()):
+        self.graph, self.rails, self.named = graph, rails, set(named)
         self._cluster, self._ic, self._midpoint = {}, {}, {}
+        self.sources = {}   # net -> declared rails its window was read from
 
     def _fixed(self, net):
         if net in self.rails:
@@ -190,11 +207,13 @@ class _Bounds:
         fixed = self._fixed(net)
         if fixed is not None:
             domain = self.domain(net)
+            self.sources[net] = {net} & set(self.rails)
             return fixed, ('ground' if net not in self.rails else 'declared-rail:' + net), {domain} - {None}
         if net in self._cluster:
             return self._cluster[net]
         graph = self.graph
         seen, queue, tops, ac, gap, domains = {net}, [net], [], False, None, set()
+        used = set()
         while queue and gap is None:
             current = queue.pop()
             if current in graph.pseudo or not current:
@@ -216,6 +235,7 @@ class _Bounds:
                         gap = 'undeclared-supply:%s(%s)' % (ref, supply or 'no-declared-rail')
                         break
                     tops.append(supply)
+                    used |= set(graph.pins_of(ref).values()) & set(self.rails)
                     domains |= {self.domain(n) for n in graph.pins_of(ref).values()
                                 if self._fixed(n) is not None} - {None}
                 elif kind in LINK_KINDS:
@@ -226,6 +246,7 @@ class _Bounds:
                         if fixed is not None:
                             if fixed != (0.0, 0.0):
                                 tops.append(fixed[1])
+                                used |= {other} & set(self.rails)
                             domains |= {self.domain(other)} - {None}
                             continue
                         ac = ac or kind == pw.CAPACITOR
@@ -243,6 +264,7 @@ class _Bounds:
             result = (None, gap, domains)
         for item in seen:
             self._cluster[item] = self._clamped(item, result)
+            self.sources[item] = used
         return self._cluster[net]
 
     def _clamped(self, net, result):
@@ -464,7 +486,7 @@ def _series_chains(graph, bounds):
 def _scan(db, intent, state):
     level = ((intent or {}).get('derating') or {}).get('level')
     graph = ng.NetGraph(db, fitted=set(state['fitted']))
-    bounds = _Bounds(graph, _declared_rails(intent))
+    bounds = _Bounds(graph, _declared_rails(intent), name_inferred_rails(intent))
     chains, taps = _series_chains(graph, bounds)
     parts = []
     for ref in sorted(graph.fitted):
@@ -503,6 +525,10 @@ def _scan(db, intent, state):
             windows.append(window)
             domains |= found
             entry.setdefault('bases', []).append(basis)
+        named = sorted(set().union(*(bounds.sources.get(net, set()) for net in entry['nets'])) & bounds.named)
+        if named:
+            entry['name_inferred_rails'] = named
+            entry['bases'].append('name-inferred:' + '|'.join(named))
         if len(domains) > 1:
             entry['bases'].append('cross-domain:' + '|'.join(sorted(domains)))
         elif None not in windows:
@@ -609,6 +635,18 @@ def _proposal(entry):
     if best and v <= best[2]:
         return 'PASS', calc, '所需耐压 ≥%gV 在该封装/容值可订购档内（%s %gV）；耐压约束记 DEV-D04' % (v, best[3], best[2])
     return None, calc, '可订购档表未覆盖该封装/容值/耐压，由审查者按目录判定'
+
+
+def _name_inferred(entry, result, calc, note):
+    """A voltage read only off a net name (+36V) is 按网名推定: it is said so and never confirms a pre-judgement."""
+    named = entry.get('name_inferred_rails')
+    if not named:
+        return result, calc, note
+    calc = dict(calc, rail_basis='按网名推定')
+    said = '轨压按网名推定（%s 的窗口只有网名标称值、无公差，不作确证）' % '、'.join(named)
+    if result == 'PASS':
+        return None, calc, said + '；按此推定本可预判通过：' + note + '。补需求或源端保证窗后重判'
+    return result, calc, said + '；' + note
 
 
 def _beyond_prejudgement(result, calc):
@@ -787,7 +825,7 @@ class PassiveStressChecker(Checker):
     title = '通用阻容应力预判'
     plan_key = 'passive_stress'
     version_key = 'passive_stress_version'
-    version = 5   # 5: identified parts take no assumed package; series strings share the rail voltage
+    version = 6   # 6: a voltage read only off a net name is 按网名推定 and confirms no pre-judgement
     allow_manual_bound_objects = False
     generated_fields = ('rule', 'method', 'domain', 'object', 'criterion', 'readiness',
                         'inventory_gaps', 'proposal')
@@ -801,7 +839,7 @@ class PassiveStressChecker(Checker):
         for state, entry, state_ids in inv.walk_distinct(inventory, 'parts'):
             obj = dict({'ref': entry['ref'], 'passive_stress_digest': inventory['digest']},
                        **inv.state_fields(state_ids))
-            result, calc, note = _proposal(entry)
+            result, calc, note = _name_inferred(entry, *_proposal(entry))
             if entry.get('package_assumed') and not _beyond_prejudgement(result, calc):
                 continue   # no footprint: only a computed stress beyond the pre-judgement gets its own row
             if state['gaps']:
