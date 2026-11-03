@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## G06/G07 准则登记表草案、WCH 出处核对、86 块板待采集资料表 (2026-11-02)
+
+G06 安全与绝缘 18 条、G07 EMC 与端口防护 11 条登记表草案（全部 draft、closing_stage schematic），按 G05 字段写，出处 52 条全部对 raw/Standard、raw/Applicationnote 原件核到实页（扫描件渲染原页读条号与页脚）；与 G01–G05 重叠处只写 relations；PCB、结构、试验列下游约束不入条；缺词 8 项列出未自造（gdt、digital_isolator、isolated_power、safety_capacitor、POWER_OUTPUT、CHASSIS_PE、模拟现场 I/O、产品类别）。G01–G05 副本加两份草案汇编为 1.8.0-draft（382 条）到临时目录，check 通过。WCH CH32V30xSCH.pdf 从 openwch/ch32v307 取得：第 9 页 HR911105A 中心抽头 4/5 共接 3V3、C14 = 0.1 µF 属实，版次为仓库 V3.0（提交 bb6ee13，2026-04-16），建议值写在草案第七节。datasheets_to_collect 31 项整理成 ASG 清单格式。未改 references/shared/、HardwareWiki、scripts/、SKILL.md。
+
+- Event: user:2026-11-02 (再帮我执行"已识别但没做的改进")
+- Causes: rule_missing 29, knowledge_missing 2
+- Changed: docs/proposals/g06-g07-registry-draft-2026-11-02.md, docs/proposals/g06-g07-registry-draft-2026-11-02/G06_准则登记.json, docs/proposals/g06-g07-registry-draft-2026-11-02/G07_准则登记.json, docs/proposals/datasheets-to-collect-from-boards-2026-11-02.md, docs/improvement-ledger.md
+- Gates: check_ledger PASS; build 1.8.0-draft check 通过
+
 ## 86 块板归因抽查：20 条真缺陷、20 条误报 (2026-11-02)
 
 按种子 20261102 从汇总抽样，逐条对 db、原理图与手册原文独立复核（`docs/proposals/spot-check-2026-11-02.md`）：真缺陷同意 19、证据不足 1（flatmcu U2 的 AP1117 输出电容未计磁珠后的 C41），误报同意 20；没有需要反转的结论。附保留意见 5 条。系统性偏差：文档/订货一致性类真缺陷占 7/20 且严重度偏重，应按有无电气后果分级；个别真缺陷只靠网名或名义条款；放宽 SIG-T04 证据门禁时须保留"晶体无频率/负载电容即报资料缺失"的回归。这些交合并步 5。
