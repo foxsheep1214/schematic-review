@@ -394,6 +394,9 @@ def unused_input_permission(db, node):
     named = {str(part.get(k) or '') for k in ('part', 'value')}
     if any(re.fullmatch(r'TPS54202(?:DDC[RT])?', n, re.I) for n in named) and pin == '5' and 'EN' in aliases:
         return 'TI TPS54202 p3 Pin Functions / p9 §7.3: "Float the EN pin to enable", internal pull-up current source'
+    # boards-merge6 F13: debounce select is a three-way strap whose settings are written with the pins open
+    if re.fullmatch(r'SN65HVS883(?:PWPR?)?', model, re.I) and {'1': 'DB0', '2': 'DB1'}.get(pin) in aliases:
+        return 'TI SN65HVS883 SLASEE6 p3 Pin Functions (DB0, DB1 debounce select) / p5 tDB: DB0 or DB1 open selects 0/1/3 ms'
     if re.fullmatch(r'TMC2209(?:-LA)?(?:-T)?', model, re.I) and pin == '17' and 'VREF' in aliases:
         return 'Trinamic TMC2209 Rev1.08 p53 / p79 VVREFO: VREF open settles at 1.8 V (73 % current scale); unused when GCONF.i_scale_analog=0'
     return None

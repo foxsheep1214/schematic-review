@@ -7145,5 +7145,19 @@
   "file": "scripts/board_intent.py",
   "old": "compared = PACKAGE_NOTE_RE.sub('', official) or official",
   "new": "compared = official"
+ },
+ {
+  "id": "M1301",
+  "name": "SN65HVS883 debounce-select permission spreads to the whole SN65HVS88x family",
+  "file": "scripts/part_words.py",
+  "old": "re.fullmatch(r'SN65HVS883(?:PWPR?)?', model, re.I)",
+  "new": "re.fullmatch(r'SN65HVS88\\d(?:PWPR?)?', model, re.I)"
+ },
+ {
+  "id": "M1302",
+  "name": "SN65HVS883 debounce-select permission ignores which physical pin carries the DB name",
+  "file": "scripts/part_words.py",
+  "old": "{'1': 'DB0', '2': 'DB1'}.get(pin) in aliases",
+  "new": "aliases & {'DB0', 'DB1'}"
  }
 ]
