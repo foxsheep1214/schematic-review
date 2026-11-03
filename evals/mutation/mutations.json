@@ -6009,14 +6009,14 @@
   "id": "M925",
   "name": "4k7 enable source is cut by a low-impedance threshold",
   "file": "scripts/checkers/netgraph.py",
-  "old": "def signal_source_peers(self, net, max_ohm=10000.0, max_hops=3):",
-  "new": "def signal_source_peers(self, net, max_ohm=1000.0, max_hops=3):"
+  "old": "def signal_source_peers(self, net, max_ohm=10000.0, max_hops=3, stop_nets=()):",
+  "new": "def signal_source_peers(self, net, max_ohm=1000.0, max_hops=3, stop_nets=()):"
  },
  {
   "id": "M926",
   "name": "gate source discovery borrows drivers from ground or shared rail",
   "file": "scripts/checkers/netgraph.py",
-  "old": "if value is None or value['kohm'] < 0 or is_ground(other) or is_rail(other):",
+  "old": "if value is None or value['kohm'] < 0 or other in stops or is_ground(other) or is_rail(other):",
   "new": "if value is None or value['kohm'] < 0:"
  },
  {
@@ -6191,7 +6191,7 @@
   "id": "M972",
   "name": "gate pulldown reaches grounded test contacts as drivers",
   "file": "scripts/checkers/netgraph.py",
-  "old": "if value is None or value['kohm'] < 0 or is_ground(other) or is_rail(other):",
+  "old": "if value is None or value['kohm'] < 0 or other in stops or is_ground(other) or is_rail(other):",
   "new": "if value is None or value['kohm'] < 0 or is_rail(other):"
  },
  {
@@ -6627,5 +6627,33 @@
   "file": "scripts/checkers/powertree.py",
   "old": " and not pw.load_socket(part):",
   "new": ":"
+ },
+ {
+  "id": "M1037",
+  "name": "series IC endpoints no longer reach interface inventory",
+  "file": "scripts/interfaces.py",
+  "old": "        series = [] if power else self.series_ends(net)",
+  "new": "        series = []"
+ },
+ {
+  "id": "M1038",
+  "name": "core supplies replace the explicit IO domain",
+  "file": "scripts/interfaces.py",
+  "old": "for pattern in (r'V(?:CC|DD)IO\\d*', r'V(?:DD|CC)\\d*'):",
+  "new": "for pattern in ():"
+ },
+ {
+  "id": "M1039",
+  "name": "declared bias rail is traversed as a signal",
+  "file": "scripts/interfaces.py",
+  "old": "self.grounds | self.declared_rails | self.signal_rail_stops | {",
+  "new": "self.grounds | self.declared_rails | {"
+ },
+ {
+  "id": "M1040",
+  "name": "grounded crystal case makes passive crystal active",
+  "file": "scripts/plan_circuits.py",
+  "old": "if any(not netgraph_ground(net) and not re.fullmatch(r'GND\\d*|VSS|CASE|SHIELD', str(connector_graph.pinname.get(ref + '.' + pin, '')), re.I)",
+  "new": "if any(True"
  }
 ]

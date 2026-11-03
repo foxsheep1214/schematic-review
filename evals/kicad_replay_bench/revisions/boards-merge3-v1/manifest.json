@@ -1,0 +1,21 @@
+{
+ "revision": "boards-merge3-v1",
+ "parents": {
+  "revisions/boards-merge3-mechanical-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge3-mechanical-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge3-mechanical-v1/expected.json": "9073f44fe619739c0218954b00d99c5b098abcdb0a089bd85a954fd86de4d7f1",
+  "revisions/boards-merge3-mechanical-v1/manifest.json": "997444fe4f9f924ebc6b5c8fc0ba7b2b330f66fc038d994f537143753cbe01a3"
+ },
+ "derived_files": {
+  "revisions/boards-merge3-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge3-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge3-v1/expected.json": "ae0e51297f4cb5e26bd514ed65d3f72e5e15307a58b342063cce2b3e6900df15"
+ },
+ "scope": "r02 X1 native CRYSTAL_3225_4_PAD: pins2/4 power_in are both on GND; pins1/3 XTAL2/XTAL1. Grounded case pads are not a non-ground oscillator supply. Add only CLK-C01.X1 (388 to389), preserve missing-function-name DOC-Q01 and no electrical verdict; all other194 fields unchanged from mechanical-v1.",
+ "field_changes": {
+  "r02-dasduino-coreplus.plan.checks_total": {
+   "before": 388,
+   "after": 389
+  }
+ }
+}

@@ -70,6 +70,7 @@ class Deriver:
         self.owner_of = row_owner.part_owners(list(self.circuits.values()))
         self.grounds = set(self.domains['grounds']) | {n for n in self.graph.nets if ng.is_ground(n)}
         self.declared_rails = powertree.declared_supply_nets(self.graph, kind_intent)
+        self.signal_rail_stops = set(kind_intent.get('power_rails') or {})
         self.gaps = []
 
     def typed_role(self, node):
@@ -110,6 +111,38 @@ class Deriver:
         return sorted({net for pin, net in self.graph.pins_of(ref).items() if net not in self.grounds
                        and (self.native.get(ref + '.' + pin) == 'power_in'
                             or pw.name_matches(powertree.SUPPLY_IN_PIN_RE, self.graph.pinname.get(ref + '.' + pin), pin))})
+
+    def signal_supply(self, ref):
+        # Prefer explicit I/O domains; retain ambiguous banks.
+        supplies = self.supply(ref)
+        for pattern in (r'V(?:CC|DD)IO\d*', r'V(?:DD|CC)\d*'):
+            rails = {net for pin, net in self.graph.pins_of(ref).items() if net in supplies
+                     and re.fullmatch(pattern, str(self.graph.pinname.get(ref + '.' + pin, '')), re.I)}
+            if rails:
+                return sorted(rails)
+        return supplies
+
+    def series_ends(self, net):
+        # Trace fitted series parts with rails as stops.
+        if not hasattr(self, '_signal_paths'):
+            self._signal_paths = {}
+            self._signal_stops = self.grounds | self.declared_rails | self.signal_rail_stops | {
+                n for n in self.graph.nets if self.power_node(n)}
+        if net not in self._signal_paths:
+            self._signal_paths[net] = self.graph.signal_source_peers(net, stop_nets=self._signal_stops)
+        out = []
+        for far, path in self._signal_paths[net].items():
+            if not path:
+                continue
+            for node in self.graph.nodes_on(far):
+                ref = node.partition('.')[0]
+                if not self.graph.is_fitted(ref) or self.graph.kind(ref) != pw.IC:
+                    continue
+                role, basis = self.role(node)
+                out.append({'owner': self.owner_of.get(ref), 'pin': node, 'role': role, 'basis': basis,
+                            'domain': self.reference(ref, far), 'supply': self.signal_supply(ref),
+                            'net': far, 'series_parts': path})
+        return out
 
     def source(self, net):
         found = self.tree.source_of(net)
@@ -173,10 +206,20 @@ class Deriver:
                              self.graph.kind(e['pin'].partition('.')[0]) in (pw.IC, pw.CONNECTOR)
                              for e in ends):
             power = 'supply-pin'  # physical pin function; never a source/current guarantee
-        return {'net': net, 'endpoints': ends, 'cross_supply': self.cross_supply(ends), 'power_node': power}
+        series = [] if power else self.series_ends(net)
+        if not power:
+            ends = [dict(e, supply=self.signal_supply(e['pin'].partition('.')[0]))
+                    if self.graph.kind(e['pin'].partition('.')[0]) == pw.IC else e for e in ends]
+        result = {'net': net, 'endpoints': ends, 'cross_supply': self.cross_supply(ends + series), 'power_node': power}
+        if series:
+            result['series_endpoints'] = series
+        return result
 
     def owners_on(self, net):
-        return {self.owner_of[ref] for ref in self.graph.refs_on(net) if ref in self.owner_of}
+        owners = {self.owner_of[ref] for ref in self.graph.refs_on(net) if ref in self.owner_of}
+        if not self.power_node(net):
+            owners |= {e['owner'] for e in self.series_ends(net) if e['owner']}
+        return owners
 
     def signal_nets(self):
         return [n for n in sorted(self.graph.nets) if n not in self.grounds and n not in self.graph.pseudo]
@@ -207,7 +250,7 @@ class Deriver:
                     self.gaps.append({'interface': 'RAIL-' + net, 'pin': None, 'reason': 'source'})
                 add('RAIL-' + net, 'SUPPLY', owners, net, basis=basis, source=source,
                     loads=sorted(owners - {source}))
-            touched = owners & links
+            touched = {self.owner_of[ref] for ref in self.graph.refs_on(net) if ref in self.owner_of} & links
             for cid in sorted(touched):
                 add('LINK-' + self.key[cid], 'LINK', owners, net)
             if basis is not None or touched:
@@ -306,7 +349,7 @@ class InterfacePlanning:
             entries = item['nets'] if kind in ('SUPPLY', 'EXTERNAL') else asked_nets(item)
             nets = [n['net'] for n in entries]
             logic = [n['net'] for n in entries if not n.get('power_node')]
-            parts = sorted({e['pin'].partition('.')[0] for n in entries for e in n['endpoints'] if e['owner']})
+            parts = sorted({e['pin'].partition('.')[0] for n in entries for e in n['endpoints'] + n.get('series_endpoints', []) if e['owner']})
             gaps = role_gaps.get(iid, []) + [
                 f'datasheet:{ref}' for ref in parts if self.db.get('parts', {}).get(ref) and powertree.IC_REF_RE.match(ref)
                 and not (datasheet_entry_for_ref(self.datasheet_audit, ref) or {}).get('status') == 'AVAILABLE']
@@ -327,6 +370,10 @@ class InterfacePlanning:
                     if entry['cross_supply'] or (kind == 'EXTERNAL' and not entry.get('power_node') and not ng.is_ground(entry['net'])):
                         row = self._ready_check(rule, {'interface': iid, 'net': entry['net']}, gaps, trigger, key=iid)
                         row['question'] = catalog.interface_question(rule, iid, [entry['net']])
+                        if entry.get('series_endpoints'):
+                            row['object']['nodes'] = sorted({e['pin'] for e in entry['endpoints'] + entry['series_endpoints']})
+                            row['object']['series_endpoints'] = entry['series_endpoints']
+                            row['question'] += '；沿串阻/铜跳接到实际 IC 端点，核对 I/O 供电域与串阻限流（路径见对象）'
                         if kind == 'EXTERNAL':
                             row['object']['nodes'] = [e['pin'] for e in entry['endpoints'] if e['pin'].partition('.')[0] == iid[4:]]
                             row['question'] = (f"{iid} 的 {entry['net']} 信号脚在本板掉电、外设先上电时，注入电流与串阻是否满足本器件限值；"

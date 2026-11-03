@@ -696,9 +696,10 @@ class CircuitPlanning:
         for ref in sorted(db.get('parts', {})):
             if not connector_graph.is_fitted(ref) or connector_graph.kind(ref) != CRYSTAL:
                 continue
-            if any((db.get('native_pintype') or {}).get(ref + '.' + pin) == 'power_in'
-                   or re.fullmatch(r'VDD|VCC|VCCO', str(connector_graph.pinname.get(ref + '.' + pin, '')), re.I)
-                   for pin in connector_graph.pins_of(ref)):
+            if any(not netgraph_ground(net) and not re.fullmatch(r'GND\d*|VSS|CASE|SHIELD', str(connector_graph.pinname.get(ref + '.' + pin, '')), re.I)
+                   and (connector_graph.native_pintype.get(ref + '.' + pin) == 'power_in'
+                        or re.fullmatch(r'VDD|VCC|VCCO', str(connector_graph.pinname.get(ref + '.' + pin, '')), re.I))
+                   for pin, net in connector_graph.pins_of(ref).items()):
                 continue  # an active oscillator has a supply; no passive load network is required
             if any(c['rule'] == 'CLK-C01' and ref in
                    ([c.get('object', {}).get('ref')] + c.get('object', {}).get('refs', [])) for c in self.checks):

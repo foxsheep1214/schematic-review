@@ -315,21 +315,22 @@ class NetGraph:
                     queue.append(other)
         return found
 
-    def signal_source_peers(self, net, max_ohm=10000.0, max_hops=3):
+    def signal_source_peers(self, net, max_ohm=10000.0, max_hops=3, stop_nets=()):
         """Source identity through <=10 kohm total series resistance, distinct from <=1 ohm rail equivalence.
         10 kohm is a discovery envelope including board-proven 4k7 with tolerance, not a drive-strength,
         logic-level or timing guarantee. Never cross grounds/rails to collect unrelated output pins.
         """
         from solve_dividers import parse_resistor
+        stops = set(stop_nets)
         found, costs, queue = {net: []}, {net: 0.0}, [(net, 0)]
         while queue:
             current, hops = queue.pop(0)
-            if hops >= max_hops or (current != net and (is_ground(current) or is_rail(current))):
+            if current in stops or hops >= max_hops or (current != net and (is_ground(current) or is_rail(current))):
                 continue
             for ref, other in self.neighbors(current, {'resistor', 'jumper'}):
                 part = self.parts.get(ref, {})
                 value = {'kohm': 0.0} if copper_tie(ref, part) else parse_resistor(part.get('value')) if self.kind(ref) == 'resistor' else None
-                if value is None or value['kohm'] < 0 or is_ground(other) or is_rail(other):
+                if value is None or value['kohm'] < 0 or other in stops or is_ground(other) or is_rail(other):
                     continue
                 cost = costs[current] + value['kohm'] * 1000
                 if cost > max_ohm or cost >= costs.get(other, float('inf')):
