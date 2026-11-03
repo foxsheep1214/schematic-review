@@ -7131,5 +7131,12 @@
   "file": "scripts/plan_circuits.py",
   "old": "if len(nodes) < 2 and re.match(r'(?:.*/)?unconnected-\\(', net, re.I)}",
   "new": "if len(nodes) < 2}"
+ },
+ {
+  "id": "M1224",
+  "name": "Microprocessor Crystal title reads as an MCU again",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "micro(?:processor|controller)s?\\W+crystal",
+  "new": "micro(?:processor|controller)s?\\W+crystalX"
  }
 ]

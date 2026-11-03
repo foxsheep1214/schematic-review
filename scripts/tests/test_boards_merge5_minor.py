@@ -109,3 +109,10 @@ def test_unwired_pin_raises_no_function_but_named_lone_net_does():
     named = {'nets': {'SPI_SCLK': ['IC3.3']}, 'pin2net': {'IC3.3': 'SPI_SCLK'}, 'pinname': {'IC3.3': 'SCLK0'},
              'parts': {'IC3': {'value': 'TPA3116D2'}}}
     assert _feature_hits(named, pattern)
+
+
+# 4g: "Microprocessor Crystal" names the crystal's application, not an MCU; a real microprocessor title stays one
+def test_microprocessor_crystal_title_is_not_an_mcu():
+    import datasheet_kinds as dk
+    assert 'mcu' not in dk.cues('Ceramic SMD Microprocessor Crystal')
+    assert 'mcu' in dk.cues('32-bit Microprocessor with crystal oscillator')
