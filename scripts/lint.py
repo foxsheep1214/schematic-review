@@ -63,6 +63,10 @@ def export_log_kind(line):
     return None
 
 
+def _fmt_ohm(ohm):
+    return f'{ohm / 1000:g} kΩ' if ohm >= 1000 else f'{ohm:g} Ω'
+
+
 def _fmt_v(value):
     return '无' if value is None else '%gV' % value
 
@@ -316,7 +320,7 @@ class Lint:
         (R7 acceptance 2026-10-25, user: B3 a — the clamp voltage is compared with these pins' absolute maximum); and
         the other parts on the net, each against its own rating (2026-10-26, user: 按方案 B 改 — the lowest limit on the
         net decides, so no reviewer picks one capacitor or switch and leaves the rest)."""
-        direct, behind, others = [], [], set()
+        direct, others = [], set()
         for node in self.graph.nodes_on(net):
             ref = node.partition('.')[0]
             kind = self.graph.kind(ref)
@@ -325,17 +329,57 @@ class Lint:
                 others.add(ref)
             if self.graph.kind(ref) == IC and self.graph.is_fitted(ref):
                 direct.append(f'{node}({self.graph.pinname.get(node) or "?"})')
-            elif self.graph.is_fitted(ref) and self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2 and net in self.graph.nets_of(ref):
-                other = next(n for n in self.graph.nets_of(ref) if n != net)
-                for far in self.graph.nodes_on(other):
-                    if self.graph.kind(far.partition('.')[0]) == IC and self.graph.is_fitted(far.partition('.')[0]):
-                        behind.append(f'{far}({self.graph.pinname.get(far) or "?"}) 经 {ref}')
         rest = f'同网其他器件 {"、".join(sorted(others))} 各按自身耐压比较；' if others else ''
         if direct:
             return f'同网 IC 脚 {"、".join(sorted(direct))} 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；' + rest
+        behind = self._pins_behind_limiter(net, clamp)
         if behind:
-            return f'IC 脚 {"、".join(sorted(behind))}（有串联阻抗，可按注入电流核）；' + rest
+            return f'IC 脚 {"、".join(text for text, _ in behind)}（有串联阻抗，可按注入电流核）；' + ''.join(
+                line for _, line in behind) + rest
         return '同网没有 IC 脚；' + rest
+
+    def _pins_behind_limiter(self, net, clamp=None):
+        """boards-merge7 F11: IC pins one series resistor or PTC from the clamp's net, past forward series diodes
+        (the DI input D621 → R611 → IP0), never through a second limiter. Each comes as (pin text, check line); the line
+        compares by the resistor drop when the clamp and the pin are exactly tabled (protective_clamps.CLAMP_RATINGS,
+        PIN_LIMITS), else it names what to read."""
+        found, seen = [], {net}
+        queue = [(net, [])]
+        while queue:
+            current, path = queue.pop(0)
+            for ref, other in self.graph.neighbors(current, {pw.RESISTOR, pw.FUSE, pw.DIODE}):
+                if other in seen or ng.is_ground(other) or other in self.pseudo:
+                    continue
+                kind = self.graph.kind(ref)
+                if kind == pw.DIODE:
+                    if self.graph.pin2net.get(self.graph.node_named(ref, 'anode') or '') != current or len(path) >= 2:
+                        continue      # forward only, at most two series diodes
+                    seen.add(other)
+                    queue.append((other, path + [ref]))
+                    continue
+                seen.add(other)
+                for far in sorted(self.graph.nodes_on(other)):
+                    ic = far.partition('.')[0]
+                    if self.graph.kind(ic) == IC and self.graph.is_fitted(ic) and not ng.is_ground(self.graph.pinname.get(far) or ''):
+                        found.append(self._behind_line(clamp, path, ref, far))   # a ground pin is no protected pin
+        return found
+
+    def _behind_line(self, clamp, diodes, limiter, node):
+        name = self.graph.pinname.get(node) or '?'
+        via = '、'.join(diodes + [limiter])
+        parsed = parse_resistor(self.parts.get(limiter, {}).get('value')) if self.graph.kind(limiter) == pw.RESISTOR else None
+        ohm = parsed['kohm'] * 1000.0 if parsed else None
+        rating = protective_clamps.clamp_rating(self.parts.get(clamp, {})) if clamp else None
+        limit = protective_clamps.pin_limit(self.parts.get(node.partition('.')[0], {}), name)
+        r_text = f'{limiter} {_fmt_ohm(ohm)}' if ohm else f'{limiter}（阻值未读出）'
+        clamp_text = (f'钳位 {rating[0]:g} V（{rating[3]}：IPP {rating[1]:g} A，{rating[2]}）' if rating
+                      else '钳位电压（读手册 VCL@IPP）')
+        limit_text = f'绝限 {limit[0]:g} V（{limit[2]}）' if limit else '绝限（读手册绝对最大额定与输入限流）'
+        through = f'{"、".join(diodes)}（二极管压降不计）、{r_text}' if diodes else r_text
+        line = f'核对：{clamp_text}经 {through} 到 {node}({name}) {limit_text}'
+        if rating and limit:
+            line += '：' + protective_clamps.drop_check(rating[0], ohm, limit)
+        return f'{node}({name}) 经 {via}', line + '；'
 
     def _wired_open_drain(self, node):
         """Exact-family flag pin policies, not an exemption for every output on these parts."""

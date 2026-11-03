@@ -62,6 +62,50 @@ CHANNEL_RULES = (
 )
 
 
+# boards-merge7 F11: exact-identity ratings the PRO-E02 line compares through a series resistor. Only parts whose
+# datasheet was read are listed; any other part keeps the line without numbers.
+#   (identity regex, clamp voltage VCL max [V], at IPP [A], waveform, citation)
+CLAMP_RATINGS = (
+    (r'SMAJ30C?A(?:-TR)?', 48.4, 8.3, '10/1000 µs', 'ST SMAJ DS1251 Rev 15 p2 Table 2'),
+    (r'SMAJ33C?A(?:-TR)?', 53.3, 7.5, '10/1000 µs', 'ST SMAJ DS1251 Rev 15 p2 Table 2'),
+)
+#   (identity regex, pin-name regex, absolute maximum [V], input current limit max [A] or None, citation)
+PIN_LIMITS = (
+    (r'SN65HVS883(?:PWPR?)?', r'IP\d', 36.0, 4e-3,
+     'TI SLASEE6 p4 §6.1 VIPx max 36 V; p5 §6.5 IIP-LIM max 4 mA (10 V < VIPx < 34 V, RLIM 25 kΩ)'),
+    (r'SN65HVS883(?:PWPR?)?', r'V24', 36.0, None, 'TI SLASEE6 p4 §6.1 V24 max 36 V'),
+)
+
+
+def clamp_rating(part):
+    """(VCL max, IPP, waveform, citation) of an exactly tabled clamp, else None."""
+    identities = [str(part.get(k) or '') for k in ('part', 'value')]
+    return next((rule[1:] for rule in CLAMP_RATINGS if any(re.fullmatch(rule[0], i, re.I) for i in identities)), None)
+
+
+def pin_limit(part, pin_name):
+    """(absolute maximum, input current limit or None, citation) of an exactly tabled IC pin, else None."""
+    identities = [str(part.get(k) or '') for k in ('part', 'value')]
+    return next((rule[2:] for rule in PIN_LIMITS if any(re.fullmatch(rule[0], i, re.I) for i in identities)
+                 and re.fullmatch(rule[1], str(pin_name or ''), re.I)), None)
+
+
+def drop_check(clamp_v, ohm, limit):
+    """The resistor-drop comparison of one protected pin, in words: the clamp voltage less what the series resistor
+    drops at the pin's guaranteed input current limit, against the pin's absolute maximum. Series diodes are not
+    credited (their drop only helps). A word for the reviewer, never a verdict."""
+    vmax, ilim, _ = limit
+    over = clamp_v - vmax
+    if over <= 0:
+        return '钳位不高于脚绝限'
+    text = '钳位高出脚绝限 %.1f V，需注入 ≥ %.1f mA 才在电阻上降掉' % (over, over / ohm * 1e3) if ohm else '钳位高出脚绝限 %.1f V' % over
+    if ilim and ohm:
+        pin_v = clamp_v - ilim * ohm
+        text += '；手册输入限流 ≤ %.0f mA 时电阻压降 ≤ %.1f V，脚电压约 %.1f V%s' % (
+            ilim * 1e3, ilim * ohm, pin_v, '，仍高于绝限' if pin_v > vmax else '，不高于绝限')
+    return text
+
+
 def channels(ref, part, graph, intent=None):
     """Protected channels with physical pins, returns and source. Unknown arrays stay unresolved.
 

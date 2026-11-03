@@ -5750,8 +5750,8 @@
   "id": "M888",
   "name": "unfitted resistors reappear in protected pin paths",
   "file": "scripts/lint.py",
-  "old": "elif self.graph.is_fitted(ref) and self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2",
-  "new": "elif self.graph.kind(ref) == pw.RESISTOR and len(self.graph.nets_of(ref)) == 2"
+  "old": "self.graph.neighbors(current, {pw.RESISTOR, pw.FUSE, pw.DIODE})",
+  "new": "self.graph.neighbors(current, {pw.RESISTOR, pw.FUSE, pw.DIODE}, fitted_only=False)"
  },
  {
   "id": "M889",
@@ -7425,5 +7425,47 @@
   "file": "scripts/circuit_candidates.py",
   "old": "                if self.graph.kind(ref) == pw.DIODE and self.graph.pin2net.get(self.graph.node_named(ref, 'anode') or '') != net:\n                    continue      # a series diode passes the signal forward only\n",
   "new": ""
+ },
+ {
+  "id": "M1420",
+  "name": "the clamp-to-pin walk passes a series diode backwards",
+  "file": "scripts/lint.py",
+  "old": "if self.graph.pin2net.get(self.graph.node_named(ref, 'anode') or '') != current or len(path) >= 2:",
+  "new": "if len(path) >= 2:"
+ },
+ {
+  "id": "M1421",
+  "name": "the clamp-to-pin walk crosses a second series resistor",
+  "file": "scripts/lint.py",
+  "old": "                seen.add(other)\n                for far in sorted(self.graph.nodes_on(other)):",
+  "new": "                seen.add(other)\n                queue.append((other, path + [ref]))\n                for far in sorted(self.graph.nodes_on(other)):"
+ },
+ {
+  "id": "M1422",
+  "name": "the resistor drop at the pin's input current limit is not credited",
+  "file": "scripts/protective_clamps.py",
+  "old": "        pin_v = clamp_v - ilim * ohm\n",
+  "new": "        pin_v = clamp_v\n"
+ },
+ {
+  "id": "M1423",
+  "name": "the SMAJ30 clamp rating matches SMAJ300 and other longer part numbers",
+  "file": "scripts/protective_clamps.py",
+  "old": "(r'SMAJ30C?A(?:-TR)?', 48.4,",
+  "new": "(r'SMAJ30\\w*', 48.4,"
+ },
+ {
+  "id": "M1424",
+  "name": "a clamp no higher than the pin limit is reported as exceeding it",
+  "file": "scripts/protective_clamps.py",
+  "old": "    if over <= 0:\n        return '钳位不高于脚绝限'\n",
+  "new": ""
+ },
+ {
+  "id": "M1425",
+  "name": "a ground-named IC pin behind the limiter is listed as the protected pin",
+  "file": "scripts/lint.py",
+  "old": " and not ng.is_ground(self.graph.pinname.get(far) or ''):",
+  "new": ":"
  }
 ]

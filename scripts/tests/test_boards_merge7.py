@@ -170,3 +170,59 @@ def test_a_port_channel_another_circuit_already_holds_is_not_taken():
     intent, audit = intent_for(db, kinds={'D1': 'tvs', 'U1': 'mcu', 'U2': 'opamp_comparator'}, rails=rails)
     found = {c['id']: c for c in cc.build(db, intent, audit)['candidates']}
     assert 'SIGNAL_PROTECTION-J1' not in found and 'D1' in [m['ref'] for m in found['ANALOG-U2']['members']]
+
+
+# 4: PRO-E02 walks from the clamp's net through one series resistor or PTC, past forward series diodes, to the IC pin
+def _di_channel(diode='forward', limiter=('R611', '1.2k'), clamp='SMAJ30CA', second=False):
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    db = empty()
+    add(db, 'J601', 'TERM_DI', [('2', 'DI1', '/07_DI/DI1'), ('10', 'FCOM', 'FGND')])
+    add(db, 'D611', clamp, [('1', 'A1', '/07_DI/DI1'), ('2', 'A2', 'FGND')])
+    ends = ('/07_DI/DI1', 'DI1_K') if diode == 'forward' else ('DI1_K', '/07_DI/DI1')
+    add(db, 'D621', '1N4007', [('1', 'A', ends[0]), ('2', 'K', ends[1])])
+    ref, value = limiter
+    add(db, ref, value, [('1', '', 'DI1_K'), ('2', '', 'MID' if second else 'IP0')])
+    if second:
+        add(db, 'R699', '1k', [('1', '', 'MID'), ('2', '', 'IP0')])
+    add(db, 'U601', 'SN65HVS883PWPR', [('3', 'IP0', 'IP0'), ('28', 'FGND', 'FGND')])
+    return db
+
+
+def _clamp_line(db, ref='D611'):
+    from lint import Lint
+    return next(x['detail'] for x in Lint(db).run() if x['rule'] == 'PRO-E02' and x.get('ref') == ref)
+
+
+def test_clamp_line_compares_the_clamp_through_the_resistor_with_the_pin_limit():
+    line = _clamp_line(_di_channel())
+    assert 'IC 脚 U601.3(IP0) 经 D621、R611' in line
+    assert '钳位 48.4 V（ST SMAJ DS1251 Rev 15 p2 Table 2' in line
+    assert '经 D621（二极管压降不计）、R611 1.2 kΩ 到 U601.3(IP0) 绝限 36 V（TI SLASEE6' in line
+    assert '钳位高出脚绝限 12.4 V，需注入 ≥ 10.3 mA' in line and '脚电压约 43.6 V，仍高于绝限' in line
+
+
+def test_clamp_line_without_tabled_parts_names_what_to_read():
+    line = _clamp_line(_di_channel(clamp='SMBJ30CA'))
+    assert '钳位电压（读手册 VCL@IPP）经 D621（二极管压降不计）、R611 1.2 kΩ 到 U601.3(IP0) 绝限 36 V' in line
+    assert '钳位高出' not in line
+    db = _di_channel(limiter=('F611', 'PTC 0.05A'))
+    assert 'F611（阻值未读出） 到 U601.3(IP0)' in _clamp_line(db)
+
+
+def test_the_walk_goes_forward_through_diodes_and_through_one_limiter_only():
+    assert '同网没有 IC 脚' in _clamp_line(_di_channel(diode='reverse'))
+    assert '同网没有 IC 脚' in _clamp_line(_di_channel(second=True))
+    from test_inductive_load import add
+    db = _di_channel()
+    add(db, 'U9', 'LM358', [('4', 'GND', 'IP0')])                                # a ground-named pin is no protected pin
+    line = _clamp_line(db)
+    assert 'U601.3(IP0)' in line and 'U9.4' not in line
+
+
+def test_drop_check_words():
+    import protective_clamps as pc
+    assert pc.drop_check(30.0, 1000.0, (36.0, None, '')) == '钳位不高于脚绝限'
+    assert pc.drop_check(48.4, 10000.0, (36.0, 4e-3, '')).endswith('脚电压约 8.4 V，不高于绝限')
+    assert pc.clamp_rating({'part': 'SMAJ30A'})[0] == 48.4 and pc.clamp_rating({'part': 'SMAJ300CA'}) is None
+    assert pc.pin_limit({'part': 'SN65HVS883'}, 'IP7')[0] == 36.0 and pc.pin_limit({'part': 'SN65HVS882'}, 'IP7') is None
