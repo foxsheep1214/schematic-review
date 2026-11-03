@@ -9,6 +9,27 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 合并步 7：HOLD_UP 与 SIGNAL_PROTECTION 电路类型、叶名词边界、穿串联电阻找被保护脚（2026-11-03）
+
+用户 2026-11-03 “按建议执行”，落实合并步 6 第六节 1–5 点。
+
+- 词表 `circuit_types` 加 HOLD_UP（掉电保持）和 SIGNAL_PROTECTION（信号端口保护），准则库重建到 1.7.2：353 条与 1.7.1 相同，共用层指纹 3e50da53d0b5→48c61bb3a5e7。
+- catalog：HOLD_UP 挂 PWR-C18/PWR-T05/PWR-C13；SIGNAL_PROTECTION 挂 PRO-C01/PRO-C05/PRO-C08，PRO-C08 加 FUSE_PART 前提。状态表和描述表也加了，因为测试与 lint 要求覆盖每个类型，这一点与任务书不同。
+- 候选：保持二极管、储能加下游变换器的组合出 HOLD_UP；连接器经限流件、对地钳位到 IC 脚的通道出 SIGNAL_PROTECTION。删去 F20 加在 POWER_PROTECTION 里的裁剪特例。
+- PRO-E02（F11）：钳位网没有 IC 脚时，穿正向二极管和一颗电阻/PTC 找被保护脚。SMAJ30/33CA 与 SN65HVS883 按手册数字比较电阻压降，校准板 D611–D618 报出“钳位 48.4 V 经 R61x 1.2 kΩ 到 IPx 绝限 36 V”。
+- 名称线索：除 DEBUG 和 INDUSTRIAL_DI 外，都把层次网名最后一个 / 之后的叶名当词。
+
+78 块板：冷扫非 INFO 2271→2271，真缺陷 172/172。计划 37572→37576，多出的 4 行都是 REQ-Q07（I2C×3、RF×1）。候选 +17，都是 SIGNAL_PROTECTION：公开板 15 个，校准板 2 个（含 HOLD_UP-D201）。PRO-E02 336 行里 47 行改写或补脚，去掉 8 行误列的地脚。
+
+校准板：非 INFO 19→19，计划 808→826。F20 裁剪特例删去后，DI-FIELD-PWR 和 DO-HS 两个电路重新问 PWR-C23（3→9）和 PRO-C07（2→3）。设计记录在本步中途被另一会话改动，前后用冻结的缓存 intent 副本比较。
+
+回放新建约定 boards-merge7-v1：rh-ad8495 三例各 +1 行 REQ-Q07.ANALOG。F05 按用户决定不加字段。字节棘轮 ① 172707、② 159166。
+
+- Event: user:2026-11-03 (按建议执行)
+- Causes: rule_missing 3, rule_not_enforced 2, knowledge_missing 1
+- Changed: references/shared/vocabulary.json, references/shared/guideline-criteria.json, scripts/catalog.py, scripts/plan_circuits.py, scripts/circuit_candidates.py, scripts/protective_clamps.py, scripts/lint.py, scripts/tests/test_boards_merge6.py, scripts/tests/test_boards_merge7.py, scripts/tests/test_reading_path.py, references/checker-conventions.md, references/check-catalog.md, references/review-vocabulary.md, references/architecture.md, evals/mutation/mutations.json, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/boards-merge7-v1/, evals/boards/calibration--industrial-io-rs485-can/, evals/detection/RESULTS.md, docs/proposals/boards-merge-6-2026-11-02.md, docs/proposals/boards-merge-7-2026-11-03.md, docs/improvement-ledger.md
+- Gates: pytest 2797（SR_ASG_SHARED_ROOT 指向本树共用层快照 ~/.cache/sr-boards/_merge7/asg-shared；ASG 仍是 1.7.1，test_asg_holds_the_same_shared_layer 对真实 ASG 预期失败，待主会话同步）; mutation --changed 18f5474 222 全杀（新增 M1400–M1402、M1410–M1416、M1420–M1425、M1430–M1431，退役 M1321–M1324，重锚 M1329、M888、M1402）; kicad_replay 195/195（boards-merge7-v1）; seeded 274 位点 / 自动 231 / 0 退化; check_ledger PASS; 不 push
+
 ## 合并步 6：工业 I/O 校准板 11 条误报、3 条漏问（2026-11-02）
 
 ASG 自绘校准板的 SR 审查有 11 条误报，修了 10 条：F04 封装注释脚名、F13 SN65HVS883 DB0/DB1 可悬空、F14 隔离器 EN 接本侧电源、F15 另有 UVLO 分压时 EN 直连输入、F16 Surge Protection Device 判为 TVS、F17 efuse 按整词读、F18 高边智能开关判为负载开关、F19 输入保护只留带电脚分支且 EN 接本器件电源不成链、F20 保持电路不问 eFuse 和双源切换、F21 BOOT 下拉并入复位链。F05 没修：intent 没有 TVS 参数字段，加字段要改格式，并让工具凭人填的数字关闭 E 规则，需人定。3 条漏问全修：M01 24 V 入口出 DC_24V 候选，M02 层次网名的 DI 线索，M03 无源晶体出 CLOCK 候选。另加 2 个种子（D-XTAL-LOAD、D-BOOT0-FLOAT），自动 2/2。跟进 F16 时修了一处：同网多只裸 K 脚算一个钳位通道。

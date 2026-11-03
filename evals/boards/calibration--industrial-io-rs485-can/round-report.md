@@ -71,4 +71,4 @@ SR 用法上的坑：设计记录是改版前审的，网表已改，复现必�
 - HOLD_UP：PWR-C18 +3、PWR-C13 +3、PWR-T05 +1。
 - SIGNAL_PROTECTION：PRO-C01 +2、PRO-C05 +1；PRO-C08 因 DI 端口没有保险不问。
 - POWER_PROTECTION：PWR-C23 3→9、PRO-C07 2→3。删去 F20 裁剪特例后，DI-FIELD-PWR 和 DO-HS 两个 POWER_PROTECTION 电路重新问到这两项；D201 已不在其中。
-- 其他：DEV-C01、DEV-C03 各 +1，REQ-Q07 +2；SIG-T04、PWR-C26、PRO-C04 各 −1（器件改归新电路后，所属框架变了）。
+- 其他：DEV-C01、DEV-C03 各 +1，REQ-Q07 +2；SIG-T04、PWR-C26、PRO-C04 各 −1（随器件改归新电路而变，没有逐条核）。
