@@ -6732,5 +6732,19 @@
   "file": "evals/seeded_bench/mutators.py",
   "old": "'population':{ref:not bool(part.get('nc')) for ref,part in parts.items()},'jumpers':{}}]}",
   "new": "'population':{},'jumpers':{}}]}"
+ },
+ {
+  "id": "M1100",
+  "name": "fractional BOM power split into a whole-watt segment",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        text = FRACTION_W_RE.sub(' ', text)\n",
+  "new": "        found['power_w'].clear()\n"
+ },
+ {
+  "id": "M1101",
+  "name": "unread BOM power falls back to the package floor and may pass",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if bom.get('power_unread') and not parsed.get('power_w'):\n",
+  "new": "        if False:\n"
  }
 ]

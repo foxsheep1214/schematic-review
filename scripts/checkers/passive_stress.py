@@ -540,6 +540,10 @@ def _proposal(entry):
             calc['procurement_min_power_w'] = round(calc['p_max_w'] / share, 9)
             need = '；功耗要考虑而 BOM 没写额定功率：BOM 须写明额定功率 ≥ %.4g W（应力 ÷ %s 级降额 %g%%，%s%s），记 bom_constraint（DEV-D04 汇总）' % (
                 calc['procurement_min_power_w'], level, share * 100, SMD_POWER_RULE, unset)
+        if bom.get('power_unread') and not parsed.get('power_w'):
+            calc['bom_power'] = 'unread'
+            return None, calc, ('BOM 写了额定功率但读不出完整数值（分数写法残缺），额定功率按 unknown 处理，不预判 PASS；'
+                                '由审查者按 BOM 原文核' + need)
         if not ok:
             return None, calc, '超出预判边界（最弱档 × %s 级 %s/%s%s），按 commodity-floors 判定表由审查者判定' % (
                 level, SMD_POWER_RULE, SMD_VOLTAGE_RULE, unset) + need
@@ -591,19 +595,40 @@ def rated_voltage(value):
     return found.pop() if len(found) == 1 else None
 
 
+# A fractional power rating (1/16W, 1/10 W, 1/8mW) is one token; split on "/" it would read as 16 W.
+FRACTION_W_RE = re.compile(r'(?<![\d.])(\d+)\s*/\s*(\d+)\s*(m?W)\b', re.I)
+HALF_READ_W_RE = re.compile(r'\d\s*/\s*\d+(?:\.\d+)?\s*m?W\b', re.I)
+
+
 def bom_ratings(fields):
-    """Ratings the BOM writes as segments of their own (`…/160V/…`, `…，2W，…`); a voltage or power written twice, or
-    inside a sentence, is not read."""
+    """Ratings the BOM writes as segments of their own (`…/160V/…`, `…，2W，…`, `1/16W 5%`); a voltage or power written
+    twice, or inside a sentence, is not read. A power written as a fraction that cannot be read whole (0.1/16W, 1/0W)
+    is `power_unread`: no power floor is taken from it and the pre-judgement gives no PASS (boards-merge4, pslab
+    1/16W read as 16 W)."""
     found = {'voltage_v': set(), 'power_w': set()}
+    unread = False
     for text in (fields or {}).values():
         text = re.sub(r'(?<=\d),(?=\d)', '.', str(text or ''))
+        for m in FRACTION_W_RE.finditer(text):
+            denominator = float(m.group(2))
+            if denominator > 0:
+                found['power_w'].add(float(m.group(1)) / denominator / (1000.0 if m.group(3).lower() == 'mw' else 1.0))
+            else:
+                unread = True
+        text = FRACTION_W_RE.sub(' ', text)
+        half_read = bool(HALF_READ_W_RE.search(text))
+        unread = unread or half_read
         for segment in SEGMENT_SPLIT_RE.split(text):
             v, w = WRITTEN_V_RE.match(segment), WRITTEN_W_RE.match(segment)
             if v:
                 found['voltage_v'].add(float(v.group(1)))
-            if w:
+            if w and not half_read:
                 found['power_w'].add(float(w.group(1)))
-    return {k: next(iter(vals)) for k, vals in found.items() if len(vals) == 1}
+    ratings = {k: next(iter(vals)) for k, vals in found.items() if len(vals) == 1}
+    if unread:
+        ratings.pop('power_w', None)
+        ratings['power_unread'] = True
+    return ratings
 
 
 def assumed_package_refs(inventory):
