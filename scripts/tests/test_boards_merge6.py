@@ -337,3 +337,27 @@ def test_dc24_candidate_needs_a_window_or_a_name_and_the_fuse_clamp_shape():
     assert 'DC_24V-J101' not in found
     wide = [dict(REQ_24V[0], parameters=[{'name': 'input_voltage', 'unit': 'V', 'min': 9, 'max': 60}])]
     assert 'DC_24V-J101' not in _io_candidates(requirements=wide)
+
+
+# M03: an 8 MHz crystal on U301 OSC_IN/OSC_OUT with its load capacitors is a CLOCK candidate
+def test_crystal_on_one_ics_oscillator_pins_is_a_clock_candidate():
+    clock = _io_candidates()['CLOCK-Y301']
+    assert _refs(clock) == ['C308', 'C309', 'Y301'] and not clock['cross_cutting']
+    assert sorted(clock['nets'].values()) == ['/04_MCU/OSC_IN', '/04_MCU/OSC_OUT']
+
+
+def test_crystal_through_a_series_resistor_and_not_on_two_oscillators():
+    from test_inductive_load import add
+    db = _io_board()
+    db['nets']['/04_MCU/OSC_OUT'].remove('Y301.2')
+    db['pin2net']['Y301.2'] = 'XO_R'
+    db['nets']['XO_R'] = ['Y301.2']
+    add(db, 'R309', '220R', [('1', '', 'XO_R'), ('2', '', '/04_MCU/OSC_OUT')])
+    db['parts']['R309'].update(prim='Device:R', part='R')
+    assert _refs(_io_candidates(db)['CLOCK-Y301']) == ['C308', 'C309', 'R309', 'Y301']
+    db = _io_board()
+    add(db, 'U302', 'STM32F103C8T6', [('5', 'OSC_IN', '/04_MCU/OSC_IN'), ('6', 'OSC_OUT', '/04_MCU/OSC_OUT')])
+    assert 'CLOCK-Y301' not in _io_candidates(db)                     # shared crystal: CLK-A02's, not a candidate
+    db = _io_board()
+    db['pinname']['U301.6'] = 'PD1'                                   # one end on a plain GPIO
+    assert 'CLOCK-Y301' not in _io_candidates(db)

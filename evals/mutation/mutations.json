@@ -7341,5 +7341,33 @@
   "file": "scripts/catalog.py",
   "old": "    'DC_24V': ('startup', 'run', 'fault'),",
   "new": ""
+ },
+ {
+  "id": "M1329",
+  "name": "a passive crystal on an IC's oscillator pins builds no CLOCK candidate",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        self.interfaces()\n        self.crystals()\n",
+  "new": "        self.interfaces()\n"
+ },
+ {
+  "id": "M1330",
+  "name": "a crystal on two ICs' oscillators becomes a CLOCK candidate",
+  "file": "scripts/circuit_candidates.py",
+  "old": "            if len(common) != 1:\n                continue\n            cid = 'CLOCK-' + ref",
+  "new": "            if not common:\n                continue\n            cid = 'CLOCK-' + ref"
+ },
+ {
+  "id": "M1331",
+  "name": "a crystal end through a series resistor no longer reaches the oscillator pin",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                    if self.two_terminal(part) and other not in self.grounds:\n                        reach.setdefault(other, part)",
+  "new": "                    pass"
+ },
+ {
+  "id": "M1332",
+  "name": "a crystal with only one end on an oscillator pin builds a CLOCK candidate",
+  "file": "scripts/circuit_candidates.py",
+  "old": "            common = sorted(ends[0] & ends[1])",
+  "new": "            common = sorted(ends[0] | ends[1])"
  }
 ]

@@ -25,10 +25,11 @@ import device_kinds
 from electrical_contract import db_fingerprint, load_json
 from checkers import REGISTRY, domains as domains_lib, netgraph as ng, powertree
 import part_words as pw
+from board_scans import OSCILLATOR_PIN_RE
 import requirement_clarifications
 
 SCHEMA_VERSION = 2
-RULES_VERSION = '2026-11-02.6c'   # boards-merge6 M01: a fused, clamped 24 V entry is also a DC_24V candidate
+RULES_VERSION = '2026-11-02.6d'   # boards-merge6 M03: a passive crystal on one IC's oscillator pins is a CLOCK candidate
 MAX_HOPS = 4
 ANALOG_HOPS = 2
 INPUT_HOPS = 6
@@ -818,6 +819,46 @@ class Generator:
                     if ref != anchor and self.fitted(ref) and self.graph.kind(ref) == pw.CONNECTOR:
                         self.add(cid, ref, 'connector', f'connector on {net} reached from {anchor}', 1)
 
+    def crystals(self):
+        """boards-merge6 M03: a passive crystal whose two ends reach the oscillator pins of one IC (directly or through
+        one series resistor) is a CLOCK circuit: the crystal, its load capacitors and series resistors. The IC stays
+        with its own circuits; a crystal on two ICs' oscillators is CLK-A02's finding, not a candidate."""
+        for ref in sorted(self.graph.parts):
+            if not self.fitted(ref) or self.graph.kind(ref) != pw.CRYSTAL or ref in self.anchors:
+                continue
+            nets = sorted({n for n in self.graph.nets_of(ref) if n not in self.grounds and n not in self.graph.pseudo})
+            if len(nets) != 2 or any(n in self.stops or ng.is_rail(n.rsplit('/', 1)[-1].lstrip('+')) for n in nets):
+                continue          # an oscillator drawn with a crystal symbol has a supply pin
+            ends, series = [], {}
+            for net in nets:
+                reach = {net: None}
+                for part, other in self.graph.neighbors(net, {pw.RESISTOR}):
+                    if self.two_terminal(part) and other not in self.grounds:
+                        reach.setdefault(other, part)
+                ics = set()
+                for near, part in reach.items():
+                    for node in self.graph.nodes_on(near):
+                        ic = node.partition('.')[0]
+                        if (ic != ref and self.graph.kind(ic) == pw.IC and self.fitted(ic)
+                                and OSCILLATOR_PIN_RE.search(self.pin_name(node).strip())):
+                            ics.add(ic)
+                            if part:
+                                series[part] = near
+                ends.append(ics)
+            common = sorted(ends[0] & ends[1])
+            if len(common) != 1:
+                continue
+            cid = 'CLOCK-' + ref
+            self.new(cid, 'CLOCK', ref, self.domain_of(ref), {'xtal_a': nets[0], 'xtal_b': nets[1]})
+            self.add(cid, ref, 'crystal', f'anchor:passive crystal on the oscillator pins of {common[0]}', 0)
+            for net in nets:
+                for cap in self.ground_caps(net):
+                    self.add(cid, cap, 'load_capacitor', f'{WALK} {ref} -> {net} -> {cap}', 1)
+            for part, near in sorted(series.items()):
+                self.add(cid, part, 'series_resistor', f'{WALK} {ref} -> {part} -> {near} ({common[0]} oscillator pin)', 1)
+                for cap in self.ground_caps(near):
+                    self.add(cid, cap, 'load_capacitor', f'{WALK} {ref} -> {part} -> {near} -> {cap}', 2)
+
     def debug(self):
         found = []
         for ref in sorted(self.graph.parts):
@@ -884,6 +925,7 @@ class Generator:
                                for ref, m in cand['members'].items() if ref != cand['anchor'] and m['hops'] <= 1}
         self.ports()
         self.interfaces()
+        self.crystals()
         self.debug()
         self.adjudicate()
         shared = self.ownership()
