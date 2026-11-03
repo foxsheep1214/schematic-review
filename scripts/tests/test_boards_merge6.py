@@ -120,3 +120,11 @@ def test_surge_protection_device_title_names_a_tvs_but_not_over_a_varistor():
     assert dk.cues('SIOV metal oxide varistors, surge protection device') == {'varistor'}
     assert dk.cues('Bidirectional TVS diode and varistor array') == {'tvs', 'varistor'}
 
+
+def test_efuse_is_read_as_a_word():
+    import datasheet_kinds as dk
+    assert dk.cues('MF-R Series - PTC Resettable Fuses') == {'fuse'}
+    assert dk.cues('MF-R Series - PTC ResettableFuses') == {'fuse'}
+    assert 'load_switch' in dk.cues('TPS2660x 60-V, 2-A Industrial eFuse')
+    assert 'load_switch' in dk.cues('TPS25947 e-Fuse with reverse current blocking')
+

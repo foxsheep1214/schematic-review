@@ -7215,5 +7215,12 @@
   "file": "scripts/datasheet_kinds.py",
   "old": "        found.discard('tvs')             # \"surge protection device\"",
   "new": "        pass             # \"surge protection device\""
+ },
+ {
+  "id": "M1311",
+  "name": "efuse is matched as a substring again (Resettable Fuses)",
+  "file": "scripts/datasheet_kinds.py",
+  "old": "    if word == 'efuse':",
+  "new": "    if word == 'efuseX':"
  }
 ]
