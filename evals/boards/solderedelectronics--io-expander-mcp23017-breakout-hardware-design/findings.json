@@ -1,0 +1,1798 @@
+{
+  "board": "solderedelectronics--io-expander-mcp23017-breakout-hardware-design",
+  "source": {
+    "repo": "SolderedElectronics/IO-expander-MCP23017-breakout-hardware-design",
+    "commit": "1d614e5f49013931a2c1fd8460bf48e1b3790c36",
+    "schematic": "CAD/V1.2.1/GPIO_Expander_MCP23017.kicad_sch",
+    "license": "TAPR-OHL-1.0"
+  },
+  "types": [
+    "I2C",
+    "POWER_PROTECTION",
+    "POWER_CONVERTER",
+    "STARTUP",
+    "LEVEL_SHIFT"
+  ],
+  "catalog_types": [
+    "I2C",
+    "POWER_PROTECTION"
+  ],
+  "type_disposition": "catalog POWER_PROTECTION保留来源标签；网表未见独立保护级，intent标NOT_APPLICABLE。实际补LDO电源变换、EN启动及I2C中的双MOS电平转换。",
+  "baseline": "industrial_telecom",
+  "run": {
+    "db_sha256": "b2ceb0ec176648fce3f73541e4425c28bff1513a4283334b10ec294b12c8e6d6",
+    "plan_items": 181,
+    "findings_total": 38,
+    "results_judged": 181,
+    "gate": "FAIL",
+    "gate_valid": false,
+    "sr_commit": "72cae6e9261dcd435cf6ee4e7201811c8589cc08",
+    "results_status_counts": {
+      "INSUFFICIENT": 118,
+      "NA": 9,
+      "FAIL": 3,
+      "PASS": 51
+    },
+    "native_confirmed_defects": 1,
+    "native_open_items": 29,
+    "native_work_items": 32,
+    "gate_errors": 265,
+    "counting": "报告项逐条归因：D01(合并其3条失败工作项)+29项开放待办+4项主动工具反馈+3项无电气脚类别提示+1项工作流说明=38；漏报另计1。相同根因跨功能/位号不去重；不把7条false_alarm叫作7条冷扫缺陷。",
+    "review_cache": "/Users/skyfend/.cache/sr-boards/solderedelectronics--io-expander-mcp23017-breakout-hardware-design/review",
+    "native_schema_extension": "NEEDS_HUMAN是本轮任务记录扩展，原生SR不支持，故本轮没有形成有效原生台账/审查准出包。",
+    "report_sha256": "72296e3d51a16a91837622c1206c924d4ae71fdb22bb32138c179fabdfde776e"
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "DEV-D01/DEV-D04",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U2",
+        "U3"
+      ],
+      "nets": [
+        "3V3",
+        "5V",
+        "SCL3,3",
+        "SCL5",
+        "SDA3,3",
+        "SDA5"
+      ],
+      "sr_text": "受审公开设计未固定 U2 双管及 U3 输出档的完整型号",
+      "verdict": "true_defect",
+      "evidence": "在锁定的V1.2.1原理图中，U2仅写NMOS-DUAL，U3仅写SE5218；同版文件树无BOM。SE5218 p2列多种输出档，该受审文件不能唯一规定图示3V3的订货码。这是受审公开设计的定义完整性缺陷；不能推断作者另存的采购资料、实际贴错或电气损坏。 原理图U2.value=NMOS-DUAL/U3.value=SE5218；固定提交同版V1.2.1无输出BOM，其他版本BOM不能补证。SE5218 Rev4/19/2016 p2 Ordering/Marking：A=3.3V、B=2.8V、C=2.5V、D=1.8V、E=1.5V、F=3.0V、G=1.2V。判据为DEV-D01/D04及results-format.md §3“甲”，不是宣称发生实物失效。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-IC-ORDERING-UNDEFINED",
+        "mutation": "在已固定采购MPN的基线中，将一个双MOS订货码改成NMOS-DUAL，或把带输出电压后缀的LDO改成仅系列SE5218，保留原封装/针图/网络；目标是设计定义完整性人工检查失败，不期待冷扫自动证明损坏。",
+        "target_rule": "DEV-D01"
+      },
+      "report_items": [
+        "D01",
+        "W-IDENTITY-DEV-D01-U3",
+        "W-IDENTITY-DEV-D01-U2",
+        "W-IDENTITY-DEV-D04-BOARD"
+      ],
+      "check_ids": [
+        "DEV-D01.U2",
+        "DEV-D01.U3",
+        "DEV-D04.BOARD"
+      ],
+      "root_cause_group": "PUBLIC-IDENTITY"
+    },
+    {
+      "id": "F02",
+      "sr_rule": "DEV-C04",
+      "criteria": [
+        "G05-022"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "JP1",
+        "JP3",
+        "JP4",
+        "K2"
+      ],
+      "nets": [
+        "5V",
+        "GND",
+        "SCL5",
+        "SDA5"
+      ],
+      "sr_text": "K2 的外部5V源、额定电流和同时供电状态未给",
+      "verdict": "needs_human",
+      "evidence": "K2.2=5V、K2.1=GND、K2.3=SDA5、K2.4=SCL5。缺外部源容差/电流、线缆和K1/K3同时供电规则；不能由5V网名认定源极值。 SE5218 p2推荐VIN2.8..5.5V、TJ0..125°C；p3 EN1.6/0.4V及仅典型压差；p6 PD=Iout(VIN−VOUT)。MCP DS20001952D p3单脚25mA/VDD125mA/VSS150mA是绝限，p4 D003 0.05V/ms仅指导，p5 RESET低脉宽≥1µs。受控外源/负载/温度/状态未给，名义网名不能补齐这些前提。 关闭条件：原设计者确认K2/JP3输入范围、负载/外带电流、环境、掉电恢复与降额等级；用SE5218 p3/p6及MCP23017 p3/p4逐项重算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-OPERATING-EXT-K2"
+      ],
+      "check_ids": [
+        "DEV-C04.K2"
+      ],
+      "root_cause_group": "H-OPERATING"
+    },
+    {
+      "id": "F03",
+      "sr_rule": "DEV-D03/PRO-D03/PRO-D04",
+      "criteria": [
+        "G01-013",
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G04-098",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "JP1",
+        "JP3",
+        "JP4",
+        "K2"
+      ],
+      "nets": [
+        "5V",
+        "GND",
+        "SCL5",
+        "SDA5"
+      ],
+      "sr_text": "K2 实际对端、电源角色及允许误接边界未给",
+      "verdict": "needs_human",
+      "evidence": "K2.1=GND；K2.2=5V；K2.3=SDA5；K2.4=SCL5。当前没有对端/线缆/允许故障波形；无TVS/保险本身不构成必然缺陷，须核上游覆盖和允许损坏范围。 板内各针脚已独立核对；DS20001952D p3脚电压绝限−0.6..VDD+0.6V、p11 pinout说明地址/RESET需外部偏置。U1.8/GPB7→K4.1与U1.28/GPA7→K6.1在p1/p11仅输出；外部用途、线缆、故障源及可接受后果未给。未装TVS不自动违反强制要求。 关闭条件：原设计者给该接口实际对端针脚、电源角色、线缆及允许故障边界；按所列接口逐一核负压、钳位/上游覆盖。K4/K6还须确认GPA7/GPB7仅输出限制是否满足用途。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-EXTERNAL-EXT-K2"
+      ],
+      "check_ids": [
+        "DEV-D03.K2",
+        "PRO-D03.K2",
+        "PRO-D04.K2"
+      ],
+      "root_cause_group": "H-EXTERNAL"
+    },
+    {
+      "id": "F04",
+      "sr_rule": "DEV-C04",
+      "criteria": [
+        "G05-022"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "K4",
+        "U1"
+      ],
+      "nets": [
+        "GPB0",
+        "GPB1",
+        "GPB2",
+        "GPB3",
+        "GPB4",
+        "GPB5",
+        "GPB6",
+        "GPB7"
+      ],
+      "sr_text": "K4 GPB 端口的负载和上电安全状态未给",
+      "verdict": "needs_human",
+      "evidence": "U1.1..8按GPB0..7接K4.8..1，单脚25mA和VDD125mA/VSS150mA仅为DS20001952D p3绝限。实际灌拉电流、合计负载、默认安全状态未给；U1.8/GPB7仅输出。 SE5218 p2推荐VIN2.8..5.5V、TJ0..125°C；p3 EN1.6/0.4V及仅典型压差；p6 PD=Iout(VIN−VOUT)。MCP DS20001952D p3单脚25mA/VDD125mA/VSS150mA是绝限，p4 D003 0.05V/ms仅指导，p5 RESET低脉宽≥1µs。受控外源/负载/温度/状态未给，名义网名不能补齐这些前提。 关闭条件：原设计者确认K2/JP3输入范围、负载/外带电流、环境、掉电恢复与降额等级；用SE5218 p3/p6及MCP23017 p3/p4逐项重算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-OPERATING-EXT-K4"
+      ],
+      "check_ids": [
+        "DEV-C04.K4"
+      ],
+      "root_cause_group": "H-OPERATING"
+    },
+    {
+      "id": "F05",
+      "sr_rule": "DEV-D03/PRO-D03/PRO-D04",
+      "criteria": [
+        "G01-013",
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G04-098",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "K4",
+        "U1"
+      ],
+      "nets": [
+        "GPB0",
+        "GPB1",
+        "GPB2",
+        "GPB3",
+        "GPB4",
+        "GPB5",
+        "GPB6",
+        "GPB7"
+      ],
+      "sr_text": "K4 实际对端、电源角色及允许误接边界未给",
+      "verdict": "needs_human",
+      "evidence": "K4.1=GPB7；K4.2=GPB6；K4.3=GPB5；K4.4=GPB4；K4.5=GPB3；K4.6=GPB2；K4.7=GPB1；K4.8=GPB0。当前没有对端/线缆/允许故障波形；无TVS/保险本身不构成必然缺陷，须核上游覆盖和允许损坏范围。 板内各针脚已独立核对；DS20001952D p3脚电压绝限−0.6..VDD+0.6V、p11 pinout说明地址/RESET需外部偏置。U1.8/GPB7→K4.1与U1.28/GPA7→K6.1在p1/p11仅输出；外部用途、线缆、故障源及可接受后果未给。未装TVS不自动违反强制要求。 关闭条件：原设计者给该接口实际对端针脚、电源角色、线缆及允许故障边界；按所列接口逐一核负压、钳位/上游覆盖。K4/K6还须确认GPA7/GPB7仅输出限制是否满足用途。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-EXTERNAL-EXT-K4"
+      ],
+      "check_ids": [
+        "DEV-D03.K4",
+        "PRO-D03.K4",
+        "PRO-D04.K4"
+      ],
+      "root_cause_group": "H-EXTERNAL"
+    },
+    {
+      "id": "F06",
+      "sr_rule": "DEV-C04",
+      "criteria": [
+        "G05-022"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "K5",
+        "R5",
+        "U1"
+      ],
+      "nets": [
+        "~{RESET}"
+      ],
+      "sr_text": "K5 RESET 对端驱动与复位脉宽未给",
+      "verdict": "needs_human",
+      "evidence": "K5.1→U1.18 RESET，R5=10k上拉3V3。DS20001952D p5规定低脉宽至少1µs；对端驱动电平、释放及掉电状态未给，不能以已有上拉关闭接口工作窗。 SE5218 p2推荐VIN2.8..5.5V、TJ0..125°C；p3 EN1.6/0.4V及仅典型压差；p6 PD=Iout(VIN−VOUT)。MCP DS20001952D p3单脚25mA/VDD125mA/VSS150mA是绝限，p4 D003 0.05V/ms仅指导，p5 RESET低脉宽≥1µs。受控外源/负载/温度/状态未给，名义网名不能补齐这些前提。 关闭条件：原设计者确认K2/JP3输入范围、负载/外带电流、环境、掉电恢复与降额等级；用SE5218 p3/p6及MCP23017 p3/p4逐项重算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-OPERATING-EXT-K5"
+      ],
+      "check_ids": [
+        "DEV-C04.K5"
+      ],
+      "root_cause_group": "H-OPERATING"
+    },
+    {
+      "id": "F07",
+      "sr_rule": "DEV-D03/PRO-D03/PRO-D04",
+      "criteria": [
+        "G01-013",
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G04-098",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "K5",
+        "R5",
+        "U1"
+      ],
+      "nets": [
+        "~{RESET}"
+      ],
+      "sr_text": "K5 实际对端、电源角色及允许误接边界未给",
+      "verdict": "needs_human",
+      "evidence": "K5.1=~{RESET}。当前没有对端/线缆/允许故障波形；无TVS/保险本身不构成必然缺陷，须核上游覆盖和允许损坏范围。 板内各针脚已独立核对；DS20001952D p3脚电压绝限−0.6..VDD+0.6V、p11 pinout说明地址/RESET需外部偏置。U1.8/GPB7→K4.1与U1.28/GPA7→K6.1在p1/p11仅输出；外部用途、线缆、故障源及可接受后果未给。未装TVS不自动违反强制要求。 关闭条件：原设计者给该接口实际对端针脚、电源角色、线缆及允许故障边界；按所列接口逐一核负压、钳位/上游覆盖。K4/K6还须确认GPA7/GPB7仅输出限制是否满足用途。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-EXTERNAL-EXT-K5"
+      ],
+      "check_ids": [
+        "DEV-D03.K5",
+        "PRO-D03.K5",
+        "PRO-D04.K5"
+      ],
+      "root_cause_group": "H-EXTERNAL"
+    },
+    {
+      "id": "F08",
+      "sr_rule": "DEV-C04",
+      "criteria": [
+        "G05-022"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "K6",
+        "U1"
+      ],
+      "nets": [
+        "GPA0",
+        "GPA1",
+        "GPA2",
+        "GPA3",
+        "GPA4",
+        "GPA5",
+        "GPA6",
+        "GPA7"
+      ],
+      "sr_text": "K6 GPA 端口的负载和上电安全状态未给",
+      "verdict": "needs_human",
+      "evidence": "U1.21..28按GPA0..7接K6.8..1，单脚25mA和VDD125mA/VSS150mA仅为DS20001952D p3绝限。实际灌拉电流、合计负载、默认安全状态未给；U1.28/GPA7仅输出。 SE5218 p2推荐VIN2.8..5.5V、TJ0..125°C；p3 EN1.6/0.4V及仅典型压差；p6 PD=Iout(VIN−VOUT)。MCP DS20001952D p3单脚25mA/VDD125mA/VSS150mA是绝限，p4 D003 0.05V/ms仅指导，p5 RESET低脉宽≥1µs。受控外源/负载/温度/状态未给，名义网名不能补齐这些前提。 关闭条件：原设计者确认K2/JP3输入范围、负载/外带电流、环境、掉电恢复与降额等级；用SE5218 p3/p6及MCP23017 p3/p4逐项重算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-OPERATING-EXT-K6"
+      ],
+      "check_ids": [
+        "DEV-C04.K6"
+      ],
+      "root_cause_group": "H-OPERATING"
+    },
+    {
+      "id": "F09",
+      "sr_rule": "DEV-D03/PRO-D03/PRO-D04",
+      "criteria": [
+        "G01-013",
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G04-098",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "K6",
+        "U1"
+      ],
+      "nets": [
+        "GPA0",
+        "GPA1",
+        "GPA2",
+        "GPA3",
+        "GPA4",
+        "GPA5",
+        "GPA6",
+        "GPA7"
+      ],
+      "sr_text": "K6 实际对端、电源角色及允许误接边界未给",
+      "verdict": "needs_human",
+      "evidence": "K6.1=GPA7；K6.2=GPA6；K6.3=GPA5；K6.4=GPA4；K6.5=GPA3；K6.6=GPA2；K6.7=GPA1；K6.8=GPA0。当前没有对端/线缆/允许故障波形；无TVS/保险本身不构成必然缺陷，须核上游覆盖和允许损坏范围。 板内各针脚已独立核对；DS20001952D p3脚电压绝限−0.6..VDD+0.6V、p11 pinout说明地址/RESET需外部偏置。U1.8/GPB7→K4.1与U1.28/GPA7→K6.1在p1/p11仅输出；外部用途、线缆、故障源及可接受后果未给。未装TVS不自动违反强制要求。 关闭条件：原设计者给该接口实际对端针脚、电源角色、线缆及允许故障边界；按所列接口逐一核负压、钳位/上游覆盖。K4/K6还须确认GPA7/GPB7仅输出限制是否满足用途。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-EXTERNAL-EXT-K6"
+      ],
+      "check_ids": [
+        "DEV-D03.K6",
+        "PRO-D03.K6",
+        "PRO-D04.K6"
+      ],
+      "root_cause_group": "H-EXTERNAL"
+    },
+    {
+      "id": "F10",
+      "sr_rule": "DEV-C04",
+      "criteria": [
+        "G05-022"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "K7",
+        "U1"
+      ],
+      "nets": [
+        "INTA",
+        "INTB"
+      ],
+      "sr_text": "K7 INTA/INTB 配置与对端输入要求未给",
+      "verdict": "needs_human",
+      "evidence": "K7.1→U1.19 INTB、K7.2→U1.20 INTA。DS20001952D p11允许active-high/low/open-drain；实际配置及对端上拉电源、输入阈值和电流未给，不能默认任意MCU都兼容。 SE5218 p2推荐VIN2.8..5.5V、TJ0..125°C；p3 EN1.6/0.4V及仅典型压差；p6 PD=Iout(VIN−VOUT)。MCP DS20001952D p3单脚25mA/VDD125mA/VSS150mA是绝限，p4 D003 0.05V/ms仅指导，p5 RESET低脉宽≥1µs。受控外源/负载/温度/状态未给，名义网名不能补齐这些前提。 关闭条件：原设计者确认K2/JP3输入范围、负载/外带电流、环境、掉电恢复与降额等级；用SE5218 p3/p6及MCP23017 p3/p4逐项重算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-OPERATING-EXT-K7"
+      ],
+      "check_ids": [
+        "DEV-C04.K7"
+      ],
+      "root_cause_group": "H-OPERATING"
+    },
+    {
+      "id": "F11",
+      "sr_rule": "DEV-D03/PRO-D03/PRO-D04",
+      "criteria": [
+        "G01-013",
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G04-098",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "K7",
+        "U1"
+      ],
+      "nets": [
+        "INTA",
+        "INTB"
+      ],
+      "sr_text": "K7 实际对端、电源角色及允许误接边界未给",
+      "verdict": "needs_human",
+      "evidence": "K7.1=INTB；K7.2=INTA。当前没有对端/线缆/允许故障波形；无TVS/保险本身不构成必然缺陷，须核上游覆盖和允许损坏范围。 板内各针脚已独立核对；DS20001952D p3脚电压绝限−0.6..VDD+0.6V、p11 pinout说明地址/RESET需外部偏置。U1.8/GPB7→K4.1与U1.28/GPA7→K6.1在p1/p11仅输出；外部用途、线缆、故障源及可接受后果未给。未装TVS不自动违反强制要求。 关闭条件：原设计者给该接口实际对端针脚、电源角色、线缆及允许故障边界；按所列接口逐一核负压、钳位/上游覆盖。K4/K6还须确认GPA7/GPB7仅输出限制是否满足用途。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-EXTERNAL-EXT-K7"
+      ],
+      "check_ids": [
+        "DEV-D03.K7",
+        "PRO-D03.K7",
+        "PRO-D04.K7"
+      ],
+      "root_cause_group": "H-EXTERNAL"
+    },
+    {
+      "id": "F12",
+      "sr_rule": "DEV-C01/DEV-C05",
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "JP1",
+        "JP2",
+        "JP4",
+        "JP5",
+        "JP6",
+        "JP7",
+        "K1",
+        "K2",
+        "K3",
+        "K4",
+        "K5",
+        "K6",
+        "K7",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "U1"
+      ],
+      "nets": [],
+      "sr_text": "U1 3V3核心的实际供电与GPIO电流预算未给",
+      "verdict": "needs_human",
+      "evidence": "U1.9=3V3、U1.10=GND；该轨又接C4、R5..8和easyC电源。缺输入容差、环境/降额和GPIO合计电流，尚不能证明全部器件应力与热预算。 SE5218 p2推荐VIN2.8..5.5V、TJ0..125°C；p3 EN1.6/0.4V及仅典型压差；p6 PD=Iout(VIN−VOUT)。MCP DS20001952D p3单脚25mA/VDD125mA/VSS150mA是绝限，p4 D003 0.05V/ms仅指导，p5 RESET低脉宽≥1µs。受控外源/负载/温度/状态未给，名义网名不能补齐这些前提。 关闭条件：原设计者确认K2/JP3输入范围、负载/外带电流、环境、掉电恢复与降额等级；用SE5218 p3/p6及MCP23017 p3/p4逐项重算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-OPERATING-I2C-GPIO"
+      ],
+      "check_ids": [
+        "DEV-C01.I2C-GPIO",
+        "DEV-C05.U1"
+      ],
+      "root_cause_group": "H-OPERATING"
+    },
+    {
+      "id": "F13",
+      "sr_rule": "PWR-C09/PWR-C10",
+      "criteria": [
+        "G03-036"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "JP1",
+        "JP2",
+        "JP4",
+        "JP5",
+        "JP6",
+        "JP7",
+        "K1",
+        "K2",
+        "K3",
+        "K4",
+        "K5",
+        "K6",
+        "K7",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "U1"
+      ],
+      "nets": [
+        "3V3"
+      ],
+      "sr_text": "C4 的有效容量与额定未能由同版采购资料确认",
+      "verdict": "needs_human",
+      "evidence": "C4=2u2/0603，直接连接与返回已核；SE5218 p6要求输入/输出各至少1µF。名义2.2µF与最低值差1.2µF不是偏压/温度后的保证；没有同版采购/容量曲线，不虚构ESR窗口。 C3.1/C4.1=GND，C3.2=Net-(U3-EN)、C4.2=3V3；值均2u2/0603C。SE5218 p6输入/输出各至少1µF，名义差1.2µF不等于有效容量保证；没有同版采购额定/偏压曲线，手册未列数值ESR窗，不能强索一个窗口。 关闭条件：取得同版C3/C4采购行及偏压/温度容量曲线，核SE5218 p6的输入和输出有效电容≥1µF；不要求不存在的数值ESR窗口。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-CAP-I2C-GPIO"
+      ],
+      "check_ids": [
+        "PWR-C09.DECAP-19BFC54174981372E3C6.3V3",
+        "PWR-C10.DECAP-19BFC54174981372E3C6.3V3"
+      ],
+      "root_cause_group": "H-CAP"
+    },
+    {
+      "id": "F14",
+      "sr_rule": "SIG-C01/SIG-C13/SIG-C15",
+      "criteria": [
+        "G04-001",
+        "G04-002",
+        "G04-017",
+        "G04-018",
+        "G04-019",
+        "G04-020",
+        "G04-022",
+        "G04-024"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "JP1",
+        "JP2",
+        "JP4",
+        "JP5",
+        "JP6",
+        "JP7",
+        "K1",
+        "K2",
+        "K3",
+        "K4",
+        "K5",
+        "K6",
+        "K7",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "U1"
+      ],
+      "nets": [],
+      "sr_text": "每侧10k已核；名义100k/400k模式分别需Cb≤118.0/35.4pF。两侧低态条件电流0.75mA。具体速",
+      "verdict": "needs_human",
+      "evidence": "每侧10k已核；名义100k/400k模式分别需Cb≤118.0/35.4pF。两侧低态条件电流0.75mA。具体速率、Cb、外部并联上拉与供电容差未给，不能证明窗口；也不能凭400pF算例判故障。 R1/R4=10k经JP2到3V3；R2/R3=10k经JP1到5V。MCP p6 Table1-3的100/400kHz tr最大1µs/300ns；Cb≤tr/(0.8473R)对应118.0/35.4pF。0.4V名义低态时两侧灌流相加为0.75mA，该0.4V是算例假设而非MCP保证。速率、Cb、外接并联上拉及公差未给，不能判10k必错。 关闭条件：取得K1/K3/K2的实际速率、两段Cb上界、外部并联上拉和电源/阻值公差；按独立证据RC窗口和跨两段总灌流复算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-BUS-I2C-GPIO"
+      ],
+      "check_ids": [
+        "SIG-C01.I2C-GPIO-POWER-OFF.JP1",
+        "SIG-C01.I2C-GPIO-RUN.JP1",
+        "SIG-C13.I2C-GPIO.JP1",
+        "SIG-C15.I2C-GPIO.JP1"
+      ],
+      "root_cause_group": "H-BUS"
+    },
+    {
+      "id": "F15",
+      "sr_rule": "SIG-C07/SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G02-023",
+        "G04-003",
+        "G04-004",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-016",
+        "G04-021"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "JP1",
+        "JP2",
+        "JP4",
+        "JP5",
+        "JP6",
+        "JP7",
+        "K1",
+        "K2",
+        "K3",
+        "K4",
+        "K5",
+        "K6",
+        "K7",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "3V3",
+        "5V",
+        "SCL3,3",
+        "SCL5",
+        "SDA3,3",
+        "SDA5"
+      ],
+      "sr_text": "U2双管传输/掉电行为未获型号保证；U1 p4只列1.8/4.5V的SDA VOL测试点，3.3V保证需有据定界；高",
+      "verdict": "knowledge_gap",
+      "evidence": "U2双管传输/掉电行为未获型号保证；U1 p4只列1.8/4.5V的SDA VOL测试点，3.3V保证需有据定界；高低侧分轨、单侧掉电及外部先上电不能凭连通放行。 U2两路高低侧为SDA5↔SDA3,3与SCL5↔SCL3,3，G1/G2=3V3。MCP p4 D041 VIH≥0.8VDD/D031 VIL≤0.2VDD；D080仅列SDA VOL≤0.6V@3mA,VDD1.8V与≤0.8V@3mA,VDD4.5V。3.3V时不据测试点无据插值；U2实际MPN传输、掉电保证未给。缺准确器件资料/有据边界，而非已证不兼容。 关闭条件：先固定U2实际料号及正常/单侧掉电使用状态；按原厂传输条件与MCP23017 DS20001952D p3/p4绝限、VIH/VIL、SDA VOL定界，不把1.8/4.5V测试点无据插值为3.3V保证。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-K-LEVEL-I2C-GPIO"
+      ],
+      "check_ids": [
+        "SIG-C07.I2C-GPIO-POWER-OFF.JP1",
+        "SIG-C07.I2C-GPIO-RUN.JP1",
+        "SIG-C08.I2C-GPIO-POWER-OFF.JP1",
+        "SIG-C08.I2C-GPIO-RUN.JP1"
+      ],
+      "root_cause_group": "K-LEVEL"
+    },
+    {
+      "id": "F16",
+      "sr_rule": "SIG-D01",
+      "criteria": [
+        "G04-023"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "JP1",
+        "JP2",
+        "JP4",
+        "JP5",
+        "JP6",
+        "JP7",
+        "K1",
+        "K2",
+        "K3",
+        "K4",
+        "K5",
+        "K6",
+        "K7",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "U1"
+      ],
+      "nets": [],
+      "sr_text": "A0/A1/A2分别JP5/6/7中点，右侧经10k上拉、左侧GND；可达0x20..0x27，但当前焊接档、剪桥工",
+      "verdict": "needs_human",
+      "evidence": "A0/A1/A2分别JP5/6/7中点，右侧经10k上拉、左侧GND；可达0x20..0x27，但当前焊接档、剪桥工序及外部地址占用未给。 U1.15/16/17→A0/A1/A2→JP5/6/7.2，各左脚1为GND，右脚3经R6/7/8=10k到3V3。p11 Table2-1规定地址脚须外部偏置。理论0x20..0x27；源PCB连接器名称CONNECTED_RIGHT不能代替最终焊接档/剪桥工序/系统地址分配，无据判浮空或短路。 关闭条件：取得JP5/6/7每个中点连接档及互斥剪桥/焊接工序，核U1.15/16/17不悬空、不短3V3/GND，并确认系统地址唯一。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-ADDRESS-I2C-GPIO"
+      ],
+      "check_ids": [
+        "SIG-D01.I2C-GPIO-POWER-OFF.JP1",
+        "SIG-D01.I2C-GPIO-RUN.JP1"
+      ],
+      "root_cause_group": "H-ADDRESS"
+    },
+    {
+      "id": "F17",
+      "sr_rule": "DEV-C01/DEV-C05/PWR-C02/PWR-C03/PWR-C06/PWR-C18/PWR-C24/PWR-E02",
+      "criteria": [
+        "G01-020",
+        "G01-024",
+        "G01-025",
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-014",
+        "G03-018",
+        "G03-019",
+        "G03-020",
+        "G03-023",
+        "G03-024",
+        "G03-028",
+        "G03-029",
+        "G03-034",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G03-050",
+        "G05-021",
+        "G05-022"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "C4",
+        "U3"
+      ],
+      "nets": [
+        "Net-(U3-EN)"
+      ],
+      "sr_text": "U3 LDO 的输入容差、负载和热边界未给",
+      "verdict": "needs_human",
+      "evidence": "K2.2→5V→JP3→U3.1，U3.5→3V3/C4/U1.9。SE5218 p3压差仅典型值；p6热算式在5→3.3V时每100mA=0.17W，缺负载/温度不能判压差和热裕量，也不能按封面500mA指控过热。 SE5218 p2推荐VIN2.8..5.5V、TJ0..125°C；p3 EN1.6/0.4V及仅典型压差；p6 PD=Iout(VIN−VOUT)。MCP DS20001952D p3单脚25mA/VDD125mA/VSS150mA是绝限，p4 D003 0.05V/ms仅指导，p5 RESET低脉宽≥1µs。受控外源/负载/温度/状态未给，名义网名不能补齐这些前提。 关闭条件：原设计者确认K2/JP3输入范围、负载/外带电流、环境、掉电恢复与降额等级；用SE5218 p3/p6及MCP23017 p3/p4逐项重算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-OPERATING-LDO-3V3"
+      ],
+      "check_ids": [
+        "DEV-C01.LDO-3V3",
+        "DEV-C05.U3",
+        "PWR-C02.LDO-3V3-FAULT.C4",
+        "PWR-C02.LDO-3V3-RUN.C4",
+        "PWR-C02.LDO-3V3-STARTUP.C4",
+        "PWR-C03.LDO-3V3-FAULT.C4",
+        "PWR-C03.LDO-3V3-RUN.C4",
+        "PWR-C03.LDO-3V3-STARTUP.C4",
+        "PWR-C06.LDO-3V3-FAULT.U3",
+        "PWR-C06.LDO-3V3-RUN.U3",
+        "PWR-C06.LDO-3V3-STARTUP.U3",
+        "PWR-C18.LDO-3V3-FAULT.C4",
+        "PWR-C18.LDO-3V3-RUN.C4",
+        "PWR-C18.LDO-3V3-STARTUP.C4",
+        "PWR-C24.LDO-3V3.C4",
+        "PWR-E02.U3-NET-U3-EN.U3-3"
+      ],
+      "root_cause_group": "H-OPERATING"
+    },
+    {
+      "id": "F18",
+      "sr_rule": "DEV-C02/PWR-C04/PWR-C09/PWR-C10/PWR-C15",
+      "criteria": [
+        "G03-003",
+        "G03-004",
+        "G03-005",
+        "G03-006",
+        "G03-007",
+        "G03-008",
+        "G03-009",
+        "G03-010",
+        "G03-026",
+        "G03-036",
+        "G03-039",
+        "G03-044",
+        "G03-045",
+        "G03-046"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "C4",
+        "U3"
+      ],
+      "nets": [
+        "3V3",
+        "Net-(U3-EN)"
+      ],
+      "sr_text": "C4 的有效容量与额定未能由同版采购资料确认",
+      "verdict": "needs_human",
+      "evidence": "C4=2u2/0603，直接连接与返回已核；SE5218 p6要求输入/输出各至少1µF。名义2.2µF与最低值差1.2µF不是偏压/温度后的保证；没有同版采购/容量曲线，不虚构ESR窗口。 C3.1/C4.1=GND，C3.2=Net-(U3-EN)、C4.2=3V3；值均2u2/0603C。SE5218 p6输入/输出各至少1µF，名义差1.2µF不等于有效容量保证；没有同版采购额定/偏压曲线，手册未列数值ESR窗，不能强索一个窗口。 关闭条件：取得同版C3/C4采购行及偏压/温度容量曲线，核SE5218 p6的输入和输出有效电容≥1µF；不要求不存在的数值ESR窗口。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-CAP-LDO-3V3"
+      ],
+      "check_ids": [
+        "DEV-C02.LDO-3V3",
+        "PWR-C04.LDO-3V3-FAULT.U3",
+        "PWR-C04.LDO-3V3-RUN.U3",
+        "PWR-C04.LDO-3V3-STARTUP.U3",
+        "PWR-C09.DECAP-48F87542BD8E917D1990.NET-U3-EN",
+        "PWR-C09.DECAP-8AE7CC81D83BFEF1B091.3V3",
+        "PWR-C10.DECAP-48F87542BD8E917D1990.NET-U3-EN",
+        "PWR-C10.DECAP-8AE7CC81D83BFEF1B091.3V3",
+        "PWR-C15.LDO-3V3-FAULT.U3",
+        "PWR-C15.LDO-3V3-RUN.U3",
+        "PWR-C15.LDO-3V3-STARTUP.U3"
+      ],
+      "root_cause_group": "H-CAP"
+    },
+    {
+      "id": "F19",
+      "sr_rule": "PWR-C05",
+      "criteria": [
+        "G03-032"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "C4",
+        "U3"
+      ],
+      "nets": [],
+      "sr_text": "K1.3/K3.3可使3V3有电而5V及U3.VIN无电；SE5218 p1/2/3/6未给VOUT>VIN反向电流",
+      "verdict": "needs_human",
+      "evidence": "K1.3/K3.3可使3V3有电而5V及U3.VIN无电；SE5218 p1/2/3/6未给VOUT>VIN反向电流保证。热损耗按每100mA=0.17W条件计算，实际负载未给。 K1.3/K3.3→3V3→U3.5，JP4默认开，5V经JP3到U3.1/3。SE5218 p1/2/3/6未规定VOUT>VIN反向工作保证。此状态是否允许必须先由原设计者确认；若要求外供3V3且VIN无电，应阻断或选规定该用法的器件，不能写假manufacturer-specified区或把该条件当已发生故障。 关闭条件：先确认K1/K3外供3V3且K2断电是否属于允许状态；SE5218 p1/2/3/6未规定反灌，若状态被要求，应选有该区保证的器件或阻断路径，不能仅向厂家索取不存在的保证。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-K-REVERSE-LDO-3V3"
+      ],
+      "check_ids": [
+        "PWR-C05.LDO-3V3-FAULT.C4",
+        "PWR-C05.LDO-3V3-RUN.C4",
+        "PWR-C05.LDO-3V3-STARTUP.C4"
+      ],
+      "root_cause_group": "K-REVERSE"
+    },
+    {
+      "id": "F20",
+      "sr_rule": "DEV-C01/RST-C01/RST-C02/RST-T04",
+      "criteria": [
+        "G02-007",
+        "G02-022",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G04-010",
+        "G05-022"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "C3",
+        "JP3",
+        "U3"
+      ],
+      "nets": [
+        "Net-(U3-EN)"
+      ],
+      "sr_text": "JP3 与 U3 EN 的输入爬升及恢复条件未给",
+      "verdict": "needs_human",
+      "evidence": "JP3闭合，U3.3 EN与U3.1 VIN同网；SE5218 p3 EN开启/关闭门限1.6/0.4V。外源爬升、掉电深度及再启动波形未给；接法极性通过不代表启动时序通过。 SE5218 p2推荐VIN2.8..5.5V、TJ0..125°C；p3 EN1.6/0.4V及仅典型压差；p6 PD=Iout(VIN−VOUT)。MCP DS20001952D p3单脚25mA/VDD125mA/VSS150mA是绝限，p4 D003 0.05V/ms仅指导，p5 RESET低脉宽≥1µs。受控外源/负载/温度/状态未给，名义网名不能补齐这些前提。 关闭条件：原设计者确认K2/JP3输入范围、负载/外带电流、环境、掉电恢复与降额等级；用SE5218 p3/p6及MCP23017 p3/p4逐项重算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-OPERATING-LDO-ENABLE"
+      ],
+      "check_ids": [
+        "DEV-C01.LDO-ENABLE",
+        "RST-C01.LDO-ENABLE-POWER-ON.U3",
+        "RST-C01.LDO-ENABLE-RESTART.U3",
+        "RST-C02.LDO-ENABLE-POWER-ON.U3",
+        "RST-C02.LDO-ENABLE-RESTART.U3",
+        "RST-T04.LDO-ENABLE-POWER-ON.U3",
+        "RST-T04.LDO-ENABLE-RESTART.U3"
+      ],
+      "root_cause_group": "H-OPERATING"
+    },
+    {
+      "id": "F21",
+      "sr_rule": "DEV-C02",
+      "criteria": [
+        "G03-010",
+        "G03-039"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "C3",
+        "JP3",
+        "U3"
+      ],
+      "nets": [
+        "Net-(U3-EN)"
+      ],
+      "sr_text": "C3 的有效容量与额定未能由同版采购资料确认",
+      "verdict": "needs_human",
+      "evidence": "C3=2u2/0603，直接连接与返回已核；SE5218 p6要求输入/输出各至少1µF。名义2.2µF与最低值差1.2µF不是偏压/温度后的保证；没有同版采购/容量曲线，不虚构ESR窗口。 C3.1/C4.1=GND，C3.2=Net-(U3-EN)、C4.2=3V3；值均2u2/0603C。SE5218 p6输入/输出各至少1µF，名义差1.2µF不等于有效容量保证；没有同版采购额定/偏压曲线，手册未列数值ESR窗，不能强索一个窗口。 关闭条件：取得同版C3/C4采购行及偏压/温度容量曲线，核SE5218 p6的输入和输出有效电容≥1µF；不要求不存在的数值ESR窗口。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-CAP-LDO-ENABLE"
+      ],
+      "check_ids": [
+        "DEV-C02.LDO-ENABLE"
+      ],
+      "root_cause_group": "H-CAP"
+    },
+    {
+      "id": "F22",
+      "sr_rule": "PWR-T04",
+      "criteria": [
+        "G03-025"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [],
+      "nets": [
+        "3V3",
+        "5V",
+        "Net-(U3-EN)"
+      ],
+      "sr_text": "U1 内部 POR 能否覆盖实际爬升和掉电尚未确认",
+      "verdict": "needs_human",
+      "evidence": "U1.18经R5=10k接3V3并外引K5，没有外置监控。DS20001952D p4 D003为0.05V/ms设计指导；实际3V3爬升、跌落和复位需求未给，不能由无RC认定缺陷。 SE5218 p2推荐VIN2.8..5.5V、TJ0..125°C；p3 EN1.6/0.4V及仅典型压差；p6 PD=Iout(VIN−VOUT)。MCP DS20001952D p3单脚25mA/VDD125mA/VSS150mA是绝限，p4 D003 0.05V/ms仅指导，p5 RESET低脉宽≥1µs。受控外源/负载/温度/状态未给，名义网名不能补齐这些前提。 关闭条件：原设计者确认K2/JP3输入范围、负载/外带电流、环境、掉电恢复与降额等级；用SE5218 p3/p6及MCP23017 p3/p4逐项重算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-OPERATING-SYS-MONITOR"
+      ],
+      "check_ids": [
+        "PWR-T04.SOURCE-DEFAULT.SUPERVISION-RAILS"
+      ],
+      "root_cause_group": "H-OPERATING"
+    },
+    {
+      "id": "F23",
+      "sr_rule": "PWR-C01",
+      "criteria": [
+        "G01-010",
+        "G03-001",
+        "G03-042",
+        "G03-043"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [],
+      "nets": [
+        "3V3",
+        "5V",
+        "Net-(U3-EN)"
+      ],
+      "sr_text": "5V/3V3 双入口的组合许可和源电流预算未给",
+      "verdict": "needs_human",
+      "evidence": "K2.2接5V，K1/K3.3接3V3，JP4默认开而可焊并轨。外源是否互斥、哪端输入/输出及总电流预算未给；拓扑已追完不等于允许双源并接。 SE5218 p2推荐VIN2.8..5.5V、TJ0..125°C；p3 EN1.6/0.4V及仅典型压差；p6 PD=Iout(VIN−VOUT)。MCP DS20001952D p3单脚25mA/VDD125mA/VSS150mA是绝限，p4 D003 0.05V/ms仅指导，p5 RESET低脉宽≥1µs。受控外源/负载/温度/状态未给，名义网名不能补齐这些前提。 关闭条件：原设计者确认K2/JP3输入范围、负载/外带电流、环境、掉电恢复与降额等级；用SE5218 p3/p6及MCP23017 p3/p4逐项重算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-OPERATING-SYS-POWER"
+      ],
+      "check_ids": [
+        "PWR-C01.3V3",
+        "PWR-C01.5V",
+        "PWR-C01.NET-U3-EN"
+      ],
+      "root_cause_group": "H-OPERATING"
+    },
+    {
+      "id": "F24",
+      "sr_rule": "RST-T03",
+      "criteria": [
+        "G03-024",
+        "G03-030",
+        "G03-047",
+        "G05-062",
+        "G05-091"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [],
+      "nets": [
+        "3V3",
+        "5V",
+        "Net-(U3-EN)"
+      ],
+      "sr_text": "5V/3V3 上下电次序与 U2 掉电通路未定",
+      "verdict": "needs_human",
+      "evidence": "5V经U3建立3V3，K1/K3又可外供3V3；U2在SDA/SCL两侧连接两电压域。缺单侧先上电、允许掉电信号和对端Ioff边界，不能宣称时序与回灌安全。 SE5218 p2推荐VIN2.8..5.5V、TJ0..125°C；p3 EN1.6/0.4V及仅典型压差；p6 PD=Iout(VIN−VOUT)。MCP DS20001952D p3单脚25mA/VDD125mA/VSS150mA是绝限，p4 D003 0.05V/ms仅指导，p5 RESET低脉宽≥1µs。受控外源/负载/温度/状态未给，名义网名不能补齐这些前提。 关闭条件：原设计者确认K2/JP3输入范围、负载/外带电流、环境、掉电恢复与降额等级；用SE5218 p3/p6及MCP23017 p3/p4逐项重算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-OPERATING-SYS-SEQUENCE"
+      ],
+      "check_ids": [
+        "RST-T03.SYS-SEQUENCE"
+      ],
+      "root_cause_group": "H-OPERATING"
+    },
+    {
+      "id": "F25",
+      "sr_rule": "DEV-C01/PWR-C19/PWR-D04/REQ-D02/REQ-D03/REQ-D04/REQ-Q01/RST-T01",
+      "criteria": [
+        "G01-001",
+        "G01-002",
+        "G01-003",
+        "G01-004",
+        "G01-005",
+        "G01-006",
+        "G01-007",
+        "G01-008",
+        "G01-011",
+        "G01-012",
+        "G01-017",
+        "G01-022",
+        "G02-001",
+        "G02-007",
+        "G02-018",
+        "G02-027",
+        "G02-028",
+        "G02-030",
+        "G03-002",
+        "G03-022",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G03-041",
+        "G04-014",
+        "G04-015",
+        "G04-050",
+        "G04-063",
+        "G04-065",
+        "G04-072",
+        "G04-077",
+        "G04-100",
+        "G05-018",
+        "G05-022",
+        "G05-023",
+        "G05-097"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "FD1",
+        "H1",
+        "H2",
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "U2",
+        "U3"
+      ],
+      "nets": [
+        "Net-(U3-EN)"
+      ],
+      "sr_text": "受控需求、应力范围与降额输入不足",
+      "verdict": "needs_human",
+      "evidence": "README和5V/3V3网名仅支持用途与标称电压推断。当前未给受控输入范围、温度、负载及异常工况，也没有项目降额等级；不把推断写成用户已批准的要求。 SE5218 p2推荐VIN2.8..5.5V、TJ0..125°C；p3 EN1.6/0.4V及仅典型压差；p6 PD=Iout(VIN−VOUT)。MCP DS20001952D p3单脚25mA/VDD125mA/VSS150mA是绝限，p4 D003 0.05V/ms仅指导，p5 RESET低脉宽≥1µs。受控外源/负载/温度/状态未给，名义网名不能补齐这些前提。 关闭条件：原设计者确认K2/JP3输入范围、负载/外带电流、环境、掉电恢复与降额等级；用SE5218 p3/p6及MCP23017 p3/p4逐项重算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-OPERATING-UNBOUND-H-OPERATING"
+      ],
+      "check_ids": [
+        "DEV-C01.BOARD",
+        "PWR-C19.BOARD",
+        "PWR-D04.BOARD",
+        "REQ-D02.BOARD",
+        "REQ-D03.BOARD",
+        "REQ-D04.BOARD",
+        "REQ-Q01.REQUIREMENTS",
+        "RST-T01.U3-NET-U3-EN.U3-3"
+      ],
+      "root_cause_group": "H-OPERATING"
+    },
+    {
+      "id": "F26",
+      "sr_rule": "DEV-C05/DEV-D02/DEV-D05/DEV-Q01/PWR-D01",
+      "criteria": [
+        "G03-035"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "3V3",
+        "5V",
+        "SCL3,3",
+        "SCL5",
+        "SDA3,3",
+        "SDA5"
+      ],
+      "sr_text": "双管VGS阈值、低VGS的导通电阻、VDS与温度范围无准确型号保证；不以任一2N7002代入。",
+      "verdict": "knowledge_gap",
+      "evidence": "双管VGS阈值、低VGS的导通电阻、VDS与温度范围无准确型号保证；不以任一2N7002代入。 U2仅NMOS-DUAL/SOT363：符号1S2/2G2/3D1/4S1/5G1/6D2，不是厂家身份。U2.2/.5共栅3V3，.1/.4低压数据，.6/.3高压数据。Wiki检索MCP23017/SE5218无命中，取得两份原厂 authored PDF；通用2N7002手册不能核这颗未知双管的全针图/低VGS参数。先固定MPN，再取准确手册。 关闭条件：先取得U2同版准确MPN，再取得该料号原厂完整1..6脚图、低VGS导通及掉电保证；不以任一2N7002手册替代。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-K-U2-UNBOUND-K-U2"
+      ],
+      "check_ids": [
+        "DEV-C05.U2",
+        "DEV-D02.U2",
+        "DEV-D05.U2",
+        "DEV-Q01.DATASHEETS",
+        "PWR-D01.DECOUPLING-INVENTORY"
+      ],
+      "root_cause_group": "K-U2"
+    },
+    {
+      "id": "F27",
+      "sr_rule": "DOC-T01/SIG-D01",
+      "criteria": [
+        "G04-023"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [],
+      "nets": [
+        "SCL3,3",
+        "SCL5",
+        "SCL_PULL3,3",
+        "SCL_PULL5",
+        "SDA3,3",
+        "SDA5",
+        "SDA_PULL3,3",
+        "SDA_PULL5"
+      ],
+      "sr_text": "JP1/2双铜桥与JP3闭合、JP4断开已由同版PCB确认；JP5/6/7最终焊接档与改档互斥工序未给，不能把命名C",
+      "verdict": "needs_human",
+      "evidence": "JP1/2双铜桥与JP3闭合、JP4断开已由同版PCB确认；JP5/6/7最终焊接档与改档互斥工序未给，不能把命名CONNECTED_RIGHT当作最终装配表。 U1.15/16/17→A0/A1/A2→JP5/6/7.2，各左脚1为GND，右脚3经R6/7/8=10k到3V3。p11 Table2-1规定地址脚须外部偏置。理论0x20..0x27；源PCB连接器名称CONNECTED_RIGHT不能代替最终焊接档/剪桥工序/系统地址分配，无据判浮空或短路。 关闭条件：取得JP5/6/7每个中点连接档及互斥剪桥/焊接工序，核U1.15/16/17不悬空、不短3V3/GND，并确认系统地址唯一。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-ADDRESS-UNBOUND-H-ADDRESS"
+      ],
+      "check_ids": [
+        "DOC-T01.SOURCE-DEFAULT",
+        "SIG-D01.I2C-265FED79020398E392E7.SCL3-3",
+        "SIG-D01.I2C-391E8F8567148AFDE187.SDA3-3",
+        "SIG-D01.I2C-877060199B33577F7257.SDA5",
+        "SIG-D01.I2C-B55ED2333B92001DC501.SCL5"
+      ],
+      "root_cause_group": "H-ADDRESS"
+    },
+    {
+      "id": "F28",
+      "sr_rule": "PRO-D05/PRO-D06/REQ-D05",
+      "criteria": [
+        "G05-001",
+        "G05-002",
+        "G05-003",
+        "G05-004",
+        "G05-005",
+        "G05-006",
+        "G05-007",
+        "G05-008",
+        "G05-009",
+        "G05-010",
+        "G05-011",
+        "G05-012",
+        "G05-013",
+        "G05-014",
+        "G05-015",
+        "G05-016",
+        "G05-017",
+        "G05-028",
+        "G05-029",
+        "G05-035",
+        "G05-061",
+        "G05-065"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [],
+      "nets": [
+        "3V3",
+        "5V"
+      ],
+      "sr_text": "已追外部入口、JP4并轨、U3反灌、U2边界及裸GPIO故障传播；没有本板关键功能/允许损坏/异常输入界，不制造FM",
+      "verdict": "needs_human",
+      "evidence": "已追外部入口、JP4并轨、U3反灌、U2边界及裸GPIO故障传播；没有本板关键功能/允许损坏/异常输入界，不制造FMEA等级或假定需要独立安全电源。 板内各针脚已独立核对；DS20001952D p3脚电压绝限−0.6..VDD+0.6V、p11 pinout说明地址/RESET需外部偏置。U1.8/GPB7→K4.1与U1.28/GPA7→K6.1在p1/p11仅输出；外部用途、线缆、故障源及可接受后果未给。未装TVS不自动违反强制要求。 关闭条件：原设计者给该接口实际对端针脚、电源角色、线缆及允许故障边界；按所列接口逐一核负压、钳位/上游覆盖。K4/K6还须确认GPA7/GPB7仅输出限制是否满足用途。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-EXTERNAL-UNBOUND-H-EXTERNAL"
+      ],
+      "check_ids": [
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD",
+        "REQ-D05.BOARD"
+      ],
+      "root_cause_group": "H-EXTERNAL"
+    },
+    {
+      "id": "F29",
+      "sr_rule": "SIG-C01/SIG-C13/SIG-C15",
+      "criteria": [
+        "G04-001",
+        "G04-002",
+        "G04-017",
+        "G04-018",
+        "G04-019",
+        "G04-020",
+        "G04-022",
+        "G04-024"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [],
+      "nets": [
+        "SCL3,3",
+        "SCL5",
+        "SCL_PULL3,3",
+        "SCL_PULL5",
+        "SDA3,3",
+        "SDA5",
+        "SDA_PULL3,3",
+        "SDA_PULL5"
+      ],
+      "sr_text": "每侧10k已核；名义100k/400k模式分别需Cb≤118.0/35.4pF。两侧低态条件电流0.75mA。具体速",
+      "verdict": "needs_human",
+      "evidence": "每侧10k已核；名义100k/400k模式分别需Cb≤118.0/35.4pF。两侧低态条件电流0.75mA。具体速率、Cb、外部并联上拉与供电容差未给，不能证明窗口；也不能凭400pF算例判故障。 R1/R4=10k经JP2到3V3；R2/R3=10k经JP1到5V。MCP p6 Table1-3的100/400kHz tr最大1µs/300ns；Cb≤tr/(0.8473R)对应118.0/35.4pF。0.4V名义低态时两侧灌流相加为0.75mA，该0.4V是算例假设而非MCP保证。速率、Cb、外接并联上拉及公差未给，不能判10k必错。 关闭条件：取得K1/K3/K2的实际速率、两段Cb上界、外部并联上拉和电源/阻值公差；按独立证据RC窗口和跨两段总灌流复算。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-H-BUS-UNBOUND-H-BUS"
+      ],
+      "check_ids": [
+        "SIG-C01.I2C-265FED79020398E392E7.SCL3-3",
+        "SIG-C01.I2C-391E8F8567148AFDE187.SDA3-3",
+        "SIG-C01.I2C-877060199B33577F7257.SDA5",
+        "SIG-C01.I2C-B55ED2333B92001DC501.SCL5",
+        "SIG-C13.I2C-265FED79020398E392E7.SCL3-3",
+        "SIG-C13.I2C-391E8F8567148AFDE187.SDA3-3",
+        "SIG-C13.I2C-877060199B33577F7257.SDA5",
+        "SIG-C13.I2C-B55ED2333B92001DC501.SCL5",
+        "SIG-C15.I2C-265FED79020398E392E7.SCL3-3",
+        "SIG-C15.I2C-391E8F8567148AFDE187.SDA3-3",
+        "SIG-C15.I2C-877060199B33577F7257.SDA5",
+        "SIG-C15.I2C-B55ED2333B92001DC501.SCL5"
+      ],
+      "root_cause_group": "H-BUS"
+    },
+    {
+      "id": "F30",
+      "sr_rule": "SIG-C07/SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G02-023",
+        "G04-003",
+        "G04-004",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-016",
+        "G04-021"
+      ],
+      "severity": "P1（潜在功能未证，非已确认故障）",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "3V3",
+        "5V",
+        "SCL3,3",
+        "SCL5",
+        "SCL_PULL3,3",
+        "SCL_PULL5",
+        "SDA3,3",
+        "SDA5",
+        "SDA_PULL3,3",
+        "SDA_PULL5"
+      ],
+      "sr_text": "U2双管传输/掉电行为未获型号保证；U1 p4只列1.8/4.5V的SDA VOL测试点，3.3V保证需有据定界；高",
+      "verdict": "knowledge_gap",
+      "evidence": "U2双管传输/掉电行为未获型号保证；U1 p4只列1.8/4.5V的SDA VOL测试点，3.3V保证需有据定界；高低侧分轨、单侧掉电及外部先上电不能凭连通放行。 U2两路高低侧为SDA5↔SDA3,3与SCL5↔SCL3,3，G1/G2=3V3。MCP p4 D041 VIH≥0.8VDD/D031 VIL≤0.2VDD；D080仅列SDA VOL≤0.6V@3mA,VDD1.8V与≤0.8V@3mA,VDD4.5V。3.3V时不据测试点无据插值；U2实际MPN传输、掉电保证未给。缺准确器件资料/有据边界，而非已证不兼容。 关闭条件：先固定U2实际料号及正常/单侧掉电使用状态；按原厂传输条件与MCP23017 DS20001952D p3/p4绝限、VIH/VIL、SDA VOL定界，不把1.8/4.5V测试点无据插值为3.3V保证。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "W-K-LEVEL-UNBOUND-K-LEVEL"
+      ],
+      "check_ids": [
+        "SIG-C07.I2C-265FED79020398E392E7.SCL3-3",
+        "SIG-C07.I2C-391E8F8567148AFDE187.SDA3-3",
+        "SIG-C07.I2C-877060199B33577F7257.SDA5",
+        "SIG-C07.I2C-B55ED2333B92001DC501.SCL5",
+        "SIG-C08.I2C-265FED79020398E392E7.SCL3-3",
+        "SIG-C08.I2C-391E8F8567148AFDE187.SDA3-3",
+        "SIG-C08.I2C-877060199B33577F7257.SDA5",
+        "SIG-C08.I2C-B55ED2333B92001DC501.SCL5"
+      ],
+      "root_cause_group": "K-LEVEL"
+    },
+    {
+      "id": "F31",
+      "sr_rule": "DRV-C01/DRV-T01/DEV-D02",
+      "criteria": [],
+      "severity": "工具计划/候选误触发",
+      "refs": [
+        "K1",
+        "K3"
+      ],
+      "nets": [
+        "3V3",
+        "GND",
+        "SCL3,3",
+        "SDA3,3"
+      ],
+      "sr_text": "K1/K3 easyC-SMD 五脚接口被按K前缀归为relay，产生6项继电器前提检查。",
+      "verdict": "false_alarm",
+      "evidence": "K1/K3各1SCL、2SDA、3=3V3、4/5=GND；db prim/part easyC-SMD，jedec含easyC-connector。原生图为五脚插座、无继电器线圈；6项relay前提检查应排除。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/device_kinds.py:KINDS；scripts/part_words.py:classify",
+        "what": "对明确easyC-SMD/可信easyC-connector封装与五脚连接器结构优先采用connector，不以K前缀定relay；没有线圈、没有续流钳位对象时DRV-C01/T01不适用。保留真正K继电器回归。 判据：本板物理网络和规则对象前提；references/check-catalog.md上述规则。"
+      },
+      "seed": null,
+      "report_items": [
+        "sr_feedback:1"
+      ],
+      "check_ids": [
+        "DEV-D02.K1",
+        "DEV-D02.K3",
+        "DRV-C01.K1-UNRESOLVED.K1",
+        "DRV-C01.K3-UNRESOLVED.K3",
+        "DRV-T01.K1-UNRESOLVED.K1",
+        "DRV-T01.K3-UNRESOLVED.K3"
+      ],
+      "root_cause_group": "FA-EASYC"
+    },
+    {
+      "id": "F32",
+      "sr_rule": "PWR-C02/REQ-Q08",
+      "criteria": [],
+      "severity": "工具计划/候选误触发",
+      "refs": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "U2"
+      ],
+      "nets": [
+        "3V3",
+        "5V",
+        "SCL3,3",
+        "SCL5",
+        "SDA3,3",
+        "SDA5"
+      ],
+      "sr_text": "U2是两路I2C共栅NMOS，声明power_switches.role=level_shifter后仍生成POWER_CONVERTER-U2候选。",
+      "verdict": "false_alarm",
+      "evidence": "record/circuit-candidates POWER_CONVERTER-U2持有U2/R1-R4；U2.2/.5=3V3共栅，.1/.4低压SDA/SCL、.6/.3高压SDA/SCL。原生图标题I2C LEVEL SHIFTER，intent引用同一拓扑。这里只是错误候选，不是自动缺陷误报。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:Inventory.prepare/self_anchored/converters",
+        "what": "消费已审power_switches.role=level_shifter；U2两路共栅接3V3、D/S跨两段SDA/SCL且无储能/转换输出，不建POWER_CONVERTER候选；保持实际功率MOS变换器。 判据：本板物理网络和规则对象前提；references/check-catalog.md上述规则。"
+      },
+      "seed": null,
+      "report_items": [
+        "sr_feedback:2"
+      ],
+      "check_ids": [],
+      "root_cause_group": "FA-CONVERTER"
+    },
+    {
+      "id": "F33",
+      "sr_rule": "REQ-Q08",
+      "criteria": [],
+      "severity": "工具计划/候选误触发",
+      "refs": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "U2"
+      ],
+      "nets": [
+        "SCL3,3",
+        "SCL5",
+        "SDA3,3",
+        "SDA5"
+      ],
+      "sr_text": "拒绝POWER_CONVERTER-U2后，circuit_decisions.derive的held仍占用U2/R1-R4，不能以add归入I2C-GPIO。",
+      "verdict": "false_alarm",
+      "evidence": "circuit_decisions.py derive先用全部候选生成held；reject NOT_A_CIRCUIT不删除该集合成员，add报is held by candidate。最终合法方案保留U2/R1-R4在未归属清单并独立审查，不能随便归电源电路。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_decisions.py:derive",
+        "what": "held应区分有效/拒绝候选；对NOT_A_CIRCUIT释放成员，允许带逐成员via与出处的add到I2C功能，仍禁止已接受功能之间重复持有。 判据：本板物理网络和规则对象前提；references/check-catalog.md上述规则。"
+      },
+      "seed": null,
+      "report_items": [
+        "sr_feedback:3"
+      ],
+      "check_ids": [],
+      "root_cause_group": "FA-HELD"
+    },
+    {
+      "id": "F34",
+      "sr_rule": "SIG-C07",
+      "criteria": [
+        "G02-023",
+        "G04-003",
+        "G04-004",
+        "G04-016"
+      ],
+      "severity": "工具计划/候选误触发",
+      "refs": [
+        "JP3",
+        "U3"
+      ],
+      "nets": [
+        "5V",
+        "Net-(U3-EN)"
+      ],
+      "sr_text": "SIG-C07.LINK-STARTUP-U3-EN仅对5V供电网提逻辑电平兼容问题。",
+      "verdict": "false_alarm",
+      "evidence": "SIG-C07.LINK-STARTUP-U3-EN的接口对象仅5V供电网；K2.2→JP3.2/1→U3.1 VIN与3 EN。没有独立逻辑驱动/接收电平链；SE5218 p2 EN绝限−0.3..VIN、p3开关门限已在启动检查另核。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:Inventory.derive",
+        "what": "对只有供电属性的LINK网络过滤SIG-C07逻辑链问题；本板5V→JP3→VIN/EN保留PWR/RST检查，真实逻辑输出驱动EN仍应保留SIG-C07。 判据：本板物理网络和规则对象前提；references/check-catalog.md上述规则。"
+      },
+      "seed": null,
+      "report_items": [
+        "sr_feedback:4"
+      ],
+      "check_ids": [
+        "SIG-C07.LINK-STARTUP-U3-EN"
+      ],
+      "root_cause_group": "FA-POWERLINK"
+    },
+    {
+      "id": "F35",
+      "sr_rule": "DEV-Q01/REQ-Q08",
+      "criteria": [],
+      "severity": "非电气图形误提示",
+      "refs": [
+        "FD1"
+      ],
+      "nets": [],
+      "sr_text": "| SR 认不出的器件（能力不足，待补） | FD1 | FIDUCIAL / FIDUCIAL |  | SR 能力不足：按手册标题给这类器件一个类别名，补进 device_kinds.KINDS 登记表（一行：词、前缀、手册线索、两端/链路/保护/磨损、可否声明、要不要手册）和定界表（可得性、允许的估算与倍数、失效后果、样机能否验、边界）；接了两个以上网络的，本板由审查员在 intent.device_kinds 里归类 |",
+      "verdict": "false_alarm",
+      "evidence": "FD1在原生图/解析db是FIDUCIAL，无物理电气针脚、无网络。应直接作为非电气图形覆盖，不向厂家索取半导体参数/定界表；这是不必要的能力补齐提示，不是板级错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/validate_review.py:NEW_DEVICE_KIND提示生成；scripts/device_kinds.py:settlement",
+        "what": "确认无电气脚的fiducial/mounting-hole从待手册类别/定界表提示排除；依据db完整声明pin集合与器件图形身份；有接地脚的屏蔽/安装件仍按实际连接审。"
+      },
+      "seed": null,
+      "report_items": [
+        "sr_improvements:FD1"
+      ],
+      "check_ids": [],
+      "root_cause_group": "FA-NON-ELECTRICAL"
+    },
+    {
+      "id": "F36",
+      "sr_rule": "DEV-Q01/REQ-Q08",
+      "criteria": [],
+      "severity": "非电气图形误提示",
+      "refs": [
+        "H1"
+      ],
+      "nets": [],
+      "sr_text": "| SR 认不出的器件（能力不足，待补） | H1 | HOLE_3.2mm / HOLE_3.2mm |  | SR 能力不足：按手册标题给这类器件一个类别名，补进 device_kinds.KINDS 登记表（一行：词、前缀、手册线索、两端/链路/保护/磨损、可否声明、要不要手册）和定界表（可得性、允许的估算与倍数、失效后果、样机能否验、边界）；接了两个以上网络的，本板由审查员在 intent.device_kinds 里归类 |",
+      "verdict": "false_alarm",
+      "evidence": "H1在原生图/解析db是HOLE_3.2mm，无物理电气针脚、无网络。应直接作为非电气图形覆盖，不向厂家索取半导体参数/定界表；这是不必要的能力补齐提示，不是板级错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/validate_review.py:NEW_DEVICE_KIND提示生成；scripts/device_kinds.py:settlement",
+        "what": "确认无电气脚的fiducial/mounting-hole从待手册类别/定界表提示排除；依据db完整声明pin集合与器件图形身份；有接地脚的屏蔽/安装件仍按实际连接审。"
+      },
+      "seed": null,
+      "report_items": [
+        "sr_improvements:H1"
+      ],
+      "check_ids": [],
+      "root_cause_group": "FA-NON-ELECTRICAL"
+    },
+    {
+      "id": "F37",
+      "sr_rule": "DEV-Q01/REQ-Q08",
+      "criteria": [],
+      "severity": "非电气图形误提示",
+      "refs": [
+        "H2"
+      ],
+      "nets": [],
+      "sr_text": "| SR 认不出的器件（能力不足，待补） | H2 | HOLE_3.2mm / HOLE_3.2mm |  | SR 能力不足：按手册标题给这类器件一个类别名，补进 device_kinds.KINDS 登记表（一行：词、前缀、手册线索、两端/链路/保护/磨损、可否声明、要不要手册）和定界表（可得性、允许的估算与倍数、失效后果、样机能否验、边界）；接了两个以上网络的，本板由审查员在 intent.device_kinds 里归类 |",
+      "verdict": "false_alarm",
+      "evidence": "H2在原生图/解析db是HOLE_3.2mm，无物理电气针脚、无网络。应直接作为非电气图形覆盖，不向厂家索取半导体参数/定界表；这是不必要的能力补齐提示，不是板级错误。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/validate_review.py:NEW_DEVICE_KIND提示生成；scripts/device_kinds.py:settlement",
+        "what": "确认无电气脚的fiducial/mounting-hole从待手册类别/定界表提示排除；依据db完整声明pin集合与器件图形身份；有接地脚的屏蔽/安装件仍按实际连接审。"
+      },
+      "seed": null,
+      "report_items": [
+        "sr_improvements:H2"
+      ],
+      "check_ids": [],
+      "root_cause_group": "FA-NON-ELECTRICAL"
+    },
+    {
+      "id": "F38",
+      "sr_rule": "REQ-Q01/REQ-D02/REQ-D03/REQ-D04",
+      "criteria": [],
+      "severity": "流程阻断",
+      "refs": [
+        "C3",
+        "C4",
+        "FD1",
+        "H1",
+        "H2",
+        "JP1",
+        "JP2",
+        "JP3",
+        "JP4",
+        "JP5",
+        "JP6",
+        "JP7",
+        "K1",
+        "K2",
+        "K3",
+        "K4",
+        "K5",
+        "K6",
+        "K7",
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "U1",
+        "U2",
+        "U3"
+      ],
+      "nets": [
+        "3V3",
+        "5V"
+      ],
+      "sr_text": "本板缺受控使用域、实际对端与装配答复；boards任务允许needs_human，但原生schema15只接受VENDOR_DATUM/REVIEW_INCOMPLETE。本轮以NEEDS_HUMAN显式保留，门禁拒收，报告仅作评估记录。",
+      "verdict": "needs_human",
+      "evidence": "这是本轮工作流/受控输入不足的说明，不是设计准则错误，也不是已确认原生软件缺陷。用户允许needs_human，但schema15不接受NEEDS_HUMAN；本轮显式扩展有29个开放项，校验产生118个requires-gap、118个gap-cause和29个kind错误（共265）。没有伪造已批准需求、VENDOR_DATUM指定用法或PASS；必须取得真实澄清并按原生格式重跑，当前valid=false、release=NO_GO。",
+      "proposed_fix": null,
+      "seed": null,
+      "report_items": [
+        "sr_feedback:5",
+        "gate:invalid-ledger"
+      ],
+      "check_ids": [],
+      "root_cause_group": "WORKFLOW-INPUT"
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G05-054",
+      "criteria": [
+        "G05-054",
+        "G05-019"
+      ],
+      "sr_rule": "PRO-D04/PWR-T05",
+      "refs": [
+        "K1",
+        "K3"
+      ],
+      "nets": [
+        "3V3",
+        "GND"
+      ],
+      "why_expected": "Top50 #48要求每个对外电源接口有反接处置；K1/K3不仅传I2C，也有直接连接3V3的电源脚，应单独安排接口审查，不被K2的处理替代。#39配电源侧保护同时受到同一端口识别缺口影响。",
+      "evidence": "K1.3/K3.3=3V3，K1/K3.4/.5=GND。3V3直达U1.9、U3.5、C4.2，无串联防反器件；最终plan.interfaces只有EXT-K2/K4/K5/K6/K7，没有EXT-K1/EXT-K3。对应缺少两个端口的PRO-D04与其针脚/防护问题，而不是已证必须加二极管。实际外源/反接故障及上游覆盖未知，应报needs_human级问题。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/device_kinds.py:KINDS；scripts/part_words.py:classify；scripts/interfaces.py:Inventory.is_connector/derive",
+        "what": "先按明确easyC连接器身份纠正类别，再对所有对外电源端口建立EXT实例和PRO-D04问题；测试同网络的两个端口不能合成一个，显式上游覆盖可作为处置证据。判据：Top50 #48 G05-054及check-catalog PRO-D04；不把无板载防反元件自动当缺陷。"
+      },
+      "seed": {
+        "kind": "D-EASYC-POWER-PORT-UNPLANNED",
+        "mutation": "从已识别五脚外部I2C/电源J端口基线，只把ref/part/prim改为K1 easyC-SMD（保留可信easyC-connector footprint及1SCL/2SDA/3=3V3/4,5=GND），复制为K3同网端口；比较计划是否对两端口各保留PRO-D04。种子验证计划覆盖，不代表硬件反接故障已经成立。",
+        "target_rule": "PRO-D04"
+      },
+      "report_items": [
+        "sr_feedback:6"
+      ],
+      "kind": "plan_coverage_miss"
+    }
+  ],
+  "summary": {
+    "true_defect": 1,
+    "false_alarm": 7,
+    "criterion_issue": 0,
+    "knowledge_gap": 3,
+    "needs_human": 27,
+    "misses": 1
+  },
+  "report_attribution_map": [
+    {
+      "report_item": "D01",
+      "attribution": "F01"
+    },
+    {
+      "report_item": "W-IDENTITY-DEV-D01-U3",
+      "attribution": "F01"
+    },
+    {
+      "report_item": "W-IDENTITY-DEV-D01-U2",
+      "attribution": "F01"
+    },
+    {
+      "report_item": "W-IDENTITY-DEV-D04-BOARD",
+      "attribution": "F01"
+    },
+    {
+      "report_item": "W-H-OPERATING-EXT-K2",
+      "attribution": "F02"
+    },
+    {
+      "report_item": "W-H-EXTERNAL-EXT-K2",
+      "attribution": "F03"
+    },
+    {
+      "report_item": "W-H-OPERATING-EXT-K4",
+      "attribution": "F04"
+    },
+    {
+      "report_item": "W-H-EXTERNAL-EXT-K4",
+      "attribution": "F05"
+    },
+    {
+      "report_item": "W-H-OPERATING-EXT-K5",
+      "attribution": "F06"
+    },
+    {
+      "report_item": "W-H-EXTERNAL-EXT-K5",
+      "attribution": "F07"
+    },
+    {
+      "report_item": "W-H-OPERATING-EXT-K6",
+      "attribution": "F08"
+    },
+    {
+      "report_item": "W-H-EXTERNAL-EXT-K6",
+      "attribution": "F09"
+    },
+    {
+      "report_item": "W-H-OPERATING-EXT-K7",
+      "attribution": "F10"
+    },
+    {
+      "report_item": "W-H-EXTERNAL-EXT-K7",
+      "attribution": "F11"
+    },
+    {
+      "report_item": "W-H-OPERATING-I2C-GPIO",
+      "attribution": "F12"
+    },
+    {
+      "report_item": "W-H-CAP-I2C-GPIO",
+      "attribution": "F13"
+    },
+    {
+      "report_item": "W-H-BUS-I2C-GPIO",
+      "attribution": "F14"
+    },
+    {
+      "report_item": "W-K-LEVEL-I2C-GPIO",
+      "attribution": "F15"
+    },
+    {
+      "report_item": "W-H-ADDRESS-I2C-GPIO",
+      "attribution": "F16"
+    },
+    {
+      "report_item": "W-H-OPERATING-LDO-3V3",
+      "attribution": "F17"
+    },
+    {
+      "report_item": "W-H-CAP-LDO-3V3",
+      "attribution": "F18"
+    },
+    {
+      "report_item": "W-K-REVERSE-LDO-3V3",
+      "attribution": "F19"
+    },
+    {
+      "report_item": "W-H-OPERATING-LDO-ENABLE",
+      "attribution": "F20"
+    },
+    {
+      "report_item": "W-H-CAP-LDO-ENABLE",
+      "attribution": "F21"
+    },
+    {
+      "report_item": "W-H-OPERATING-SYS-MONITOR",
+      "attribution": "F22"
+    },
+    {
+      "report_item": "W-H-OPERATING-SYS-POWER",
+      "attribution": "F23"
+    },
+    {
+      "report_item": "W-H-OPERATING-SYS-SEQUENCE",
+      "attribution": "F24"
+    },
+    {
+      "report_item": "W-H-OPERATING-UNBOUND-H-OPERATING",
+      "attribution": "F25"
+    },
+    {
+      "report_item": "W-K-U2-UNBOUND-K-U2",
+      "attribution": "F26"
+    },
+    {
+      "report_item": "W-H-ADDRESS-UNBOUND-H-ADDRESS",
+      "attribution": "F27"
+    },
+    {
+      "report_item": "W-H-EXTERNAL-UNBOUND-H-EXTERNAL",
+      "attribution": "F28"
+    },
+    {
+      "report_item": "W-H-BUS-UNBOUND-H-BUS",
+      "attribution": "F29"
+    },
+    {
+      "report_item": "W-K-LEVEL-UNBOUND-K-LEVEL",
+      "attribution": "F30"
+    },
+    {
+      "report_item": "sr_feedback:1",
+      "attribution": "F31"
+    },
+    {
+      "report_item": "sr_feedback:2",
+      "attribution": "F32"
+    },
+    {
+      "report_item": "sr_feedback:3",
+      "attribution": "F33"
+    },
+    {
+      "report_item": "sr_feedback:4",
+      "attribution": "F34"
+    },
+    {
+      "report_item": "sr_improvements:FD1",
+      "attribution": "F35"
+    },
+    {
+      "report_item": "sr_improvements:H1",
+      "attribution": "F36"
+    },
+    {
+      "report_item": "sr_improvements:H2",
+      "attribution": "F37"
+    },
+    {
+      "report_item": "sr_feedback:5",
+      "attribution": "F38"
+    },
+    {
+      "report_item": "gate:invalid-ledger",
+      "attribution": "F38"
+    },
+    {
+      "report_item": "sr_feedback:6",
+      "attribution": "M01"
+    }
+  ],
+  "quality_advisories": {
+    "count": 48,
+    "scope": "报告明确不计入结论的记录质量提示，不计入五类发现；未关闭或掩盖。",
+    "codes": {
+      "BROAD_CHECK_NEEDS_LOCALIZATION": 1,
+      "DUPLICATE_WORK_ITEMS": 7,
+      "QUALIFICATION_INPUT_TARGET_MISMATCH": 1,
+      "REUSED_IMPACT_ACROSS_SCOPES": 5,
+      "REUSED_RATIONALE_ACROSS_SCOPES": 4,
+      "TEMPLATED_DESIGN_OPTION_REASON": 1,
+      "TEMPLATED_PASS_RATIONALE": 2,
+      "TEMPLATED_SEVERITY_REASON": 1,
+      "TEMPLATED_WORK_ITEM_REASON": 2,
+      "TEMPLATE_REASON": 18,
+      "UNIFORM_POTENTIAL_SEVERITY": 1,
+      "WIDE_GAP": 5
+    },
+    "disposition": "同源缺口在不同功能重复、部分判断/关闭文字仍相似，本轮保留质量警告。不能用台账无效报告对外作审查结论；取得受控输入后须重录与校验。",
+    "evidence": "/Users/skyfend/.cache/sr-boards/solderedelectronics--io-expander-mcp23017-breakout-hardware-design/review/review-gate.json#/quality_screening"
+  }
+}

@@ -1,0 +1,1934 @@
+{
+  "board": "solderedelectronics--capacitive-soil-sensor-hardware-design",
+  "source": {
+    "repo": "SolderedElectronics/Capacitive-soil-sensor-hardware-design",
+    "commit": "edd7f63a876ae5a7199bb925879c3737e4ba1dc5",
+    "schematic": "CAD/V1.2.2/Capacitive_soil_sensor.kicad_sch",
+    "license": "TAPR-OHL-1.0"
+  },
+  "types": [
+    "ANALOG",
+    "POWER_CONVERTER"
+  ],
+  "run": {
+    "db_sha256": "cb47497c688b8d17f18ce4d1490bd6cfce8046834ebd1c691fee18b73bb841a4",
+    "plan_items": 115,
+    "findings_total": 26,
+    "results_judged": 115,
+    "gate": "FAIL",
+    "sr_commit": "cba719a06ed85201eab66afc2d58a1f34e568e53",
+    "review_dir": "/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review",
+    "native_results": {
+      "NA": 3,
+      "INSUFFICIENT": 80,
+      "PASS": 32
+    },
+    "gate_errors": 351,
+    "release": "NO_GO",
+    "counting": "20组已合并待办+3项检查器误用反馈+FD1/H1/H2三个机械符号扩表误触发；不把记录校验错误条数或所有提示数当硬件故障数。"
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "ANA-C01",
+      "sr_rules": [
+        "ANA-C01",
+        "ANA-C06",
+        "DEV-C03",
+        "PWR-C09",
+        "PWR-C14"
+      ],
+      "criteria": [
+        "G02-017",
+        "G03-036",
+        "G04-041",
+        "G04-042",
+        "G04-051",
+        "G04-052",
+        "G04-053"
+      ],
+      "severity": "UNASSESSED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C6",
+        "C7",
+        "C8",
+        "D1",
+        "JP1",
+        "JP2",
+        "K1",
+        "R1",
+        "R10",
+        "R11",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "U1",
+        "U2",
+        "U3"
+      ],
+      "nets": [
+        "/Out",
+        "/Vsen",
+        "3V3",
+        "5V",
+        "GND",
+        "Net-(C7-Pad1)",
+        "Net-(D1-A)",
+        "Net-(R10-Pad2)",
+        "Net-(R6-Pad1)",
+        "Net-(U1-CONT)",
+        "Net-(U1-DISCH)",
+        "Net-(U1-OUT)",
+        "Net-(U1-THRES)",
+        "Net-(U2-EN)",
+        "Net-(U3A-+)",
+        "Net-(U3A--)",
+        "Net-(U3B--)",
+        "unconnected-(U2-NC-Pad4)"
+      ],
+      "sr_text": "明确湿度量程、标定及误差目标",
+      "report_id": "W-DEPENDENCY-MEASUREMENT",
+      "check_ids": [
+        "PWR-C14.3V3",
+        "PWR-C14.5V",
+        "ANA-C01.ANALOG-U3-FAULT.U3",
+        "ANA-C01.ANALOG-U3-RUN.U3",
+        "ANA-C06.ANALOG-U3.U3",
+        "DEV-C03.ANALOG-U3",
+        "PWR-C09.DECAP-AEABAE25B6D9796204A6.5V"
+      ],
+      "verdict": "needs_human",
+      "evidence": "R5=10k、R6+R7=147k；R9=10k、R10+R11=147k；R8原厂code103=10k±25%，滑臂负载必须联立。record/calculations.json给出分压、真实增益及中点加载。未给土壤电容/湿度转换、校准范围、全温误差及输出有效窗口，不能把调节端点饱和判作必然缺陷。；MC33202手册p1-10未规定独立旁路容量窗口，图面C8=100nF；不额外向厂家要最小旁路容量。需先定输出噪声/精度目标及实际5V纹波，再核去耦用途；输出负载稳定性由ANA-C02/C05另核。；5V直接为U3/R8供电，3V3经U2给555，C8/C3/C6已核连接；SE5218p5 PSRR曲线为典型，U1实际高频波形未保证。允许的输出噪声/湿度精度和外部源纹波没有规定，不能从有电容推出噪声通过。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F02",
+      "sr_rule": "ANA-C02",
+      "sr_rules": [
+        "ANA-C02",
+        "ANA-C05"
+      ],
+      "criteria": [
+        "G04-043",
+        "G04-044",
+        "G04-045",
+        "G04-046",
+        "G04-047",
+        "G04-048",
+        "G04-049",
+        "G04-055",
+        "G04-056",
+        "G04-057"
+      ],
+      "severity": "UNASSESSED",
+      "refs": [
+        "C1",
+        "C2",
+        "C4",
+        "C7",
+        "C8",
+        "D1",
+        "R1",
+        "R10",
+        "R11",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "U1",
+        "U3"
+      ],
+      "nets": [
+        "/Out",
+        "/Vsen",
+        "3V3",
+        "5V",
+        "GND",
+        "Net-(C7-Pad1)",
+        "Net-(D1-A)",
+        "Net-(R10-Pad2)",
+        "Net-(R6-Pad1)",
+        "Net-(U1-CONT)",
+        "Net-(U1-DISCH)",
+        "Net-(U1-OUT)",
+        "Net-(U1-THRES)",
+        "Net-(U3A-+)",
+        "Net-(U3A--)",
+        "Net-(U3B--)"
+      ],
+      "sr_text": "确定模拟输出负载和响应要求",
+      "report_id": "W-DEPENDENCY-OUTPUT-LOAD",
+      "check_ids": [
+        "ANA-C02.ANALOG-U3-FAULT.U3",
+        "ANA-C02.ANALOG-U3-RUN.U3",
+        "ANA-C05.ANALOG-U3.U3"
+      ],
+      "verdict": "needs_human",
+      "evidence": "C1检波保持被R1||(R5+R6+R7)加载，标称tau=0.13570s；R8/C7中点极点约796Hz；U3 GBW2.2MHz仅典型。外部/Out负载电容、响应时间和允许稳定误差未定，不能完成动态判定。；U3A有负反馈及双输入直流偏置，U3B为接地跟随器；输出/Out直通K1.1。负载电阻/电容与允许输出电流尚未给定，原厂典型短路80mA不能充当保证可用负载。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F03",
+      "sr_rule": "DEV-C02",
+      "sr_rules": [
+        "DEV-C02"
+      ],
+      "criteria": [
+        "G03-010",
+        "G03-039"
+      ],
+      "severity": "UNASSESSED",
+      "refs": [
+        "C1",
+        "C2",
+        "C4",
+        "C7",
+        "C8"
+      ],
+      "nets": [
+        "/Vsen",
+        "5V",
+        "GND",
+        "Net-(C7-Pad1)",
+        "Net-(U1-CONT)",
+        "Net-(U1-THRES)"
+      ],
+      "sr_text": "确认检波、定时和参考滤波电容指标",
+      "report_id": "W-DEPENDENCY-ANALOG-CAPACITORS",
+      "check_ids": [
+        "DEV-C02.ANALOG-U3"
+      ],
+      "verdict": "needs_human",
+      "evidence": "C1=1uF为检波保持，C4=470pF为555定时，C2=10nF旁路CONT，C7=100nF滤R8参考，C8=100nF旁路U3；不是电解寿命对象。按实际R1||(R5+R6+R7)复算C1标称tau=0.13570s，C4低频公式已超100kHz适用边界。允许响应时间、频率精度/电容公差尚未由量测指标规定，不向厂家索取所有常规电容的专属资料。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F04",
+      "sr_rule": "PWR-C09",
+      "sr_rules": [
+        "PWR-C09"
+      ],
+      "criteria": [
+        "G03-036"
+      ],
+      "severity": "UNASSESSED",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "3V3",
+        "GND",
+        "Net-(U1-CONT)",
+        "Net-(U1-DISCH)",
+        "Net-(U1-OUT)",
+        "Net-(U1-THRES)"
+      ],
+      "sr_text": "确认555供电旁路组成或等效方案",
+      "report_id": "W-DEPENDENCY-555-DECOUPLING",
+      "check_ids": [
+        "PWR-C09.DECAP-4F92B8CD05D42F2274BA.3V3"
+      ],
+      "verdict": "needs_human",
+      "evidence": "TLC555 p24推荐0.1uF ceramic并1uF electrolytic；C3仅10nF、C6=2.2uF同供电网但介质/高频阻抗与局部路径未明确。同网总容量不证明局部去耦符合推荐；先明确实际装配/替代等效方案，局部布局另移交。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F05",
+      "sr_rule": "DEV-D01",
+      "sr_rules": [
+        "DEV-D01"
+      ],
+      "criteria": [],
+      "severity": "UNASSESSED",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "3V3",
+        "GND",
+        "Net-(U1-CONT)",
+        "Net-(U1-DISCH)",
+        "Net-(U1-OUT)",
+        "Net-(U1-THRES)"
+      ],
+      "sr_text": "锁定TLC555订货后缀和温度级",
+      "report_id": "W-DEPENDENCY-IDENTITY-U1",
+      "check_ids": [
+        "DEV-D01.U1"
+      ],
+      "verdict": "needs_human",
+      "evidence": "U1只写TLC555/SOIC8；TI p4 C/I可在3.3V使用、M/Q要求>=5V。未指定后缀，不擅自判全系列都合格或必错。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F06",
+      "sr_rule": "DEV-D02",
+      "sr_rules": [
+        "DEV-D02"
+      ],
+      "criteria": [],
+      "severity": "UNASSESSED",
+      "refs": [
+        "D1"
+      ],
+      "nets": [
+        "/Vsen",
+        "Net-(D1-A)"
+      ],
+      "sr_text": "核对D1原厂封装极性编号图",
+      "report_id": "W-DEPENDENCY-D1-GRAPHIC",
+      "check_ids": [
+        "DEV-D02.D1"
+      ],
+      "verdict": "knowledge_gap",
+      "evidence": "D1为BAT20J，符号1=A/2=K；ST官方p1/2文字已取得并审读，但本地PDF两次下载超时、网页图形截图未能在工具结果中可视读取，不能凭SOD323习惯批准编号方向。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F07",
+      "sr_rule": "DEV-C04",
+      "sr_rules": [
+        "DEV-C04",
+        "DEV-D03",
+        "DEV-D05",
+        "DEV-E01"
+      ],
+      "criteria": [
+        "G01-013",
+        "G05-022"
+      ],
+      "severity": "UNASSESSED",
+      "refs": [
+        "K1"
+      ],
+      "nets": [
+        "/Out",
+        "5V",
+        "GND"
+      ],
+      "sr_text": "核对K1对端针序和实际载流",
+      "report_id": "W-DEPENDENCY-CONNECTOR",
+      "check_ids": [
+        "DEV-D05.K1",
+        "DEV-E01.K1",
+        "DEV-C04.K1",
+        "DEV-D03.K1"
+      ],
+      "verdict": "needs_human",
+      "evidence": "K1.2给U3、R8及经JP1给U2/U1供电；K1.1是U3模拟输出。5V源/故障电流和针座实际采购系列未定，不能凭HEADER_MALE_3X1乘通常载流值放行。；K1图面HEADER_MALE_3X1：1=/Out(U3.1)，2=5V，3=GND；三脚均有用。没有受控对端线缆/插座视图或完整针座MPN，不能由板内自洽批准对端针序/防误插。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F08",
+      "sr_rule": "PRO-D03",
+      "sr_rules": [
+        "PRO-D03",
+        "PRO-D04"
+      ],
+      "criteria": [
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G04-098",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "UNASSESSED",
+      "refs": [
+        "K1"
+      ],
+      "nets": [
+        "/Out",
+        "5V",
+        "GND"
+      ],
+      "sr_text": "确定K1反接、误接和ESD范围",
+      "report_id": "W-DEPENDENCY-EXTERNAL-FAULT",
+      "check_ids": [
+        "PRO-D03.K1",
+        "PRO-D04.K1"
+      ],
+      "verdict": "needs_human",
+      "evidence": "K1.1直接连U3.1输出，K1.2直连U3.8与R8并经JP1到U2；没有入口串联防反或板上TVS。D1为R2后的检波二极管，不在5V入口。尚未声明外口是否可触及、ESD波形/反接/误接/短路与上游限流，记待设计者定边界，不能从没TVS就判损坏。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F09",
+      "sr_rule": "DEV-C02",
+      "sr_rules": [
+        "DEV-C02",
+        "PWR-C04",
+        "PWR-C09",
+        "PWR-C15"
+      ],
+      "criteria": [
+        "G03-003",
+        "G03-004",
+        "G03-005",
+        "G03-006",
+        "G03-007",
+        "G03-008",
+        "G03-009",
+        "G03-010",
+        "G03-026",
+        "G03-036",
+        "G03-039",
+        "G03-044",
+        "G03-045",
+        "G03-046"
+      ],
+      "severity": "UNASSESSED",
+      "refs": [
+        "C3",
+        "C5",
+        "C6",
+        "JP1",
+        "JP2",
+        "U2"
+      ],
+      "nets": [
+        "3V3",
+        "5V",
+        "GND",
+        "Net-(U2-EN)",
+        "unconnected-(U2-NC-Pad4)"
+      ],
+      "sr_text": "落实电容有效容量及供电旁路",
+      "report_id": "W-DEPENDENCY-ASSEMBLY-CAPACITANCE",
+      "check_ids": [
+        "DEV-C02.POWER-CONVERTER-U2",
+        "PWR-C04.POWER-CONVERTER-U2-FAULT.U2",
+        "PWR-C04.POWER-CONVERTER-U2-RUN.U2",
+        "PWR-C04.POWER-CONVERTER-U2-STARTUP.U2",
+        "PWR-C09.DECAP-9DEFA86CFE167A1AD642.3V3",
+        "PWR-C09.DECAP-A4189F7B16E56BA0E59D.NET-U2-EN",
+        "PWR-C15.POWER-CONVERTER-U2-FAULT.U2",
+        "PWR-C15.POWER-CONVERTER-U2-RUN.U2",
+        "PWR-C15.POWER-CONVERTER-U2-STARTUP.U2"
+      ],
+      "verdict": "needs_human",
+      "evidence": "SE5218 p1/p6输出有效最小1uF，无数值ESR窗；C6=2.2uF与C3=10nF直接并联标称2.21uF，C5输入2.2uF。常规电容不索取专属手册，需在最终BOM落实输出有效>=1uF、输入有效>=1uF及其电压条件；现无同版装配BOM/输入窗，不能以标称值判稳定通过，也不称电容确定不足。；SE5218p6输入/输出各有效最小1uF；当前C5/C6各标2.2uF，C6另并10nF。以有效>=1uF作为选料约束，不把偏压未知当已证不足；同版BOM/实际电压条件尚未锁定。；U2固定输出内部补偿，VOUT脚5接3V3，无外置FB/COMP。SE5218 p6以输出电容保证稳定，本项的补偿资格与有效Cout>=1uF是同一依赖；不要求开关变换器外置环路计算。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F10",
+      "sr_rule": "DEV-D01",
+      "sr_rules": [
+        "DEV-D01"
+      ],
+      "criteria": [],
+      "severity": "UNASSESSED",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "3V3",
+        "GND",
+        "Net-(U2-EN)",
+        "unconnected-(U2-NC-Pad4)"
+      ],
+      "sr_text": "锁定SE5218输出电压变体",
+      "report_id": "W-DEPENDENCY-IDENTITY-U2",
+      "check_ids": [
+        "DEV-D01.U2"
+      ],
+      "verdict": "needs_human",
+      "evidence": "U2只写SE5218，2016p2有1.2..3.3V多个后缀；3V3网名不证明实际采购SE5218ALG-LF。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F11",
+      "sr_rule": "PWR-C05",
+      "sr_rules": [
+        "PWR-C05"
+      ],
+      "criteria": [
+        "G03-032"
+      ],
+      "severity": "UNASSESSED",
+      "refs": [
+        "C3",
+        "C5",
+        "C6",
+        "JP1",
+        "JP2",
+        "U2"
+      ],
+      "nets": [
+        "3V3",
+        "5V",
+        "GND",
+        "Net-(U2-EN)",
+        "unconnected-(U2-NC-Pad4)"
+      ],
+      "sr_text": "补齐SE5218反向电流允许条件",
+      "report_id": "W-DEPENDENCY-REVERSE-CURRENT",
+      "check_ids": [
+        "PWR-C05.POWER-CONVERTER-U2-FAULT.C3",
+        "PWR-C05.POWER-CONVERTER-U2-RUN.C3",
+        "PWR-C05.POWER-CONVERTER-U2-STARTUP.C3"
+      ],
+      "verdict": "knowledge_gap",
+      "evidence": "SE5218 2016 p2/3/6只给正向工作/热限；未给VOUT>VIN时允许反流或保证阻断。JP1开/JP2闭可把外部源直加3V3，C6掉电也需核反向路径。具体允许装配/断电状态需先确认，反流定量还缺本器件厂家条件。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F12",
+      "sr_rule": "PRO-D05",
+      "sr_rules": [
+        "PRO-D05",
+        "PRO-D06",
+        "PWR-T04",
+        "REQ-D05"
+      ],
+      "criteria": [
+        "G03-025",
+        "G05-001",
+        "G05-002",
+        "G05-003",
+        "G05-004",
+        "G05-005",
+        "G05-006",
+        "G05-007",
+        "G05-008",
+        "G05-009",
+        "G05-010",
+        "G05-011",
+        "G05-012",
+        "G05-013",
+        "G05-014",
+        "G05-015",
+        "G05-016",
+        "G05-017",
+        "G05-028",
+        "G05-029",
+        "G05-035",
+        "G05-061",
+        "G05-065"
+      ],
+      "severity": "UNASSESSED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "D1",
+        "FD1",
+        "H1",
+        "H2",
+        "JP1",
+        "JP2",
+        "K1",
+        "R1",
+        "R10",
+        "R11",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "U1",
+        "U2",
+        "U3"
+      ],
+      "nets": [
+        "/Out",
+        "/Vsen",
+        "3V3",
+        "5V",
+        "GND",
+        "Net-(C7-Pad1)",
+        "Net-(D1-A)",
+        "Net-(R10-Pad2)",
+        "Net-(R6-Pad1)",
+        "Net-(U1-CONT)",
+        "Net-(U1-DISCH)",
+        "Net-(U1-OUT)",
+        "Net-(U1-THRES)",
+        "Net-(U2-EN)",
+        "Net-(U3A-+)",
+        "Net-(U3A--)",
+        "Net-(U3B--)",
+        "unconnected-(U2-NC-Pad4)"
+      ],
+      "sr_text": "明确监控范围和故障接受条件",
+      "report_id": "W-DEPENDENCY-SAFETY-SCOPE",
+      "check_ids": [
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD",
+        "REQ-D05.BOARD",
+        "PWR-T04.AS-DRAWN-DEFAULT.SUPERVISION-RAILS"
+      ],
+      "verdict": "needs_human",
+      "evidence": "本板没有独立供电监控器，仅U2内部限流/热保护及TLC555门限；是否需要电源域监控须由用途和失效接受条件规定。不能把默认industrial_telecom等同每轨强制监控。；K1外部5V与/Out可把故障传播到U3；U2保护只作用于其3V3支路，不能替代K1/U3入口故障定义。未给关键功能/安全态/可接受故障范围或FMEA受控要求，不能无据要求冗余或判单点故障不合格。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F13",
+      "sr_rule": "DEV-C01",
+      "sr_rules": [
+        "DEV-C01",
+        "DEV-C05",
+        "PWR-C01",
+        "PWR-C02",
+        "PWR-C03",
+        "PWR-C06",
+        "PWR-C10",
+        "PWR-C19",
+        "PWR-D04",
+        "PWR-E02"
+      ],
+      "criteria": [
+        "G01-010",
+        "G01-017",
+        "G01-022",
+        "G01-051",
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-001",
+        "G03-002",
+        "G03-014",
+        "G03-018",
+        "G03-019",
+        "G03-020",
+        "G03-034",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G03-042",
+        "G03-043",
+        "G03-050",
+        "G05-021",
+        "G05-022"
+      ],
+      "severity": "UNASSESSED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "D1",
+        "FD1",
+        "H1",
+        "H2",
+        "JP1",
+        "JP2",
+        "K1",
+        "R1",
+        "R10",
+        "R11",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "U1",
+        "U2",
+        "U3"
+      ],
+      "nets": [
+        "/Out",
+        "/Vsen",
+        "3V3",
+        "5V",
+        "GND",
+        "Net-(C7-Pad1)",
+        "Net-(D1-A)",
+        "Net-(R10-Pad2)",
+        "Net-(R6-Pad1)",
+        "Net-(U1-CONT)",
+        "Net-(U1-DISCH)",
+        "Net-(U1-OUT)",
+        "Net-(U1-THRES)",
+        "Net-(U2-EN)",
+        "Net-(U3A-+)",
+        "Net-(U3A--)",
+        "Net-(U3B--)",
+        "unconnected-(U2-NC-Pad4)"
+      ],
+      "sr_text": "确认5V供入窗口与负载工况",
+      "report_id": "W-DEPENDENCY-INPUT-ENVELOPE",
+      "check_ids": [
+        "PWR-C19.BOARD",
+        "PWR-D04.BOARD",
+        "DEV-C01.ANALOG-U3",
+        "DEV-C01.POWER-CONVERTER-U2",
+        "DEV-C05.U1",
+        "DEV-C05.U2",
+        "DEV-C05.U3",
+        "PWR-C01.3V3",
+        "PWR-C01.5V",
+        "PWR-C01.NET-U2-EN",
+        "PWR-C02.POWER-CONVERTER-U2-FAULT.C3",
+        "PWR-C02.POWER-CONVERTER-U2-RUN.C3",
+        "PWR-C02.POWER-CONVERTER-U2-STARTUP.C3",
+        "PWR-C03.POWER-CONVERTER-U2-FAULT.C3",
+        "PWR-C03.POWER-CONVERTER-U2-RUN.C3",
+        "PWR-C03.POWER-CONVERTER-U2-STARTUP.C3",
+        "PWR-C06.POWER-CONVERTER-U2-FAULT.U2",
+        "PWR-C06.POWER-CONVERTER-U2-RUN.U2",
+        "PWR-C06.POWER-CONVERTER-U2-STARTUP.U2",
+        "PWR-C10.DECAP-4F92B8CD05D42F2274BA.3V3",
+        "PWR-C10.DECAP-9DEFA86CFE167A1AD642.3V3",
+        "PWR-C10.DECAP-A4189F7B16E56BA0E59D.NET-U2-EN",
+        "PWR-C10.DECAP-AEABAE25B6D9796204A6.5V",
+        "PWR-E02.U2-NET-U2-EN.U2-3"
+      ],
+      "verdict": "needs_human",
+      "evidence": "默认JP1通、JP2断：K1.2(5V)→JP1→U2.1/3→U2.5(3V3)→U1.8/4，U3.8直接取5V。record/calculations.json逐支路算了标称电流/功耗；缺外部5V窗口/源阻抗/可用电流、温度及有效装配，标称点不能证明本项全范围应力或功率预算。；TLC555 p4 C/I最低2/3V，M/Q最低5V；标称3V3只能覆盖部分后缀，频率保证还依电压/温度。实际输入/环境及后缀未定。；MC33202DR2G原厂p1/10支持1.8..12V、-40..105C，标称5V在范围内；外部电源容差、温度、/Out负载未给，不能扩展到全工况合格。；C3=10nF与C6=2.2uF，直接跨U1.8的3V3与U1.1/GND；本条额定/降额应针对这些实际电容。其持续应力上界依K1.2输入连续最大及JP2旁路允许输入模式而变；常规电容可选满足最终窗口的额定档，不需要把连接器身份当成电容资格，也不逐颗开厂商数据任务。；C8=100nF，直接跨U3.8的5V与U3.4/GND；本条额定/降额应针对这些实际电容。其持续应力上界依K1.2输入连续最大及JP2旁路允许输入模式而变；常规电容可选满足最终窗口的额定档，不需要把连接器身份当成电容资格，也不逐颗开厂商数据任务。；SE5218p3 EN高1.6V、低0.4V，p2VEN允许-0.3..VIN；本机EN=VIN，无独立UVLO分压。限流800mA、热保护150C均为典型，未给适用输入故障/动作目标，不能假装构成指定保护窗口。；C3=10nF与C6=2.2uF，直接跨U2.5的3V3与U2.2/GND；本条额定/降额应针对这些实际电容。其持续应力上界依K1.2输入连续最大及JP2旁路允许输入模式而变；常规电容可选满足最终窗口的额定档，不需要把连接器身份当成电容资格，也不逐颗开厂商数据任务。；C5=2.2uF，直接跨U2.1的Net-(U2-EN)与U2.2/GND；本条额定/降额应针对这些实际电容。其持续应力上界依K1.2输入连续最大及JP2旁路允许输入模式而变；常规电容可选满足最终窗口的额定档，不需要把连接器身份当成电容资格，也不逐颗开厂商数据任务。；对象字段node=U2.3是EN，库存实际给input=Net-(U2-EN)、output=3V3，因此按VIN→VOUT核。SE5218p3 dropout15/175/320/600mV为典型而非保证最大；输入最低/实际负载/温度和输出后缀未定，不能用5−3.3的标称余量批准。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F14",
+      "sr_rule": "ANA-C03",
+      "sr_rules": [
+        "ANA-C03",
+        "PWR-C18",
+        "PWR-C24",
+        "RST-T03"
+      ],
+      "criteria": [
+        "G01-020",
+        "G01-024",
+        "G01-025",
+        "G01-053",
+        "G03-023",
+        "G03-024",
+        "G03-028",
+        "G03-029",
+        "G03-030",
+        "G03-047",
+        "G04-054",
+        "G05-062",
+        "G05-091"
+      ],
+      "severity": "UNASSESSED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "D1",
+        "JP1",
+        "JP2",
+        "K1",
+        "R1",
+        "R10",
+        "R11",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "U1",
+        "U2",
+        "U3"
+      ],
+      "nets": [
+        "/Out",
+        "/Vsen",
+        "3V3",
+        "5V",
+        "GND",
+        "Net-(C7-Pad1)",
+        "Net-(D1-A)",
+        "Net-(R10-Pad2)",
+        "Net-(R6-Pad1)",
+        "Net-(U1-CONT)",
+        "Net-(U1-DISCH)",
+        "Net-(U1-OUT)",
+        "Net-(U1-THRES)",
+        "Net-(U2-EN)",
+        "Net-(U3A-+)",
+        "Net-(U3A--)",
+        "Net-(U3B--)",
+        "unconnected-(U2-NC-Pad4)"
+      ],
+      "sr_text": "明确上电、掉电和恢复条件",
+      "report_id": "W-DEPENDENCY-POWER-STATE",
+      "check_ids": [
+        "ANA-C03.ANALOG-U3-FAULT.U3",
+        "ANA-C03.ANALOG-U3-RUN.U3",
+        "PWR-C18.POWER-CONVERTER-U2-FAULT.C3",
+        "PWR-C18.POWER-CONVERTER-U2-RUN.C3",
+        "PWR-C18.POWER-CONVERTER-U2-STARTUP.C3",
+        "PWR-C24.POWER-CONVERTER-U2.C3",
+        "RST-T03.SYS-SEQUENCE"
+      ],
+      "verdict": "needs_human",
+      "evidence": "U1(3V3)→R2=10k→D1→C1/Vsen→R5=10k→U3.3；MC33202p3输入钳位到两电源且允许只到轨±0.5V。5V快速撤除时C1/C6可保留电荷，已追到注入路径；对端反向驱动、5V衰减、3V3残留和故障定义未定，不把两个独立最坏电压直接当同一事件。；5V给U3及U2输入、3V3给U1；EN=VIN无需固件解除，TLC555 RESET=VDD符合p17。棕断/短时中断允许失效时间、恢复读数、5V与3V3下降关系和备用供电均未定义，不能把无保持指标当保持失败。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F15",
+      "sr_rule": "DEV-D04",
+      "sr_rules": [
+        "DEV-D04"
+      ],
+      "criteria": [],
+      "severity": "UNASSESSED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "D1",
+        "FD1",
+        "H1",
+        "H2",
+        "JP1",
+        "JP2",
+        "K1",
+        "R1",
+        "R10",
+        "R11",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "U1",
+        "U2",
+        "U3"
+      ],
+      "nets": [
+        "/Out",
+        "/Vsen",
+        "3V3",
+        "5V",
+        "GND",
+        "Net-(C7-Pad1)",
+        "Net-(D1-A)",
+        "Net-(R10-Pad2)",
+        "Net-(R6-Pad1)",
+        "Net-(U1-CONT)",
+        "Net-(U1-DISCH)",
+        "Net-(U1-OUT)",
+        "Net-(U1-THRES)",
+        "Net-(U2-EN)",
+        "Net-(U3A-+)",
+        "Net-(U3A--)",
+        "Net-(U3B--)",
+        "unconnected-(U2-NC-Pad4)"
+      ],
+      "sr_text": "锁定同版BOM与实际采购身份",
+      "report_id": "W-DEPENDENCY-PROCUREMENT",
+      "check_ids": [
+        "DEV-D04.BOARD"
+      ],
+      "verdict": "needs_human",
+      "evidence": "没有同版BOM：U1 TLC555未定C/I/M/Q，U2 SE5218未定输出后缀，K1泛称排针；常规无源值不按缺厂商手册处理。最终采购身份/额定与装配分支尚未锁定。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F16",
+      "sr_rule": "DEV-Q01",
+      "sr_rules": [
+        "DEV-Q01"
+      ],
+      "criteria": [],
+      "severity": "UNASSESSED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "D1",
+        "FD1",
+        "H1",
+        "H2",
+        "JP1",
+        "JP2",
+        "K1",
+        "R1",
+        "R10",
+        "R11",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "U1",
+        "U2",
+        "U3"
+      ],
+      "nets": [
+        "/Out",
+        "/Vsen",
+        "3V3",
+        "5V",
+        "GND",
+        "Net-(C7-Pad1)",
+        "Net-(D1-A)",
+        "Net-(R10-Pad2)",
+        "Net-(R6-Pad1)",
+        "Net-(U1-CONT)",
+        "Net-(U1-DISCH)",
+        "Net-(U1-OUT)",
+        "Net-(U1-THRES)",
+        "Net-(U2-EN)",
+        "Net-(U3A-+)",
+        "Net-(U3A--)",
+        "Net-(U3B--)",
+        "unconnected-(U2-NC-Pad4)"
+      ],
+      "sr_text": "补齐未核的资料及图形资格",
+      "report_id": "W-DEPENDENCY-EVIDENCE-SCOPE",
+      "check_ids": [
+        "DEV-Q01.DATASHEETS"
+      ],
+      "verdict": "needs_human",
+      "evidence": "U1/U2/U3手册已读，D1/TC33仅官方网页摘录（非完整本地PDF），D1编号图未核；原厂参数取值范围与本机工况仍未完全匹配。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F17",
+      "sr_rule": "DOC-D02",
+      "sr_rules": [
+        "DOC-D02"
+      ],
+      "criteria": [],
+      "severity": "UNASSESSED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "D1",
+        "FD1",
+        "H1",
+        "H2",
+        "JP1",
+        "JP2",
+        "K1",
+        "R1",
+        "R10",
+        "R11",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "U1",
+        "U2",
+        "U3"
+      ],
+      "nets": [
+        "/Out",
+        "/Vsen",
+        "3V3",
+        "5V",
+        "GND",
+        "Net-(C7-Pad1)",
+        "Net-(D1-A)",
+        "Net-(R10-Pad2)",
+        "Net-(R6-Pad1)",
+        "Net-(U1-CONT)",
+        "Net-(U1-DISCH)",
+        "Net-(U1-OUT)",
+        "Net-(U1-THRES)",
+        "Net-(U2-EN)",
+        "Net-(U3A-+)",
+        "Net-(U3A--)",
+        "Net-(U3B--)",
+        "unconnected-(U2-NC-Pad4)"
+      ],
+      "sr_text": "明确产测校准和可接入节点",
+      "report_id": "W-DEPENDENCY-TEST-PLAN",
+      "check_ids": [
+        "DOC-D02.BOARD"
+      ],
+      "verdict": "needs_human",
+      "evidence": "K1露出5V/GND/Out，U2/C5/C6焊盘和JP1/JP2存在；专用TP未画。没有工厂测试/校准项及接触方案，不能假设焊盘天然可夹，也不能凭无TP判不可测。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F18",
+      "sr_rule": "DOC-T01",
+      "sr_rules": [
+        "DOC-T01"
+      ],
+      "criteria": [],
+      "severity": "UNASSESSED",
+      "refs": [],
+      "nets": [],
+      "sr_text": "确认JP1和JP2允许装配组合",
+      "report_id": "W-DEPENDENCY-ASSEMBLY",
+      "check_ids": [
+        "DOC-T01.AS-DRAWN-DEFAULT"
+      ],
+      "verdict": "needs_human",
+      "evidence": "仅按符号默认JP1连/JP2开分支核过；JP1开JP2闭可能是3.3V输入旁路（此时5V只是网名），两跳线同时闭合则把U2输入输出直接并联。未见受控允许供入电压和互斥装配表，不能选定唯一生产模式。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F19",
+      "sr_rule": "DOC-V02",
+      "sr_rules": [
+        "DOC-V02"
+      ],
+      "criteria": [],
+      "severity": "UNASSESSED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "D1",
+        "FD1",
+        "H1",
+        "H2",
+        "JP1",
+        "JP2",
+        "K1",
+        "R1",
+        "R10",
+        "R11",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "U1",
+        "U2",
+        "U3"
+      ],
+      "nets": [
+        "/Out",
+        "/Vsen",
+        "3V3",
+        "5V",
+        "GND",
+        "Net-(C7-Pad1)",
+        "Net-(D1-A)",
+        "Net-(R10-Pad2)",
+        "Net-(R6-Pad1)",
+        "Net-(U1-CONT)",
+        "Net-(U1-DISCH)",
+        "Net-(U1-OUT)",
+        "Net-(U1-THRES)",
+        "Net-(U2-EN)",
+        "Net-(U3A-+)",
+        "Net-(U3A--)",
+        "Net-(U3B--)",
+        "unconnected-(U2-NC-Pad4)"
+      ],
+      "sr_text": "确认目录与图框的版本映射",
+      "report_id": "W-DEPENDENCY-REVISION-MAP",
+      "check_ids": [
+        "DOC-V02.BOARD"
+      ],
+      "verdict": "needs_human",
+      "evidence": "固定目录CAD/V1.2.2，原图title_block rev为V1.1.1、日期23.03.2022；目录名不等于受控图纸版本，需设计者说明版本映射，暂不判图框硬错。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F20",
+      "sr_rule": "REQ-C01",
+      "sr_rules": [
+        "REQ-C01",
+        "REQ-D02",
+        "REQ-D03",
+        "REQ-D04",
+        "REQ-Q01",
+        "REQ-Q02",
+        "REQ-Q03"
+      ],
+      "criteria": [
+        "G01-001",
+        "G01-002",
+        "G01-003",
+        "G01-004",
+        "G01-005",
+        "G01-006",
+        "G01-007",
+        "G01-008",
+        "G01-009",
+        "G01-011",
+        "G01-012",
+        "G02-001",
+        "G02-003",
+        "G02-004",
+        "G02-005",
+        "G02-006",
+        "G02-008",
+        "G02-009",
+        "G02-010",
+        "G02-011",
+        "G02-012",
+        "G02-013",
+        "G02-014",
+        "G02-015",
+        "G02-016",
+        "G02-018",
+        "G02-019",
+        "G02-020",
+        "G02-021",
+        "G02-022",
+        "G02-023",
+        "G02-024",
+        "G02-025",
+        "G02-029",
+        "G02-030",
+        "G02-032",
+        "G02-033",
+        "G03-041",
+        "G04-014",
+        "G04-015",
+        "G04-050",
+        "G04-063",
+        "G04-065",
+        "G04-072",
+        "G04-077",
+        "G04-100",
+        "G05-018",
+        "G05-023",
+        "G05-097"
+      ],
+      "severity": "UNASSESSED",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "D1",
+        "FD1",
+        "H1",
+        "H2",
+        "JP1",
+        "JP2",
+        "K1",
+        "R1",
+        "R10",
+        "R11",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "U1",
+        "U2",
+        "U3"
+      ],
+      "nets": [
+        "/Out",
+        "/Vsen",
+        "3V3",
+        "5V",
+        "GND",
+        "Net-(C7-Pad1)",
+        "Net-(D1-A)",
+        "Net-(R10-Pad2)",
+        "Net-(R6-Pad1)",
+        "Net-(U1-CONT)",
+        "Net-(U1-DISCH)",
+        "Net-(U1-OUT)",
+        "Net-(U1-THRES)",
+        "Net-(U2-EN)",
+        "Net-(U3A-+)",
+        "Net-(U3A--)",
+        "Net-(U3B--)",
+        "unconnected-(U2-NC-Pad4)"
+      ],
+      "sr_text": "确定受控需求与验收边界",
+      "report_id": "W-DEPENDENCY-REVIEW-SCOPE",
+      "check_ids": [
+        "REQ-C01.BOARD",
+        "REQ-D02.BOARD",
+        "REQ-D03.BOARD",
+        "REQ-D04.BOARD",
+        "REQ-Q01.REQUIREMENTS",
+        "REQ-Q02.CHAINS",
+        "REQ-Q03.STATES"
+      ],
+      "verdict": "needs_human",
+      "evidence": "已独立复算R8加载、检波时间常数、标称应力，555低频模型适用边界已明确；缺输入角点时没有伪造WCA通过。；没有受控规格与同版BOM，3V3/5V只作名义分析点；无法证明参数唯一口径。；README用途可推断，但无输入容差/测量点/环境/负载及编号需求；缺设计输入，不是电路缺陷。；未给受控需求与验收方法；已记录布局、土壤标定、动态与EMC验证应移交，不把本轮计算当成样机验收。；源README只证明电容土壤传感用途，缺受控电压、湿度量程/精度、输出负载、温度和故障范围；未把营销描述改写成已确认需求。；供电/返回及模拟信号路径已记录；PCB电极为分布电容，缺受控电容与土壤转移边界，完整功能证明未闭合。；默认跳线分支已核，断电/棕断/旁路输入/误接等允许状态尚未确认；不制造已批准的工况矩阵。 逐项物理脚/网络/出处：/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/object-snapshots.json；/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json，定位check_ids；关闭条件见review-results.json相应open.closure。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F21",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "INFO",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "3V3",
+        "Net-(U1-OUT)"
+      ],
+      "sr_text": "U1 的 CMOS Timer 手册被首页 ESD protection 额定特征误认成 TVS。",
+      "verdict": "false_alarm",
+      "evidence": "U1=TLC555；原厂SLFS043K p1标题TLC555 CMOS Timer，p3为GND/TRIG/OUT/RESET/CONT/THRES/DISCH/VDD八脚。scripts/datasheet_kinds.py title_text在标题无登记角色时退回整页；本次复现cues(title_text)={tvs}，唯一命中esdprotection来自首页ESD保护额定特征，非器件TVS身份。kind_reason保住ic声明后，审计KIND_CONFLICT仍保留错误标题类型。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/datasheet_kinds.py:title_text / title_check / audit_kinds",
+        "what": "标题无已登记IC角色时，不以首页全体ESD/应用/额定特征推成分立TVS；先限定真实标题区域并把generic timing IC保持unknown-role。增TLC555首页有ESD protection而非TVS的取证回归，保留真TVS标题识别；catalog.DEVICE_ROLES可补timer并按应用连通生成候选。依据TI SLFS043K p1/p3。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F22",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "INFO",
+      "refs": [
+        "D1"
+      ],
+      "nets": [
+        "Net-(D1-A)",
+        "/Vsen"
+      ],
+      "sr_text": "D1 已绑定官方文字摘录，类型核验仍把文本文件交给 PDF 抽取器并报 NO_TEXT。",
+      "verdict": "false_alarm",
+      "evidence": "datasheet-audit.json把D1 BAT20J-web.txt记AVAILABLE/text_extract，文件第1页摘录含SCHOTTKY DIODE原词；intent.device_kinds.D1引用同页同词。page_text仅走PDF读取，对txt返回None并给出neither pdftotext nor PyMuPDF installed...误导说明，实际PyMuPDF本轮已正常渲染三个IC手册。此结论只排除类型文本读取误判，不解除D1原厂编号图未核的knowledge_gap。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/datasheet_kinds.py:page_text / pdf_page_texts / verify",
+        "what": "消费资料审计document_format=text_extract；有可核来源/页界的摘录按指定页文本核quote，页界不足则明确报页定位不足。不要把txt当坏PDF，也不要在可读PDF工具存在时声称未安装。继续把图形针序资格与文字类型分开。依据ST BAT20J p1及references/datasheets.md的text_extract契约。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F23",
+      "sr_rule": "ANA-D01",
+      "criteria": [],
+      "severity": "INFO",
+      "refs": [
+        "U3",
+        "U1"
+      ],
+      "nets": [
+        "/Vsen",
+        "/Out"
+      ],
+      "sr_text": "通用 ANALOG 电路 U3 被展开成温度传感器电气连接检查。",
+      "verdict": "false_alarm",
+      "evidence": "最终计划ANA-D01.ANALOG-U3.U3的原判据是温度传感器电气连接、量程和接口正确；catalog本板types=ANALOG/POWER_CONVERTER，U3 MC33202DR2G原厂MC33201/D p1/2是双运放，U1是555，网表29器件无温度传感器。土壤电容传感不能因有ANALOG_PIN就变成温度传感器，故本项NA。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py:CIRCUIT_TYPES[ANALOG] / SUBJECT_REQUIRES[ANALOG,ANA-D01] / QUESTIONS",
+        "what": "保留温度传感器专用判据；展开前要求确证的温度传感器/热敏电阻对象及其测量链，普通运放或电容土壤传感不满足此机制。若要泛化传感器规则，应同步标题、对象和非热量测的专用问题，不能只让ANALOG_PIN触发。依据MC33201/D p1/p2及当前ANA-D01判据。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F24",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "INFO",
+      "refs": [
+        "FD1"
+      ],
+      "nets": [],
+      "sr_text": "| SR 认不出的器件（能力不足，待补） | FD1 | FIDUCIAL / FIDUCIAL |  | SR 能力不足：按手册标题给这类器件一个类别名，补进 device_kinds.KINDS 登记表（一行：词、前缀、手册线索、两端/链路/保护/磨损、可否声明、要不要手册）和定界表（可得性、允许的估算与倍数、失效后果、样机能否验、边界）；接了两个以上网络的，本板由审查员在 intent.device_kinds 里归类 |",
+      "sr_record_kind": "NEW_DEVICE_KIND",
+      "verdict": "false_alarm",
+      "evidence": "FD1在固定源p1为贴装定位FIDUCIAL，db.declared_pinname、pin2net和nets均无其电气引脚，候选决定已以NOT_A_CIRCUIT排除。原图符号及无引脚声明足以判断不需要电气参数定界；仍要求按厂家手册增电气器件类型/定界表是对象资格误触发，不是板子缺资料。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/validate_review.py:extension_signals (NEW_DEVICE_KIND scan)",
+        "what": "生成电气NEW_DEVICE_KIND前核对实际/声明电气引脚。已证零引脚的FIDUCIAL/机械孔不生成电气器件手册和定界表扩项；只按几何/制造范围记录，仍保留单引脚器件、未知多脚器件或解析器引脚缺失时的输入完整性告警。依据本板固定符号无引脚事实及decoupling对无引脚符号的排除约定。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F25",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "INFO",
+      "refs": [
+        "H1"
+      ],
+      "nets": [],
+      "sr_text": "| SR 认不出的器件（能力不足，待补） | H1 | HOLE_3.2mm / HOLE_3.2mm |  | SR 能力不足：按手册标题给这类器件一个类别名，补进 device_kinds.KINDS 登记表（一行：词、前缀、手册线索、两端/链路/保护/磨损、可否声明、要不要手册）和定界表（可得性、允许的估算与倍数、失效后果、样机能否验、边界）；接了两个以上网络的，本板由审查员在 intent.device_kinds 里归类 |",
+      "sr_record_kind": "NEW_DEVICE_KIND",
+      "verdict": "false_alarm",
+      "evidence": "H1在固定源p1为3.2mm机械安装孔，db.declared_pinname、pin2net和nets均无其电气引脚，候选决定已以NOT_A_CIRCUIT排除。原图符号及无引脚声明足以判断不需要电气参数定界；仍要求按厂家手册增电气器件类型/定界表是对象资格误触发，不是板子缺资料。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/validate_review.py:extension_signals (NEW_DEVICE_KIND scan)",
+        "what": "生成电气NEW_DEVICE_KIND前核对实际/声明电气引脚。已证零引脚的FIDUCIAL/机械孔不生成电气器件手册和定界表扩项；只按几何/制造范围记录，仍保留单引脚器件、未知多脚器件或解析器引脚缺失时的输入完整性告警。依据本板固定符号无引脚事实及decoupling对无引脚符号的排除约定。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F26",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "INFO",
+      "refs": [
+        "H2"
+      ],
+      "nets": [],
+      "sr_text": "| SR 认不出的器件（能力不足，待补） | H2 | HOLE_3.2mm / HOLE_3.2mm |  | SR 能力不足：按手册标题给这类器件一个类别名，补进 device_kinds.KINDS 登记表（一行：词、前缀、手册线索、两端/链路/保护/磨损、可否声明、要不要手册）和定界表（可得性、允许的估算与倍数、失效后果、样机能否验、边界）；接了两个以上网络的，本板由审查员在 intent.device_kinds 里归类 |",
+      "sr_record_kind": "NEW_DEVICE_KIND",
+      "verdict": "false_alarm",
+      "evidence": "H2在固定源p1为3.2mm机械安装孔，db.declared_pinname、pin2net和nets均无其电气引脚，候选决定已以NOT_A_CIRCUIT排除。原图符号及无引脚声明足以判断不需要电气参数定界；仍要求按厂家手册增电气器件类型/定界表是对象资格误触发，不是板子缺资料。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/validate_review.py:extension_signals (NEW_DEVICE_KIND scan)",
+        "what": "生成电气NEW_DEVICE_KIND前核对实际/声明电气引脚。已证零引脚的FIDUCIAL/机械孔不生成电气器件手册和定界表扩项；只按几何/制造范围记录，仍保留单引脚器件、未知多脚器件或解析器引脚缺失时的输入完整性告警。依据本板固定符号无引脚事实及decoupling对无引脚符号的排除约定。"
+      },
+      "seed": null
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G03-021",
+      "sr_rule": "PWR-D03",
+      "refs": [
+        "U2",
+        "C3",
+        "C6",
+        "U1"
+      ],
+      "nets": [
+        "3V3",
+        "Net-(U2-EN)"
+      ],
+      "why_expected": "应覆盖内部启动的LDO对输出电容和启动负载的充电过程；不应仅因没有外露SS脚而不生成启动充电电流/限流问题。本条是计划覆盖遗漏，不是已证明峰流越限。",
+      "evidence": "SE5218 2016 p1 enable20us为典型；p3 ILIMIT800mA为典型，不能用这两个数给本板保证峰流。U2.5→3V3挂C6=2.2uF及C3=10nF、U1.8/4；标称Q=Cout*3.3=7.293uC，I=Ceff*dV/dt+Iload。最终计划含PWR-C02/C03/C04/C05/C06/C15/C18/C24，却没有PWR-D03；power_up.regulators[U2].softstart=[]，scripts/checkers/power_up.py只在非空softstart时建该项。catalog.PWR-D03文本又仅提同步变换器，和BASIS G03-021的通用启动限流目标不齐。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_up.py:PowerUpChecker.plan (softstart guard); scripts/catalog.py:PWR-D03",
+        "what": "对已确认regulator及其OUT负载/电容始终问启动充电+负载与限流配合；外露SS只是配置证据之一，内部软启动按准确手册取斜率/时间条件，缺保证界则保留具体输入依赖。预偏置子问题按器件类型/真实状态条件化，不将LDO冒充同步buck。增本板无SS却有Cout的计划覆盖回归。判据出处Top50第19/G03-021及SE5218 p1/3/6。"
+      },
+      "seed": {
+        "kind": "D-LDO-STARTUP-COVERAGE",
+        "mutation": "以当前U2/C3/C6输出网为基线，将C6.value改1000uF并同步原值/值出处，保持nets/pin2net不变；断言无SS脚时仍应生成PWR-D03且包含C6和U1启动负载。种子仅验证覆盖，不在没有Cmax、斜率保证及Ilimit_min契约时断言电气FAIL。",
+        "target_rule": "PWR-D03"
+      }
+    }
+  ],
+  "summary": {
+    "true_defect": 0,
+    "false_alarm": 6,
+    "criterion_issue": 0,
+    "knowledge_gap": 2,
+    "needs_human": 18,
+    "misses": 1
+  },
+  "top50_audit": {
+    "baseline": "industrial_telecom",
+    "source": "docs/proposals/criteria-top50-examples-2026-11-02.md",
+    "types": [
+      "ANALOG",
+      "POWER_CONVERTER"
+    ],
+    "items": [
+      {
+        "number": 1,
+        "criterion": "G01-018",
+        "title": "G01-018 — −48 V 输入的极性与回线接地方式按 ETSI 4.1",
+        "sr_rules": [
+          "PWR-C17"
+        ],
+        "status": "not_applicable",
+        "evidence": "K1.2为低压正电源网5V；无NEG48/RTN、−48V接口或隔离回线。不得套ETSI数值。"
+      },
+      {
+        "number": 2,
+        "criterion": "G01-019",
+        "title": "G01-019 — −48 V 输入的工作电压范围与耐受范围",
+        "sr_rules": [
+          "PWR-C17"
+        ],
+        "status": "not_applicable",
+        "evidence": "K1.2为低压正电源网5V；无NEG48/RTN、−48V接口或隔离回线。不得套ETSI数值。"
+      },
+      {
+        "number": 3,
+        "criterion": "G01-020",
+        "title": "G01-020 — −48 V 输入 0.1 s 中断后自恢复",
+        "sr_rules": [
+          "PWR-C18"
+        ],
+        "status": "not_applicable",
+        "evidence": "K1.2为低压正电源网5V；无NEG48/RTN、−48V接口或隔离回线。不得套ETSI数值。"
+      },
+      {
+        "number": 4,
+        "criterion": "G01-021",
+        "title": "G01-021 — −48 V 输入承受 500 V 1.2/50 µs 浪涌",
+        "sr_rules": [
+          "PRO-C01"
+        ],
+        "status": "not_applicable",
+        "evidence": "K1.2为低压正电源网5V；无NEG48/RTN、−48V接口或隔离回线。不得套ETSI数值。"
+      },
+      {
+        "number": 5,
+        "criterion": "G01-022",
+        "title": "G01-022 — −48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+        "sr_rules": [
+          "PWR-C19"
+        ],
+        "status": "not_applicable",
+        "evidence": "K1.2为低压正电源网5V；无NEG48/RTN、−48V接口或隔离回线。不得套ETSI数值。"
+      },
+      {
+        "number": 6,
+        "criterion": "G01-023",
+        "title": "G01-023 — −48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+        "sr_rules": [
+          "PWR-C13"
+        ],
+        "status": "not_applicable",
+        "evidence": "K1.2为低压正电源网5V；无NEG48/RTN、−48V接口或隔离回线。不得套ETSI数值。"
+      },
+      {
+        "number": 7,
+        "criterion": "G01-024",
+        "title": "G01-024 — 交流输入 1 周期 0% 跌落不复位（判据 B）",
+        "sr_rules": [
+          "PWR-C18"
+        ],
+        "status": "not_applicable",
+        "evidence": "网表无L/N/整流桥/市电输入，5V外部供入；不套交流一周期保持。"
+      },
+      {
+        "number": 8,
+        "criterion": "G01-025",
+        "title": "G01-025 — 交流输入较长暂降与中断后自恢复（判据 C）",
+        "sr_rules": [
+          "PWR-C18"
+        ],
+        "status": "not_applicable",
+        "evidence": "网表无L/N/整流桥/市电输入，5V外部供入；不套交流一周期保持。"
+      },
+      {
+        "number": 9,
+        "criterion": "G01-026",
+        "title": "G01-026 — USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+        "sr_rules": [
+          "SIG-C05"
+        ],
+        "status": "not_applicable",
+        "evidence": "唯一K1=HEADER_MALE_3X1，1Out/2电源/3GND；无USB连接器、CC、VBUS、USB控制器，5V不证明USB供电。"
+      },
+      {
+        "number": 10,
+        "criterion": "G01-027",
+        "title": "G01-027 — USB 可用电流按实际协商档取",
+        "sr_rules": [
+          "SIG-C05"
+        ],
+        "status": "not_applicable",
+        "evidence": "唯一K1=HEADER_MALE_3X1，1Out/2电源/3GND；无USB连接器、CC、VBUS、USB控制器，5V不证明USB供电。"
+      },
+      {
+        "number": 11,
+        "criterion": "G01-029",
+        "title": "G01-029 — USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+        "sr_rules": [
+          "PWR-C13",
+          "SIG-C05"
+        ],
+        "status": "not_applicable",
+        "evidence": "唯一K1=HEADER_MALE_3X1，1Out/2电源/3GND；无USB连接器、CC、VBUS、USB控制器，5V不证明USB供电。"
+      },
+      {
+        "number": 12,
+        "criterion": "G01-030",
+        "title": "G01-030 — USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+        "sr_rules": [
+          "SIG-D07"
+        ],
+        "status": "not_applicable",
+        "evidence": "唯一K1=HEADER_MALE_3X1，1Out/2电源/3GND；无USB连接器、CC、VBUS、USB控制器，5V不证明USB供电。"
+      },
+      {
+        "number": 13,
+        "criterion": "G01-031",
+        "title": "G01-031 — USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+        "sr_rules": [
+          "SIG-C05"
+        ],
+        "status": "not_applicable",
+        "evidence": "唯一K1=HEADER_MALE_3X1，1Out/2电源/3GND；无USB连接器、CC、VBUS、USB控制器，5V不证明USB供电。"
+      },
+      {
+        "number": 14,
+        "criterion": "G03-003",
+        "title": "G03-003 — 内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+        "sr_rules": [
+          "PWR-C04"
+        ],
+        "status": "covered_open",
+        "evidence": "PWR-C04、PWR-C09已指向U2.5/3V3-C6(2.2uF)+C3(10nF)-GND；SE5218 p6有效Cout最低1uF，标称2.21uF不等于有效下界，BOM约束保留。"
+      },
+      {
+        "number": 15,
+        "criterion": "G03-004",
+        "title": "G03-004 — 内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+        "sr_rules": [
+          "PWR-C04"
+        ],
+        "status": "covered_no_numeric_esr_window",
+        "evidence": "同U2/C6/C3；SE5218 p1/6未给数值ESR窗口，不把示例0.1–1ohm借到本器件；容量条件在PWR-C04保留。"
+      },
+      {
+        "number": 16,
+        "criterion": "G03-016",
+        "title": "G03-016 — 正常启动时通路 MOSFET 在降额后的 SOA 内",
+        "sr_rules": [
+          "DRV-C02"
+        ],
+        "status": "not_applicable",
+        "evidence": "29器件中无分立MOSFET、通路栅极驱动或外置SOA器件；U2片内PMOS并非可套分立SOA曲线的对象。"
+      },
+      {
+        "number": 17,
+        "criterion": "G03-018",
+        "title": "G03-018 — 变换器 UVLO 开启点低于输入窗下限",
+        "sr_rules": [
+          "PWR-C06"
+        ],
+        "status": "covered_open",
+        "evidence": "U2.3 EN=U2.1 VIN，默认经JP1到K1.2；PWR-C06/RST-T01/PWR-E02已经问开启点/压差，输入源阻抗和UVLO保证条件未定，不判UVLO违约。"
+      },
+      {
+        "number": 18,
+        "criterion": "G03-019",
+        "title": "G03-019 — 满载电流在源阻抗上的压降小于 UVLO 滞回",
+        "sr_rules": [
+          "PWR-C06"
+        ],
+        "status": "covered_open",
+        "evidence": "U2.3 EN=U2.1 VIN，默认经JP1到K1.2；PWR-C06/RST-T01/PWR-E02已经问开启点/压差，输入源阻抗和UVLO保证条件未定，不判UVLO违约。"
+      },
+      {
+        "number": 19,
+        "criterion": "G03-021",
+        "title": "G03-021 — 软启动充电电流加启动期负载低于器件限流下限",
+        "sr_rules": [
+          "PWR-D03"
+        ],
+        "status": "miss",
+        "evidence": "U2→3V3→C6(2.2uF)/C3(10nF)/U1.8/4；SE5218p1 enable20us仅典型、p3 ILIMIT800mA仅典型。power_up库存softstart=[]致PWR-D03零项；应问Ceff*dV/dt+启动负载及预偏置适用性。只有计划覆盖遗漏，未证峰流超限。"
+      },
+      {
+        "number": 20,
+        "criterion": "G03-025",
+        "title": "G03-025 — 复位门限高于各负载最低工作电压，掉电先复位",
+        "sr_rules": [
+          "PWR-T04"
+        ],
+        "status": "covered_open",
+        "evidence": "PWR-T04/RST-T03已经问电源域监控与恢复。没有MCU/CPU复位域；U1.4直接VDD是TI p17允许的不用复位接法，电容土壤输出是否需棕断读数屏蔽由需求决定。"
+      },
+      {
+        "number": 21,
+        "criterion": "G03-028",
+        "title": "G03-028 — 上电时序在极值时间下满足约束",
+        "sr_rules": [
+          "PWR-C24"
+        ],
+        "status": "covered_open",
+        "evidence": "PWR-C24已展开；5V给U3/SE5218输入，3V3给U1，无PG级联；时序目标缺，不能要求示例1–5ms。"
+      },
+      {
+        "number": 22,
+        "criterion": "G03-032",
+        "title": "G03-032 — 稳压器反向电流在手册允许内或已阻断",
+        "sr_rules": [
+          "PWR-C05"
+        ],
+        "status": "covered_open",
+        "evidence": "PWR-C05已覆盖U2三状态；JP1断JP2通可直接给3V3，断电C6也须核VOUT>VIN；SE5218p2/3/6无反流保证，记knowledge_gap，不再算漏报。"
+      },
+      {
+        "number": 23,
+        "criterion": "G03-037",
+        "title": "G03-037 — 电解与钽电容不承受反压",
+        "sr_rules": [
+          "DEV-C01"
+        ],
+        "status": "not_applicable",
+        "evidence": "C1–C8均为0603非极性两平板符号，无电解/钽/串联电解。普通电容应力仍由DEV-C01/PWR-C10核，不以示例的电解类型扩大。"
+      },
+      {
+        "number": 24,
+        "criterion": "G03-038",
+        "title": "G03-038 — 电解与钽电容的直流加纹波峰值在降额内",
+        "sr_rules": [
+          "DEV-C01"
+        ],
+        "status": "not_applicable",
+        "evidence": "C1–C8均为0603非极性两平板符号，无电解/钽/串联电解。普通电容应力仍由DEV-C01/PWR-C10核，不以示例的电解类型扩大。"
+      },
+      {
+        "number": 25,
+        "criterion": "G03-040",
+        "title": "G03-040 — 串联使用的电解电容有均压措施",
+        "sr_rules": [
+          "DEV-C01"
+        ],
+        "status": "not_applicable",
+        "evidence": "C1–C8均为0603非极性两平板符号，无电解/钽/串联电解。普通电容应力仍由DEV-C01/PWR-C10核，不以示例的电解类型扩大。"
+      },
+      {
+        "number": 26,
+        "criterion": "G04-005",
+        "title": "G04-005 — 输入信号不超接收端绝对最大值",
+        "sr_rules": [
+          "SIG-C08"
+        ],
+        "status": "covered_open",
+        "evidence": "ANA-C03已明确追U1.3→R2→D1→C1(/Vsen)→R5→U3.3及U3输入到5V/GND钳位；PRO-D04另问K1异常。没有SIG-C08专名不等于此机制漏审；本轮未定义掉电边界/接收端，因此未判反灌损坏。"
+      },
+      {
+        "number": 27,
+        "criterion": "G04-007",
+        "title": "G04-007 — 未上电接口承受正常或故障信号不损坏",
+        "sr_rules": [
+          "PRO-D04",
+          "SIG-C08"
+        ],
+        "status": "covered_open",
+        "evidence": "ANA-C03已明确追U1.3→R2→D1→C1(/Vsen)→R5→U3.3及U3输入到5V/GND钳位；PRO-D04另问K1异常。没有SIG-C08专名不等于此机制漏审；本轮未定义掉电边界/接收端，因此未判反灌损坏。"
+      },
+      {
+        "number": 28,
+        "criterion": "G04-009",
+        "title": "G04-009 — 信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+        "sr_rules": [
+          "SIG-C08"
+        ],
+        "status": "covered_open",
+        "evidence": "ANA-C03已明确追U1.3→R2→D1→C1(/Vsen)→R5→U3.3及U3输入到5V/GND钳位；PRO-D04另问K1异常。没有SIG-C08专名不等于此机制漏审；本轮未定义掉电边界/接收端，因此未判反灌损坏。"
+      },
+      {
+        "number": 29,
+        "criterion": "G04-010",
+        "title": "G04-010 — 上电和复位期间关键输出有确定状态",
+        "sr_rules": [
+          "RST-T04"
+        ],
+        "status": "conditional_no_proven_miss",
+        "evidence": "无MOSFET/继电器/电机/MCU关键控制输出，只有U1激励和U3模拟Out；R8/C7偏置、U1RESET/VDD已追。若未来要求启动读数必须有效，需按RST-T04/ANA-T01补输出屏蔽，但当前无该要求，不能认定应强制安全默认态漏报。"
+      },
+      {
+        "number": 30,
+        "criterion": "G04-017",
+        "title": "G04-017 — I²C 上拉电阻不超上升时间决定的上限",
+        "sr_rules": [
+          "SIG-C01"
+        ],
+        "status": "not_applicable",
+        "evidence": "没有I2C控制器、SDA/SCL或开漏总线段；R3用于555定时，R8用于运放偏置，不是总线上拉。"
+      },
+      {
+        "number": 31,
+        "criterion": "G04-018",
+        "title": "G04-018 — I²C 上拉电阻不低于灌电流决定的下限",
+        "sr_rules": [
+          "SIG-C01"
+        ],
+        "status": "not_applicable",
+        "evidence": "没有I2C控制器、SDA/SCL或开漏总线段；R3用于555定时，R8用于运放偏置，不是总线上拉。"
+      },
+      {
+        "number": 32,
+        "criterion": "G04-032",
+        "title": "G04-032 — CAN 总线两端端接，总阻约 60 Ω",
+        "sr_rules": [
+          "SIG-C03"
+        ],
+        "status": "not_applicable",
+        "evidence": "无CAN收发器/CANH/CANL/120ohm端接。"
+      },
+      {
+        "number": 33,
+        "criterion": "G04-040",
+        "title": "G04-040 — 隔离接口两侧的供电和地不被无意短接",
+        "sr_rules": [
+          "PRO-D02"
+        ],
+        "status": "not_applicable",
+        "evidence": "单一GND，未声明隔离且无隔离器/变压器/跨带器件；不是隔离接口被短接。"
+      },
+      {
+        "number": 34,
+        "criterion": "G04-041",
+        "title": "G04-041 — 运放两个输入在最坏工况下不超共模范围",
+        "sr_rules": [
+          "ANA-C01"
+        ],
+        "status": "covered_open",
+        "evidence": "ANA-C01覆盖U3两输入。MC33202 p3/4保证共模0..VCC；Vplus=(147/157)*Vsen，参考经R8/R9加载，不能把轨到轨简称当输出全程精度保证；需要标定/输入窗口。"
+      },
+      {
+        "number": 35,
+        "criterion": "G04-054",
+        "title": "G04-054 — ADC 输入不超满量程和绝对最大值",
+        "sr_rules": [
+          "ANA-C03"
+        ],
+        "status": "external_boundary_open",
+        "evidence": "板上没有ADC/VREF/AIN；K1.1=U3.1直接Out，接收ADC不在当前输入中。DEV-D03/ANA-C03/PRO-D04已留对端范围；不能编3.3V ADC再指控5V过压，也不把外板缺失当板内ADC漏报。"
+      },
+      {
+        "number": 36,
+        "criterion": "G04-078",
+        "title": "G04-078 — 晶振负载电容与晶振规定 CL 相符",
+        "sr_rules": [
+          "CLK-C01"
+        ],
+        "status": "not_applicable",
+        "evidence": "没有Y/X晶体或外部晶体振荡器。U1是R3/R4/C4的555 RC多谐振荡，TI p15–16高频延迟需另审，不套Pierce晶体CL/负阻/共享晶体反例。"
+      },
+      {
+        "number": 37,
+        "criterion": "G04-079",
+        "title": "G04-079 — 振荡器增益裕量足够起振",
+        "sr_rules": [
+          "CLK-C01"
+        ],
+        "status": "not_applicable",
+        "evidence": "没有Y/X晶体或外部晶体振荡器。U1是R3/R4/C4的555 RC多谐振荡，TI p15–16高频延迟需另审，不套Pierce晶体CL/负阻/共享晶体反例。"
+      },
+      {
+        "number": 38,
+        "criterion": "G04-082",
+        "title": "G04-082 — 一颗晶振只驱动一个器件",
+        "sr_rules": [
+          "CLK-C01"
+        ],
+        "status": "not_applicable",
+        "evidence": "没有Y/X晶体或外部晶体振荡器。U1是R3/R4/C4的555 RC多谐振荡，TI p15–16高频延迟需另审，不套Pierce晶体CL/负阻/共享晶体反例。"
+      },
+      {
+        "number": 39,
+        "criterion": "G05-019",
+        "title": "G05-019 — 每条配电支路在源侧有保护",
+        "sr_rules": [
+          "PRO-C04"
+        ],
+        "status": "conditional_no_proven_miss",
+        "evidence": "K1是唯一供入端，内部仅U2和U3/R8两低压负载；无外引配电支路。U2内部限流不能保护U3分支，但上游限流/线路边界未定，PRO-D04/PWR-C19已保留；不凭未画保险丝认定支路超限或再新增同一输入缺口。"
+      },
+      {
+        "number": 40,
+        "criterion": "G05-022",
+        "title": "G05-022 — 过流动作点上限下通路器件与连接器不超额定",
+        "sr_rules": [
+          "DEV-C01",
+          "DEV-C04"
+        ],
+        "status": "covered_open",
+        "evidence": "DEV-C01/DEV-C04逐U2/K1保留电流边界。SE5218p3 800mA为典型限流，不当上限；K1采购系列与源故障电流未定，不能判保护已协调。"
+      },
+      {
+        "number": 41,
+        "criterion": "G05-025",
+        "title": "G05-025 — 故障电流下的动作时间短于被保护对象的耐受时间",
+        "sr_rules": [
+          "PRO-C05"
+        ],
+        "status": "conditional_no_proven_miss",
+        "evidence": "无独立F/eFuse保护链/分立通路MOSFET；SE5218p2标明输出短路持续时间Infinite，但这是器件条件，不能覆盖K1/U3入口。外部故障在PRO-D04中，未知故障模型不作为已证动作时间漏报。"
+      },
+      {
+        "number": 42,
+        "criterion": "G05-030",
+        "title": "G05-030 — TVS 工作电压不低于被钳节点最高工作电压",
+        "sr_rules": [
+          "PRO-E02"
+        ],
+        "status": "not_applicable",
+        "evidence": "无TVS/齐纳/压敏器件；D1=BAT20J普通Schottky，跨R2激励与/Vsen做检波，不是对GND的入口钳位。不能套VRWM或TVS前置反接例；K1缺防护是否违规需既定故障要求。"
+      },
+      {
+        "number": 43,
+        "criterion": "G05-031",
+        "title": "G05-031 — TVS 钳位电压不超被保护器件绝对最大值",
+        "sr_rules": [
+          "PRO-E02"
+        ],
+        "status": "not_applicable",
+        "evidence": "无TVS/齐纳/压敏器件；D1=BAT20J普通Schottky，跨R2激励与/Vsen做检波，不是对GND的入口钳位。不能套VRWM或TVS前置反接例；K1缺防护是否违规需既定故障要求。"
+      },
+      {
+        "number": 44,
+        "criterion": "G05-032",
+        "title": "G05-032 — TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+        "sr_rules": [
+          "PRO-E02"
+        ],
+        "status": "not_applicable",
+        "evidence": "无TVS/齐纳/压敏器件；D1=BAT20J普通Schottky，跨R2激励与/Vsen做检波，不是对GND的入口钳位。不能套VRWM或TVS前置反接例；K1缺防护是否违规需既定故障要求。"
+      },
+      {
+        "number": 45,
+        "criterion": "G05-040",
+        "title": "G05-040 — 带短路启动时通路 MOSFET 在降额后的 SOA 内",
+        "sr_rules": [
+          "DRV-C02"
+        ],
+        "status": "not_applicable",
+        "evidence": "29器件中无分立MOSFET、通路栅极驱动或外置SOA器件；U2片内PMOS并非可套分立SOA曲线的对象。"
+      },
+      {
+        "number": 46,
+        "criterion": "G05-041",
+        "title": "G05-041 — 热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+        "sr_rules": [
+          "DRV-C02"
+        ],
+        "status": "not_applicable",
+        "evidence": "29器件中无分立MOSFET、通路栅极驱动或外置SOA器件；U2片内PMOS并非可套分立SOA曲线的对象。"
+      },
+      {
+        "number": 47,
+        "criterion": "G05-048",
+        "title": "G05-048 — 熔断器分断能力不小于预期短路电流",
+        "sr_rules": [
+          "PRO-C01"
+        ],
+        "status": "not_applicable",
+        "evidence": "无F/PTC/熔断器；上游故障电流/保护覆盖未知已留PRO-D04，不虚构分断能力。"
+      },
+      {
+        "number": 48,
+        "criterion": "G05-054",
+        "title": "G05-054 — 每个对外电源接口的反接有明确处置",
+        "sr_rules": [
+          "PRO-D04",
+          "PWR-T05"
+        ],
+        "status": "covered_open",
+        "evidence": "PRO-D04.K1已展开，K1.2→U3.8/R8/JP1→U2直连，D1不在入口；没有板内串联防反。反接允许范围、端口防误插、上游限流及失效接受未知，需needs_human而非武断判缺防反硬错。"
+      },
+      {
+        "number": 49,
+        "criterion": "G05-057",
+        "title": "G05-057 — 反接阻断之前没有单向 TVS 造成源短路",
+        "sr_rules": [
+          "PWR-C26"
+        ],
+        "status": "not_applicable",
+        "evidence": "无TVS/齐纳/压敏器件；D1=BAT20J普通Schottky，跨R2激励与/Vsen做检波，不是对GND的入口钳位。不能套VRWM或TVS前置反接例；K1缺防护是否违规需既定故障要求。"
+      },
+      {
+        "number": 50,
+        "criterion": "G05-087",
+        "title": "G05-087 — MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+        "sr_rules": [
+          "PWR-T05"
+        ],
+        "status": "not_applicable",
+        "evidence": "29器件中无分立MOSFET、通路栅极驱动或外置SOA器件；U2片内PMOS并非可套分立SOA曲线的对象。"
+      }
+    ],
+    "misses": [
+      "G03-021"
+    ],
+    "scope": "覆盖遗漏与已证硬件缺陷分开；方法/should未提升为shall；本板没有的类型逐条按实际机制排除。"
+  },
+  "evidence_index": {
+    "source_lock": "/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/source-lock.json",
+    "calculation": "/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/calculations.json",
+    "check_decisions": "/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/check-decisions.json",
+    "top50": "/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/record/top50-audit.md",
+    "native_gate": "/Users/skyfend/.cache/sr-boards/solderedelectronics--capacitive-soil-sensor-hardware-design/review/review-gate.json",
+    "bom_scope": "固定提交无V1.2.2 BOM；唯一V2.0.0 BOM未混入。",
+    "full_pdf_scope": "已取得TLC555/MC33202/SE5218完整本地PDF；BAT20J/TC33仅官方网页文字摘录，不声称完整PDF下载成功。"
+  }
+}
