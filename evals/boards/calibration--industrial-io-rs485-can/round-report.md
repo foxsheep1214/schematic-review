@@ -46,3 +46,29 @@ F06 在中间版本里曾从 1 行变成 3 行：F16 让 TVS3300 被认作 TVS �
 3. **写不可判的地方**：F05 要“intent 给了 TVS 参数就直接比较”，但 intent 没有结构化的 TVS 参数字段，交审查者在结果里关闭。保持类电路（串联二极管加储能）在词表里没有 HOLD_UP 类型，只能在 POWER_PROTECTION 里按成员裁剪方面。
 
 SR 用法上的坑：设计记录是改版前审的，网表已改，复现必须把 intent 的隔离边界名对上新网表，否则候选决定全部失配。
+
+## 合并步 7 after（2026-11-03）
+
+本步进行中设计记录被另一会话改过：05:45 改需求输入，06:47 起重画原理图，schematic.pdf 暂缺。为了前后用同一份输入，before（18f5474）和终版都用缓存里的冻结 intent 副本 `review/intent-after-frozen.json` / `review/intent-merge7-frozen.json`：需求 sha 改为当前值，去掉 materials.schematic_pdf。设计记录本身没碰。合并步 7 的 intent 把手工 add 的 HOLDUP 改为接受 `HOLD_UP-D201`，接受 `SIGNAL_PROTECTION-J601`（DI-PORT），并把 D61x/D62x/R61x 从 DI-IN 的 add 中移出。
+
+| 项目 | 18f5474 | 合并步 7 终版 |
+|---|---:|---:|
+| 冷扫非 INFO 行 | 19 | 19 |
+| 合并后非 INFO 行 | 19 | 19 |
+| 计划检查项 | 808 | 826 |
+| 候选电路 / 未归属器件 | 15 / 70 | 17 / 45 |
+
+| 条目 | 18f5474 | 终版 | 修在 |
+|---|---|---|---|
+| F11 | 8 行“同网没有 IC 脚” | 8 行，各带核对行“钳位 48.4 V 经 D62x、R61x 1.2 kΩ 到 IPx 绝限 36 V”，按 4 mA 限流脚电压约 43.6 V，仍高于绝限 | 89ccb35 |
+| F10 | “同网没有 IC 脚” | 找到 U601.14(V24)，给出数字；适用性仍需人判 | 89ccb35 |
+| F20 | D201 在 POWER_PROTECTION 里，靠裁剪特例 | 新出 `HOLD_UP-D201`，裁剪特例删去 | 9224568 |
+| M02 | 0 | 0 | b5469d2；b183b97 把叶名词边界推广到其他类型 |
+| 其余 | 同合并步 6 终版 | 不变 | — |
+
+计划项 +18，来源如下：
+
+- HOLD_UP：PWR-C18 +3、PWR-C13 +3、PWR-T05 +1。
+- SIGNAL_PROTECTION：PRO-C01 +2、PRO-C05 +1；PRO-C08 因 DI 端口没有保险不问。
+- POWER_PROTECTION：PWR-C23 3→9、PRO-C07 2→3。删去 F20 裁剪特例后，DI-FIELD-PWR 和 DO-HS 两个 POWER_PROTECTION 电路重新问到这两项；D201 已不在其中。
+- 其他：DEV-C01、DEV-C03 各 +1，REQ-Q07 +2；SIG-T04、PWR-C26、PRO-C04 各 −1（器件改归新电路后，所属框架变了）。

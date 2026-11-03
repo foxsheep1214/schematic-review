@@ -303,7 +303,7 @@
     "mutation": "TVS 换成钳位高于经串阻相连 IC 脚绝限的型号",
     "target_rule": "PRO-E02"
    },
-   "fixed_in": "未修：needs_human，穿串联电阻找被保护脚是新检查能力，不在本步 11 条误报/3 条漏问范围，留下一步"
+   "fixed_in": "89ccb35（合并步 7）：PRO-E02 穿正向二极管与一颗电阻到 U601 IPx，D611–D618 各报核对行“钳位 48.4 V 经 D62x、R61x 1.2 kΩ 到 IPx 绝限 36 V”，按 4 mA 输入限流脚电压约 43.6 V 仍高于绝限；结论仍须人判"
   },
   {
    "id": "F12",
@@ -508,7 +508,7 @@
     "what": "加 HOLD_UP 框架或允许 POWER_PROTECTION 按成员器件裁剪 eFuse/双源方面"
    },
    "seed": null,
-   "fixed_in": "7a75065"
+   "fixed_in": "7a75065；合并步 7 改由 HOLD_UP 类型承担（9224568），POWER_PROTECTION 的裁剪特例已删"
   },
   {
    "id": "F21",
@@ -581,7 +581,7 @@
     "what": "按需求声明的输入电压与连接器+保险+TVS 形状识别；给 DC_24V 默认 startup/run/fault"
    },
    "seed": null,
-   "fixed_in": "9ae0ee4"
+   "fixed_in": "9ae0ee4；合并步 7 的叶名词边界（b183b97）对 DC_24V 线索在本板与 78 板都是 0 新命中，候选仍按形状识别"
   },
   {
    "id": "M02",
@@ -602,7 +602,7 @@
     "what": "层次路径分隔符 / 当词边界"
    },
    "seed": null,
-   "fixed_in": "b5469d2"
+   "fixed_in": "b5469d2；合并步 7 起其他电路类型（DEBUG 除外）也把层次网名的叶名当词（b183b97）"
   },
   {
    "id": "M03",
