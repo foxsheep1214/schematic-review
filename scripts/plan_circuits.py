@@ -54,7 +54,7 @@ EN_RE = re.compile(
     r'(^|_)(EN|ENABLE|SHDN|SHUTDOWN|PWREN|PWR_EN)(_|\d|$)', re.I)
 
 STRAP_RE = re.compile(
-    r'(^|_)(BOOT\w*|STRAP\w*|TEST_MODE\w*|CFG\w*|CONFIG\w*|MODE\d*)(_|$)',
+    r'(^|[_/])(BOOT\w*|STRAP\w*|TEST_MODE\w*|CFG\w*|CONFIG\w*|MODE\d*)(_|$)',   # '/': PB2/BOOT1, /04_MCU/BOOT1 (boards-merge6 F21)
     re.I)
 
 I2C_RE = re.compile(r'(^|_)(I2C\w*|SCL\d*|SDA\d*)(_|$)', re.I)

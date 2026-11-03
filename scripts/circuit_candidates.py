@@ -28,7 +28,7 @@ import part_words as pw
 import requirement_clarifications
 
 SCHEMA_VERSION = 2
-RULES_VERSION = '2026-11-02.6a'   # boards-merge6 F19: power branches only for input candidates; EN on a supply is no chain
+RULES_VERSION = '2026-11-02.6b'   # boards-merge6 F21: an MCU's boot straps join its reset chain
 MAX_HOPS = 4
 ANALOG_HOPS = 2
 INPUT_HOPS = 6
@@ -42,6 +42,8 @@ INTERFACE_ROLES = frozenset(name for name, role in catalog.DEVICE_ROLES.items()
 FEEDBACK_PIN_RE = re.compile(r'^(FB|VFB|COMP|FB/\w+|\w+/FB)$', re.I)
 PROTECTION_PIN_RE = re.compile(r'^(OVP|UVP|OCP|OTP|OLP|LATCH|FAULT|FLT|BO|BROWNOUT|PROT|SCP|OVLO)$', re.I)
 STARTUP_PIN_RE = re.compile(r'^(HV|VSTART|HVS|EN|ENABLE|INH|INHIBIT|UVLO|SS|SOFT_?START|RUN|DELAY|DIS|DISABLE|TRIG/DIS|PG|PGOOD|RESET|NRST|RST)$', re.I)
+BOOT_STRAP_RE = re.compile(r'^(BOOT\d*|STRAP\w*)$', re.I)
+RESET_PIN_RE = re.compile(r'^(N?RST\w*|N?RESET\w*|MR|XRES)$', re.I)
 SENSE_PIN_RE = re.compile(r'^(CS|CS[+-]|CS_?[PN]|ISNS|ISENSE|ISEN|VSNS|VSENSE|FB|NTC|TEMP|RT|ZCD|ZCD/OPP|CS/ZCD|AIN\d*|VIN_?SNS)$', re.I)
 USB_PIN_RE = re.compile(r'^(CC[12]|D[+-]|DP|DN|DM|D_P|D_N|SBU[12])$', re.I)
 DEBUG_PIN_RE = re.compile(r'^(SWDIO|SWCLK|SWO|TCK|TMS|TDI|TDO|NTRST|JTAG\w*)$', re.I)
@@ -631,6 +633,29 @@ class Generator:
                 if len(cand['members']) < 2:
                     del self.candidates[cid]       # a pin tied straight to a rail is no chain
 
+    def straps(self):
+        """boards-merge6 F21: an MCU's boot straps (BOOT0, BOOT1) are sampled at reset; their pulls join the MCU's reset
+        chain (STARTUP-<mcu>.NRST), whose rows ask reset timing and the strap's forced state (RST-E02), instead of
+        standing alone as unassigned resistors. Without a reset chain the straps form STARTUP-<mcu>.BOOT."""
+        for anchor, role in sorted(self.anchors.items()):
+            if role != 'mcu':
+                continue
+            straps = [(anchor + '.' + pin, net) for pin, net in sorted(self.graph.pins_of(anchor).items())
+                      if self.matches(BOOT_STRAP_RE, anchor + '.' + pin) and net not in self.grounds
+                      and net not in self.graph.pseudo and net not in self.stops]
+            if not straps:
+                continue
+            cid = next((c['id'] for c in sorted(self.candidates.values(), key=lambda c: c['id'])
+                        if c['type'] == 'STARTUP' and c['anchor'] == anchor
+                        and self.matches(RESET_PIN_RE, c['nets'].get('pin', ''))), None)
+            if cid is None:
+                cid = f'STARTUP-{anchor}.BOOT'
+                self.new(cid, 'STARTUP', anchor, self.domain_of(anchor), {'pin': straps[0][0]}, cross_cutting=True)
+                self.add(cid, anchor, 'anchor', f'anchor:boot strap pin {straps[0][0]}', 0)
+            for index, (node, net) in enumerate(straps):
+                self.candidates[cid]['nets'][f'strap{index}'] = net
+                self.chain_walk(cid, node, net)
+
     def chain_walk(self, cid, node, start):
         owner = self.candidates[cid]['anchor']
         seen = {}
@@ -816,6 +841,7 @@ class Generator:
         self.prepare()
         self.inputs()            # first: the storage net it reaches is the input rail, a stop for every other walk
         self.chains()            # chains claim their parts before the converter walks, which are blocked from them
+        self.straps()
         self.chain_members = {ref for cand in self.candidates.values() if cand['cross_cutting']
                               for ref, m in cand['members'].items() if m['role'] not in ('anchor', 'endpoint', 'optocoupler')}
         self.converters()

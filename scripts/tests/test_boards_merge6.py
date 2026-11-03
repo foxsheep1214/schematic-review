@@ -242,3 +242,27 @@ def test_connector_pins_whose_branches_meet_are_one_power_branch():
     db['parts']['R7'].update(prim='Device:R', part='R')
     db['parts']['C7'].update(prim='Device:C', part='C')
     assert _refs(_io_candidates(db)['POWER_PROTECTION-J7']) == ['C7', 'F7', 'J7', 'R7']
+
+
+# F21: STM32 BOOT0/BOOT1 pulls are sampled at reset (DS5319 §2.3.8 boot modes): they join the MCU's reset chain
+def test_mcu_boot_strap_pulls_join_the_reset_chain():
+    found = _io_candidates()
+    reset = found['STARTUP-U301.NRST']
+    assert _refs(reset) == ['C307', 'R301', 'R302', 'U301']
+    assert {'/04_MCU/BOOT0', '/04_MCU/BOOT1'} <= set(reset['nets'].values())
+
+
+def test_boot_straps_without_a_reset_chain_form_their_own_startup_chain():
+    db = _io_board()
+    db['pin2net']['C307.1'] = 'GND'
+    db['nets']['GND'].append('C307.1')
+    db['nets']['NRST'].remove('C307.1')       # NRST left with the MCU pin only: no reset chain
+    found = _io_candidates(db)
+    assert 'STARTUP-U301.NRST' not in found
+    assert _refs(found['STARTUP-U301.BOOT']) == ['R301', 'R302', 'U301']
+
+
+def test_multifunction_boot1_pin_gets_a_strap_row():
+    import plan_circuits
+    assert plan_circuits.STRAP_RE.search('PB2/BOOT1') and plan_circuits.STRAP_RE.search('/04_MCU/BOOT1')
+    assert not plan_circuits.STRAP_RE.search('/CONFIG/SDA')

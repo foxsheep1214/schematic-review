@@ -7264,5 +7264,26 @@
   "file": "scripts/circuit_candidates.py",
   "old": "                             or POWER_JACK_RE.search(_blob(self.graph.parts.get(connector, {})))):",
   "new": "                             ):"
+ },
+ {
+  "id": "M1318",
+  "name": "MCU boot strap pulls stay unassigned instead of joining the reset chain",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        self.chains()            # chains claim their parts before the converter walks, which are blocked from them\n        self.straps()\n",
+  "new": "        self.chains()            # chains claim their parts before the converter walks, which are blocked from them\n"
+ },
+ {
+  "id": "M1319",
+  "name": "a multifunction PB2/BOOT1 pin or a hierarchical /BOOT1 net gets no strap row",
+  "file": "scripts/plan_circuits.py",
+  "old": "r'(^|[_/])(BOOT\\w*|STRAP\\w*|TEST_MODE\\w*|CFG\\w*|CONFIG\\w*|MODE\\d*)(_|$)',",
+  "new": "r'(^|_)(BOOT\\w*|STRAP\\w*|TEST_MODE\\w*|CFG\\w*|CONFIG\\w*|MODE\\d*)(_|$)',"
+ },
+ {
+  "id": "M1320",
+  "name": "boot straps form their own chain even when the MCU has a reset chain",
+  "file": "scripts/circuit_candidates.py",
+  "old": "                        and self.matches(RESET_PIN_RE, c['nets'].get('pin', ''))), None)",
+  "new": "                        and False), None)"
  }
 ]
