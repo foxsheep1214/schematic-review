@@ -7138,5 +7138,12 @@
   "file": "scripts/datasheet_kinds.py",
   "old": "micro(?:processor|controller)s?\\W+crystal",
   "new": "micro(?:processor|controller)s?\\W+crystalX"
+ },
+ {
+  "id": "M1300",
+  "name": "a bracketed package note on an official pin name is compared as part of the name again",
+  "file": "scripts/board_intent.py",
+  "old": "compared = PACKAGE_NOTE_RE.sub('', official) or official",
+  "new": "compared = official"
  }
 ]

@@ -241,6 +241,10 @@ def declared_kinds(intent):
     return kinds if isinstance(kinds, dict) else {}
 
 
+# A package note after an official pin name (ST "VCC (TAB)", "GND (EP)"): the tab or pad, same function (boards-merge6 F04).
+PACKAGE_NOTE_RE = re.compile(r'\s*\((?:TAB|EP|E?PAD|EXPOSED[ _-]?PAD|THERMAL[ _-]?PAD|DAP|SLUG)\)\s*$', re.I)
+
+
 def graph_db(db, intent):
     """Analysis view: verified kinds and source-bound official names for unnamed native pins.
 
@@ -269,7 +273,9 @@ def graph_db(db, intent):
             official = spec.get('name', '')
             native = names.get(node, '')
             if native and native != '~':
-                left, right = (set(part_words.pin_aliases(n, pin)) for n in (native, official))
+                # boards-merge6 F04: "VCC (TAB)" is the VCC pin; a bracketed package note names the copper, not the function
+                compared = PACKAGE_NOTE_RE.sub('', official) or official
+                left, right = (set(part_words.pin_aliases(n, pin)) for n in (native, compared))
                 synonyms = (part_words.GATE_NAMES, part_words.DRAIN_NAMES, part_words.SOURCE_NAMES,
                             part_words.ANODE_NAMES, part_words.CATHODE_NAMES,
                             {'PAD', 'EP', 'EPAD', 'EXPOSED_PAD', 'EXPOSEDPAD'})
@@ -278,7 +284,7 @@ def graph_db(db, intent):
                 # or use a generic supply label for a cited physical power pin.
                 # This compares names only; it never joins return domains or
                 # replaces the native name used by connectivity analysis.
-                n, o = part_words.normalize(native), part_words.normalize(official)
+                n, o = part_words.normalize(native), part_words.normalize(compared)
                 composite = ('/' in o and not re.search(r'/[NB]$', o)
                              and n == o.replace('/', '_'))
                 return_alias = (spec.get('role') == 'return' and n == 'GND'
