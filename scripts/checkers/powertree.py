@@ -59,7 +59,7 @@ def supply_candidates(graph, intent):
 
 def _supply_nets(graph, rails, nets):
     from decoupling import parse_capacitance
-    native = (graph.db.get('native_pintype') or {}) if isinstance(graph.db, dict) else {}
+    native = graph.native_pintype
 
     def window(net):
         v = rails[net].get('voltage_v') if isinstance(rails.get(net), dict) else None
@@ -158,7 +158,7 @@ class PowerTree:
                 if node in self.sources:
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'declared source', 'state': self.state}
-                if self.feed and graph.kind(ref) in (pw.CONNECTOR, pw.BATTERY):
+                if self.feed and graph.kind(ref) in (pw.CONNECTOR, pw.BATTERY) and not pw.load_socket(part):
                     off_board = off_board or {'source': node, 'path': list(reversed(path)),
                                               'basis': 'off-board contact (connector or battery)'}
                 if self.feed and graph.kind(ref) in pw.WINDING_PAIRS | {pw.BRIDGE_RECTIFIER}:
@@ -191,7 +191,7 @@ class PowerTree:
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'OUT pin beside IN pin (regulator/load-switch shape); '
                                      'verify function and upstream power'}
-                if not sense_only and (graph.db.get('native_pintype') or {}).get(node) == 'power_out':
+                if not sense_only and graph.native_pintype.get(node) == 'power_out':
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'native power_out pin (library electrical type); '
                                      'verify function and upstream power'}
@@ -233,7 +233,7 @@ class PowerTree:
                     continue
                 resistor = parse_resistor(part.get('value')) if re.match(r'^R\d', ref) else None
                 if (SERIES_REF_RE.match(ref) or graph.kind(ref) in {pw.INDUCTOR, pw.FERRITE, pw.FUSE}
-                        or re.search(r'(?:^|:)Net[-_ ]?Tie(?:_|$)', str(part.get('prim', '')), re.I)
+                        or pw.copper_tie(ref, part)
                         or (resistor and 0 <= resistor['kohm'] <= 0.001)):
                     queue.append((other, path + [ref]))
                 elif self.feed and (graph.kind(ref) in {pw.SWITCH, pw.FUSE, pw.FERRITE, pw.INDUCTOR, pw.JUMPER} | pw.SERIES_WINDINGS

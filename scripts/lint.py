@@ -198,6 +198,7 @@ class Lint:
         analysis_db = board_intent.graph_db(db, analysis)
         self.graph = NetGraph(analysis_db)
         self.pinname = self.graph.pinname
+        self.pintype = self.graph.pintype
         # Electrical scans see the installed board; the original db remains intact for assembly audit.
         self.nets = {net: active for net, nodes in self.nets.items()
                      if (active := [node for node in nodes if self.graph.is_fitted(node.partition('.')[0])])}
@@ -602,7 +603,7 @@ class Lint:
                              f'{n} ({len(nds)}节点): {sorted(self.refs_of(n))[:6]}')
 
         # PWR-A02 电源脚无驱动 / 无网络：器件自己的供电脚（原生 power_in 或供电脚名），连接器触点不算
-        native = self.db.get('native_pintype') or {}
+        native = self.graph.native_pintype
         for node in sorted(set(pinname) | {k for k, t in native.items() if t == 'power_in'}):
             pn = pinname.get(node, '')
             ref = node.split('.')[0]

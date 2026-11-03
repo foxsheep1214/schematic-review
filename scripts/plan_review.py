@@ -376,6 +376,10 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.functions = []
         self.rule_plan = []
         self.diagnostics = list(analysis_db.get('pin_name_conflicts', []))
+        pin_types = NetGraph(analysis_db).pin_type_sources
+        if pin_types:
+            self.diagnostics.append({'code': 'MANUFACTURER_PIN_DIRECTIONS', 'pins': pin_types,
+                                     'detail': '准确型号的原厂物理脚方向用于分析；原生方向不改，逐脚保留来源与差异'})
         self._ids = set()
 
     def add_check(self, rule, obj, key=None, criterion=None,

@@ -9,6 +9,7 @@ import catalog
 import check_key
 import circuit_decisions
 import device_kinds
+import part_words as pw
 import protective_clamps
 import row_owner
 from audit_datasheets import datasheet_entry_for_ref
@@ -78,9 +79,12 @@ def _database_blobs(db):
     for node, pin in db.get('pinname', {}).items():
         blobs.append(f'PIN:{node}:{pin}')
     for ref, part in db.get('parts', {}).items():
+        if pw.mechanical_part(part):
+            continue
+        footprint = re.sub(r'DIN[-_ ]?\d{3,}', '', str(part.get('jedec', '')), flags=re.I)
         blobs.append('PART:' + ':'.join([
             ref, str(part.get('part', '')), str(part.get('value', '')),
-            str(part.get('prim', '')), str(part.get('jedec', ''))]))
+            str(part.get('prim', '')), footprint]))
     return blobs
 
 def _feature_hits(db, pattern):
@@ -865,7 +869,7 @@ class CircuitPlanning:
         graph = NetGraph(board_intent.graph_db(self.db, self.kind_intent))
         circuits = self.intent.get('circuits', [])
         owners = row_owner.part_owners(circuits)
-        fitted = [ref for ref in sorted(graph.parts) if graph.is_fitted(ref)]
+        fitted = [ref for ref in sorted(graph.parts) if graph.is_fitted(ref) and graph.pins_of(ref)]
         for rule in catalog.OWNED_PART_RULES:
             wanted = [ref for ref in fitted if OWNED_PART_KINDS[rule](graph.kind(ref))]
             gaps = self._materials_gap(OWNED_PART_MATERIALS[rule])

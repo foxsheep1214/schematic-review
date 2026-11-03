@@ -64,7 +64,7 @@ class Deriver:
         self.graph = ng.NetGraph(board_intent.graph_db(db, kind_intent))
         self.domains = domains_lib.derive(self.graph, kind_intent)
         self.tree = powertree.PowerTree(self.graph, kind_intent)
-        self.native = db.get('native_pintype') or {}
+        self.native = self.graph.native_pintype
         self.circuits = {c['id']: c for c in (intent or {}).get('circuits', [])}
         self.key = {cid: check_key.circuit_key(c) for cid, c in self.circuits.items()}
         self.owner_of = row_owner.part_owners(list(self.circuits.values()))

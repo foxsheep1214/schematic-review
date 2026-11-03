@@ -122,7 +122,7 @@ class _Bounds:
         if ref not in self._ic:
             graph, top = self.graph, None
             official = (graph.db.get('devices') or {}).get(ref, {}).get('pins', {})
-            native = graph.db.get('native_pintype') or {}
+            native = graph.native_pintype
             for pin, net in graph.pins_of(ref).items():
                 node = ref + '.' + pin
                 name = graph.pinname.get(node, '')
@@ -341,7 +341,7 @@ def _series_chains(graph, bounds):
     anything else on a tap leaves the string to the cluster bound. Between taps the resistors divide the voltage
     across the segment; a capacitor-held tap stays within its divider ratio of the end windows (an RC ladder with
     grounded capacitors never overshoots its DC gain), so a segment spans at most the difference of its ends' ranges."""
-    native = graph.db.get('native_pintype') or {}
+    native = graph.native_pintype
 
     def ohms(ref):
         parsed = parse_resistor_noted(graph.parts.get(ref, {}).get('value'), default_tol=DEFAULT_TOL)

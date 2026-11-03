@@ -709,7 +709,7 @@ class Generator:
             if not self.fitted(ref):
                 continue
             kind = self.graph.kind(ref)
-            if kind == pw.TESTPOINT:
+            if kind == pw.TESTPOINT and not pw.mechanical_part(self.graph.parts[ref]) and self.graph.pins_of(ref):
                 nets = [n for n in self.graph.nets_of(ref) if n not in self.graph.pseudo]
                 found.append((ref, 'testpoint', f'testpoint on {",".join(nets) or "no net"}'))
             elif kind == pw.CONNECTOR and any(self.matches(DEBUG_PIN_RE, ref + '.' + pin) for pin in self.graph.pins_of(ref)):

@@ -5848,8 +5848,8 @@
   "id": "M902",
   "name": "hyphenated KiCad net ties interrupt supply again",
   "file": "scripts/checkers/powertree.py",
-  "old": "(?:^|:)Net[-_ ]?Tie(?:_|$)",
-  "new": "(?:^|:)NetTie(?:_|$)"
+  "old": "or pw.copper_tie(ref, part)",
+  "new": "or bool(re.search(r'(?:^|:)NetTie(?:_|$)', str(part.get('prim') or ''), re.I))"
  },
  {
   "id": "M903",
@@ -6564,5 +6564,68 @@
   "file": "scripts/parse_kicad.py",
   "old": "        part['value'] = raw + ' [ambiguous RKM/component-prefix]'",
   "new": "        part['value'] = raw"
+ },
+ {
+  "id": "M1028",
+  "name": "mechanical package returns as active circuit",
+  "file": "scripts/part_words.py",
+  "old": "    if mechanical_part(part) and not signature:",
+  "new": "    if False:"
+ },
+ {
+  "id": "M1029",
+  "name": "socket K designator becomes relay",
+  "file": "scripts/part_words.py",
+  "old": "        return CONNECTOR, 'part-keyword'\n    if normalize(part.get('part')) == 'HY931147C':",
+  "new": "        return RELAY, 'part-keyword'\n    if normalize(part.get('part')) == 'HY931147C':"
+ },
+ {
+  "id": "M1030",
+  "name": "exact MC14093 pin direction table is discarded",
+  "file": "scripts/checkers/netgraph.py",
+  "old": "            rule = official_pin_types(part)",
+  "new": "            rule = None"
+ },
+ {
+  "id": "M1031",
+  "name": "mechanical testpoint enters debug candidate",
+  "file": "scripts/circuit_candidates.py",
+  "old": "if kind == pw.TESTPOINT and not pw.mechanical_part(self.graph.parts[ref]) and self.graph.pins_of(ref):",
+  "new": "if kind == pw.TESTPOINT:"
+ },
+ {
+  "id": "M1032",
+  "name": "mechanical standard triggers industrial input",
+  "file": "scripts/plan_circuits.py",
+  "old": "        if pw.mechanical_part(part):\n            continue",
+  "new": "        if False:\n            continue"
+ },
+ {
+  "id": "M1033",
+  "name": "zero-pin objects receive owned part stress checks",
+  "file": "scripts/plan_circuits.py",
+  "old": "if graph.is_fitted(ref) and graph.pins_of(ref)]",
+  "new": "if graph.is_fitted(ref)]"
+ },
+ {
+  "id": "M1034",
+  "name": "footprint-only copper tie loses power route",
+  "file": "scripts/checkers/powertree.py",
+  "old": "pw.copper_tie(ref, part)",
+  "new": "False"
+ },
+ {
+  "id": "M1035",
+  "name": "numbered ground names collapse into same pin role",
+  "file": "scripts/board_intent.py",
+  "old": "                if all(numbered) and numbered[0].group(1) == numbered[1].group(1) and numbered[0].group(2) != numbered[1].group(2):",
+  "new": "                if False:"
+ },
+ {
+  "id": "M1036",
+  "name": "memory-card load socket becomes external supply",
+  "file": "scripts/checkers/powertree.py",
+  "old": " and not pw.load_socket(part):",
+  "new": ":"
  }
 ]

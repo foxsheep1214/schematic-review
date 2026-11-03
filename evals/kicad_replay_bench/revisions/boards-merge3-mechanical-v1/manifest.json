@@ -1,0 +1,446 @@
+{
+ "revision": "boards-merge3-mechanical-v1",
+ "parents": {
+  "revisions/boards-merge3-copper-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge3-copper-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge3-copper-v1/expected.json": "f7672bc5fe9c2f657712a0b5256577231294dd09ef8b40a67055656a55366080",
+  "revisions/boards-merge3-copper-v1/manifest.json": "c000a5e0215b76d7dd0c80656589e616a17c5df40ce67e68b037a6677c52bac4"
+ },
+ "derived_files": {
+  "revisions/boards-merge3-mechanical-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge3-mechanical-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge3-mechanical-v1/expected.json": "9073f44fe619739c0218954b00d99c5b098abcdb0a089bd85a954fd86de4d7f1"
+ },
+ "scope": "Native XML K8 HYC77-TF09-200, description Micro SDcard holder, VDD4/GND6/CS2/MISO7/MOSI3/SCLK5: connector, not relay. Remove nine false relay/IC checks (including Q2 DRV-D01 falsely induced by the socket as a coil), add thirteen connector checks, net +4 (384 to388); retain U6.1 jumper-fed supply and Q2 DRV-C02/DRV-E01 switch reviews: a memory-card load socket is not an external power source. Only the K8 decoupling candidate and relay frame disappear; connector frame added. Missing X1 names and other groups unchanged. Independent native identity/pin reading plus exact row delta; not an electrical judgment.",
+ "field_changes": {
+  "plan.checks_total": {
+   "before": 384,
+   "after": 388
+  },
+  "decoupling.discovery_gaps": {
+   "before": [
+    "pin-name-unresolved:X1.2",
+    "pin-name-unresolved:X1.3",
+    "pin-name-unresolved:X1.4",
+    "unverified-device-pinout:D4",
+    "unverified-device-pinout:K2",
+    "unverified-device-pinout:K8",
+    "unverified-device-pinout:Q1",
+    "unverified-device-pinout:Q2",
+    "unverified-device-pinout:U1",
+    "unverified-device-pinout:U2",
+    "unverified-device-pinout:U3",
+    "unverified-device-pinout:U4",
+    "unverified-device-pinout:U5",
+    "unverified-device-pinout:U6",
+    "unverified-device-pinout:X1"
+   ],
+   "after": [
+    "pin-name-unresolved:X1.2",
+    "pin-name-unresolved:X1.3",
+    "pin-name-unresolved:X1.4",
+    "unverified-device-pinout:D4",
+    "unverified-device-pinout:K2",
+    "unverified-device-pinout:Q1",
+    "unverified-device-pinout:Q2",
+    "unverified-device-pinout:U1",
+    "unverified-device-pinout:U2",
+    "unverified-device-pinout:U3",
+    "unverified-device-pinout:U4",
+    "unverified-device-pinout:U5",
+    "unverified-device-pinout:U6",
+    "unverified-device-pinout:X1"
+   ]
+  },
+  "decoupling.group_gaps": {
+   "before": {
+    "UNSPECIFIED/candidate:D4:Net-(D4-VDD)": [
+     "component-kind:C4",
+     "confirm-group-and-return:candidate:D4:Net-(D4-VDD)",
+     "official-full-pinout:D4",
+     "population:C4",
+     "population:D4"
+    ],
+    "UNSPECIFIED/candidate:K2:Net-(F1-Pad2)": [
+     "confirm-group-and-return:candidate:K2:Net-(F1-Pad2)",
+     "official-full-pinout:K2",
+     "population:K2"
+    ],
+    "UNSPECIFIED/candidate:K8:3V3_MICROSD": [
+     "component-kind:C10",
+     "component-kind:C11",
+     "component-kind:C24",
+     "component-kind:C9",
+     "confirm-group-and-return:candidate:K8:3V3_MICROSD",
+     "official-full-pinout:K8",
+     "population:C10",
+     "population:C11",
+     "population:C24",
+     "population:C9",
+     "population:K8"
+    ],
+    "UNSPECIFIED/candidate:U1:VUSB": [
+     "component-kind:C1",
+     "component-kind:C8",
+     "confirm-group-and-return:candidate:U1:VUSB",
+     "official-full-pinout:U1",
+     "population:C1",
+     "population:C8",
+     "population:U1"
+    ],
+    "UNSPECIFIED/candidate:U3:VUSB": [
+     "component-kind:C1",
+     "component-kind:C8",
+     "confirm-group-and-return:candidate:U3:VUSB",
+     "official-full-pinout:U3",
+     "population:C1",
+     "population:C8",
+     "population:U3"
+    ],
+    "UNSPECIFIED/candidate:U4:Net-(U4-AVCC)": [
+     "component-kind:C22",
+     "confirm-group-and-return:candidate:U4:Net-(U4-AVCC)",
+     "official-full-pinout:U4",
+     "population:C22",
+     "population:U4"
+    ],
+    "UNSPECIFIED/candidate:U4:VCC": [
+     "component-kind:C12",
+     "component-kind:C13",
+     "component-kind:C14",
+     "component-kind:C15",
+     "component-kind:C18",
+     "component-kind:C19",
+     "component-kind:C20",
+     "component-kind:C21",
+     "component-kind:C25",
+     "component-kind:C3",
+     "confirm-group-and-return:candidate:U4:VCC",
+     "official-full-pinout:U4",
+     "population:C12",
+     "population:C13",
+     "population:C14",
+     "population:C15",
+     "population:C18",
+     "population:C19",
+     "population:C20",
+     "population:C21",
+     "population:C25",
+     "population:C3",
+     "population:U4"
+    ],
+    "UNSPECIFIED/candidate:U6:3V3_MICROSD": [
+     "component-kind:C10",
+     "component-kind:C11",
+     "component-kind:C24",
+     "component-kind:C9",
+     "confirm-group-and-return:candidate:U6:3V3_MICROSD",
+     "official-full-pinout:U6",
+     "population:C10",
+     "population:C11",
+     "population:C24",
+     "population:C9",
+     "population:U6"
+    ],
+    "UNSPECIFIED/candidate:U6:VCC": [
+     "component-kind:C12",
+     "component-kind:C13",
+     "component-kind:C14",
+     "component-kind:C15",
+     "component-kind:C18",
+     "component-kind:C19",
+     "component-kind:C20",
+     "component-kind:C21",
+     "component-kind:C25",
+     "component-kind:C3",
+     "confirm-group-and-return:candidate:U6:VCC",
+     "official-full-pinout:U6",
+     "population:C12",
+     "population:C13",
+     "population:C14",
+     "population:C15",
+     "population:C18",
+     "population:C19",
+     "population:C20",
+     "population:C21",
+     "population:C25",
+     "population:C3",
+     "population:U6"
+    ],
+    "UNSPECIFIED/candidate:X1:GND": [
+     "confirm-group-and-return:candidate:X1:GND",
+     "need-one-explicit-return-net",
+     "official-full-pinout:X1",
+     "pin-name-unresolved:X1.2",
+     "pin-name-unresolved:X1.3",
+     "pin-name-unresolved:X1.4",
+     "population:X1"
+    ]
+   },
+   "after": {
+    "UNSPECIFIED/candidate:D4:Net-(D4-VDD)": [
+     "component-kind:C4",
+     "confirm-group-and-return:candidate:D4:Net-(D4-VDD)",
+     "official-full-pinout:D4",
+     "population:C4",
+     "population:D4"
+    ],
+    "UNSPECIFIED/candidate:K2:Net-(F1-Pad2)": [
+     "confirm-group-and-return:candidate:K2:Net-(F1-Pad2)",
+     "official-full-pinout:K2",
+     "population:K2"
+    ],
+    "UNSPECIFIED/candidate:U1:VUSB": [
+     "component-kind:C1",
+     "component-kind:C8",
+     "confirm-group-and-return:candidate:U1:VUSB",
+     "official-full-pinout:U1",
+     "population:C1",
+     "population:C8",
+     "population:U1"
+    ],
+    "UNSPECIFIED/candidate:U3:VUSB": [
+     "component-kind:C1",
+     "component-kind:C8",
+     "confirm-group-and-return:candidate:U3:VUSB",
+     "official-full-pinout:U3",
+     "population:C1",
+     "population:C8",
+     "population:U3"
+    ],
+    "UNSPECIFIED/candidate:U4:Net-(U4-AVCC)": [
+     "component-kind:C22",
+     "confirm-group-and-return:candidate:U4:Net-(U4-AVCC)",
+     "official-full-pinout:U4",
+     "population:C22",
+     "population:U4"
+    ],
+    "UNSPECIFIED/candidate:U4:VCC": [
+     "component-kind:C12",
+     "component-kind:C13",
+     "component-kind:C14",
+     "component-kind:C15",
+     "component-kind:C18",
+     "component-kind:C19",
+     "component-kind:C20",
+     "component-kind:C21",
+     "component-kind:C25",
+     "component-kind:C3",
+     "confirm-group-and-return:candidate:U4:VCC",
+     "official-full-pinout:U4",
+     "population:C12",
+     "population:C13",
+     "population:C14",
+     "population:C15",
+     "population:C18",
+     "population:C19",
+     "population:C20",
+     "population:C21",
+     "population:C25",
+     "population:C3",
+     "population:U4"
+    ],
+    "UNSPECIFIED/candidate:U6:3V3_MICROSD": [
+     "component-kind:C10",
+     "component-kind:C11",
+     "component-kind:C24",
+     "component-kind:C9",
+     "confirm-group-and-return:candidate:U6:3V3_MICROSD",
+     "official-full-pinout:U6",
+     "population:C10",
+     "population:C11",
+     "population:C24",
+     "population:C9",
+     "population:U6"
+    ],
+    "UNSPECIFIED/candidate:U6:VCC": [
+     "component-kind:C12",
+     "component-kind:C13",
+     "component-kind:C14",
+     "component-kind:C15",
+     "component-kind:C18",
+     "component-kind:C19",
+     "component-kind:C20",
+     "component-kind:C21",
+     "component-kind:C25",
+     "component-kind:C3",
+     "confirm-group-and-return:candidate:U6:VCC",
+     "official-full-pinout:U6",
+     "population:C12",
+     "population:C13",
+     "population:C14",
+     "population:C15",
+     "population:C18",
+     "population:C19",
+     "population:C20",
+     "population:C21",
+     "population:C25",
+     "population:C3",
+     "population:U6"
+    ],
+    "UNSPECIFIED/candidate:X1:GND": [
+     "confirm-group-and-return:candidate:X1:GND",
+     "need-one-explicit-return-net",
+     "official-full-pinout:X1",
+     "pin-name-unresolved:X1.2",
+     "pin-name-unresolved:X1.3",
+     "pin-name-unresolved:X1.4",
+     "population:X1"
+    ]
+   }
+  },
+  "plan.functions": {
+   "before": [
+    {
+     "id": "FN-EXT-K1",
+     "members": 8,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-K2",
+     "members": 20,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-K3",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-K4",
+     "members": 46,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-K5",
+     "members": 45,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-K6",
+     "members": 24,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 8,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ],
+   "after": [
+    {
+     "id": "FN-EXT-K1",
+     "members": 8,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-K2",
+     "members": 20,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-K3",
+     "members": 6,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-K4",
+     "members": 46,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-K5",
+     "members": 45,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-K6",
+     "members": 24,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-EXT-K8",
+     "members": 11,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-MONITOR",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-PINMAP",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-POWER",
+     "members": 8,
+     "states": [
+      "run"
+     ]
+    },
+    {
+     "id": "FN-SYS-SEQUENCE",
+     "members": 1,
+     "states": [
+      "run"
+     ]
+    }
+   ]
+  }
+ }
+}

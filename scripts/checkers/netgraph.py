@@ -10,7 +10,7 @@ import re
 from part_words import (ANCHOR_ROLES, ANODE_NAMES, BJT, CATHODE_NAMES, COIL_NAMES, CONNECTOR, CONNECTOR_CONTACT_RE,
                         DIODE, DRAIN_NAMES, GATE_NAMES, IC, IC_ROLES, LED_ANODE_NAMES, LED_CATHODE_NAMES, MOSFET, OPTO,
                         PASSIVE_LINKS, RELAY, SOURCE_NAMES, TVS, ZENER, classify, name_matches, normalize, pin_aliases,
-                        pin_signature, board_copper, copper_tie)
+                        pin_signature, board_copper, copper_tie, official_pin_types)
 
 GNDS = {'GND', 'PGND', 'AGND', 'DGND', 'EGND'}
 # 可带 RAIL_ 前缀（RAIL_3V3_PRI）；VSYS/VMOT/VLED/VM、P5V/P3V3 也是轨名；HV/HV80_IN/HV_BIAS 是高压轨（HVEN、HV_EN 是使能）；
@@ -100,7 +100,9 @@ class NetGraph:
         self.parts = db.get('parts', {})
         self.pin2net = db.get('pin2net', {})
         self.pinname = db.get('resolved_pinname', db.get('pinname', {}))
-        self.pintype = db.get('pintype', {})
+        self.pintype = dict(db.get('pintype', {}))
+        self.native_pintype = dict(db.get('native_pintype') or {})
+        self.pin_type_sources = {}
         self.pin_evidence = db.get('pin_name_evidence', {})
         self.pin_conflicts = db.get('pin_name_conflicts', [])
         self.pseudo = set(db.get('pseudo_nets', []))
@@ -108,6 +110,19 @@ class NetGraph:
         for node, net in self.pin2net.items():
             ref, _, pin = node.partition('.')
             self._pins.setdefault(ref, {})[pin] = net
+        for ref, part in self.parts.items():
+            rule = official_pin_types(part)
+            if not rule:
+                continue
+            types, citation = rule
+            for pin, native_type in types.items():
+                node = ref + '.' + pin
+                if node not in self.pin2net:
+                    continue
+                self.pin_type_sources[node] = {'native': self.native_pintype.get(node),
+                                               'effective': native_type, 'citation': citation}
+                self.native_pintype[node] = native_type
+                self.pintype[node] = {'input': 'IN', 'output': 'OUT', 'power_in': 'POWER'}[native_type]
         if fitted is None:
             fitted = {ref for ref, part in self.parts.items() if not part.get('nc') or board_copper(ref, part)}
         self.fitted = set(fitted)
@@ -311,8 +326,9 @@ class NetGraph:
             current, hops = queue.pop(0)
             if hops >= max_hops or (current != net and (is_ground(current) or is_rail(current))):
                 continue
-            for ref, other in self.neighbors(current, {'resistor'}):
-                value = parse_resistor(self.parts.get(ref, {}).get('value'))
+            for ref, other in self.neighbors(current, {'resistor', 'jumper'}):
+                part = self.parts.get(ref, {})
+                value = {'kohm': 0.0} if copper_tie(ref, part) else parse_resistor(part.get('value')) if self.kind(ref) == 'resistor' else None
                 if value is None or value['kohm'] < 0 or is_ground(other) or is_rail(other):
                     continue
                 cost = costs[current] + value['kohm'] * 1000

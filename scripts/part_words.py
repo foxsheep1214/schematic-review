@@ -93,6 +93,27 @@ def board_copper(ref, part):
     return copper_tie(ref, part) or bool(re.search(r'(?:^|:)TestPoint_Pad(?:_|$)', str(part.get('jedec') or ''), re.I))
 
 
+def mechanical_part(part):
+    """Native mechanical identities, never a word in a free-form description."""
+    text = ' '.join(str(part.get(k) or '') for k in ('prim', 'jedec'))
+    return bool(re.search(r'MOUNTINGHOLE|FIDUCIAL|(?:^|[:_\s])LOGO(?:_|\s|$)|DIN[-_ ]?965(?:_|\s|$)', text, re.I))
+
+
+def load_socket(part):
+    """A removable memory card consumes board power; its socket is not an input source."""
+    return any(str(part.get(k) or '').upper() == 'HYC77-TF09-200' for k in ('part', 'value'))
+
+
+def official_pin_types(part):
+    """Exact manufacturer's direction table, not a generic name-based override."""
+    model = str(part.get('part') or part.get('value') or '')
+    if re.fullmatch(r'MC14093B(?:(?:DT|D|F)(?:R2)?G?)?', model, re.I):
+        types = {str(p): 'output' if p in (3, 4, 10, 11) else 'power_in' if p in (7, 14) else 'input'
+                 for p in range(1, 15)}
+        return types, 'onsemi MC14093B/D Rev11 Aug2025 p1 Pin Assignment (14-pin D/DT/F)'
+    return None
+
+
 OVERBAR_RE = re.compile(r'^~\{(.+)\}$')
 INDEX_SUFFIX_RE = re.compile(r'^(.*?[A-Z])[_-]?(\d+)$')
 
@@ -225,6 +246,11 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
         return JUMPER, 'part-keyword'
     if any(re.search(r'(?:^|:)TRAFO(?:_\d+)?$', normalize(part.get(k))) for k in ('part', 'value', 'prim')):
         return TRANSFORMER, 'part-keyword'
+    if mechanical_part(part) and not signature:
+        return TESTPOINT, 'part-keyword'
+    if any(re.fullmatch(r'HYC77-TF09-200|FH34SRJ-\d+S-0\.5SH\(50\)', str(part.get(k) or ''), re.I)
+           for k in ('part', 'value')):
+        return CONNECTOR, 'part-keyword'
     if normalize(part.get('part')) == 'HY931147C':
         return CONNECTOR, 'part-keyword'  # HanRun integrated magnetics RJ45, Rev.A/1 p1; not an active IC
     if pin_count == 2 and re.match(r'^(?:L|FB)\d', ref, re.I) and normalize(part.get('value')) == 'FB':

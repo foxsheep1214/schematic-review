@@ -103,7 +103,7 @@ class _Scan:
         inputs.update(self.graph.named_pins(ref, re.compile(r'^IN\d*$', re.I)))
         # VI can also mean a signal/video input. Only directional native power
         # evidence admits this alias; canonical POWER conflates inputs/outputs.
-        native_types = self.graph.db.get('native_pintype') or {}
+        native_types = self.graph.native_pintype
         for node, net in self.graph.named_pins(ref, re.compile(r'^VI$', re.I)).items():
             if str(native_types.get(node, '')).lower() == 'power_in':
                 inputs[node] = net

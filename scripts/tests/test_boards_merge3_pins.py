@@ -54,3 +54,17 @@ def test_exposed_pad_synonyms_are_not_pin_conflicts():
     db['pinname']['U3.3'] = 'PAD'
     intent['devices']['U3']['pins']['3']['name'] = 'EP'
     assert not NetGraph(board_intent.graph_db(db, intent)).pin_conflicts
+
+
+def test_role_bound_supply_and_composite_name_aliases_preserve_domain_and_polarity_checks():
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    for native, official, role, compatible in [
+        ('MODE_SYNC','MODE/SYNC','other',True),('GND','V-','return',True),('VDD','V+B','power',True),
+        ('GND1','GND2','return',False),('RESET_N','RESET','other',False),('G','D','other',False)]:
+        db=empty();add(db,'U1','IC',[('1',native,'N')])
+        intent={'devices':{'U1':{'pinout_complete':True,'citation':'manufacturer p1 physical pin table',
+                                  'pins':{'1':{'name':official,'role':role}}}}}
+        g=NetGraph(board_intent.graph_db(db,intent))
+        assert g.pinname['U1.1']==native
+        assert bool(g.pin_conflicts) is not compatible
