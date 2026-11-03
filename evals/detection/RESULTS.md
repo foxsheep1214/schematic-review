@@ -3,14 +3,14 @@
 自动层为本次离线运行；历史清单为来源记载的当时结果，未重审。
 
 准则 353 条；有规则 353 条。
-按准则归属计数：正例 611，命中 560，漏报 20，未知 31，运行错误 0，误报 18；负例通过 152，未分类 0。
+按准则归属计数：正例 611，命中 560，漏报 20，未知 31，运行错误 0，误报 11；负例通过 159，未分类 0。
 
 **归属计数不是独立缺陷数，也不是逐条准则已验证的证明。** BASIS 是规则的粗映射；一条规则核多条准则，同一用例可出现在多行。典型 expected 含正确线索，不能合称真缺陷。
 
 | 来源 | 唯一正例/缺陷 | 命中 | 漏报 | 未知 | 错误 | 误报 | 负例通过 | 未分类 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | seeded | 247 | 221 | 26 | 0 | 0 | 0 | 0 | 0 |
-| typical | 215 | 215 | 0 | 0 | 0 | 14 | 190 | 0 |
+| typical | 216 | 216 | 0 | 0 | 0 | 7 | 197 | 0 |
 | history | 53 | 4 | 2 | 47 | 0 | 0 | 0 | 0 |
 
 ## 有已知缺陷或正例的准则
@@ -63,7 +63,7 @@
 | G04-084 | 上电时序留够晶振起振时间 | 1 | 7 | 7 | 0 | 0 | 0 | 0 | 0/0/0 |
 | G04-085 | 样机测量振荡器安全系数 | 1 | 7 | 7 | 0 | 0 | 0 | 0 | 0/0/0 |
 | G04-087 | 以太网线缆侧中心抽头有 Bob Smith 端接 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0/0/0 |
-| G04-102 | 未用脚、保留脚与专用脚按手册处置 | 3 | 98 | 95 | 3 | 0 | 0 | 13 | 0/0/0 |
+| G04-102 | 未用脚、保留脚与专用脚按手册处置 | 3 | 98 | 95 | 3 | 0 | 0 | 6 | 0/0/0 |
 | G04-103 | USB 数据线外围按所选控制器手册 | 1 | 4 | 4 | 0 | 0 | 0 | 0 | 0/0/0 |
 | G04-104 | USB Type-C 端口 CC 按端口角色端接 | 2 | 42 | 39 | 3 | 0 | 0 | 5 | 0/0/0 |
 | G05-030 | TVS 工作电压不低于被钳节点最高工作电压 | 1 | 43 | 43 | 0 | 0 | 0 | 0 | 0/0/0 |
@@ -386,16 +386,16 @@
 
 | 误报准则 | 数量 | SR规则 |
 |---|---:|---|
-| G04-102 | 13 | NET-A01, NET-A07 |
+| G04-102 | 6 | NET-A01, NET-A07 |
 | G04-104 | 5 | NET-A07 |
 
-全部观测误报按规则：NET-A01 8，NET-A07 5，DRV-A03 1。无 BASIS 映射的误报不强配准则；不能把准则表中的 0 误报解读为 SR 没有误报。
+全部观测误报按规则：NET-A07 5，NET-A01 1，DRV-A03 1。无 BASIS 映射的误报不强配准则；不能把准则表中的 0 误报解读为 SR 没有误报。
 
 历史清单 53 条：electrical 6，review_process 37，rule_audit 10；准则留空 22 条。
 
 ## 尚未归到准则的观测
 
-共 411 条；保留规则与数量，不静默丢弃。下表按来源、规则、状态分组。
+共 412 条；保留规则与数量，不静默丢弃。下表按来源、规则、状态分组。
 
 | 来源 | SR规则 | 状态 | 数量 |
 |---|---|---|---:|
@@ -428,7 +428,7 @@
 | typical | DEV-A02 | hit | 1 |
 | typical | DOC-A04 | tn | 8 |
 | typical | DRV-A03 | fp | 1 |
-| typical | DRV-A03 | hit | 7 |
+| typical | DRV-A03 | hit | 8 |
 | typical | DRV-A03 | tn | 10 |
 | typical | DRV-A04 | hit | 7 |
 | typical | DRV-A04 | tn | 13 |
@@ -455,19 +455,19 @@
 
 | 输入 | SHA256 |
 |---|---|
-| seeded results.json | `4e53d0968d26532b49acb182c09164a1c8d3ffe781a95eedae0663b43f36933f` |
-| typical results.json | `218b1301f2613ca256d572daa983953919352e23538e7e2dd56e0527dbdc3139` |
-| KiCad replay results.json | `3e3af231d8f6b769fb451c4cc5e300eab6758fa1da74e572b6cf60ba2674db5b` |
+| seeded results.json | `88a7b0df539cdd903127d57217d4097d1eb4d2ce7f68d64afbec6ce20d44f91a` |
+| typical results.json | `075a5d9177878c7ca4858671f1dc9de9d20a71926b1f17df64931340d33ed066` |
+| KiCad replay results.json | `ff057a54f97b79230e477b1383ad5887791f95d54fcefdf6c57adefb0aafba6b` |
 | known_defects.json | `35c824bfdcb2f967bba1ee843d94969c53c153ad1ad2434cdf345405e6c90452` |
 | catalog.py | `8f1d9a2fd11493e4ccf062f7c403b1ec840a7988c9f7e951c18df5520c6ee84d` |
 | guideline-criteria.json | `985b136ac0b3bc43b925bb748ae6866faafefea2bce5be5b5d822b4e6fe0ad3e` |
 | seeded corpus.json | `191a704ebd11e0e16da56c8cafb8fd4f66ba933b05a80453ef1dd1814661a532` |
-| typical cases.json | `3fe164d3a7b7106c3b72a5b43e6879e6e8b8d0d41be5dfc11dcf6bde34fad96a` |
-| improvement-ledger.md | `c6032e3fb835b7ed0c06427831c6537f26bab3ef4578da7fc159562bb0ab10ad` |
+| typical cases.json | `aac7e7ee7907d12afaacee77a828f88e2f6548bfa3c2a18b0e78f3c61ea7c669` |
+| improvement-ledger.md | `4871323efee0e022f5d8b2bf591f18bd64c174b8264827d024c7a5380b5ba8ff` |
 | docs/audits/2026-10-07-module-scope-replay.md | `6c8f91297d55555a484838931f91eefdc1af094f3efc277babac3b214dfe85f0` |
 | docs/audits/2026-10-07-review-charter.md | `7ae76d400315188e0a2d94a7cef8b69076f2e813715cb4020132b00697d14574` |
 
-- KiCad 原生回放（本次/所给结果，约定 boards-merge3-v1）：{'MATCH': 195, 'KNOWN': 0, 'MISMATCH': 0}。字段一致性没有缺陷真值，不计入 H/M/FP。
+- KiCad 原生回放（本次/所给结果，约定 boards-merge4-v1）：{'MATCH': 195, 'KNOWN': 0, 'MISMATCH': 0}。字段一致性没有缺陷真值，不计入 H/M/FP。
 - input_bench：只读取 2026-10-07 历史记录 4/4，未重新运行；缺原作者输入，不把导入拒绝计作电气检出。
 - consistency_bench：没有随仓库保存的评分结果，且只度量一致性，不判对错；未计分。
 - mutation：代码测试门，不是设计缺陷检出，排除。规则合同是合成触发板，亦排除。

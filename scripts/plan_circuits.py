@@ -239,6 +239,13 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
                 and any(name_matches(p, names.get(ref + '.' + pin), pin) for p in patterns)]
         return list(dict.fromkeys(hits))
 
+    def family_ports(which):
+        """ICs of the circuit whose exact family pin table names a switch/feedback port wired here (TPS65023 L1-L3,
+        TOPSwitch DRAIN/CONTROL), whatever the symbol's short pin names (boards-merge4)."""
+        return [ref for ref, pin in ic_pins(False)
+                if pw.supply_port(graph.parts.get(ref), names.get(ref + '.' + pin), pin, which)
+                and not is_ground(graph.pin2net.get(ref + '.' + pin, ''))]
+
     def dividers():
         """ICs with a signal pin on a circuit net that two circuit resistors divide (to two different nets)."""
         hits = []
@@ -270,9 +277,10 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
                 found.append(ref)
     elif requires == 'FEEDBACK_PIN':   # a loop: a feedback pin, an output sensed through a divider or an optocoupler
         found = list(dict.fromkeys(with_pin((FEEDBACK_NAME_RE,), adjacent=True) + with_pin((REGULATOR_OUT_RE,)) + dividers()
-                                   + [ref for ref in fitted if graph.kind(ref) == OPTO]))
+                                   + [ref for ref in fitted if graph.kind(ref) == OPTO] + family_ports('feedback')))
     elif requires == 'SWITCH_PIN':
-        found = list(dict.fromkeys(with_pin((DRIVE_NAME_RE,), adjacent=True) + with_pin((REGULATOR_OUT_RE,))))
+        found = list(dict.fromkeys(with_pin((DRIVE_NAME_RE,), adjacent=True) + with_pin((REGULATOR_OUT_RE,))
+                                   + family_ports('switch')))
     elif requires == 'CONNECTOR_INPUT':   # the power path: an IC's signal pin on a connector is no input path
         reach = set()
         for net in {n for ref in fitted if graph.kind(ref) != IC for n in graph.nets_of(ref) if not is_ground(n)} | (
@@ -710,7 +718,13 @@ class CircuitPlanning:
             if not connector_graph.is_fitted(ref) or connector_graph.kind(ref) != IC:
                 continue
             outputs = connector_graph.named_pins(ref, REGULATOR_OUT_RE)
-            if connector_graph.role_kind(ref) != 'regulator' and not re.search(r'PF3000|BD71847', str(connector_graph.parts[ref].get('part', '')), re.I):
+            family = pw.supply_ports(connector_graph.parts[ref])
+            if family:   # every output port of the exact family pin table is its own supply node (boards-merge4)
+                outputs.update({ref + '.' + pin: net for pin, net in connector_graph.pins_of(ref).items()
+                                if pw.supply_port(connector_graph.parts[ref], pinname.get(ref + '.' + pin), pin, 'outputs')
+                                and not is_ground(net)})
+            if (connector_graph.role_kind(ref) != 'regulator' and not family
+                    and not re.search(r'PF3000|BD71847', str(connector_graph.parts[ref].get('part', '')), re.I)):
                 continue
             outputs.update(connector_graph.named_pins(ref, re.compile(r'^BUCK\d+_FB$', re.I)))
             seen_outputs = set()

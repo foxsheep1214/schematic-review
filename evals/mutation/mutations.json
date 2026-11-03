@@ -6732,5 +6732,222 @@
   "file": "evals/seeded_bench/mutators.py",
   "old": "'population':{ref:not bool(part.get('nc')) for ref,part in parts.items()},'jumpers':{}}]}",
   "new": "'population':{},'jumpers':{}}]}"
+ },
+ {
+  "id": "M1100",
+  "name": "fractional BOM power split into a whole-watt segment",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        text = FRACTION_W_RE.sub(' ', text)\n",
+  "new": "        found['power_w'].clear()\n"
+ },
+ {
+  "id": "M1101",
+  "name": "unread BOM power falls back to the package floor and may pass",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if bom.get('power_unread') and not parsed.get('power_w'):\n",
+  "new": "        if False:\n"
+ },
+ {
+  "id": "M1102",
+  "name": "a ground-named divider midpoint is fixed at 0 V",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if _ground_name(net) and not self.midpoint(net):\n",
+  "new": "        if _ground_name(net):\n"
+ },
+ {
+  "id": "M1103",
+  "name": "an IC return pin does not keep a ground real",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "                    or ng.is_ground(name)):\n                return False\n            continue\n",
+  "new": "                    or ng.is_ground(name)) and False:\n                return False\n            continue\n"
+ },
+ {
+  "id": "M1104",
+  "name": "one resistor to ground alone makes a midpoint",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "    return to_ground and to_other\n",
+  "new": "    return to_ground\n"
+ },
+ {
+  "id": "M1105",
+  "name": "a divider midpoint becomes a reference domain",
+  "file": "scripts/checkers/domains.py",
+  "old": "        if not zero and passive_stress.midpoint_ground(graph, net):\n",
+  "new": "        if False:\n"
+ },
+ {
+  "id": "M1106",
+  "name": "a pin fed through a kilo-ohm resistor is reported undriven",
+  "file": "scripts/lint.py",
+  "old": "                    elif weak:\n",
+  "new": "                    elif False:\n"
+ },
+ {
+  "id": "M1107",
+  "name": "a rail fed through a kilo-ohm resistor is reported undriven",
+  "file": "scripts/lint.py",
+  "old": "                elif weak := self.powertree.weak_source(n):\n",
+  "new": "                elif False:\n"
+ },
+ {
+  "id": "M1108",
+  "name": "a weak feed needs no source on the far side",
+  "file": "scripts/checkers/powertree.py",
+  "old": "            found = self.source_of(other) or feed.source_of(other)\n",
+  "new": "            found = {'source': other, 'path': []}\n"
+ },
+ {
+  "id": "M1110",
+  "name": "a PMIC output port from the family pin table is no source",
+  "file": "scripts/checkers/powertree.py",
+  "old": "                if pw.supply_port(part, graph.pinname.get(node), pin, 'outputs'):\n",
+  "new": "                if False:\n"
+ },
+ {
+  "id": "M1111",
+  "name": "a grounded PMIC output port is reported as a grounded supply pin",
+  "file": "scripts/lint.py",
+  "old": "                if pw.supply_port(self.parts.get(ref, {}), pn, node.partition('.')[2], 'outputs'):\n",
+  "new": "                if False:\n"
+ },
+ {
+  "id": "M1112",
+  "name": "PMIC output ports get no per-output PWR-C04",
+  "file": "scripts/plan_circuits.py",
+  "old": "            family = pw.supply_ports(connector_graph.parts[ref])\n",
+  "new": "            family = None\n"
+ },
+ {
+  "id": "M1113",
+  "name": "family switch/feedback ports do not satisfy the preconditions",
+  "file": "scripts/plan_circuits.py",
+  "old": "                if pw.supply_port(graph.parts.get(ref), names.get(ref + '.' + pin), pin, which)\n",
+  "new": "                if False\n"
+ },
+ {
+  "id": "M1114",
+  "name": "a TOPSwitch valued TOP227 on a TOP204 symbol is not the family",
+  "file": "scripts/part_words.py",
+  "old": "    for key in ('part', 'value'):\n        model = str((part or {}).get(key) or '')\n",
+  "new": "    for key in ('value',):\n        model = str((part or {}).get(key) or '')\n"
+ },
+ {
+  "id": "M1115",
+  "name": "an isolated DC/DC module is not modelled from its pin names",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "    if groups is None and ISOLATED_MODULE_RE.match(mpn) and (sides := _module_sides(names, actual)):\n",
+  "new": "    if False:\n"
+ },
+ {
+  "id": "M1116",
+  "name": "-Vout of a single-output module counts as a power output",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "             or (common and named(MODULE_NEGATIVE_OUT_RE, p))]",
+  "new": "             or named(MODULE_NEGATIVE_OUT_RE, p)]"
+ },
+ {
+  "id": "M1117",
+  "name": "module pin names are read without their subscript spelling",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "    spelled = {p: pw.pin_aliases(names[p]) or (names[p],) for p in actual}\n",
+  "new": "    spelled = {p: (names[p],) for p in actual}\n"
+ },
+ {
+  "id": "M1118",
+  "name": "a dual MOS keeps only its first gate",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "        if len(gates) < 2:\n",
+  "new": "        if True:\n"
+ },
+ {
+  "id": "M1119",
+  "name": "a shared D12 drain belongs to no channel",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "                                and (m.group(1) == index.group(1) or (len(m.group(1)) > 1 and index.group(1) in m.group(1)))):\n",
+  "new": "                                and m.group(1) == index.group(1)):\n"
+ },
+ {
+  "id": "M1120",
+  "name": "unindexed dual-MOS channels guess their drain and source",
+  "file": "scripts/checkers/power_switch.py",
+  "old": "            else:\n                gaps.append('channel-pin-map:' + ref)\n",
+  "new": "            else:\n                nodes.update(drain=graph.node_named(ref, 'drain'), source=graph.node_named(ref, 'source'))\n"
+ },
+ {
+  "id": "M1121",
+  "name": "lettered isolator sides fall back to channel digits",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "        if {lettered.get(p) for p in actual if re.fullmatch(r'(?:VCC|VDD)[AB]', names[p], re.I)} == {'A', 'B'}:\n",
+  "new": "        if False:\n"
+ },
+ {
+  "id": "M1122",
+  "name": "a native no-connect flag does not soften NET-A01",
+  "file": "scripts/lint.py",
+  "old": "                if nds[0] in no_connect and (self.graph.kind(ref) in (CONNECTOR, pw.TESTPOINT)\n",
+  "new": "                if False and (self.graph.kind(ref) in (CONNECTOR, pw.TESTPOINT)\n"
+ },
+ {
+  "id": "M1123",
+  "name": "a no-connect flag softens NET-A01 on an input of unknown direction",
+  "file": "scripts/lint.py",
+  "old": "                                             or self.graph.native_pintype.get(nds[0]) in NC_OPEN_PINTYPES):\n",
+  "new": "                                             or True):\n"
+ },
+ {
+  "id": "M1124",
+  "name": "an MPN /NC ordering suffix marks the part DNP",
+  "file": "scripts/parse_kicad.py",
+  "old": "    return '' if mpn and letters(text) == letters(mpn) else text\n",
+  "new": "    return text\n"
+ },
+ {
+  "id": "M1125",
+  "name": "a plus sign vanishes from function ids",
+  "file": "scripts/checkers/planutil.py",
+  "old": "    value = str(value or '').replace('+', '-PLUS-')\n",
+  "new": "    value = str(value or '')\n"
+ },
+ {
+  "id": "M1126",
+  "name": "a carried function binding is not rebuilt as a member",
+  "file": "scripts/plan_review.py",
+  "old": "            if bound is not None and bound.get('circuit') and check['id'] not in {m['check_id'] for m in bound['members']}:\n",
+  "new": "            if False:\n"
+ },
+ {
+  "id": "M1127",
+  "name": "a row bound to a missing frame passes silently",
+  "file": "scripts/plan_review.py",
+  "old": "        if stale:\n            raise ValueError(",
+  "new": "        if stale and False:\n            raise ValueError("
+ },
+ {
+  "id": "M1128",
+  "name": "an isolator supply group takes both sides' returns",
+  "file": "scripts/decoupling.py",
+  "old": "                if len(side) == 1:   # an isolator's supply pairs with its own side's return (VCCA/GNDA), never across\n",
+  "new": "                if False:\n"
+ },
+ {
+  "id": "M1129",
+  "name": "MAX14850 is not recognised as a digital isolator",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "|CA-IS\\d|MAX1485\\d)', mpn)",
+  "new": "|CA-IS\\d)', mpn)"
+ },
+ {
+  "id": "M1130",
+  "name": "merge4 no-PASS guard accepts a PASS proposal",
+  "file": "evals/seeded_bench/run.py",
+  "old": "if not rows or any(c.get('proposal', {}).get('result') == 'PASS' for c in rows):",
+  "new": "if not rows:"
+ },
+ {
+  "id": "M1131",
+  "name": "NC-flag seed keeps the native no-connect flag",
+  "file": "evals/seeded_bench/mutators.py",
+  "old": "out['no_connect_nodes'] = [n for n in out['no_connect_nodes'] if n != 'J6.38']",
+  "new": "out['no_connect_nodes'] = list(out['no_connect_nodes'])"
  }
 ]

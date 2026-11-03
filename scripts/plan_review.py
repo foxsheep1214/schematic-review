@@ -454,9 +454,18 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         derive_rows derives it, so which rows derive is no longer the reviewer's choice (SR task loop 2026-10-25, ③:
         derived rows 387 / 287 / 185 on one board). Board-owned rows and rows already bound stay as they are."""
         frames = {f['circuit']: f for f in self.functions if f.get('circuit')}
+        by_id = {f['id']: f for f in self.functions}
         for check in checks:
             owner = check.get('owner') or {}
             frame = frames.get(owner.get('id')) if owner.get('kind') == 'CIRCUIT' else None
+            bound = by_id.get(check.get('function_id'))
+            if bound is not None and bound.get('circuit') and check['id'] not in {m['check_id'] for m in bound['members']}:
+                # a row carried over from a merged plan keeps its function_id; the rebuilt frame takes it back as a
+                # member instead of leaving the binding one-sided (boards-merge4: 8 rows bound, members empty)
+                bound['members'].append({'check_id': check['id'], 'rule': check['rule'], 'aspect': check.get('aspect')
+                                         or catalog.title(check['rule']), 'state': (check.get('object') or {}).get('state')})
+                bound['blind_spots'].setdefault(check['rule'], catalog.explanation(check['rule'])['risk_if_omitted'])
+                continue
             if frame is None or check.get('function_id') or check.get('applicability') == 'NOT_APPLICABLE':
                 continue
             check['function_id'] = frame['id']
@@ -464,6 +473,11 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             state = (check.get('object') or {}).get('state')
             frame['members'].append({'check_id': check['id'], 'rule': check['rule'], 'aspect': check['aspect'], 'state': state})
             frame['blind_spots'].setdefault(check['rule'], catalog.explanation(check['rule'])['risk_if_omitted'])
+        stale = sorted({c['id'] + ' -> ' + c['function_id'] for c in checks
+                        if c.get('function_id') and str(c['function_id']).startswith('FN-') and c['function_id'] not in by_id})
+        if stale:
+            raise ValueError('internal error: rows bound to a function frame this plan does not build (member list would '
+                             'be empty): ' + '; '.join(stale[:5]))
 
     def _ready_check(self, rule, obj, gaps, trigger, **extra):
         return self.add_check(rule, obj, readiness='WAITING_EVIDENCE' if gaps else 'READY',

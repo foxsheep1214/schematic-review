@@ -443,6 +443,32 @@ class _Scan:
                 'primary_on_duty': 'reverse blocking; channel must be off',
                 'dynamic_status': 'not verified: diode intervals, turn-off overlap/reverse current, repetition and thermal duty'}, []
 
+    def channels(self, ref):
+        """[(channel, {gate, drain, source: node}, gaps)] of one package. A dual MOS (two gate pins) is one channel per
+        gate: G1/D1/S1 and G2/D2/S2 by the pin-name index, a shared drain D12 belongs to both (FS8205A, boards-merge4).
+        Without indexed names (two plain G pins) each gate is its own channel with its drain/source unresolved, never
+        the first G paired with whichever S sorts first."""
+        graph = self.graph
+        gates = [ref + '.' + pin for pin in sorted(graph.pins_of(ref)) if graph.role(ref + '.' + pin) == 'gate']
+        if len(gates) < 2:
+            return [(None, {role: graph.node_named(ref, role) for role in ('gate', 'drain', 'source')}, [])]
+        found = []
+        for gate in gates:
+            index = re.fullmatch(r'G(?:ATE)?[_-]?(\d+)', pw.normalize(graph.pinname.get(gate)))
+            nodes, gaps = {'gate': gate, 'drain': None, 'source': None}, []
+            if index:
+                for role, letter in (('drain', 'D'), ('source', 'S')):
+                    for pin in sorted(graph.pins_of(ref)):
+                        m = re.fullmatch(letter + r'[A-Z]*[_-]?(\d+)', pw.normalize(graph.pinname.get(ref + '.' + pin)))
+                        if (graph.role(ref + '.' + pin) == role and m
+                                and (m.group(1) == index.group(1) or (len(m.group(1)) > 1 and index.group(1) in m.group(1)))):
+                            nodes[role] = ref + '.' + pin
+                            break
+            else:
+                gaps.append('channel-pin-map:' + ref)
+            found.append((index.group(1) if index else gate.partition('.')[2], nodes, gaps))
+        return found
+
     def switches(self):
         graph, found = self.graph, []
         for ref in sorted(graph.parts):
@@ -450,9 +476,14 @@ class _Scan:
                 continue
             if graph.kind(ref) not in SWITCH_KINDS:
                 continue
-            nodes = {role: graph.node_named(ref, role)
-                     for role in ('gate', 'drain', 'source')}
-            gaps = list(self.state['gaps'])
+            for channel, nodes, channel_gaps in self.channels(ref):
+                found.append(self._switch(ref, nodes, channel, channel_gaps))
+        return sorted(found, key=lambda item: item['id'])[:MAX_SWITCHES]
+
+    def _switch(self, ref, nodes, channel, channel_gaps):
+        graph = self.graph
+        if True:
+            gaps = list(self.state['gaps']) + channel_gaps
             if not all(nodes.values()):
                 gaps.append('pin-roles:' + ref)
             if pw.kind_gap(graph, ref):
@@ -481,8 +512,8 @@ class _Scan:
             snubbers = self.snubbers(nets['drain'], nets['source'], topology) if nets['drain'] else []
             switch_node = (self._switch_node_evidence(nets['drain'], ref, nets['source'], topology)
                            if nets['drain'] else [])
-            found.append({
-                'id': slug(ref + '-' + (nets['gate'] or 'unresolved')),
+            entry = {
+                'id': slug(ref + ('-CH' + channel if channel is not None else '') + '-' + (nets['gate'] or 'unresolved')),
                 'ref': ref,
                 'kind': graph.kind(ref),
                 'kind_basis': graph.basis(ref),
@@ -505,8 +536,10 @@ class _Scan:
                 'snubbers': snubbers,
                 'switch_node_evidence': switch_node,
                 'gaps': sorted(set(gaps)),
-            })
-        return sorted(found, key=lambda item: item['id'])[:MAX_SWITCHES]
+            }
+            if channel is not None:
+                entry['channel'] = channel
+            return entry
 
 
 def build_inventory(db, intent=None):

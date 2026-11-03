@@ -154,3 +154,15 @@ PMIC的11–33µF窗口来自ROHM BD71847AMWV Rev003 p110 Table5-36，原1.22µF
 - isolated-flyback C12：额定 16 V 改为 4 V，分析侧刻意不提供 VIN/VCC 窗；合同外部真值取 TI SNVSA03E p6 的 VIN=24 V、ICC=20 mA、VCC=6.47–8.52 V 条件。装配状态显式锁定，避免因装配未核先覆盖成 unknown 而掩盖零伏预判；分析必须保留 unknown 和电源依赖，不能给零伏/PASS。
 
 `contract_guards` 单独记录通道对象、反馈故障问题及未知应力预判，不计为自动发现。`--compare` 同时按 `(board, defect, site)` 拒绝任一既有自动目标丢失，新增位点不能抵消旧位点退化。原始板本身的其他缺陷保留，配对基线不表示整板正确。
+
+
+## 合并步 4 的四个受控位点（2026-11-02）
+
+`boards-merge4.json` 只登记来源、commit 和许可证。四个位点分别对应合并步 4 的第 1、2、3、7 项：
+
+- pslab R29（D-FRACTION-POWER-NO-PASS）：47Ω 跨合成 5 V 窗（约 0.59 W），配对基线额定 2W，变异侧改为 `1/16W 5%`。新 guard `guard_no_pass` 要求 DEV-C01 行存在且不预判 PASS；不计自动检出，过载结论仍由审查员给出。
+- openrefmic R21（D-MIDPOINT-GROUND-NO-PASS）：配对基线把 R20/R21 分压中点命名为 VMID，变异侧用原名 VGND。沿用 `guard_no_proposal_pass`：中点不得当 0 V，必须保留 AMP_VDD 依赖。
+- gnssdo U19/R63（D-BIAS-FEED-REMOVED）：删去 PCA9306 VREF2/EN 的 200k 偏置电阻，弱驱动由 INFO 变为无驱动，目标 PWR-A02 自动报出。
+- hdmi-mipi J6.38（D-NC-FLAG-REMOVED）：去掉 FFC 空脚的原生 no-connect 标记，目标 NET-A01 重新报出；配对基线里该脚只有 INFO。
+
+实测：旧 262 位点逐点保留、自动目标 227→229（新增 bias/NC 两位点），合计 266 位点/229 自动/0 错误；两个 no-PASS 位点只算 guard 通过，不算自动检出。

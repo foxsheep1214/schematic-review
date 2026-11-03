@@ -26,6 +26,14 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 - Causes: rule_missing 9, knowledge_wrong 5
 - Changed: docs/proposals/criteria-from-boards-2026-11-02.md, docs/proposals/criteria-from-boards-2026-11-02.json, docs/improvement-ledger.md
 - Gates: guideline_criteria build+check（副本，1.7.0，353 条）PASS; check_ledger PASS; 未跑 pytest（无代码改动）; 不 push。
+## 合并步 4：分数功率、地名中点、弱驱动、端口语义、隔离模块、通道、NC 与功能 ID（2026-11-02）
+
+22 块点名板冷扫非 INFO 1020→967、已归因误报 327→274（crazyflie 48→24、hdmi-mipi 18→2、anthc 8→4 等），NET-A01 258→237、PWR-A02 92→66、PWR-A01 37→31；DRV-A03 +1 与 leviathan DRV-C02 14→22 是双 MOS 按通道拆出的应问项。54 条已归因真缺陷全部仍报出或可定位，14 条自动检出全保留；全量计划未绑定功能检查项 413→0。新增 4 个种子（分数功率/地名中点 no-PASS guard、偏置电阻删除、NC 标记删除），旧 262 位点逐点保留，总 266/229/0 错误。第 9 项次要模式与连接器级允许悬空表未做，见提案。Causes 按 9 个独立机制计（8 项 + MAX14850 补充），非发现条数。
+
+- Event: user:2026-11-02 (把这个86块板子上找到的问题，在规则库、ASG和SR技能中进行改进)
+- Causes: rule_not_enforced 2, knowledge_missing 3, knowledge_wrong 4
+- Changed: docs/improvement-ledger.md, docs/proposals/boards-merge-4-2026-11-02.md, evals/detection/RESULTS.md, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/boards-merge4-v1/cases.json, evals/kicad_replay_bench/revisions/boards-merge4-v1/expected.json, evals/kicad_replay_bench/revisions/boards-merge4-v1/manifest.json, evals/kicad_replay_bench/revisions/boards-merge4-v1/sources.json, evals/kicad_replay_bench/run.py, evals/mutation/mutations.json, evals/seeded_bench/README.md, evals/seeded_bench/boards-merge4.json, evals/seeded_bench/mutators.py, evals/seeded_bench/run.py, evals/typical_circuits/cases.json, references/architecture.md, scripts/checkers/domains.py, scripts/checkers/isolation_sides.py, scripts/checkers/passive_stress.py, scripts/checkers/planutil.py, scripts/checkers/power_switch.py, scripts/checkers/powertree.py, scripts/decoupling.py, scripts/lint.py, scripts/parse_kicad.py, scripts/part_words.py, scripts/plan_circuits.py, scripts/plan_review.py, scripts/tests/test_boards_merge4.py
+- Gates: pytest 2730 passed, 1 skipped; mutation --changed 5d19609 --tier unit 逐提交 35/47/89/193/199/206/214/256/276 全杀，最终 292 全杀（M1100–M1131，M1109 等价删去）; kicad_replay boards-merge4-v1 195/195; typical 216 DETECTED/197 FIXED/7 KNOWN; seeded 266/229/0 错误，旧 262 位点逐点无退化; detection 已更新; check_ledger PASS; 共用层/SKILL 字节差 0；不 push。
 
 ## 合并步 3：物理脚表、通道与未知边界（2026-11-02）
 

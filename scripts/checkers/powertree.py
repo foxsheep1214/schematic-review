@@ -119,6 +119,27 @@ class PowerTree:
     def driven(self, net):
         return self.source_of(net) is not None
 
+    def weak_source(self, net):
+        """A net with no source of its own fed through one fitted resistor (readable, above 1 ohm) from a net that has a
+        source candidate or an off-board feed: a legitimate weak drive (bias, pull-up, reference or phantom feed), not a
+        floating net (boards-merge4). Returns the resistor, its value, the far net and that net's source, or None.
+        The voltage drop under the pin's current stays the reviewer's question."""
+        graph = self.graph
+        feed = self if self.feed else self.__dict__.setdefault('_feed_tree', PowerTree(graph, self.intent, feed=True))
+        for ref, other in graph.neighbors(net, {pw.RESISTOR}):
+            if ng.is_ground(other) or other in graph.pseudo or other == net:
+                continue
+            value = graph.parts.get(ref, {}).get('value')
+            parsed = parse_resistor(value)
+            if not parsed or parsed['kohm'] <= 0.001:
+                continue
+            found = self.source_of(other) or feed.source_of(other)
+            if found:
+                return {'resistor': ref, 'value': str(value), 'ohm': parsed['kohm'] * 1000, 'via': other,
+                        'source': found['source'], 'path': found['path'] + [ref],
+                        'basis': 'weak drive through %s=%s from %s' % (ref, value, other)}
+        return None
+
     def is_switch_node(self, net):
         """网上有 SW/LX/PH/BOOT 类引脚：开关节点，不按直流轨处理。"""
         return any(pw.name_matches(SWITCH_NODE_PIN_RE, self.graph.pinname.get(node),
@@ -179,6 +200,15 @@ class PowerTree:
                     return {'source': node, 'path': list(reversed(path)),
                             'basis': 'isolated device output pin; verify upstream power: ' + side['citation'],
                             'side': next(s['id'] for s in side['sides'] if pin in s['pins'])}
+                if pw.supply_port(part, graph.pinname.get(node), pin, 'outputs'):
+                    return {'source': node, 'path': list(reversed(path)),
+                            'basis': 'output port of the exact family pin table; verify upstream power: '
+                                     + pw.supply_ports(part)['citation']}
+                if (path and graph.kind(path[-1]) == pw.INDUCTOR and pw.supply_port(part, graph.pinname.get(node), pin, 'switch')
+                        and self._via_storage_inductor(ref, path)):
+                    return {'source': node, 'path': list(reversed(path)),
+                            'basis': 'switch port via storage inductor (exact family pin table); verify FB target and '
+                                     'upstream power: ' + pw.supply_ports(part)['citation']}
                 sense_only = (re.fullmatch(r'SIC437[A-Z0-9/-]*', str(part.get('part', '')), re.I)
                               and pin == '18')  # SiC437 pin18 VOUT senses the output; SW delivers energy
                 output_name = pw.name_matches(SOURCE_PIN_RE, graph.pinname.get(node), pin) and not sense_only

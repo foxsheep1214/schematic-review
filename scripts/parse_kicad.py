@@ -57,6 +57,14 @@ POPULATION_FIELDS = {'populate', 'population', 'fitted', 'assembly', 'assemble',
 UNFITTED_MARKS = {'dnp', 'dnf', 'dni', 'not fitted', 'not populated', 'do not populate', 'do not fit', '不贴', '不装'}
 
 
+def _not_part_number(text, mpn):
+    """The text, unless it spells the part number itself (only the separators differ: MCP3464RT-E_NC for
+    MCP3464RT-E/NC), whose NC is an ordering suffix rather than a not-fitted mark; then ''."""
+    def letters(value):
+        return re.sub(r'[^A-Z0-9]', '', str(value or '').rsplit(':', 1)[-1].upper())
+    return '' if mpn and letters(text) == letters(mpn) else text
+
+
 def population_evidence(fields, properties):
     evidence = []
     for source, entries in (('property', properties), ('field', fields)):
@@ -167,8 +175,9 @@ def _component(comp, libparts, pages):
         # Instance documentation is design data, not a verified part identity.
         # Do not borrow the cached libpart's link when this declaration is empty.
         'datasheet': _text(comp.findtext('datasheet')),
-        # dnp 是装配声明；exclude_from_bom 只是 BOM 卫生，不作装配证据。
-        'nc': bool(population) or is_not_populated(lib, value),
+        # dnp 是装配声明；exclude_from_bom 只是 BOM 卫生，不作装配证据。料号自带的 /NC、_NC 订货后缀
+        # （MCP3464RT-E/NC 的 UQFN 封装码）不是不贴标记（boards-merge4）。
+        'nc': bool(population) or is_not_populated(*(_not_part_number(text, mpn) for text in (lib, value))),
     }
     if population:
         part['population_provenance'] = population

@@ -48,6 +48,8 @@ def ground_labels(graph, intent):
         zero = window is not None and window['min'] == 0 and window['max'] == 0
         if not (passive_stress.ground_name(net) or zero):
             continue
+        if not zero and passive_stress.midpoint_ground(graph, net):
+            continue   # a divider midpoint named like a ground (VGND/GNDA) is no reference domain
         domain = rail.get('domain') if isinstance(rail.get('domain'), str) and rail['domain'].strip() else None
         labels[net] = domain or pw.normalize(net).rsplit('/', 1)[-1]
     # Equal leaf names in different sheets are not evidence that two ground nets are one domain.

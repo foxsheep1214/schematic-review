@@ -566,6 +566,7 @@ def board_mutations(db):
 
     yield from merge2b_mutations(db)
     yield from merge3_mutations(db)
+    yield from merge4_mutations(db)
 
 
 def merge2b_mutations(db):
@@ -680,3 +681,55 @@ def merge3_mutations(db):
                'source':'TI LM5160 SNVSA03E p6 VCC regulator electrical characteristics; source U1.9 VCC/C12 topology',
                'external_test_truth_only':{'VIN_v':24,'ICC_mA':20,'VCC_window_v':[6.47,8.52]},
                'limit':'physical 4V rating is insufficient under this controlled external condition; analysis deliberately lacks that condition and must request evidence'})
+
+
+def merge4_mutations(db):
+    """Four controlled probes for boards-merge4 items 1, 2, 3 and 7; operating windows are synthetic and stated."""
+    parts, pins = db.get('parts', {}), db.get('pin2net', {})
+    model = lambda ref: str(parts.get(ref, {}).get('part') or '')
+    if (model('R22') == 'RR0816P-103-D' and 'R29' in parts and pins.get('R29.1') == '/OSC_REF2'
+            and pins.get('R29.2') == 'GND'):
+        base, out = copy.deepcopy(db), copy.deepcopy(db)
+        for side, rating in ((base, '2W 5%'), (out, '1/16W 5%')):
+            side['parts']['R29']['value'] = '47R'
+            side['bom'] = {'parts': {'R29': {'Description': rating}}}
+        intent = {'schema_version': 5, 'power_rails': {'/OSC_REF2': {'voltage_v': {'min': 4.75, 'max': 5.25},
+                  'citation': 'SEED controlled 5V window on the R29 node; not the source board operating point'}},
+                  'assemblies': [{'id': 'run', 'citation': 'SEED controlled assembly p1; original procurement population',
+                                  'population': {ref: not bool(part.get('nc')) for ref, part in parts.items()}, 'jumpers': {}}]}
+        yield Mutation('D-FRACTION-POWER-NO-PASS', ('DEV-C01',), ('R29',), ('/OSC_REF2',),
+                       'BOM rating 2W -> 1/16W on a 47R across a controlled 5V window; 1/16W must not read as 16W',
+                       out, baseline=base, intent=intent,
+                       contract={'guard_no_pass': ['R29'], 'source': 'pslab R29 0603 footprint, BOM Description column style',
+                                 'stress_w': 0.59, 'mutant_rating_w': 0.0625,
+                                 'limit': 'automatic layer must withhold PASS; the overload verdict remains the reviewer\'s'})
+    if (pins.get('U1.5') == 'VGND' and pins.get('R21.1') == 'VGND' and pins.get('R21.2') == 'GND'
+            and pins.get('R20.2') == 'VGND'):
+        base = copy.deepcopy(db)
+        for node, net in list(base['pin2net'].items()):
+            if net == 'VGND':
+                base['pin2net'][node] = 'VMID'
+        rebuild(base)
+        yield Mutation('D-MIDPOINT-GROUND-NO-PASS', ('DEV-C01',), ('R21',), ('VGND',),
+                       'name the R20/R21 divider midpoint VGND (ground-like) instead of VMID; it must not become 0 V',
+                       copy.deepcopy(db), baseline=base,
+                       contract={'guard_no_proposal_pass': ['R21'], 'source': 'openrefmic R20/R21 7.15k divider, U1 + inputs (U1 symbol TL074/OPA4991 BOM)',
+                                 'limit': 'AMP_VDD window withheld; the midpoint stress must stay unknown with its dependency'})
+    if model('U19') == 'PCA9306' and 'R63' in parts and pins.get('R63.2') == pins.get('U19.7'):
+        out = copy.deepcopy(db)
+        del out['parts']['R63']
+        for node in [n for n in out['pin2net'] if n.startswith('R63.')]:
+            del out['pin2net'][node]
+        rebuild(out)
+        yield Mutation('D-BIAS-FEED-REMOVED', ('PWR-A02',), ('U19',), (pins['U19.7'],),
+                       'remove the 200k VREF2/EN bias feed R63; the weak drive becomes no drive at all',
+                       out, baseline=copy.deepcopy(db),
+                       contract={'source': 'NXP PCA9306 Rev9.5 p9-10 reference circuit (200k VREF2 bias); gnssdo U19/R63'})
+    if 'J6.38' in db.get('no_connect_nodes', []) and pins.get('J6.38') == '/CSI/CSI2_CLK_N':
+        out = copy.deepcopy(db)
+        out['no_connect_nodes'] = [n for n in out['no_connect_nodes'] if n != 'J6.38']
+        yield Mutation('D-NC-FLAG-REMOVED', ('NET-A01',), ('J6',), ('/CSI/CSI2_CLK_N',),
+                       'drop the native no-connect flag on the labelled single-node J6.38; the open pin must be asked again',
+                       out, baseline=copy.deepcopy(db),
+                       contract={'source': 'hdmi-mipi-bridge J6 FFC spare pin with native NC flag'})
+
