@@ -1,0 +1,723 @@
+{
+  "board": "greatscottgadgets--amalthea-hardware",
+  "source": {
+    "repo": "greatscottgadgets/amalthea-hardware",
+    "commit": "b1027cf452365fd1572cb8df8dfed4d3004ec8c2",
+    "schematic": "amalthea.kicad_sch",
+    "license": "CERN-OHL-P-2.0"
+  },
+  "types": [
+    "RF",
+    "CLOCK",
+    "HSSERIAL",
+    "SPI"
+  ],
+  "catalog_types": [
+    "DEBUG",
+    "LEVEL_SHIFT",
+    "POWER_PROTECTION"
+  ],
+  "run": {
+    "db_sha256": "67dcd111fcfc92a2f70abb076770fed8d17dc00dc3b882de77e41e753a0c4ded",
+    "plan_items": 162,
+    "findings_total": 18,
+    "results_judged": 51,
+    "needs_human_plan_items": 111,
+    "gate": "FAIL",
+    "sr_commit": "ef231c9162333cf52c3fc570bfbeeee700fc8436",
+    "native_gate_valid": false,
+    "attribution_unit": "18条根因/证据问题，包括5条原生lint提示；同根因的成对规则归为一条，check_ids保留全部定位。",
+    "misses_unit": "3个Top50计划漏问；0个已证实漏检硬件缺陷。",
+    "native_gate_errors": 130
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "H1"
+      ],
+      "nets": [
+        "unconnected-(H1-Pad1)"
+      ],
+      "sr_text": "H1.1 -> unconnected-(H1-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图p1 H1=Mechanical:MountingHole_Pad，单端焊盘1，已NC，原生pintype=input。安装孔没有逻辑状态或内部上下拉；本条应作为无源机械焊盘排除，仍保留器件/孔接地要求的独立审查。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run (NET-A07分支)",
+        "what": "按一致的Mechanical:MountingHole_Pad身份及单焊盘拓扑排除有意NC机械焊盘；不按H位号一刀切，也不豁免未知有源输入。判据为NET-A07对象必须有电气输入功能。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.H1-1-21d5b9"
+      ]
+    },
+    {
+      "id": "F02",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "H2"
+      ],
+      "nets": [
+        "unconnected-(H2-Pad1)"
+      ],
+      "sr_text": "H2.1 -> unconnected-(H2-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "原图p1 H2=Mechanical:MountingHole_Pad，单端焊盘1，已NC，原生pintype=input。安装孔没有逻辑状态或内部上下拉；本条应作为无源机械焊盘排除，仍保留器件/孔接地要求的独立审查。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run (NET-A07分支)",
+        "what": "按一致的Mechanical:MountingHole_Pad身份及单焊盘拓扑排除有意NC机械焊盘；不按H位号一刀切，也不豁免未知有源输入。判据为NET-A07对象必须有电气输入功能。"
+      },
+      "seed": null,
+      "check_ids": [
+        "NET-A07.H2-1-fac3b9"
+      ]
+    },
+    {
+      "id": "F03",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "J1",
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "+3V3",
+        "GND"
+      ],
+      "sr_text": "+3V3: 板上无来源，经 ['J1.15'] 由外部供电；输入保护按 PRO 规则另核",
+      "verdict": "needs_human",
+      "evidence": "INFO准确指出外供电，不是误报。db中J1.15和J1.16均接+3V3，J1.2/.14/.17/.29接GND；只是树上没有板内源。是否具备全部负载/故障供电能力，要Cynthion同版源电流、输入窗和热插拔合同；不能由J1外供本身判true_defect。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-T01.3V3",
+        "PWR-C01.3V3"
+      ]
+    },
+    {
+      "id": "F04",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "P2",
+      "refs": [
+        "D1",
+        "C9",
+        "T1",
+        "U1"
+      ],
+      "nets": [
+        "/RF24",
+        "GND"
+      ],
+      "sr_text": "D1 (ESDSLC5V0LBS D_TVS Device:D_TVS) 跨 /RF24；轨名提示=无，型号提示=无。同网没有 IC 脚；同网其他器件 C9 各按自身耐压比较；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 J2：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "原图D1.2接/RF24、.1接GND；/RF24经C9=1uF及T1到U1 RF脚，不是同网直连IC。官网Rev1.1 p1-2检索文本给VRWM5V和特定TLP典型14V；原图链接与直接下载均404，未得本地全文；系统ESD波形/电流、外部DC、RF匹配网络残压传递未定。需锁型号手册和事件模型后比较U1 p187 RF输入10dBm/模拟脚绝限，不把不同节点/波形的5V或14V数字硬比。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-E02.D1-02c212"
+      ]
+    },
+    {
+      "id": "F05",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "P2",
+      "refs": [
+        "D2",
+        "C10",
+        "T2",
+        "U1"
+      ],
+      "nets": [
+        "/RF09",
+        "GND"
+      ],
+      "sr_text": "D2 (ESDSLC5V0LBS D_TVS Device:D_TVS) 跨 /RF09；轨名提示=无，型号提示=无。同网没有 IC 脚；同网其他器件 C10 各按自身耐压比较；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 J3：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "原图D2.2接/RF09、.1接GND；/RF09经C10=1uF及T2到U1 RF脚，不是同网直连IC。官网Rev1.1 p1-2检索文本给VRWM5V和特定TLP典型14V；原图链接与直接下载均404，未得本地全文；系统ESD波形/电流、外部DC、RF匹配网络残压传递未定。需锁型号手册和事件模型后比较U1 p187 RF输入10dBm/模拟脚绝限，不把不同节点/波形的5V或14V数字硬比。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-E02.D2-235b1c"
+      ]
+    },
+    {
+      "id": "F06",
+      "sr_rule": "DRV-T01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "T1"
+      ],
+      "nets": [
+        "Net-(T1-PR1)",
+        "GND"
+      ],
+      "sr_text": "T1-UNRESOLVED：钳位拓扑与方向、钳位器件额定",
+      "verdict": "false_alarm",
+      "evidence": "Johanson 2450FB15A050 Ver2.0 p1 Terminal Configuration、p2 Measurement Diagram：6端RF Balun/滤波器，T1平衡端接射频路径，不存在受控线圈关断电流。计划却生成DRV-T01与DRV-C01续流钳位检查，二者均应排除此机制，RF应力/ESD仍另审。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/inductive_load.py:build_inventory / validate_inductive_intent",
+        "what": "增加RF balun的有证功能类型/范围声明；仅有受控磁化/关断储能路径时展开续流钳位问题，不把T前缀或三端以上无源件直接当感性负载。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DRV-C01.T1-UNRESOLVED.T1",
+        "DRV-T01.T1-UNRESOLVED.T1"
+      ]
+    },
+    {
+      "id": "F07",
+      "sr_rule": "DRV-T01",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "T2"
+      ],
+      "nets": [
+        "/RF09_P",
+        "GND"
+      ],
+      "sr_text": "T2-UNRESOLVED：钳位拓扑与方向、钳位器件额定",
+      "verdict": "false_alarm",
+      "evidence": "Johanson 0896BM15E0025 Ver2.0 p1 Terminal Configuration、p2 Measurement Diagram：6端RF Balun/滤波器，T2平衡端接射频路径，不存在受控线圈关断电流。计划却生成DRV-T01与DRV-C01续流钳位检查，二者均应排除此机制，RF应力/ESD仍另审。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/inductive_load.py:build_inventory / validate_inductive_intent",
+        "what": "增加RF balun的有证功能类型/范围声明；仅有受控磁化/关断储能路径时展开续流钳位问题，不把T前缀或三端以上无源件直接当感性负载。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DRV-C01.T2-UNRESOLVED.T2",
+        "DRV-T01.T2-UNRESOLVED.T2"
+      ]
+    },
+    {
+      "id": "F08",
+      "sr_rule": "SIG-E02",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "U1",
+        "T2"
+      ],
+      "nets": [
+        "/RF09_P",
+        "/RF09_N"
+      ],
+      "sr_text": "RF09：差分电平兼容；差分端接与偏置",
+      "verdict": "false_alarm",
+      "evidence": "Atmel-42415E p9 §2.2.1规定RFP/RFN为双向RF模拟端口，50Ω差分RF负载；计划因_P/_N生成SIG-E02和SIG-T03数字差分问题。RF09应归RF匹配/偏置/SIG-D12；p22–23数字LVDS100Ω条款只适用RXCLK/RXD/TXCLK/TXD。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/diff_levels.py:build_inventory",
+        "what": "按独立器件脚义将RFP/RFN射频模拟端口排除数字电平与端接检查，保留RF匹配审查；未知P/N仍保留候选，不能按RF网名直接无条件豁免。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-E02.RF09.RF09-P",
+        "SIG-T03.RF09.RF09-P"
+      ]
+    },
+    {
+      "id": "F09",
+      "sr_rule": "SIG-E02",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "U1",
+        "T1",
+        "C7",
+        "C8"
+      ],
+      "nets": [
+        "/RF24_P",
+        "/RF24_N"
+      ],
+      "sr_text": "RF24：差分电平兼容；差分端接与偏置",
+      "verdict": "false_alarm",
+      "evidence": "Atmel-42415E p9 §2.2.1规定RFP/RFN为双向RF模拟端口，50Ω差分RF负载；计划因_P/_N生成SIG-E02和SIG-T03数字差分问题。RF24应归RF匹配/偏置/SIG-D12；p22–23数字LVDS100Ω条款只适用RXCLK/RXD/TXCLK/TXD。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/diff_levels.py:build_inventory",
+        "what": "按独立器件脚义将RFP/RFN射频模拟端口排除数字电平与端接检查，保留RF匹配审查；未知P/N仍保留候选，不能按RF网名直接无条件豁免。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-E02.RF24.RF24-P",
+        "SIG-T03.RF24.RF24-P"
+      ]
+    },
+    {
+      "id": "F10",
+      "sr_rule": "CLK-C01",
+      "criteria": [
+        "G04-078",
+        "G04-079",
+        "G04-080",
+        "G04-081",
+        "G04-082",
+        "G04-083",
+        "G04-084",
+        "G04-085"
+      ],
+      "severity": "P3",
+      "refs": [
+        "U1",
+        "U2",
+        "R2",
+        "R19"
+      ],
+      "nets": [
+        "Net-(U1-TCXO)",
+        "Net-(U1-XTAL2)"
+      ],
+      "sr_text": "CLOCK-U2：晶体负载与起振",
+      "verdict": "false_alarm",
+      "evidence": "原图U2为四脚供电TCXO源，OUT经R19=0Ω到U1.17；U1.18经R2=0Ω接地，R1/C3 DNP。Atmel p68–69 §6.4.3明确此为TCXO模式，XTAL2必须接地；无外置两脚晶体，CL/ESR/负阻规则NA，有源幅度与建立时间留CLK-D01。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/part_words.py:classify / scripts/plan_circuits.py:CircuitPlanning.plan_concrete_checks",
+        "what": "区分有源Oscillator:FT5HN与无源Crystal footprint；识别供电脚和OUT，优先功能符号，CLOCK类型只在实际无源晶体回路问CLK-C01，TCXO留CLK-D01。"
+      },
+      "seed": null,
+      "check_ids": [
+        "CLK-C01.CLOCK-U2-RUN.C1"
+      ]
+    },
+    {
+      "id": "F11",
+      "sr_rule": "CLK-D03",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "Net-(U1-TCXO)"
+      ],
+      "sr_text": "CLOCK-U2：RTC 晶体与备份电源",
+      "verdict": "false_alarm",
+      "evidence": "本图只有26MHz无线参考时钟路径，无RTC器件、备份电池或RTC电源域。Atmel p68 §6.4.3为RF参考频率，RTC备份充电/反向电流不是该对象的问题。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py:CIRCUIT_RULES / SUBJECT_REQUIREMENTS（CLK-D03机制资格）",
+        "what": "CLK-D03需RTC/备份域机制证据，不对任意CLOCK电路无条件展开。"
+      },
+      "seed": null,
+      "check_ids": [
+        "CLK-D03.CLOCK-U2-RUN.C1"
+      ]
+    },
+    {
+      "id": "F12",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "T1"
+      ],
+      "nets": [
+        "Net-(T1-PR1)",
+        "Net-(T1-PR2)"
+      ],
+      "sr_text": "KIND_CONFLICT T1: 分类器 transformer，手册标题 connector",
+      "verdict": "false_alarm",
+      "evidence": "Johanson 2450FB15A050 p1视觉标题是Balun / Filter Combination；全文第一页面的evaluation board包含“3 female SMA connectors”，不表示被审芯片是connector。title_text读文本层前6行未命中角色后退到全页，误取评估板附件词。此为工具类型提示错误，不是原图身份冲突。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/datasheet_kinds.py:title_text / cues / kind_conflict",
+        "what": "优先标题区几何/字号，扩充balun角色及同义词；全页后备只形成未核候选，不能用评估板/应用附件词断言标题类别冲突。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D04.BOARD"
+      ]
+    },
+    {
+      "id": "F13",
+      "sr_rule": "CLK-D01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U2",
+        "U1",
+        "R19"
+      ],
+      "nets": [
+        "+3V3",
+        "Net-(U1-TCXO)"
+      ],
+      "sr_text": "U2 6TG2600001 的输出制式、幅度、供电和脚表未核实",
+      "verdict": "knowledge_gap",
+      "evidence": "Atmel p68要求26MHz clipped sine、600–1600mVpp、DC耦合。U2原图PART=6TG2600001、symbol=Oscillator:FT5HN；LCSC链接返回HTML，HardwareWiki三次精确检索关键型号无命中；不能用别家FT5HN或另一个2TG变体保证。需准确6TG手册与U2 pin1/2/3/4定义；缺手册不是true_defect。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D01.U2",
+        "DEV-D02.U2",
+        "DEV-D05.U2",
+        "DEV-Q01.DATASHEETS",
+        "PWR-D01.DECOUPLING-INVENTORY",
+        "PWR-T03.DECAP-1F14371D2C473775C9EB.3V3",
+        "SIG-C07.IF-CLOCK-U2-RF-U1",
+        "SIG-C13.CLOCK-U2.C1"
+      ]
+    },
+    {
+      "id": "F14",
+      "sr_rule": "DEV-D03",
+      "criteria": [
+        "G01-013"
+      ],
+      "severity": "P2",
+      "refs": [
+        "J1",
+        "J2",
+        "J3"
+      ],
+      "nets": [
+        "+3V3",
+        "/RF24",
+        "/RF09"
+      ],
+      "sr_text": "连接器准确脚表、对端定义和载流/误接条件未闭合",
+      "verdict": "knowledge_gap",
+      "evidence": "J1=10132797-033100LF；J2/J3=CONSMA003.062。原厂图直下403；J1 15/16供电、四地、五对IQ及SPI/RSTN明确，但无同版Cynthion针序与外部RF附件接口合同。源图符号足以追板内网，不能替代厂家或对端。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C04.J1",
+        "DEV-C04.J2",
+        "DEV-C04.J3",
+        "DEV-D02.D1",
+        "DEV-D02.D2",
+        "DEV-D02.J1",
+        "DEV-D02.J2",
+        "DEV-D02.J3",
+        "DEV-D03.J1",
+        "DEV-D03.J2",
+        "DEV-D03.J3",
+        "DEV-E01.J1",
+        "DEV-E01.J2",
+        "DEV-E01.J3"
+      ]
+    },
+    {
+      "id": "F15",
+      "sr_rule": "SIG-C13",
+      "criteria": [
+        "G04-001",
+        "G04-002"
+      ],
+      "severity": "P2",
+      "refs": [
+        "J1",
+        "U1",
+        "R7",
+        "R10",
+        "R13",
+        "R16"
+      ],
+      "nets": [
+        "/TXCLK_P",
+        "/TXCLK_N",
+        "/TXD_P",
+        "/TXD_N"
+      ],
+      "sr_text": "IQ/SPI 对端模式、端接与时序预算未闭合",
+      "verdict": "needs_human",
+      "evidence": "U1 p22–23支持SLVDS/IEEE两种共模，内置100Ω接收端接及fail-safe；p205–207有独立驱动/接收窗口。TX每线47Ω，零源阻抗简化模型传递100/(100+94)=0.51546。无对端驱动VOD/源阻抗/模式，不能判串阻错误，也不能要求再并100Ω。需原设计者锁对端版本和模式。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C03.CLOCK-U2",
+        "DEV-C03.IQ-J1",
+        "REQ-Q07.SPI",
+        "SIG-C07.IF-IQ-J1-RF-U1",
+        "SIG-C13.IQ-J1.J1",
+        "SIG-D14.IQ-J1-RUN.J1",
+        "SIG-E02.RXCLK.RXCLK-P",
+        "SIG-E02.RXD09.RXD09-P",
+        "SIG-E02.RXD24.RXD24-P",
+        "SIG-E02.TXCLK.TXCLK-P",
+        "SIG-E02.TXD.TXD-P",
+        "SIG-T01.IQ-J1-RUN.J1",
+        "SIG-T03.TXCLK.TXCLK-P",
+        "SIG-T03.TXD.TXD-P",
+        "SIG-T04.IF-IQ-J1-RF-U1"
+      ]
+    },
+    {
+      "id": "F16",
+      "sr_rule": "PWR-C09",
+      "criteria": [
+        "G03-036"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U1",
+        "C4",
+        "C5",
+        "C6"
+      ],
+      "nets": [
+        "Net-(U1-AVDD0)",
+        "Net-(U1-AVDD1)",
+        "Net-(U1-DVDD)"
+      ],
+      "sr_text": "片内稳压输出电容有效容量与稳定性条件仍需定界",
+      "verdict": "knowledge_gap",
+      "evidence": "Atmel p75 §6.6要求各输出稳定电容且三轨不得短接；p188 Table10-4 Cdec=100–10000nF。本板C4/C5/C6各1uF、CL05A105KA5NQNC，名义余量下900nF/上9000nF；温度/偏压Ceff尚未锁定，不能把名义值当保证。ESR独立问题见M02；不是因普通电容缺PDF就自动要求厂家专函。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C02.CLOCK-U2",
+        "DEV-C02.RF-U1",
+        "PWR-C09.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1",
+        "PWR-C09.DECAP-1F14371D2C473775C9EB.3V3",
+        "PWR-C09.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD",
+        "PWR-C09.DECAP-9034B6404C9FDD63F76C.3V3",
+        "PWR-C09.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0",
+        "PWR-C10.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1",
+        "PWR-C10.DECAP-1F14371D2C473775C9EB.3V3",
+        "PWR-C10.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD",
+        "PWR-C10.DECAP-9034B6404C9FDD63F76C.3V3",
+        "PWR-C10.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0"
+      ]
+    },
+    {
+      "id": "F17",
+      "sr_rule": "PWR-D04",
+      "criteria": [
+        "G01-017"
+      ],
+      "severity": "P2",
+      "refs": [
+        "J1",
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "+3V3",
+        "/~{RSTN}"
+      ],
+      "sr_text": "供电工作窗、启动与棕断复位合同未定",
+      "verdict": "needs_human",
+      "evidence": "+3V3仅名称标称3.3V；U1 p187工作1.8–3.6V，p188 POR上升1.55–1.65V、下降1.45–1.55V、tRST≥625ns；J1.26直接到U1.13，内置POR不能证明全部棕断时段被复位。没有上游源/斜率、温度和主机复位策略，保留needs_human；不是已证实复位电路缺陷。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C01.C1",
+        "DEV-C01.C10",
+        "DEV-C01.C11",
+        "DEV-C01.C12",
+        "DEV-C01.C13",
+        "DEV-C01.C14",
+        "DEV-C01.C2",
+        "DEV-C01.C4",
+        "DEV-C01.C5",
+        "DEV-C01.C6",
+        "DEV-C01.C7",
+        "DEV-C01.C8",
+        "DEV-C01.C9",
+        "DEV-C01.CLOCK-U2",
+        "DEV-C01.IQ-J1",
+        "DEV-C01.R10",
+        "DEV-C01.R13",
+        "DEV-C01.R16",
+        "DEV-C01.R19",
+        "DEV-C01.R2",
+        "DEV-C01.R7",
+        "DEV-C01.RF-U1",
+        "DEV-C05.T1",
+        "DEV-C05.T2",
+        "DEV-C05.U1",
+        "DEV-C05.U2",
+        "PWR-C01.3V3",
+        "PWR-C14.3V3",
+        "PWR-C19.BOARD",
+        "PWR-D04.BOARD",
+        "PWR-T04.NATIVE.SUPERVISION-RAILS"
+      ]
+    },
+    {
+      "id": "F18",
+      "sr_rule": "REQ-D03",
+      "criteria": [
+        "G01-001",
+        "G01-002",
+        "G01-003",
+        "G01-004",
+        "G01-006",
+        "G01-007",
+        "G01-008"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U1",
+        "U2",
+        "J1"
+      ],
+      "nets": [
+        "+3V3",
+        "/RF24",
+        "/RF09"
+      ],
+      "sr_text": "无受控需求、故障范围与关键功能接受标准",
+      "verdict": "needs_human",
+      "evidence": "README只称实验SDR夹层，不能替代频带/精度/电源窗口/环境/ESD/DC误接/关键功能恢复目标；同版git树无需求或独立BOM。FMEA、TP与全板预算要以这些输入定适用范围；不把缺要求写硬件FAIL。catalog DEBUG/LEVEL_SHIFT/POWER_PROTECTION标签错误记录在source-lock与M说明，不伪造需求。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "CLK-D01.CLOCK-U2-RUN.C1",
+        "DOC-D02.BOARD",
+        "PRO-D03.J1",
+        "PRO-D03.J2",
+        "PRO-D03.J3",
+        "PRO-D04.J1",
+        "PRO-D04.J2",
+        "PRO-D04.J3",
+        "PRO-D05.BOARD",
+        "PRO-D06.BOARD",
+        "PWR-D02.DECAP-1F14371D2C473775C9EB.3V3",
+        "REQ-C01.BOARD",
+        "REQ-D02.BOARD",
+        "REQ-D03.BOARD",
+        "REQ-D04.BOARD",
+        "REQ-D05.BOARD",
+        "REQ-Q01.REQUIREMENTS",
+        "REQ-Q02.CHAINS",
+        "REQ-Q03.STATES",
+        "REQ-Q07.CLOCK",
+        "REQ-Q07.HSSERIAL",
+        "REQ-Q07.RF",
+        "SIG-D12.RF-U1-RECEIVE.C10",
+        "SIG-D12.RF-U1-SLEEP.C10",
+        "SIG-D12.RF-U1-TRANSMIT.C10",
+        "SIG-T03.RXCLK.RXCLK-P",
+        "SIG-T03.RXD09.RXD09-P",
+        "SIG-T03.RXD24.RXD24-P"
+      ]
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G04-009",
+      "criteria": [
+        "G04-005",
+        "G04-007",
+        "G04-009"
+      ],
+      "sr_rule": "SIG-C08",
+      "refs": [
+        "U1",
+        "J1"
+      ],
+      "nets": [
+        "/PICO",
+        "/SCLK",
+        "/~{SELN}",
+        "/~{RSTN}",
+        "/TXCLK_P",
+        "/TXD_P"
+      ],
+      "why_expected": "本板实际SPI和LVDS均跨外部主机边界。最终162项无SIG-C08，也无对J1接口逐状态外部先上电/本板掉电注入问题；SIG-C07运行电平和PRO-D04总接口项不能代替它。这里是漏问，不是已证明硬件超限。",
+      "evidence": "db: J1.28/4/5/26直连U1.43/41/42/13；J1.18/20经47Ω到U1.26/28。Atmel p187数字脚−0.3..4V绝限未建立Ioff/掉电注入保证；本板输入合同未定，不能判为安全或违例。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:InterfacePlanning.plan_interfaces / scripts/catalog.py:SIG-C08",
+        "what": "逐外部带信号端口枚举供电域与掉电状态，不只对I2C/LEVEL_SHIFT展开；未提供对端状态时生成明确缺口，勿强加最坏事件为实际工况。"
+      },
+      "seed": null
+    },
+    {
+      "id": "M02",
+      "criterion": "G03-004",
+      "criteria": [
+        "G03-003",
+        "G03-004"
+      ],
+      "sr_rule": "PWR-C04",
+      "refs": [
+        "U1",
+        "C4",
+        "C5",
+        "C6"
+      ],
+      "nets": [
+        "Net-(U1-AVDD0)",
+        "Net-(U1-AVDD1)",
+        "Net-(U1-DVDD)"
+      ],
+      "why_expected": "U1是RF收发器且内置三个稳压器，最终只问PWR-C09容量/PWR-C10额定/PWR-D02接法，无PWR-C04稳定性（含ESR是否有要求）对象。不能因顶层器件角色不是regulator而漏掉必需外部输出电容窗口。此为问题覆盖遗漏，未断言厂家有某个未知ESR限制。",
+      "evidence": "Atmel p75 Figure6-12/§6.6明示三个独立稳压输出和外接稳定电容；p188 Table10-4给0.1–10uF。本板每轨1uF名义在窗内，需明确本器件手册未列ESR限值的处置，不能杜撰ESR数值。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/decoupling.py:regulator_output / scripts/plan_circuits.py:输出电容问题展开",
+        "what": "由purpose=regulator_output及官方脚表创建片内稳压输出子对象，容量/ESR/动态稳定性按器件实际条款检查；未规定ESR时留适用性判断，不要求不存在的窗口。"
+      },
+      "seed": {
+        "kind": "D-INTERNAL-REG-COUT",
+        "mutation": "在合成复制db中移除C4及其两端索引，保持U1.47内部稳压输出脚与独立稳定电容契约；目标应在AVDD1子对象问/报缺输出电容，不将原板当缺陷正例。",
+        "target_rule": "PWR-C04"
+      }
+    },
+    {
+      "id": "M03",
+      "criterion": "G04-010",
+      "sr_rule": "RST-T04",
+      "refs": [
+        "U1",
+        "J1"
+      ],
+      "nets": [
+        "/~{RSTN}",
+        "/~{SELN}",
+        "/IRQ",
+        "/RXCLK_P"
+      ],
+      "why_expected": "RF芯片也有启动/复位/输出默认态；最终计划无RST-T04，PWR-T04只给监控覆盖。需分别问主机高阻期RSTN/SELN和芯片默认输出对对端的影响，而非把所有启动问题留在RF通用条款。该问的是能否满足系统要求，并非“无外部上拉必错”。",
+      "evidence": "Atmel p14上电进入TRXOFF、IRQ拉高且CLKO默认26MHz；p23 IQ接收有内部fail-safe。db U1.13/42接J1.26/5，U1.22 NC；主机默认态合同缺失。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_up.py:build_inventory / scripts/catalog.py:RST-T04",
+        "what": "从有复位/选通信号的RF及外部连接器生成默认态对象，纳入芯片内置POR、fail-safe及未用输出处置，不要求无条件外置上拉。"
+      },
+      "seed": null
+    }
+  ],
+  "summary": {
+    "true_defect": 0,
+    "false_alarm": 9,
+    "criterion_issue": 0,
+    "knowledge_gap": 5,
+    "needs_human": 4,
+    "misses": 3
+  }
+}

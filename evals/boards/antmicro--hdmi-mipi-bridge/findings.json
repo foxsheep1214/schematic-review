@@ -1,0 +1,2070 @@
+{
+  "board": "antmicro--hdmi-mipi-bridge",
+  "source": {
+    "repo": "antmicro/hdmi-mipi-bridge",
+    "commit": "6c683289a3191ee6c92cf4f9065ca9b6cb2c0784",
+    "schematic": "antmicro-hdmi-mipi-bridge-hw.kicad_sch",
+    "license": "Apache-2.0"
+  },
+  "types": [
+    "AV",
+    "CLOCK",
+    "DEBUG",
+    "HSSERIAL",
+    "I2C",
+    "LEVEL_SHIFT",
+    "POWER_CONVERTER"
+  ],
+  "run": {
+    "db_sha256": "3eaeba5b4ab233b67296afd016b47ed9690d4ce22a1c892399a64dbea2895690",
+    "plan_items": 797,
+    "findings_total": 37,
+    "results_judged": 108,
+    "results_needs_human": 689,
+    "gate": "FAIL",
+    "sr_commit": "3ec558fc48a58f5a07348c13784f37408d86d16f",
+    "native_confirmed_defects": 3,
+    "function_frames": 34,
+    "guideline_library_version": "1.6.1",
+    "gate_note": "原生valid=false/NO_GO，不能出有效整板结论；108局部判与689逐IDneeds_human均保留。",
+    "review_cache": "/Users/skyfend/.cache/sr-boards/antmicro--hdmi-mipi-bridge/review",
+    "auto_type_hints": [
+      "ANALOG",
+      "AV",
+      "CLOCK",
+      "DEBUG",
+      "HSSERIAL",
+      "I2C",
+      "LEVEL_SHIFT",
+      "POWER_CONVERTER",
+      "SPI",
+      "STARTUP",
+      "STORAGE",
+      "UART"
+    ],
+    "gate_error_count": 575,
+    "native_function_results": 6,
+    "pending_function_frames": 28,
+    "native_report_sha256": "b14b32fbb13d1ccf9704265f59b35a94ff7e38058d355850f1d8081e70e2f1a7",
+    "raw_lint_noninfo_count": 26,
+    "type_note": "ANALOG/SPI/STORAGE/UART/STARTUP仅为自动提示，备用端口及泛称桥不据此宣称这些实际功能。types按已决定的7种真实电路类型记录。"
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/CSI2_CLK_N"
+      ],
+      "sr_text": "/CSI/CSI2_CLK_N <- J6.38 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.38；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F02",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/CSI2_CLK_P"
+      ],
+      "sr_text": "/CSI/CSI2_CLK_P <- J6.37 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.37；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F03",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/CSI2_D1_N"
+      ],
+      "sr_text": "/CSI/CSI2_D1_N <- J6.35 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.35；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F04",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/CSI2_D1_P"
+      ],
+      "sr_text": "/CSI/CSI2_D1_P <- J6.34 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.34；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F05",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/GPIO1"
+      ],
+      "sr_text": "/CSI/GPIO1 <- J6.20 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.20；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F06",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/GPIO2"
+      ],
+      "sr_text": "/CSI/GPIO2 <- J6.19 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.19；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F07",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/GPIO3"
+      ],
+      "sr_text": "/CSI/GPIO3 <- J6.18 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.18；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F08",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/GPIO4"
+      ],
+      "sr_text": "/CSI/GPIO4 <- J6.17 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.17；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F09",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/SPI_CS"
+      ],
+      "sr_text": "/CSI/SPI_CS <- J6.5 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.5；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F10",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/SPI_MISO"
+      ],
+      "sr_text": "/CSI/SPI_MISO <- J6.7 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.7；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F11",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/SPI_MOSI"
+      ],
+      "sr_text": "/CSI/SPI_MOSI <- J6.6 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.6；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F12",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/SPI_SCK"
+      ],
+      "sr_text": "/CSI/SPI_SCK <- J6.8 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.8；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F13",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/UART3_RX"
+      ],
+      "sr_text": "/CSI/UART3_RX <- J6.15 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.15；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F14",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/UART3_TX"
+      ],
+      "sr_text": "/CSI/UART3_TX <- J6.16 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.16；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F15",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/UART4_RX"
+      ],
+      "sr_text": "/CSI/UART4_RX <- J6.13 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.13；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F16",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "/CSI/UART4_TX"
+      ],
+      "sr_text": "/CSI/UART4_TX <- J6.14 (Conn_FFC_WE_68715014022)",
+      "verdict": "false_alarm",
+      "evidence": "db.no_connect_nodes明确含J6.14；原图p4对应位置有NC十字，XML/db逐端一致。标签与NC同时存在仍被Lint.run按len(nodes)==1报FINDING，事实是有意备用脚。这里只排除意外悬空，外部针脚用途不因此获批。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A01 (single-node loop)",
+        "what": "在单节点分支先检查完整物理node是否在db.no_connect_nodes；对有明确NC的连接器备用针发INFO或不报意外断网；保留DEV-D05的电气处置审查。回归保留“标签+NC”的本板J6.5/J6.34，去掉NC必须恢复候选；不能忽略所有单节点。依据：原生NC标记/p4图面。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F17",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J2"
+      ],
+      "nets": [
+        "/Channel 1/DUMMY1"
+      ],
+      "sr_text": "/Channel 1/DUMMY1 <- J2.14 (HDMI-A_Molex_471511001)",
+      "verdict": "needs_human",
+      "evidence": "J2.14,J3.14为HDMI UTILITY/HEAC+；J3/J5替代座DNP后只剩J2/J4 pin14。桥手册p1表明不支持HDMI Ethernet/ARC，但没有完整HDMI线缆/系统功能裁剪合同，不能仅凭DUMMY名确认必接或可悬空。需确认接口模式并用适用标准未用脚条款关闭。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F18",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J4"
+      ],
+      "nets": [
+        "/Channel 2/DUMMY2"
+      ],
+      "sr_text": "/Channel 2/DUMMY2 <- J4.14 (HDMI-A_Molex_471511001)",
+      "verdict": "needs_human",
+      "evidence": "J4.14,J5.14为HDMI UTILITY/HEAC+；J3/J5替代座DNP后只剩J2/J4 pin14。桥手册p1表明不支持HDMI Ethernet/ARC，但没有完整HDMI线缆/系统功能裁剪合同，不能仅凭DUMMY名确认必接或可悬空。需确认接口模式并用适用标准未用脚条款关闭。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F19",
+      "sr_rule": "NET-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "R1",
+        "R2"
+      ],
+      "nets": [
+        "/Channel 1/HDMI1_HPD",
+        "/Channel 1/HDMI1_HPDI",
+        "/Channel 1/HDMI1_POWER"
+      ],
+      "sr_text": "/Channel 1/HDMI1_HPD(2节点) <-> /Channel 1/HDMI1_HPDI(2节点)",
+      "verdict": "false_alarm",
+      "evidence": "p2与db：R1.2→HDMI1_HPD，R2.2→HPDI；二者pin1在同一HDMI1_POWER，均0Ω且已贴。两跳导通足以排除名字分裂；不证明该HPD直拉5V策略满足协议。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A02 and net_name_split",
+        "what": "将当前graph.between的一跳排除扩为受限已贴0Ω/磁珠/闭合跳线导通路径，再比较分裂；保存R1→POWER→R2路径，不跨任意有限电阻或有源器件推断等势。NC/DNP不作已贴导通。依据本板原生两只0Ω和同网端点；增加断开其中一只的反例。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F20",
+      "sr_rule": "NET-A02",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "R14",
+        "R15"
+      ],
+      "nets": [
+        "/Channel 2/HDMI2_HPD",
+        "/Channel 2/HDMI2_HPDI",
+        "/Channel 2/HDMI2_POWER"
+      ],
+      "sr_text": "/Channel 2/HDMI2_HPD(2节点) <-> /Channel 2/HDMI2_HPDI(2节点)",
+      "verdict": "false_alarm",
+      "evidence": "p3与db：R14.2→HDMI2_HPD，R15.2→HPDI；二者pin1在同一HDMI2_POWER，均0Ω且已贴。两跳导通足以排除名字分裂；不证明该HPD直拉5V策略满足协议。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run NET-A02 and net_name_split",
+        "what": "将当前graph.between的一跳排除扩为受限已贴0Ω/磁珠/闭合跳线导通路径，再比较分裂；保存R1→POWER→R2路径，不跨任意有限电阻或有源器件推断等势。NC/DNP不作已贴导通。依据本板原生两只0Ω和同网端点；增加断开其中一只的反例。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F21",
+      "sr_rule": "SIG-A03",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "I2C1_SCL"
+      ],
+      "sr_text": "I2C1_SCL: ['J6', 'U1'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "verdict": "needs_human",
+      "evidence": "db网络I2C1_SCL仅J6与桥U1/U4对应I2C脚，板上无上拉。Toshiba p10定义开漏双向控制接口；外部载板未锁，不能判是否由主机提供上拉、供电和等效总电容。取得对应载板针表/上拉网表及速率后，按G04-017/018计算，不能把无板载R直接判真缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F22",
+      "sr_rule": "SIG-A03",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "I2C1_SDA"
+      ],
+      "sr_text": "I2C1_SDA: ['J6', 'U1'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "verdict": "needs_human",
+      "evidence": "db网络I2C1_SDA仅J6与桥U1/U4对应I2C脚，板上无上拉。Toshiba p10定义开漏双向控制接口；外部载板未锁，不能判是否由主机提供上拉、供电和等效总电容。取得对应载板针表/上拉网表及速率后，按G04-017/018计算，不能把无板载R直接判真缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F23",
+      "sr_rule": "SIG-A03",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "I2C3_SCL"
+      ],
+      "sr_text": "I2C3_SCL: ['J6', 'U4'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "verdict": "needs_human",
+      "evidence": "db网络I2C3_SCL仅J6与桥U1/U4对应I2C脚，板上无上拉。Toshiba p10定义开漏双向控制接口；外部载板未锁，不能判是否由主机提供上拉、供电和等效总电容。取得对应载板针表/上拉网表及速率后，按G04-017/018计算，不能把无板载R直接判真缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F24",
+      "sr_rule": "SIG-A03",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "J6"
+      ],
+      "nets": [
+        "I2C3_SDA"
+      ],
+      "sr_text": "I2C3_SDA: ['J6', 'U4'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "verdict": "needs_human",
+      "evidence": "db网络I2C3_SDA仅J6与桥U1/U4对应I2C脚，板上无上拉。Toshiba p10定义开漏双向控制接口；外部载板未锁，不能判是否由主机提供上拉、供电和等效总电容。取得对应载板针表/上拉网表及速率后，按G04-017/018计算，不能把无板载R直接判真缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F25",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "unconnected-(U1A-IR-PadB4)"
+      ],
+      "sr_text": "U1.B4 -> unconnected-(U1A-IR-PadB4): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "U1.B4=IR有NC；Toshiba Rev2.20 p10为Sch输入，未声明NPU/NPD或未用脚容许状态；p11列的5V tolerant Note1不适用于IR。需器件详细手册/厂家说明确认禁用IR时可开路，不能由未用意图推内部偏置。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F26",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U4"
+      ],
+      "nets": [
+        "unconnected-(U4A-IR-PadB4)"
+      ],
+      "sr_text": "U4.B4 -> unconnected-(U4A-IR-PadB4): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "U4.B4=IR有NC；Toshiba Rev2.20 p10为Sch输入，未声明NPU/NPD或未用脚容许状态；p11列的5V tolerant Note1不适用于IR。需器件详细手册/厂家说明确认禁用IR时可开路，不能由未用意图推内部偏置。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F27",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "U3",
+        "U6"
+      ],
+      "nets": [
+        "+3V3",
+        "+5V",
+        "/Channel 1/HDMI1_DDC_SCL_3V3",
+        "/Channel 2/HDMI2_DDC_SCL_3V3"
+      ],
+      "sr_text": "PCA9517ATP为HWSON8；原厂p4规定1=SDAA、2=GND、3=EN、4=SDAB、5=SCLB、6=VCC(B)、7=VCC(A)、8=SCLA。本图却按SO8接1=3V3、2=SCL3V3、3=SDA3V3、4=GND、5=TP、6=SDA5V、7=SCL5V、8=5V。固定提交PCB仍保持这些焊盘号，没有重编号补偿。",
+      "verdict": "true_defect",
+      "evidence": "PCA9517ATP为HWSON8；原厂p4规定1=SDAA、2=GND、3=EN、4=SDAB、5=SCLB、6=VCC(B)、7=VCC(A)、8=SCLA。本图却按SO8接1=3V3、2=SCL3V3、3=SDA3V3、4=GND、5=TP、6=SDA5V、7=SCL5V、8=5V。固定提交PCB仍保持这些焊盘号，没有重编号补偿。 证据：datasheets/PCA9517A.pdf p3 Fig4,p4 Table3 HWSON8; db.json refs U3,U6。手册SHA256见缓存independent-evidence.json。原PCB固定提交已读，U3/U6 pad1..8同符号网，EP9为GND；这只支持针号映射复核，不构成PCB验收。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-PCA9517-PACKAGE-PINMAP",
+        "mutation": "从正确HWSON8脚义的合成db出发，用SO8脚号接入TP的1..8并保留MPN/PCA9517ATP及SOT1069-2封装；oracle核A/B电源与GND的物理pin，不仅核脚号集合。",
+        "target_rule": "DEV-D02"
+      },
+      "check_ids": [
+        "DEV-D02.U3",
+        "DEV-D02.U6",
+        "DEV-D01.U3",
+        "DEV-D01.U6"
+      ]
+    },
+    {
+      "id": "F28",
+      "sr_rule": "DEV-D05",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "U1",
+        "U4",
+        "C2",
+        "C25"
+      ],
+      "nets": [
+        "Net-(U1C-DAOUT)",
+        "Net-(U4C-DAOUT)",
+        "unconnected-(U1C-PFIL-PadA6)",
+        "unconnected-(U4C-PFIL-PadA6)"
+      ],
+      "sr_text": "未用APLL时，Toshiba p10规定PFIL经0.1uF接AVSS，DAOUT开路。本图C2/C25=100n接A5(DAOUT)至GND，A6(PFIL)有NC标记；BIASDA和PCKIN另已有100n，不能替代PFIL。",
+      "verdict": "true_defect",
+      "evidence": "未用APLL时，Toshiba p10规定PFIL经0.1uF接AVSS，DAOUT开路。本图C2/C25=100n接A5(DAOUT)至GND，A6(PFIL)有NC标记；BIASDA和PCKIN另已有100n，不能替代PFIL。 证据：datasheets/TC358743XBG.pdf p10 Table3.1 APLL; p12 Fig3.1 A5/A6; db.json refs U1,U4,C2,C25。手册SHA256见缓存independent-evidence.json。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-APLL-UNUSED-CAP-MISWIRE",
+        "mutation": "从正确APLL未用接法起，把U.A6的100nF对地电容移到A5，并将A6标NC；BIASDA/PCKIN电容保持。",
+        "target_rule": "DEV-D05"
+      },
+      "check_ids": [
+        "DEV-D05.U1",
+        "DEV-D05.U4"
+      ]
+    },
+    {
+      "id": "F29",
+      "sr_rule": "DEV-C05",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "Y1",
+        "Y2",
+        "C21",
+        "C44",
+        "C23",
+        "C46"
+      ],
+      "nets": [
+        "Net-(Y1-OUT)",
+        "Net-(Y2-OUT)"
+      ],
+      "sr_text": "TXC 7C Rev1.05-a p1输出负载条件为15pF；p2的BB订货说明对应3.3V、50ppm(-10..70C)。本图Y1.3/Y2.3各直接并47pF(C21/C44)，已是规定负载的3.13倍；R13/R26=22Ω另一侧还有47pF，未将两侧简单相加作为失败依据。",
+      "verdict": "true_defect",
+      "evidence": "TXC 7C Rev1.05-a p1输出负载条件为15pF；p2的BB订货说明对应3.3V、50ppm(-10..70C)。本图Y1.3/Y2.3各直接并47pF(C21/C44)，已是规定负载的3.13倍；R13/R26=22Ω另一侧还有47pF，未将两侧简单相加作为失败依据。 证据：datasheets/TXC-7C.pdf p1 Electrical Characteristics CL; p2 Ordering BB; db.json refs Y1,Y2,C21,C44,C23,C46。手册SHA256见缓存independent-evidence.json。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-CMOS-XO-OVERLOAD",
+        "mutation": "从输出总负载≤15pF的7C-27.000MBB-T有源振荡器合成db起，增加一颗47pF直接从OUT到GND；保留准确手册负载契约，不套无源晶体CL公式。",
+        "target_rule": "DEV-C05"
+      },
+      "check_ids": [
+        "DEV-C05.Y1",
+        "DEV-C05.Y2"
+      ]
+    },
+    {
+      "id": "F30",
+      "sr_rule": "PRO-C02",
+      "criteria": [
+        "G05-036",
+        "G05-037"
+      ],
+      "severity": "",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "+3V3"
+      ],
+      "sr_text": "PRO-C02.NOTRIP.U2：不误动作侧：正常工况被测量最大值（全部输出档位、瞬态与上电/掉电、公差、温度、漏电，含峰值整流或滤波捕获的尖峰；一次取一个瞬态）不高于门限最小值，两边按同一温度角点配对；各项已按最坏取值时零余量即满足，不另留裕量；门限脚计入接收端内部钳位/上下拉的吸流；也可用有据的滤波/消隐及波形证明不形成有效触发",
+      "verdict": "false_alarm",
+      "evidence": "U2 TPD8S009DSMR：原厂SLVS816B p3为8个ESD信号口，13/15为VCC，2/5/8/11为GND，p5定义VRWM/钳位。无比较器动作门限；多信号网加VCC使io_clamp_connectors/protected_net二端假设失效，并非阈值型保护。应按每个受保护信号网审PRO-E02。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:plan_threshold_checks/io_clamp_connectors; scripts/protective_clamps.py:protected_net",
+        "what": "识别多通道TVS阵列，按官方端口角色排除VCC/return后枚举signal→return钳位；同一通道只生成PRO-E02，不生成TRIP/NOTRIP。含VCC的阵列不能因“有轨”被拒。依据TPD8S009 p3内部端口与p5电气表。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PRO-C02.NOTRIP.U2"
+      ]
+    },
+    {
+      "id": "F31",
+      "sr_rule": "PRO-C02",
+      "criteria": [
+        "G05-036",
+        "G05-037"
+      ],
+      "severity": "",
+      "refs": [
+        "U5"
+      ],
+      "nets": [
+        "+3V3"
+      ],
+      "sr_text": "PRO-C02.NOTRIP.U5：不误动作侧：正常工况被测量最大值（全部输出档位、瞬态与上电/掉电、公差、温度、漏电，含峰值整流或滤波捕获的尖峰；一次取一个瞬态）不高于门限最小值，两边按同一温度角点配对；各项已按最坏取值时零余量即满足，不另留裕量；门限脚计入接收端内部钳位/上下拉的吸流；也可用有据的滤波/消隐及波形证明不形成有效触发",
+      "verdict": "false_alarm",
+      "evidence": "U5 TPD8S009DSMR：原厂SLVS816B p3为8个ESD信号口，13/15为VCC，2/5/8/11为GND，p5定义VRWM/钳位。无比较器动作门限；多信号网加VCC使io_clamp_connectors/protected_net二端假设失效，并非阈值型保护。应按每个受保护信号网审PRO-E02。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:plan_threshold_checks/io_clamp_connectors; scripts/protective_clamps.py:protected_net",
+        "what": "识别多通道TVS阵列，按官方端口角色排除VCC/return后枚举signal→return钳位；同一通道只生成PRO-E02，不生成TRIP/NOTRIP。含VCC的阵列不能因“有轨”被拒。依据TPD8S009 p3内部端口与p5电气表。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PRO-C02.NOTRIP.U5"
+      ]
+    },
+    {
+      "id": "F32",
+      "sr_rule": "PRO-C02",
+      "criteria": [
+        "G05-036",
+        "G05-037"
+      ],
+      "severity": "",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "+3V3"
+      ],
+      "sr_text": "PRO-C02.TRIP.U2：动作有效侧：按受控故障及可接受终态核检测、执行、剩余能量和适用的保持/复位；正常及要求无损恢复的工况满足额定，允许破坏性安全失效的工况按其安全判据关闭",
+      "verdict": "false_alarm",
+      "evidence": "U2 TPD8S009DSMR：原厂SLVS816B p3为8个ESD信号口，13/15为VCC，2/5/8/11为GND，p5定义VRWM/钳位。无比较器动作门限；多信号网加VCC使io_clamp_connectors/protected_net二端假设失效，并非阈值型保护。应按每个受保护信号网审PRO-E02。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:plan_threshold_checks/io_clamp_connectors; scripts/protective_clamps.py:protected_net",
+        "what": "识别多通道TVS阵列，按官方端口角色排除VCC/return后枚举signal→return钳位；同一通道只生成PRO-E02，不生成TRIP/NOTRIP。含VCC的阵列不能因“有轨”被拒。依据TPD8S009 p3内部端口与p5电气表。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PRO-C02.TRIP.U2"
+      ]
+    },
+    {
+      "id": "F33",
+      "sr_rule": "PRO-C02",
+      "criteria": [
+        "G05-036",
+        "G05-037"
+      ],
+      "severity": "",
+      "refs": [
+        "U5"
+      ],
+      "nets": [
+        "+3V3"
+      ],
+      "sr_text": "PRO-C02.TRIP.U5：动作有效侧：按受控故障及可接受终态核检测、执行、剩余能量和适用的保持/复位；正常及要求无损恢复的工况满足额定，允许破坏性安全失效的工况按其安全判据关闭",
+      "verdict": "false_alarm",
+      "evidence": "U5 TPD8S009DSMR：原厂SLVS816B p3为8个ESD信号口，13/15为VCC，2/5/8/11为GND，p5定义VRWM/钳位。无比较器动作门限；多信号网加VCC使io_clamp_connectors/protected_net二端假设失效，并非阈值型保护。应按每个受保护信号网审PRO-E02。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:plan_threshold_checks/io_clamp_connectors; scripts/protective_clamps.py:protected_net",
+        "what": "识别多通道TVS阵列，按官方端口角色排除VCC/return后枚举signal→return钳位；同一通道只生成PRO-E02，不生成TRIP/NOTRIP。含VCC的阵列不能因“有轨”被拒。依据TPD8S009 p3内部端口与p5电气表。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PRO-C02.TRIP.U5"
+      ]
+    },
+    {
+      "id": "F34",
+      "sr_rule": "PWR-C24",
+      "criteria": [
+        "G03-028"
+      ],
+      "severity": "",
+      "refs": [
+        "U1",
+        "U4",
+        "R3",
+        "R16",
+        "Y1",
+        "Y2"
+      ],
+      "nets": [
+        "/Channel 1/CH1_~{RST}",
+        "/Channel 2/CH2_~{RST}"
+      ],
+      "sr_text": "桥复位与电源/时钟建立窗口尚无公开保证",
+      "verdict": "knowledge_gap",
+      "evidence": "U1/U4.G5仅R3/R16=10k拉3V3；四颗LDO EN接3V3，TXC p1启动最长5ms；Toshiba公开Rev2.20 p10只定义低有效RESET，p17/18无POR释放/RESET脉宽/电源排序。已通读公开手册相关页，不能凭10k推上电脉宽，更不能据无外部复位断言实物不工作。需取得厂家详细复位/上电说明，随后与受控主机双轨时序比较。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F35",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032"
+      ],
+      "severity": "",
+      "refs": [
+        "U2",
+        "U5",
+        "U1",
+        "U4"
+      ],
+      "nets": [
+        "/Channel 1/HDMI1_D0_P",
+        "/Channel 2/HDMI2_D0_P"
+      ],
+      "sr_text": "TPD8S009钳位与TC358743 HDMI脚同波形耐受还不能配合定界",
+      "verdict": "knowledge_gap",
+      "evidence": "U2/U5八个TMDS口→GND；TPD8S009 SLVS816B p4/p5有8/20us 2.5A、VRWM5.5V和典型IEC钳位曲线，但Toshiba公开Rev2.20 p17/18未给TMDS脚相同事件下瞬态耐受。具体受控浪涌/ESD源尚未选；不能直接用5V工作窗或静态VDD+0.3V与任意IEC瞬态比较后判击穿。需对应保护模型/原厂系统级应用保证和事件条件。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F36",
+      "sr_rule": "REQ-Q08",
+      "criteria": [],
+      "severity": "",
+      "refs": [
+        "U1",
+        "U4"
+      ],
+      "nets": [
+        "CSI1_CLK_P",
+        "CSI3_CLK_P"
+      ],
+      "sr_text": "HDMI/MIPI桥无角色导致用途只能人工建电路",
+      "verdict": "knowledge_gap",
+      "evidence": "6个准确手册族已取得，U1/U4 Toshiba p1明确HDMI-RX to CSI-2-TX bridge；当前角色表无video bridge，只能核为ic。自动9候选未生成主视频桥，已按用户授权经add补I2C主桥/AV口/HSSERIAL载板接口，14电路中add所带nets/anchors为空，部分规则因此锚到C1/C15而非核心。属于典型电路/角色模型缺口，不能断言该板存在全部ANALOG/SPI/STORAGE/UART功能。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F37",
+      "sr_rule": "PWR-D04",
+      "criteria": [
+        "G01-017",
+        "G01-051"
+      ],
+      "severity": "",
+      "refs": [
+        "J6",
+        "IC1",
+        "IC2",
+        "IC3",
+        "IC4"
+      ],
+      "nets": [
+        "+3V3",
+        "+5V"
+      ],
+      "sr_text": "J6主机双电源、装配和环境合同未提供",
+      "verdict": "needs_human",
+      "evidence": "J6.1/.2=+5V，.3/.4=+3V3；p4 NC的SPI/UART/GPIO是备用脚。README只用于推断两路视频和HDMI/FFC选装，未给供电最坏窗/负载上界/先后次序/上游短路保护/工业任务温度。工业通信仅是审查基线，不自动赋予-40..85C产品要求；不能拿TC358743 -30..70C和TXC BB -10..70C直接判工业温度违规。指定主机和装配BOM后逐项重判。",
+      "proposed_fix": null,
+      "seed": null
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G05-030",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032"
+      ],
+      "sr_rule": "PRO-E02",
+      "refs": [
+        "U2",
+        "U5"
+      ],
+      "nets": [
+        "/Channel 1/HDMI1_D0_P",
+        "/Channel 1/HDMI1_D0_N",
+        "/Channel 1/HDMI1_D1_P",
+        "/Channel 1/HDMI1_D1_N",
+        "/Channel 1/HDMI1_D2_P",
+        "/Channel 1/HDMI1_D2_N",
+        "/Channel 2/HDMI2_D0_P",
+        "/Channel 2/HDMI2_D0_N",
+        "/Channel 2/HDMI2_D1_P",
+        "/Channel 2/HDMI2_D1_N",
+        "/Channel 2/HDMI2_D2_P",
+        "/Channel 2/HDMI2_D2_N",
+        "/Channel 1/HDMI1_CLK_P",
+        "/Channel 1/HDMI1_CLK_N",
+        "/Channel 2/HDMI2_CLK_P",
+        "/Channel 2/HDMI2_CLK_N"
+      ],
+      "why_expected": "Top50 #42–44：真实TMDS TVS阵列存在，应该按通道列工作窗/钳位/脉冲配合问题；PRO-D03对外挂线泛问和PRO-C02阈值窗口不替代。仅指自动计划漏问，人工已补rule_gap，不是已证硬件缺陷。",
+      "evidence": "p3 TPD8S009各signal/GND/VCC角色及db网络；未补gap时自动PRO-E02=0，PRO-C02=4；最终唯一PRO-E02来源REVIEWER_ADDED。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/protective_clamps.py:protected_net; scripts/plan_circuits.py:plan_threshold_checks",
+        "what": "以signal/return/supply端口模型枚举多通道钳位，VCC不作为待钳信号；生成每器件/通道的PRO-E02并删除错误TRIP/NOTRIP。本板只能作覆盖种子，不能作钳位失配正例。"
+      },
+      "seed": {
+        "kind": "D-ESD-ARRAY-COVERAGE",
+        "mutation": "从有完整signal/return/supply端口契约的合成八通道TMDS TVS db起，保留全部VCC和GND脚；oracle要求每条受保护网有PRO-E02。若做电气缺陷变异另绑定确有瞬态契约且提高Vcl超过受保护脚同波形额定，不使用本板未定参数。",
+        "target_rule": "PRO-E02"
+      }
+    },
+    {
+      "id": "M02",
+      "criterion": "G03-028",
+      "sr_rule": "PWR-C24",
+      "refs": [
+        "U1",
+        "U4",
+        "R3",
+        "R16"
+      ],
+      "nets": [
+        "/Channel 1/CH1_~{RST}",
+        "/Channel 2/CH2_~{RST}"
+      ],
+      "why_expected": "Top50 #21：桥电源域和外部有源参考时钟建立后须针对RESET接收端问排序/释放窗口；自动仅四个LDO PWR-C24，SYS-SEQUENCE的RST-T03泛问不等于针对桥RESET的极值问题。人工补rule_gap后仍needs_human，不是复位失效确证。",
+      "evidence": "db U1/U4.G5各仅10k上拉3V3；R3/R16、四LDO供电/EN和Y1/Y2时钟路径在p2/p3；TC358743 p10 RESETN、TXC p1 startup5ms。公开桥资料无保证RESET时间，所以原板不能直接变复位故障种子。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_up.py:build_inventory/Inventory.regulators; scripts/plan_system.py:system sequence frames; scripts/catalog.py:DEVICE_ROLES video bridge",
+        "what": "识别RESETN/~{RESET}接收脚，按器件完整供电域及REFCLK列一条复位释放时序窗口；不要将其锚在公共输入电容。先展开问题，缺时序合同保留人工，不自动判无POR或缺RC。"
+      },
+      "seed": {
+        "kind": "D-RESET-DEPENDENCY-COVERAGE",
+        "mutation": "合成带3.3/2.5/1.2V域、外部XO和RESETN的桥器件与官方引脚/时序契约，去掉显式reset driver保留10k上拉；oracle要求PWR-C24覆盖接收端，而不在无POR契约时自动FAIL。",
+        "target_rule": "PWR-C24"
+      }
+    }
+  ],
+  "summary": {
+    "false_alarm": 22,
+    "needs_human": 9,
+    "true_defect": 3,
+    "knowledge_gap": 3,
+    "criterion_issue": 0,
+    "misses": 2
+  },
+  "top50_crosscheck": {
+    "rows": [
+      {
+        "number": 1,
+        "criterion": "G01-018",
+        "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+        "example_sr_rules": [
+          "PWR-C17"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "全板无-48V或AC输入，源仅J6正3V3/5V及HDMI源侧+5V；不把5V视频附件套通信交流/负压条款。"
+      },
+      {
+        "number": 2,
+        "criterion": "G01-019",
+        "title": "−48 V 输入的工作电压范围与耐受范围",
+        "example_sr_rules": [
+          "PWR-C17"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "全板无-48V或AC输入，源仅J6正3V3/5V及HDMI源侧+5V；不把5V视频附件套通信交流/负压条款。"
+      },
+      {
+        "number": 3,
+        "criterion": "G01-020",
+        "title": "−48 V 输入 0.1 s 中断后自恢复",
+        "example_sr_rules": [
+          "PWR-C18"
+        ],
+        "current_rules_coverage": [
+          "PWR-C18.POWER-CONVERTER-IC1-FAULT.C12",
+          "PWR-C18.POWER-CONVERTER-IC1-RUN.C12",
+          "PWR-C18.POWER-CONVERTER-IC1-STARTUP.C12",
+          "PWR-C18.POWER-CONVERTER-IC2-FAULT.C12",
+          "PWR-C18.POWER-CONVERTER-IC2-RUN.C12",
+          "PWR-C18.POWER-CONVERTER-IC2-STARTUP.C12",
+          "PWR-C18.POWER-CONVERTER-IC3-FAULT.C12",
+          "PWR-C18.POWER-CONVERTER-IC3-RUN.C12",
+          "PWR-C18.POWER-CONVERTER-IC3-STARTUP.C12",
+          "PWR-C18.POWER-CONVERTER-IC4-FAULT.C12",
+          "PWR-C18.POWER-CONVERTER-IC4-RUN.C12",
+          "PWR-C18.POWER-CONVERTER-IC4-STARTUP.C12"
+        ],
+        "status": "not_applicable",
+        "evidence": "全板无-48V或AC输入，源仅J6正3V3/5V及HDMI源侧+5V；不把5V视频附件套通信交流/负压条款。"
+      },
+      {
+        "number": 4,
+        "criterion": "G01-021",
+        "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+        "example_sr_rules": [
+          "PRO-C01"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "全板无-48V或AC输入，源仅J6正3V3/5V及HDMI源侧+5V；不把5V视频附件套通信交流/负压条款。"
+      },
+      {
+        "number": 5,
+        "criterion": "G01-022",
+        "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+        "example_sr_rules": [
+          "PWR-C19"
+        ],
+        "current_rules_coverage": [
+          "PWR-C19.BOARD"
+        ],
+        "status": "not_applicable",
+        "evidence": "全板无-48V或AC输入，源仅J6正3V3/5V及HDMI源侧+5V；不把5V视频附件套通信交流/负压条款。"
+      },
+      {
+        "number": 6,
+        "criterion": "G01-023",
+        "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+        "example_sr_rules": [
+          "PWR-C13"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "全板无-48V或AC输入，源仅J6正3V3/5V及HDMI源侧+5V；不把5V视频附件套通信交流/负压条款。"
+      },
+      {
+        "number": 7,
+        "criterion": "G01-024",
+        "title": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+        "example_sr_rules": [
+          "PWR-C18"
+        ],
+        "current_rules_coverage": [
+          "PWR-C18.POWER-CONVERTER-IC1-FAULT.C12",
+          "PWR-C18.POWER-CONVERTER-IC1-RUN.C12",
+          "PWR-C18.POWER-CONVERTER-IC1-STARTUP.C12",
+          "PWR-C18.POWER-CONVERTER-IC2-FAULT.C12",
+          "PWR-C18.POWER-CONVERTER-IC2-RUN.C12",
+          "PWR-C18.POWER-CONVERTER-IC2-STARTUP.C12",
+          "PWR-C18.POWER-CONVERTER-IC3-FAULT.C12",
+          "PWR-C18.POWER-CONVERTER-IC3-RUN.C12",
+          "PWR-C18.POWER-CONVERTER-IC3-STARTUP.C12",
+          "PWR-C18.POWER-CONVERTER-IC4-FAULT.C12",
+          "PWR-C18.POWER-CONVERTER-IC4-RUN.C12",
+          "PWR-C18.POWER-CONVERTER-IC4-STARTUP.C12"
+        ],
+        "status": "not_applicable",
+        "evidence": "全板无-48V或AC输入，源仅J6正3V3/5V及HDMI源侧+5V；不把5V视频附件套通信交流/负压条款。"
+      },
+      {
+        "number": 8,
+        "criterion": "G01-025",
+        "title": "交流输入较长暂降与中断后自恢复（判据 C）",
+        "example_sr_rules": [
+          "PWR-C18"
+        ],
+        "current_rules_coverage": [
+          "PWR-C18.POWER-CONVERTER-IC1-FAULT.C12",
+          "PWR-C18.POWER-CONVERTER-IC1-RUN.C12",
+          "PWR-C18.POWER-CONVERTER-IC1-STARTUP.C12",
+          "PWR-C18.POWER-CONVERTER-IC2-FAULT.C12",
+          "PWR-C18.POWER-CONVERTER-IC2-RUN.C12",
+          "PWR-C18.POWER-CONVERTER-IC2-STARTUP.C12",
+          "PWR-C18.POWER-CONVERTER-IC3-FAULT.C12",
+          "PWR-C18.POWER-CONVERTER-IC3-RUN.C12",
+          "PWR-C18.POWER-CONVERTER-IC3-STARTUP.C12",
+          "PWR-C18.POWER-CONVERTER-IC4-FAULT.C12",
+          "PWR-C18.POWER-CONVERTER-IC4-RUN.C12",
+          "PWR-C18.POWER-CONVERTER-IC4-STARTUP.C12"
+        ],
+        "status": "not_applicable",
+        "evidence": "全板无-48V或AC输入，源仅J6正3V3/5V及HDMI源侧+5V；不把5V视频附件套通信交流/负压条款。"
+      },
+      {
+        "number": 9,
+        "criterion": "G01-026",
+        "title": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+        "example_sr_rules": [
+          "SIG-C05"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "无USB接口/CC/USB供电，HDMI +5V不是USB VBUS。"
+      },
+      {
+        "number": 10,
+        "criterion": "G01-027",
+        "title": "USB 可用电流按实际协商档取",
+        "example_sr_rules": [
+          "SIG-C05"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "无USB接口/CC/USB供电，HDMI +5V不是USB VBUS。"
+      },
+      {
+        "number": 11,
+        "criterion": "G01-029",
+        "title": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+        "example_sr_rules": [
+          "PWR-C13",
+          "SIG-C05"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "无USB接口/CC/USB供电，HDMI +5V不是USB VBUS。"
+      },
+      {
+        "number": 12,
+        "criterion": "G01-030",
+        "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+        "example_sr_rules": [
+          "SIG-D07"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "无USB接口/CC/USB供电，HDMI +5V不是USB VBUS。"
+      },
+      {
+        "number": 13,
+        "criterion": "G01-031",
+        "title": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+        "example_sr_rules": [
+          "SIG-C05"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "无USB接口/CC/USB供电，HDMI +5V不是USB VBUS。"
+      },
+      {
+        "number": 14,
+        "criterion": "G03-003",
+        "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+        "example_sr_rules": [
+          "PWR-C04"
+        ],
+        "current_rules_coverage": [
+          "PWR-C04.IC1-5.IC1-5",
+          "PWR-C04.IC2-5.IC2-5",
+          "PWR-C04.IC3-5.IC3-5",
+          "PWR-C04.IC4-5.IC4-5",
+          "PWR-C04.POWER-CONVERTER-IC1-FAULT.IC1",
+          "PWR-C04.POWER-CONVERTER-IC1-RUN.IC1",
+          "PWR-C04.POWER-CONVERTER-IC1-STARTUP.IC1",
+          "PWR-C04.POWER-CONVERTER-IC2-FAULT.IC2",
+          "PWR-C04.POWER-CONVERTER-IC2-RUN.IC2",
+          "PWR-C04.POWER-CONVERTER-IC2-STARTUP.IC2",
+          "PWR-C04.POWER-CONVERTER-IC3-FAULT.IC3",
+          "PWR-C04.POWER-CONVERTER-IC3-RUN.IC3",
+          "PWR-C04.POWER-CONVERTER-IC3-STARTUP.IC3",
+          "PWR-C04.POWER-CONVERTER-IC4-FAULT.IC4",
+          "PWR-C04.POWER-CONVERTER-IC4-RUN.IC4",
+          "PWR-C04.POWER-CONVERTER-IC4-STARTUP.IC4"
+        ],
+        "status": "bounded_local",
+        "evidence": "IC1..4 TLV733P p16明确无需Cout维持稳定；直接C19/C20/C42/C43=10uF，远侧滤波各4.7uF不借给直接去耦；名义不到100uF最佳性能建议值。运行稳定性无已证违例，启动与反向能量另留，不能按通用“至少1uF/ESR下限”报。"
+      },
+      {
+        "number": 15,
+        "criterion": "G03-004",
+        "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+        "example_sr_rules": [
+          "PWR-C04"
+        ],
+        "current_rules_coverage": [
+          "PWR-C04.IC1-5.IC1-5",
+          "PWR-C04.IC2-5.IC2-5",
+          "PWR-C04.IC3-5.IC3-5",
+          "PWR-C04.IC4-5.IC4-5",
+          "PWR-C04.POWER-CONVERTER-IC1-FAULT.IC1",
+          "PWR-C04.POWER-CONVERTER-IC1-RUN.IC1",
+          "PWR-C04.POWER-CONVERTER-IC1-STARTUP.IC1",
+          "PWR-C04.POWER-CONVERTER-IC2-FAULT.IC2",
+          "PWR-C04.POWER-CONVERTER-IC2-RUN.IC2",
+          "PWR-C04.POWER-CONVERTER-IC2-STARTUP.IC2",
+          "PWR-C04.POWER-CONVERTER-IC3-FAULT.IC3",
+          "PWR-C04.POWER-CONVERTER-IC3-RUN.IC3",
+          "PWR-C04.POWER-CONVERTER-IC3-STARTUP.IC3",
+          "PWR-C04.POWER-CONVERTER-IC4-FAULT.IC4",
+          "PWR-C04.POWER-CONVERTER-IC4-RUN.IC4",
+          "PWR-C04.POWER-CONVERTER-IC4-STARTUP.IC4"
+        ],
+        "status": "bounded_local",
+        "evidence": "IC1..4 TLV733P p16明确无需Cout维持稳定；直接C19/C20/C42/C43=10uF，远侧滤波各4.7uF不借给直接去耦；名义不到100uF最佳性能建议值。运行稳定性无已证违例，启动与反向能量另留，不能按通用“至少1uF/ESR下限”报。"
+      },
+      {
+        "number": 16,
+        "criterion": "G03-016",
+        "title": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+        "example_sr_rules": [
+          "DRV-C02"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "没有离散通路MOS或外置热插拔/反接开关；LDO内部PMOS不能据空外部SOA图套通路MOS准则。"
+      },
+      {
+        "number": 17,
+        "criterion": "G03-018",
+        "title": "变换器 UVLO 开启点低于输入窗下限",
+        "example_sr_rules": [
+          "PWR-C06"
+        ],
+        "current_rules_coverage": [
+          "PWR-C06.POWER-CONVERTER-IC1-FAULT.IC1",
+          "PWR-C06.POWER-CONVERTER-IC1-RUN.IC1",
+          "PWR-C06.POWER-CONVERTER-IC1-STARTUP.IC1",
+          "PWR-C06.POWER-CONVERTER-IC2-FAULT.IC2",
+          "PWR-C06.POWER-CONVERTER-IC2-RUN.IC2",
+          "PWR-C06.POWER-CONVERTER-IC2-STARTUP.IC2",
+          "PWR-C06.POWER-CONVERTER-IC3-FAULT.IC3",
+          "PWR-C06.POWER-CONVERTER-IC3-RUN.IC3",
+          "PWR-C06.POWER-CONVERTER-IC3-STARTUP.IC3",
+          "PWR-C06.POWER-CONVERTER-IC4-FAULT.IC4",
+          "PWR-C06.POWER-CONVERTER-IC4-RUN.IC4",
+          "PWR-C06.POWER-CONVERTER-IC4-STARTUP.IC4"
+        ],
+        "status": "needs_human",
+        "evidence": "四颗TLV733 EN硬连3V3且内部UVLO上升最大1.4V，输出1.2/2.5V；J6源窗/阻抗、各桥启动I(t)未给，不能算满载压降/折返启动；PWR-C06等已展开，不是漏问。"
+      },
+      {
+        "number": 18,
+        "criterion": "G03-019",
+        "title": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+        "example_sr_rules": [
+          "PWR-C06"
+        ],
+        "current_rules_coverage": [
+          "PWR-C06.POWER-CONVERTER-IC1-FAULT.IC1",
+          "PWR-C06.POWER-CONVERTER-IC1-RUN.IC1",
+          "PWR-C06.POWER-CONVERTER-IC1-STARTUP.IC1",
+          "PWR-C06.POWER-CONVERTER-IC2-FAULT.IC2",
+          "PWR-C06.POWER-CONVERTER-IC2-RUN.IC2",
+          "PWR-C06.POWER-CONVERTER-IC2-STARTUP.IC2",
+          "PWR-C06.POWER-CONVERTER-IC3-FAULT.IC3",
+          "PWR-C06.POWER-CONVERTER-IC3-RUN.IC3",
+          "PWR-C06.POWER-CONVERTER-IC3-STARTUP.IC3",
+          "PWR-C06.POWER-CONVERTER-IC4-FAULT.IC4",
+          "PWR-C06.POWER-CONVERTER-IC4-RUN.IC4",
+          "PWR-C06.POWER-CONVERTER-IC4-STARTUP.IC4"
+        ],
+        "status": "needs_human",
+        "evidence": "四颗TLV733 EN硬连3V3且内部UVLO上升最大1.4V，输出1.2/2.5V；J6源窗/阻抗、各桥启动I(t)未给，不能算满载压降/折返启动；PWR-C06等已展开，不是漏问。"
+      },
+      {
+        "number": 19,
+        "criterion": "G03-021",
+        "title": "软启动充电电流加启动期负载低于器件限流下限",
+        "example_sr_rules": [
+          "PWR-D03"
+        ],
+        "current_rules_coverage": [],
+        "status": "needs_human",
+        "evidence": "四颗TLV733 EN硬连3V3且内部UVLO上升最大1.4V，输出1.2/2.5V；J6源窗/阻抗、各桥启动I(t)未给，不能算满载压降/折返启动；PWR-C06等已展开，不是漏问。"
+      },
+      {
+        "number": 20,
+        "criterion": "G03-025",
+        "title": "复位门限高于各负载最低工作电压，掉电先复位",
+        "example_sr_rules": [
+          "PWR-T04"
+        ],
+        "current_rules_coverage": [
+          "PWR-T04.HDMI-A.SUPERVISION-RAILS"
+        ],
+        "status": "needs_human",
+        "evidence": "PWR-T04.HDMI-A.SUPERVISION-RAILS已展开；RESET只经10k拉3V3，未见外部监控器，公开桥POR参数不足。需厂家详细复位及主机掉电合同，不直接判缺监控器。"
+      },
+      {
+        "number": 21,
+        "criterion": "G03-028",
+        "title": "上电时序在极值时间下满足约束",
+        "example_sr_rules": [
+          "PWR-C24"
+        ],
+        "current_rules_coverage": [
+          "PWR-C24.POWER-CONVERTER-IC1.C12",
+          "PWR-C24.POWER-CONVERTER-IC2.C12",
+          "PWR-C24.POWER-CONVERTER-IC3.C12",
+          "PWR-C24.POWER-CONVERTER-IC4.C12"
+        ],
+        "status": "plan_gap",
+        "evidence": "M02：自动PWR-C24只问四个LDO，未定位桥G5/REFCLK极值依赖；已人工补问，结果仍needs_human。"
+      },
+      {
+        "number": 22,
+        "criterion": "G03-032",
+        "title": "稳压器反向电流在手册允许内或已阻断",
+        "example_sr_rules": [
+          "PWR-C05"
+        ],
+        "current_rules_coverage": [
+          "PWR-C05.POWER-CONVERTER-IC1-FAULT.C12",
+          "PWR-C05.POWER-CONVERTER-IC1-RUN.C12",
+          "PWR-C05.POWER-CONVERTER-IC1-STARTUP.C12",
+          "PWR-C05.POWER-CONVERTER-IC2-FAULT.C12",
+          "PWR-C05.POWER-CONVERTER-IC2-RUN.C12",
+          "PWR-C05.POWER-CONVERTER-IC2-STARTUP.C12",
+          "PWR-C05.POWER-CONVERTER-IC3-FAULT.C12",
+          "PWR-C05.POWER-CONVERTER-IC3-RUN.C12",
+          "PWR-C05.POWER-CONVERTER-IC3-STARTUP.C12",
+          "PWR-C05.POWER-CONVERTER-IC4-FAULT.C12",
+          "PWR-C05.POWER-CONVERTER-IC4-RUN.C12",
+          "PWR-C05.POWER-CONVERTER-IC4-STARTUP.C12"
+        ],
+        "status": "needs_human",
+        "evidence": "TLV733 p14明确OUT>IN会经体二极管反灌；单源正常态不等于掉电安全。输出直接10uF加远侧MLCC、主机掉电斜率/保持轨和信号注入未知；PWR-C05已展开，未证违例。"
+      },
+      {
+        "number": 23,
+        "criterion": "G03-037",
+        "title": "电解与钽电容不承受反压",
+        "example_sr_rules": [
+          "DEV-C01"
+        ],
+        "current_rules_coverage": [
+          "DEV-C01.AV-HDMI1",
+          "DEV-C01.AV-HDMI2",
+          "DEV-C01.BOARD",
+          "DEV-C01.CLOCK-Y1",
+          "DEV-C01.CLOCK-Y2",
+          "DEV-C01.I2C-BRIDGE1",
+          "DEV-C01.I2C-BRIDGE2",
+          "DEV-C01.LEVEL-SHIFT-U3",
+          "DEV-C01.LEVEL-SHIFT-U6",
+          "DEV-C01.PIN.U1-A1",
+          "DEV-C01.PIN.U1-G5",
+          "DEV-C01.PIN.U4-A1",
+          "DEV-C01.PIN.U4-G5",
+          "DEV-C01.POWER-CONVERTER-IC1",
+          "DEV-C01.POWER-CONVERTER-IC2",
+          "DEV-C01.POWER-CONVERTER-IC3",
+          "DEV-C01.POWER-CONVERTER-IC4"
+        ],
+        "status": "not_applicable",
+        "evidence": "54颗电容均为指定0402/0603陶瓷料号；无电解/钽或串联电解均压链，不套极性/串联均压；一般耐压及Ceff仍另审。"
+      },
+      {
+        "number": 24,
+        "criterion": "G03-038",
+        "title": "电解与钽电容的直流加纹波峰值在降额内",
+        "example_sr_rules": [
+          "DEV-C01"
+        ],
+        "current_rules_coverage": [
+          "DEV-C01.AV-HDMI1",
+          "DEV-C01.AV-HDMI2",
+          "DEV-C01.BOARD",
+          "DEV-C01.CLOCK-Y1",
+          "DEV-C01.CLOCK-Y2",
+          "DEV-C01.I2C-BRIDGE1",
+          "DEV-C01.I2C-BRIDGE2",
+          "DEV-C01.LEVEL-SHIFT-U3",
+          "DEV-C01.LEVEL-SHIFT-U6",
+          "DEV-C01.PIN.U1-A1",
+          "DEV-C01.PIN.U1-G5",
+          "DEV-C01.PIN.U4-A1",
+          "DEV-C01.PIN.U4-G5",
+          "DEV-C01.POWER-CONVERTER-IC1",
+          "DEV-C01.POWER-CONVERTER-IC2",
+          "DEV-C01.POWER-CONVERTER-IC3",
+          "DEV-C01.POWER-CONVERTER-IC4"
+        ],
+        "status": "not_applicable",
+        "evidence": "54颗电容均为指定0402/0603陶瓷料号；无电解/钽或串联电解均压链，不套极性/串联均压；一般耐压及Ceff仍另审。"
+      },
+      {
+        "number": 25,
+        "criterion": "G03-040",
+        "title": "串联使用的电解电容有均压措施",
+        "example_sr_rules": [
+          "DEV-C01"
+        ],
+        "current_rules_coverage": [
+          "DEV-C01.AV-HDMI1",
+          "DEV-C01.AV-HDMI2",
+          "DEV-C01.BOARD",
+          "DEV-C01.CLOCK-Y1",
+          "DEV-C01.CLOCK-Y2",
+          "DEV-C01.I2C-BRIDGE1",
+          "DEV-C01.I2C-BRIDGE2",
+          "DEV-C01.LEVEL-SHIFT-U3",
+          "DEV-C01.LEVEL-SHIFT-U6",
+          "DEV-C01.PIN.U1-A1",
+          "DEV-C01.PIN.U1-G5",
+          "DEV-C01.PIN.U4-A1",
+          "DEV-C01.PIN.U4-G5",
+          "DEV-C01.POWER-CONVERTER-IC1",
+          "DEV-C01.POWER-CONVERTER-IC2",
+          "DEV-C01.POWER-CONVERTER-IC3",
+          "DEV-C01.POWER-CONVERTER-IC4"
+        ],
+        "status": "not_applicable",
+        "evidence": "54颗电容均为指定0402/0603陶瓷料号；无电解/钽或串联电解均压链，不套极性/串联均压；一般耐压及Ceff仍另审。"
+      },
+      {
+        "number": 26,
+        "criterion": "G04-005",
+        "title": "输入信号不超接收端绝对最大值",
+        "example_sr_rules": [
+          "SIG-C08"
+        ],
+        "current_rules_coverage": [
+          "SIG-C08.EXT-J2.CHANNEL-1-DUMMY1",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-CEC",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-CLK-N",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-CLK-P",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D0-N",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D0-P",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D1-N",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D1-P",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D2-N",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D2-P",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-DDC-SCL",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-DDC-SDA",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-HPD",
+          "SIG-C08.EXT-J2.NET-FB1-PAD2",
+          "SIG-C08.EXT-J4.CHANNEL-2-DUMMY2",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-CEC",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-CLK-N",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-CLK-P",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D0-N",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D0-P",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D1-N",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D1-P",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D2-N",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D2-P",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-DDC-SCL",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-DDC-SDA",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-HPD",
+          "SIG-C08.EXT-J4.NET-FB7-PAD2",
+          "SIG-C08.EXT-J6.3V3",
+          "SIG-C08.EXT-J6.CSI-CSI2-CLK-N",
+          "SIG-C08.EXT-J6.CSI-CSI2-CLK-P",
+          "SIG-C08.EXT-J6.CSI-CSI2-D1-N",
+          "SIG-C08.EXT-J6.CSI-CSI2-D1-P",
+          "SIG-C08.EXT-J6.CSI-GPIO1",
+          "SIG-C08.EXT-J6.CSI-GPIO2",
+          "SIG-C08.EXT-J6.CSI-GPIO3",
+          "SIG-C08.EXT-J6.CSI-GPIO4",
+          "SIG-C08.EXT-J6.CSI-SPI-CS",
+          "SIG-C08.EXT-J6.CSI-SPI-MISO",
+          "SIG-C08.EXT-J6.CSI-SPI-MOSI",
+          "SIG-C08.EXT-J6.CSI-SPI-SCK",
+          "SIG-C08.EXT-J6.CSI-UART3-RX",
+          "SIG-C08.EXT-J6.CSI-UART3-TX",
+          "SIG-C08.EXT-J6.CSI-UART4-RX",
+          "SIG-C08.EXT-J6.CSI-UART4-TX",
+          "SIG-C08.EXT-J6.CSI1-CLK-N",
+          "SIG-C08.EXT-J6.CSI1-CLK-P",
+          "SIG-C08.EXT-J6.CSI1-D1-N",
+          "SIG-C08.EXT-J6.CSI1-D1-P",
+          "SIG-C08.EXT-J6.CSI1-D2-N",
+          "SIG-C08.EXT-J6.CSI1-D2-P",
+          "SIG-C08.EXT-J6.CSI1-D3-N",
+          "SIG-C08.EXT-J6.CSI1-D3-P",
+          "SIG-C08.EXT-J6.CSI1-D4-N",
+          "SIG-C08.EXT-J6.CSI1-D4-P",
+          "SIG-C08.EXT-J6.CSI3-CLK-N",
+          "SIG-C08.EXT-J6.CSI3-CLK-P",
+          "SIG-C08.EXT-J6.CSI3-D1-N",
+          "SIG-C08.EXT-J6.CSI3-D1-P",
+          "SIG-C08.EXT-J6.CSI3-D2-N",
+          "SIG-C08.EXT-J6.CSI3-D2-P",
+          "SIG-C08.EXT-J6.CSI3-D3-N",
+          "SIG-C08.EXT-J6.CSI3-D3-P",
+          "SIG-C08.EXT-J6.CSI3-D4-N",
+          "SIG-C08.EXT-J6.CSI3-D4-P",
+          "SIG-C08.EXT-J6.I2C1-SCL",
+          "SIG-C08.EXT-J6.I2C1-SDA",
+          "SIG-C08.EXT-J6.I2C3-SCL",
+          "SIG-C08.EXT-J6.I2C3-SDA",
+          "SIG-C08.I2C-02037FC54BC04E423608.I2C1-SCL",
+          "SIG-C08.I2C-089897D7ED4EE08D2AAF.CHANNEL-1-HDMI1-DDC-SCL",
+          "SIG-C08.I2C-3272C38E7B28D6B46283.CHANNEL-2-HDMI2-DDC-SCL",
+          "SIG-C08.I2C-3A71B68198C9A863ACBE.CHANNEL-1-HDMI1-DDC-SDA-3V3",
+          "SIG-C08.I2C-3C8872421B2F28EF81DB.I2C3-SDA",
+          "SIG-C08.I2C-46C4F3F19FA68E95950E.I2C1-SDA",
+          "SIG-C08.I2C-4D3C2EBAB172B85F4D77.CHANNEL-2-HDMI2-DDC-SDA",
+          "SIG-C08.I2C-74AB9513C63F3B13D6B1.CHANNEL-2-HDMI2-DDC-SDA-3V3",
+          "SIG-C08.I2C-BRIDGE1-NORMAL.C1",
+          "SIG-C08.I2C-BRIDGE2-NORMAL.C24",
+          "SIG-C08.I2C-C11E3C84B0AB8901DE23.CHANNEL-1-HDMI1-DDC-SCL-3V3",
+          "SIG-C08.I2C-C4F480DF2AF9917AA7B8.I2C3-SCL",
+          "SIG-C08.I2C-DFCE2D3A29508947F153.CHANNEL-1-HDMI1-DDC-SDA",
+          "SIG-C08.I2C-F115C9776ED26C044A58.CHANNEL-2-HDMI2-DDC-SCL-3V3",
+          "SIG-C08.IF-I2C-BRIDGE1-LEVEL-SHIFT-U3.CHANNEL-1-HDMI1-DDC-SCL-3V3",
+          "SIG-C08.IF-I2C-BRIDGE1-LEVEL-SHIFT-U3.CHANNEL-1-HDMI1-DDC-SDA-3V3",
+          "SIG-C08.IF-I2C-BRIDGE2-LEVEL-SHIFT-U6.CHANNEL-2-HDMI2-DDC-SCL-3V3",
+          "SIG-C08.IF-I2C-BRIDGE2-LEVEL-SHIFT-U6.CHANNEL-2-HDMI2-DDC-SDA-3V3",
+          "SIG-C08.LEVEL-SHIFT-U3-ACTIVE.J2",
+          "SIG-C08.LEVEL-SHIFT-U3-IDLE.J2",
+          "SIG-C08.LEVEL-SHIFT-U6-ACTIVE.J4",
+          "SIG-C08.LEVEL-SHIFT-U6-IDLE.J4"
+        ],
+        "status": "needs_human",
+        "evidence": "SIG-C08覆盖J2/J4/J6及I2C边界，已问；HPDI为Toshiba p10/p11 Note1 5V tolerant，不能机械套3.6V静态限判接HDMI5V损坏。PCA脚义有F-PIN；主机/HDMI带电及IO未供电注入仍无保证边界。"
+      },
+      {
+        "number": 27,
+        "criterion": "G04-007",
+        "title": "未上电接口承受正常或故障信号不损坏",
+        "example_sr_rules": [
+          "PRO-D04",
+          "SIG-C08"
+        ],
+        "current_rules_coverage": [
+          "PRO-D04.J2",
+          "PRO-D04.J4",
+          "PRO-D04.J6",
+          "SIG-C08.EXT-J2.CHANNEL-1-DUMMY1",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-CEC",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-CLK-N",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-CLK-P",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D0-N",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D0-P",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D1-N",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D1-P",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D2-N",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D2-P",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-DDC-SCL",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-DDC-SDA",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-HPD",
+          "SIG-C08.EXT-J2.NET-FB1-PAD2",
+          "SIG-C08.EXT-J4.CHANNEL-2-DUMMY2",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-CEC",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-CLK-N",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-CLK-P",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D0-N",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D0-P",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D1-N",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D1-P",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D2-N",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D2-P",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-DDC-SCL",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-DDC-SDA",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-HPD",
+          "SIG-C08.EXT-J4.NET-FB7-PAD2",
+          "SIG-C08.EXT-J6.3V3",
+          "SIG-C08.EXT-J6.CSI-CSI2-CLK-N",
+          "SIG-C08.EXT-J6.CSI-CSI2-CLK-P",
+          "SIG-C08.EXT-J6.CSI-CSI2-D1-N",
+          "SIG-C08.EXT-J6.CSI-CSI2-D1-P",
+          "SIG-C08.EXT-J6.CSI-GPIO1",
+          "SIG-C08.EXT-J6.CSI-GPIO2",
+          "SIG-C08.EXT-J6.CSI-GPIO3",
+          "SIG-C08.EXT-J6.CSI-GPIO4",
+          "SIG-C08.EXT-J6.CSI-SPI-CS",
+          "SIG-C08.EXT-J6.CSI-SPI-MISO",
+          "SIG-C08.EXT-J6.CSI-SPI-MOSI",
+          "SIG-C08.EXT-J6.CSI-SPI-SCK",
+          "SIG-C08.EXT-J6.CSI-UART3-RX",
+          "SIG-C08.EXT-J6.CSI-UART3-TX",
+          "SIG-C08.EXT-J6.CSI-UART4-RX",
+          "SIG-C08.EXT-J6.CSI-UART4-TX",
+          "SIG-C08.EXT-J6.CSI1-CLK-N",
+          "SIG-C08.EXT-J6.CSI1-CLK-P",
+          "SIG-C08.EXT-J6.CSI1-D1-N",
+          "SIG-C08.EXT-J6.CSI1-D1-P",
+          "SIG-C08.EXT-J6.CSI1-D2-N",
+          "SIG-C08.EXT-J6.CSI1-D2-P",
+          "SIG-C08.EXT-J6.CSI1-D3-N",
+          "SIG-C08.EXT-J6.CSI1-D3-P",
+          "SIG-C08.EXT-J6.CSI1-D4-N",
+          "SIG-C08.EXT-J6.CSI1-D4-P",
+          "SIG-C08.EXT-J6.CSI3-CLK-N",
+          "SIG-C08.EXT-J6.CSI3-CLK-P",
+          "SIG-C08.EXT-J6.CSI3-D1-N",
+          "SIG-C08.EXT-J6.CSI3-D1-P",
+          "SIG-C08.EXT-J6.CSI3-D2-N",
+          "SIG-C08.EXT-J6.CSI3-D2-P",
+          "SIG-C08.EXT-J6.CSI3-D3-N",
+          "SIG-C08.EXT-J6.CSI3-D3-P",
+          "SIG-C08.EXT-J6.CSI3-D4-N",
+          "SIG-C08.EXT-J6.CSI3-D4-P",
+          "SIG-C08.EXT-J6.I2C1-SCL",
+          "SIG-C08.EXT-J6.I2C1-SDA",
+          "SIG-C08.EXT-J6.I2C3-SCL",
+          "SIG-C08.EXT-J6.I2C3-SDA",
+          "SIG-C08.I2C-02037FC54BC04E423608.I2C1-SCL",
+          "SIG-C08.I2C-089897D7ED4EE08D2AAF.CHANNEL-1-HDMI1-DDC-SCL",
+          "SIG-C08.I2C-3272C38E7B28D6B46283.CHANNEL-2-HDMI2-DDC-SCL",
+          "SIG-C08.I2C-3A71B68198C9A863ACBE.CHANNEL-1-HDMI1-DDC-SDA-3V3",
+          "SIG-C08.I2C-3C8872421B2F28EF81DB.I2C3-SDA",
+          "SIG-C08.I2C-46C4F3F19FA68E95950E.I2C1-SDA",
+          "SIG-C08.I2C-4D3C2EBAB172B85F4D77.CHANNEL-2-HDMI2-DDC-SDA",
+          "SIG-C08.I2C-74AB9513C63F3B13D6B1.CHANNEL-2-HDMI2-DDC-SDA-3V3",
+          "SIG-C08.I2C-BRIDGE1-NORMAL.C1",
+          "SIG-C08.I2C-BRIDGE2-NORMAL.C24",
+          "SIG-C08.I2C-C11E3C84B0AB8901DE23.CHANNEL-1-HDMI1-DDC-SCL-3V3",
+          "SIG-C08.I2C-C4F480DF2AF9917AA7B8.I2C3-SCL",
+          "SIG-C08.I2C-DFCE2D3A29508947F153.CHANNEL-1-HDMI1-DDC-SDA",
+          "SIG-C08.I2C-F115C9776ED26C044A58.CHANNEL-2-HDMI2-DDC-SCL-3V3",
+          "SIG-C08.IF-I2C-BRIDGE1-LEVEL-SHIFT-U3.CHANNEL-1-HDMI1-DDC-SCL-3V3",
+          "SIG-C08.IF-I2C-BRIDGE1-LEVEL-SHIFT-U3.CHANNEL-1-HDMI1-DDC-SDA-3V3",
+          "SIG-C08.IF-I2C-BRIDGE2-LEVEL-SHIFT-U6.CHANNEL-2-HDMI2-DDC-SCL-3V3",
+          "SIG-C08.IF-I2C-BRIDGE2-LEVEL-SHIFT-U6.CHANNEL-2-HDMI2-DDC-SDA-3V3",
+          "SIG-C08.LEVEL-SHIFT-U3-ACTIVE.J2",
+          "SIG-C08.LEVEL-SHIFT-U3-IDLE.J2",
+          "SIG-C08.LEVEL-SHIFT-U6-ACTIVE.J4",
+          "SIG-C08.LEVEL-SHIFT-U6-IDLE.J4"
+        ],
+        "status": "needs_human",
+        "evidence": "SIG-C08覆盖J2/J4/J6及I2C边界，已问；HPDI为Toshiba p10/p11 Note1 5V tolerant，不能机械套3.6V静态限判接HDMI5V损坏。PCA脚义有F-PIN；主机/HDMI带电及IO未供电注入仍无保证边界。"
+      },
+      {
+        "number": 28,
+        "criterion": "G04-009",
+        "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+        "example_sr_rules": [
+          "SIG-C08"
+        ],
+        "current_rules_coverage": [
+          "SIG-C08.EXT-J2.CHANNEL-1-DUMMY1",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-CEC",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-CLK-N",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-CLK-P",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D0-N",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D0-P",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D1-N",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D1-P",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D2-N",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-D2-P",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-DDC-SCL",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-DDC-SDA",
+          "SIG-C08.EXT-J2.CHANNEL-1-HDMI1-HPD",
+          "SIG-C08.EXT-J2.NET-FB1-PAD2",
+          "SIG-C08.EXT-J4.CHANNEL-2-DUMMY2",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-CEC",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-CLK-N",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-CLK-P",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D0-N",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D0-P",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D1-N",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D1-P",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D2-N",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-D2-P",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-DDC-SCL",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-DDC-SDA",
+          "SIG-C08.EXT-J4.CHANNEL-2-HDMI2-HPD",
+          "SIG-C08.EXT-J4.NET-FB7-PAD2",
+          "SIG-C08.EXT-J6.3V3",
+          "SIG-C08.EXT-J6.CSI-CSI2-CLK-N",
+          "SIG-C08.EXT-J6.CSI-CSI2-CLK-P",
+          "SIG-C08.EXT-J6.CSI-CSI2-D1-N",
+          "SIG-C08.EXT-J6.CSI-CSI2-D1-P",
+          "SIG-C08.EXT-J6.CSI-GPIO1",
+          "SIG-C08.EXT-J6.CSI-GPIO2",
+          "SIG-C08.EXT-J6.CSI-GPIO3",
+          "SIG-C08.EXT-J6.CSI-GPIO4",
+          "SIG-C08.EXT-J6.CSI-SPI-CS",
+          "SIG-C08.EXT-J6.CSI-SPI-MISO",
+          "SIG-C08.EXT-J6.CSI-SPI-MOSI",
+          "SIG-C08.EXT-J6.CSI-SPI-SCK",
+          "SIG-C08.EXT-J6.CSI-UART3-RX",
+          "SIG-C08.EXT-J6.CSI-UART3-TX",
+          "SIG-C08.EXT-J6.CSI-UART4-RX",
+          "SIG-C08.EXT-J6.CSI-UART4-TX",
+          "SIG-C08.EXT-J6.CSI1-CLK-N",
+          "SIG-C08.EXT-J6.CSI1-CLK-P",
+          "SIG-C08.EXT-J6.CSI1-D1-N",
+          "SIG-C08.EXT-J6.CSI1-D1-P",
+          "SIG-C08.EXT-J6.CSI1-D2-N",
+          "SIG-C08.EXT-J6.CSI1-D2-P",
+          "SIG-C08.EXT-J6.CSI1-D3-N",
+          "SIG-C08.EXT-J6.CSI1-D3-P",
+          "SIG-C08.EXT-J6.CSI1-D4-N",
+          "SIG-C08.EXT-J6.CSI1-D4-P",
+          "SIG-C08.EXT-J6.CSI3-CLK-N",
+          "SIG-C08.EXT-J6.CSI3-CLK-P",
+          "SIG-C08.EXT-J6.CSI3-D1-N",
+          "SIG-C08.EXT-J6.CSI3-D1-P",
+          "SIG-C08.EXT-J6.CSI3-D2-N",
+          "SIG-C08.EXT-J6.CSI3-D2-P",
+          "SIG-C08.EXT-J6.CSI3-D3-N",
+          "SIG-C08.EXT-J6.CSI3-D3-P",
+          "SIG-C08.EXT-J6.CSI3-D4-N",
+          "SIG-C08.EXT-J6.CSI3-D4-P",
+          "SIG-C08.EXT-J6.I2C1-SCL",
+          "SIG-C08.EXT-J6.I2C1-SDA",
+          "SIG-C08.EXT-J6.I2C3-SCL",
+          "SIG-C08.EXT-J6.I2C3-SDA",
+          "SIG-C08.I2C-02037FC54BC04E423608.I2C1-SCL",
+          "SIG-C08.I2C-089897D7ED4EE08D2AAF.CHANNEL-1-HDMI1-DDC-SCL",
+          "SIG-C08.I2C-3272C38E7B28D6B46283.CHANNEL-2-HDMI2-DDC-SCL",
+          "SIG-C08.I2C-3A71B68198C9A863ACBE.CHANNEL-1-HDMI1-DDC-SDA-3V3",
+          "SIG-C08.I2C-3C8872421B2F28EF81DB.I2C3-SDA",
+          "SIG-C08.I2C-46C4F3F19FA68E95950E.I2C1-SDA",
+          "SIG-C08.I2C-4D3C2EBAB172B85F4D77.CHANNEL-2-HDMI2-DDC-SDA",
+          "SIG-C08.I2C-74AB9513C63F3B13D6B1.CHANNEL-2-HDMI2-DDC-SDA-3V3",
+          "SIG-C08.I2C-BRIDGE1-NORMAL.C1",
+          "SIG-C08.I2C-BRIDGE2-NORMAL.C24",
+          "SIG-C08.I2C-C11E3C84B0AB8901DE23.CHANNEL-1-HDMI1-DDC-SCL-3V3",
+          "SIG-C08.I2C-C4F480DF2AF9917AA7B8.I2C3-SCL",
+          "SIG-C08.I2C-DFCE2D3A29508947F153.CHANNEL-1-HDMI1-DDC-SDA",
+          "SIG-C08.I2C-F115C9776ED26C044A58.CHANNEL-2-HDMI2-DDC-SCL-3V3",
+          "SIG-C08.IF-I2C-BRIDGE1-LEVEL-SHIFT-U3.CHANNEL-1-HDMI1-DDC-SCL-3V3",
+          "SIG-C08.IF-I2C-BRIDGE1-LEVEL-SHIFT-U3.CHANNEL-1-HDMI1-DDC-SDA-3V3",
+          "SIG-C08.IF-I2C-BRIDGE2-LEVEL-SHIFT-U6.CHANNEL-2-HDMI2-DDC-SCL-3V3",
+          "SIG-C08.IF-I2C-BRIDGE2-LEVEL-SHIFT-U6.CHANNEL-2-HDMI2-DDC-SDA-3V3",
+          "SIG-C08.LEVEL-SHIFT-U3-ACTIVE.J2",
+          "SIG-C08.LEVEL-SHIFT-U3-IDLE.J2",
+          "SIG-C08.LEVEL-SHIFT-U6-ACTIVE.J4",
+          "SIG-C08.LEVEL-SHIFT-U6-IDLE.J4"
+        ],
+        "status": "needs_human",
+        "evidence": "SIG-C08覆盖J2/J4/J6及I2C边界，已问；HPDI为Toshiba p10/p11 Note1 5V tolerant，不能机械套3.6V静态限判接HDMI5V损坏。PCA脚义有F-PIN；主机/HDMI带电及IO未供电注入仍无保证边界。"
+      },
+      {
+        "number": 29,
+        "criterion": "G04-010",
+        "title": "上电和复位期间关键输出有确定状态",
+        "example_sr_rules": [
+          "RST-T04"
+        ],
+        "current_rules_coverage": [
+          "RST-T04.LEVEL-SHIFT-U3-ACTIVE.J2",
+          "RST-T04.LEVEL-SHIFT-U3-IDLE.J2",
+          "RST-T04.LEVEL-SHIFT-U6-ACTIVE.J4",
+          "RST-T04.LEVEL-SHIFT-U6-IDLE.J4"
+        ],
+        "status": "needs_human",
+        "evidence": "关键复位输入与输出不能混为一条；U3/U6按SO8误标的EN位置先修F-PIN，HWSON真正EN是3；正常芯片内部上拉见NXP p5。LDO/XO EN绑本轨合法，板上无电机/危险负载默认态。RST-T04已为LEVEL_SHIFT展开，主桥释放缺口单列M02。"
+      },
+      {
+        "number": 30,
+        "criterion": "G04-017",
+        "title": "I²C 上拉电阻不超上升时间决定的上限",
+        "example_sr_rules": [
+          "SIG-C01"
+        ],
+        "current_rules_coverage": [
+          "SIG-C01.I2C-02037FC54BC04E423608.I2C1-SCL",
+          "SIG-C01.I2C-089897D7ED4EE08D2AAF.CHANNEL-1-HDMI1-DDC-SCL",
+          "SIG-C01.I2C-3272C38E7B28D6B46283.CHANNEL-2-HDMI2-DDC-SCL",
+          "SIG-C01.I2C-3A71B68198C9A863ACBE.CHANNEL-1-HDMI1-DDC-SDA-3V3",
+          "SIG-C01.I2C-3C8872421B2F28EF81DB.I2C3-SDA",
+          "SIG-C01.I2C-46C4F3F19FA68E95950E.I2C1-SDA",
+          "SIG-C01.I2C-4D3C2EBAB172B85F4D77.CHANNEL-2-HDMI2-DDC-SDA",
+          "SIG-C01.I2C-74AB9513C63F3B13D6B1.CHANNEL-2-HDMI2-DDC-SDA-3V3",
+          "SIG-C01.I2C-BRIDGE1-NORMAL.C1",
+          "SIG-C01.I2C-BRIDGE2-NORMAL.C24",
+          "SIG-C01.I2C-C11E3C84B0AB8901DE23.CHANNEL-1-HDMI1-DDC-SCL-3V3",
+          "SIG-C01.I2C-C4F480DF2AF9917AA7B8.I2C3-SCL",
+          "SIG-C01.I2C-DFCE2D3A29508947F153.CHANNEL-1-HDMI1-DDC-SDA",
+          "SIG-C01.I2C-F115C9776ED26C044A58.CHANNEL-2-HDMI2-DDC-SCL-3V3"
+        ],
+        "status": "needs_human",
+        "evidence": "12条直连I2C数据/时钟线已逐网核：DDC各侧10k、repeater有源隔离不能并联算同一灌电流；3V3/5V名义在VOL0.4V时0.29/0.46mA，10k下Cb上限118pF(1us)/35.4pF(300ns)。主机I2C1/3无板载上拉，缺外部合同和Cb；SIG-C01已展开，不作漏报。"
+      },
+      {
+        "number": 31,
+        "criterion": "G04-018",
+        "title": "I²C 上拉电阻不低于灌电流决定的下限",
+        "example_sr_rules": [
+          "SIG-C01"
+        ],
+        "current_rules_coverage": [
+          "SIG-C01.I2C-02037FC54BC04E423608.I2C1-SCL",
+          "SIG-C01.I2C-089897D7ED4EE08D2AAF.CHANNEL-1-HDMI1-DDC-SCL",
+          "SIG-C01.I2C-3272C38E7B28D6B46283.CHANNEL-2-HDMI2-DDC-SCL",
+          "SIG-C01.I2C-3A71B68198C9A863ACBE.CHANNEL-1-HDMI1-DDC-SDA-3V3",
+          "SIG-C01.I2C-3C8872421B2F28EF81DB.I2C3-SDA",
+          "SIG-C01.I2C-46C4F3F19FA68E95950E.I2C1-SDA",
+          "SIG-C01.I2C-4D3C2EBAB172B85F4D77.CHANNEL-2-HDMI2-DDC-SDA",
+          "SIG-C01.I2C-74AB9513C63F3B13D6B1.CHANNEL-2-HDMI2-DDC-SDA-3V3",
+          "SIG-C01.I2C-BRIDGE1-NORMAL.C1",
+          "SIG-C01.I2C-BRIDGE2-NORMAL.C24",
+          "SIG-C01.I2C-C11E3C84B0AB8901DE23.CHANNEL-1-HDMI1-DDC-SCL-3V3",
+          "SIG-C01.I2C-C4F480DF2AF9917AA7B8.I2C3-SCL",
+          "SIG-C01.I2C-DFCE2D3A29508947F153.CHANNEL-1-HDMI1-DDC-SDA",
+          "SIG-C01.I2C-F115C9776ED26C044A58.CHANNEL-2-HDMI2-DDC-SCL-3V3"
+        ],
+        "status": "needs_human",
+        "evidence": "12条直连I2C数据/时钟线已逐网核：DDC各侧10k、repeater有源隔离不能并联算同一灌电流；3V3/5V名义在VOL0.4V时0.29/0.46mA，10k下Cb上限118pF(1us)/35.4pF(300ns)。主机I2C1/3无板载上拉，缺外部合同和Cb；SIG-C01已展开，不作漏报。"
+      },
+      {
+        "number": 32,
+        "criterion": "G04-032",
+        "title": "CAN 总线两端端接，总阻约 60 Ω",
+        "example_sr_rules": [
+          "SIG-C03"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "无CAN收发器、隔离带、运放或ADC检测分压；HDMI/CSI是视频PHY，PCA是repeater而非隔离器。"
+      },
+      {
+        "number": 33,
+        "criterion": "G04-040",
+        "title": "隔离接口两侧的供电和地不被无意短接",
+        "example_sr_rules": [
+          "PRO-D02"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "无CAN收发器、隔离带、运放或ADC检测分压；HDMI/CSI是视频PHY，PCA是repeater而非隔离器。"
+      },
+      {
+        "number": 34,
+        "criterion": "G04-041",
+        "title": "运放两个输入在最坏工况下不超共模范围",
+        "example_sr_rules": [
+          "ANA-C01"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "无CAN收发器、隔离带、运放或ADC检测分压；HDMI/CSI是视频PHY，PCA是repeater而非隔离器。"
+      },
+      {
+        "number": 35,
+        "criterion": "G04-054",
+        "title": "ADC 输入不超满量程和绝对最大值",
+        "example_sr_rules": [
+          "ANA-C03"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "无CAN收发器、隔离带、运放或ADC检测分压；HDMI/CSI是视频PHY，PCA是repeater而非隔离器。"
+      },
+      {
+        "number": 36,
+        "criterion": "G04-078",
+        "title": "晶振负载电容与晶振规定 CL 相符",
+        "example_sr_rules": [
+          "CLK-C01"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "Y1/Y2为TXC 7C有源CMOS XO；不套无源晶体CL/负阻/共用晶体公式。完成准确oscillator声明后最终计划无CLK-C01；输出负载超规定单列F-CLOCK，已有DEV-C05.Y1/Y2承接，不是本条漏报。"
+      },
+      {
+        "number": 37,
+        "criterion": "G04-079",
+        "title": "振荡器增益裕量足够起振",
+        "example_sr_rules": [
+          "CLK-C01"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "Y1/Y2为TXC 7C有源CMOS XO；不套无源晶体CL/负阻/共用晶体公式。完成准确oscillator声明后最终计划无CLK-C01；输出负载超规定单列F-CLOCK，已有DEV-C05.Y1/Y2承接，不是本条漏报。"
+      },
+      {
+        "number": 38,
+        "criterion": "G04-082",
+        "title": "一颗晶振只驱动一个器件",
+        "example_sr_rules": [
+          "CLK-C01"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "Y1/Y2为TXC 7C有源CMOS XO；不套无源晶体CL/负阻/共用晶体公式。完成准确oscillator声明后最终计划无CLK-C01；输出负载超规定单列F-CLOCK，已有DEV-C05.Y1/Y2承接，不是本条漏报。"
+      },
+      {
+        "number": 39,
+        "criterion": "G05-019",
+        "title": "每条配电支路在源侧有保护",
+        "example_sr_rules": [
+          "PRO-C04"
+        ],
+        "current_rules_coverage": [
+          "PRO-C04.J2-18.J2-18",
+          "PRO-C04.J4-18.J4-18",
+          "PRO-C04.J6-1.J6-1",
+          "PRO-C04.J6-2.J6-2",
+          "PRO-C04.J6-3-FB12.NET-Y2-EN",
+          "PRO-C04.J6-3-FB6.NET-Y1-EN",
+          "PRO-C04.J6-3-R19.NET-U4B-VDDIO1",
+          "PRO-C04.J6-3-R20.NET-U4B-VDDIO2",
+          "PRO-C04.J6-3-R6.NET-U1B-VDDIO1",
+          "PRO-C04.J6-3-R7.NET-U1B-VDDIO2",
+          "PRO-C04.J6-3.J6-3",
+          "PRO-C04.J6-4-FB12.NET-Y2-EN",
+          "PRO-C04.J6-4-FB6.NET-Y1-EN",
+          "PRO-C04.J6-4-R19.NET-U4B-VDDIO1",
+          "PRO-C04.J6-4-R20.NET-U4B-VDDIO2",
+          "PRO-C04.J6-4-R6.NET-U1B-VDDIO1",
+          "PRO-C04.J6-4-R7.NET-U1B-VDDIO2",
+          "PRO-C04.J6-4.J6-4"
+        ],
+        "status": "needs_human",
+        "evidence": "PRO-C04逐源和R6/R7/R19/R20/FB6/FB12支路已有18项；本板无独立源侧熔丝，但上游主机/HDMI源限流合同未定，不能从板载无F直接定硬错。"
+      },
+      {
+        "number": 40,
+        "criterion": "G05-022",
+        "title": "过流动作点上限下通路器件与连接器不超额定",
+        "example_sr_rules": [
+          "DEV-C01",
+          "DEV-C04"
+        ],
+        "current_rules_coverage": [
+          "DEV-C01.AV-HDMI1",
+          "DEV-C01.AV-HDMI2",
+          "DEV-C01.BOARD",
+          "DEV-C01.CLOCK-Y1",
+          "DEV-C01.CLOCK-Y2",
+          "DEV-C01.I2C-BRIDGE1",
+          "DEV-C01.I2C-BRIDGE2",
+          "DEV-C01.LEVEL-SHIFT-U3",
+          "DEV-C01.LEVEL-SHIFT-U6",
+          "DEV-C01.PIN.U1-A1",
+          "DEV-C01.PIN.U1-G5",
+          "DEV-C01.PIN.U4-A1",
+          "DEV-C01.PIN.U4-G5",
+          "DEV-C01.POWER-CONVERTER-IC1",
+          "DEV-C01.POWER-CONVERTER-IC2",
+          "DEV-C01.POWER-CONVERTER-IC3",
+          "DEV-C01.POWER-CONVERTER-IC4",
+          "DEV-C04.J2",
+          "DEV-C04.J4",
+          "DEV-C04.J6"
+        ],
+        "status": "needs_human",
+        "evidence": "没有离散FUSE/eFuse设定阈值链；TLV733 p6 ILIM360..700mA、折返短路和热关断只覆盖各自输出，主机上游限流/源阻抗和连接器负载未知；载流/动作/分断不能硬填。"
+      },
+      {
+        "number": 41,
+        "criterion": "G05-025",
+        "title": "故障电流下的动作时间短于被保护对象的耐受时间",
+        "example_sr_rules": [
+          "PRO-C05"
+        ],
+        "current_rules_coverage": [],
+        "status": "needs_human",
+        "evidence": "没有离散FUSE/eFuse设定阈值链；TLV733 p6 ILIM360..700mA、折返短路和热关断只覆盖各自输出，主机上游限流/源阻抗和连接器负载未知；载流/动作/分断不能硬填。"
+      },
+      {
+        "number": 42,
+        "criterion": "G05-030",
+        "title": "TVS 工作电压不低于被钳节点最高工作电压",
+        "example_sr_rules": [
+          "PRO-E02"
+        ],
+        "current_rules_coverage": [],
+        "status": "plan_gap",
+        "evidence": "M01：U2/U5实际8路TMDS TVS，自动PRO-E02缺失，PRO-C02有4个不适用门限窗；人工补PRO-E02。p5典型钳位不是同波形系统保证，实际钳位/能量配合尚需资料。"
+      },
+      {
+        "number": 43,
+        "criterion": "G05-031",
+        "title": "TVS 钳位电压不超被保护器件绝对最大值",
+        "example_sr_rules": [
+          "PRO-E02"
+        ],
+        "current_rules_coverage": [],
+        "status": "plan_gap",
+        "evidence": "M01：U2/U5实际8路TMDS TVS，自动PRO-E02缺失，PRO-C02有4个不适用门限窗；人工补PRO-E02。p5典型钳位不是同波形系统保证，实际钳位/能量配合尚需资料。"
+      },
+      {
+        "number": 44,
+        "criterion": "G05-032",
+        "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+        "example_sr_rules": [
+          "PRO-E02"
+        ],
+        "current_rules_coverage": [],
+        "status": "plan_gap",
+        "evidence": "M01：U2/U5实际8路TMDS TVS，自动PRO-E02缺失，PRO-C02有4个不适用门限窗；人工补PRO-E02。p5典型钳位不是同波形系统保证，实际钳位/能量配合尚需资料。"
+      },
+      {
+        "number": 45,
+        "criterion": "G05-040",
+        "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+        "example_sr_rules": [
+          "DRV-C02"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "没有离散通路MOS或外置热插拔/反接开关；LDO内部PMOS不能据空外部SOA图套通路MOS准则。"
+      },
+      {
+        "number": 46,
+        "criterion": "G05-041",
+        "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+        "example_sr_rules": [
+          "DRV-C02"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "没有离散通路MOS或外置热插拔/反接开关；LDO内部PMOS不能据空外部SOA图套通路MOS准则。"
+      },
+      {
+        "number": 47,
+        "criterion": "G05-048",
+        "title": "熔断器分断能力不小于预期短路电流",
+        "example_sr_rules": [
+          "PRO-C01"
+        ],
+        "current_rules_coverage": [],
+        "status": "needs_human",
+        "evidence": "没有离散FUSE/eFuse设定阈值链；TLV733 p6 ILIM360..700mA、折返短路和热关断只覆盖各自输出，主机上游限流/源阻抗和连接器负载未知；载流/动作/分断不能硬填。"
+      },
+      {
+        "number": 48,
+        "criterion": "G05-054",
+        "title": "每个对外电源接口的反接有明确处置",
+        "example_sr_rules": [
+          "PRO-D04",
+          "PWR-T05"
+        ],
+        "current_rules_coverage": [
+          "PRO-D04.J2",
+          "PRO-D04.J4",
+          "PRO-D04.J6"
+        ],
+        "status": "needs_human",
+        "evidence": "PRO-D04已为J2/J4/J6展开；FFC/HDMI不等于任意可反接端子，需具体电缆误插和主机负压/反向容错合同；不能套教学-30V。"
+      },
+      {
+        "number": 49,
+        "criterion": "G05-057",
+        "title": "反接阻断之前没有单向 TVS 造成源短路",
+        "example_sr_rules": [
+          "PWR-C26"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "无串联防反D/MOS和其前置单向电源TVS；U2/U5是TMDS对地多通道ESD阵列，不能冒称源端TVS位置错误。"
+      },
+      {
+        "number": 50,
+        "criterion": "G05-087",
+        "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+        "example_sr_rules": [
+          "PWR-T05"
+        ],
+        "current_rules_coverage": [],
+        "status": "not_applicable",
+        "evidence": "没有离散通路MOS或外置热插拔/反接开关；LDO内部PMOS不能据空外部SOA图套通路MOS准则。"
+      }
+    ],
+    "note": "50条逐条对照；plan_gap两根因，不把人工既有问题发现记整轮漏检。"
+  },
+  "evidence_manifest": [
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/antmicro--hdmi-mipi-bridge/review/datasheets/TPD8S009.pdf",
+      "sha256": "a874e2aca7d8597893860e8b8c301cf0f333fba2c9aab4b4eec54c6a17141360",
+      "pages": 18
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/antmicro--hdmi-mipi-bridge/review/datasheets/TXC-7C.pdf",
+      "sha256": "7a7a6f9a78f171ab1fc39321e898f6dfdc97cfc61f4fe2c8f3a1c5cabc1cc6f5",
+      "pages": 3
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/antmicro--hdmi-mipi-bridge/review/datasheets/TLV733P.pdf",
+      "sha256": "5af1ef361f574c01de9c5fa6d890a2f191894ab3cecd9183d2000d97df4ea77c",
+      "pages": 39
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/antmicro--hdmi-mipi-bridge/review/datasheets/PCA9517A.pdf",
+      "sha256": "7a7be74ba0cf6f7c7238dad170ac429b6b412ad95d627ef7ceabdbe1f077a50e",
+      "pages": 22
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/antmicro--hdmi-mipi-bridge/review/datasheets/TC358743XBG.pdf",
+      "sha256": "f8c4b7b6a89dc715d90b3a87e419cd5f6f79e44001b4f46203a8d395968c22c9",
+      "pages": 20
+    }
+  ],
+  "native_info_policy": "PWR-A01/RST-A03/SIG-A03 INFO只描述事实，不计缺陷/误报；全部非INFO扫描记录已逐条归因。"
+}

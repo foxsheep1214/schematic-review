@@ -1,0 +1,827 @@
+{
+  "schema": "board_evaluation_function_disposition_v1",
+  "note": "评测逐功能清单，不冒充原生功能结论；所有10个框架均有未闭合方面。",
+  "functions": [
+    {
+      "id": "FN-CLOCK-U2",
+      "question": "CLOCK-U2（C1、R19、R2、U2）在 run 各状态下，晶体/有源时钟/RTC 是否按料号条件起振并满足负载与噪声要求",
+      "objects": {
+        "refs": [
+          "C1",
+          "R19",
+          "R2",
+          "U2"
+        ],
+        "nets": []
+      },
+      "states": [
+        "run"
+      ],
+      "status": "needs_human",
+      "known_checks": [
+        "CLK-C01.CLOCK-U2-RUN.C1",
+        "CLK-D03.CLOCK-U2-RUN.C1"
+      ],
+      "pending_checks": [
+        "CLK-D01.CLOCK-U2-RUN.C1",
+        "DEV-C01.C1",
+        "DEV-C01.CLOCK-U2",
+        "DEV-C01.R19",
+        "DEV-C01.R2",
+        "DEV-C02.CLOCK-U2",
+        "DEV-C03.CLOCK-U2",
+        "DEV-C05.U2",
+        "DEV-D01.U2",
+        "DEV-D02.U2",
+        "DEV-D05.U2",
+        "PWR-C09.DECAP-1F14371D2C473775C9EB.3V3",
+        "PWR-C10.DECAP-1F14371D2C473775C9EB.3V3",
+        "PWR-D02.DECAP-1F14371D2C473775C9EB.3V3",
+        "PWR-T03.DECAP-1F14371D2C473775C9EB.3V3",
+        "SIG-C13.CLOCK-U2.C1"
+      ],
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "CLK-C01.CLOCK-U2-RUN.C1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "CLK-D01.CLOCK-U2-RUN.C1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "CLK-D03.CLOCK-U2-RUN.C1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.C1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.CLOCK-U2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.R19"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.R2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C02.CLOCK-U2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C03.CLOCK-U2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C05.U2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D01.U2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D02.U2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D05.U2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-C09.DECAP-1F14371D2C473775C9EB.3V3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-C10.DECAP-1F14371D2C473775C9EB.3V3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-D02.DECAP-1F14371D2C473775C9EB.3V3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-T03.DECAP-1F14371D2C473775C9EB.3V3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-C13.CLOCK-U2.C1"
+        }
+      ]
+    },
+    {
+      "id": "FN-EXT-J1",
+      "question": "连接器 EXT-J1 的针定义、载流与对外防护是否成立",
+      "objects": {
+        "refs": [
+          "C1",
+          "C11",
+          "C12",
+          "C13",
+          "C14",
+          "C2",
+          "J1",
+          "R10",
+          "R13",
+          "R16",
+          "R7",
+          "U1",
+          "U2"
+        ],
+        "nets": [
+          "+3V3",
+          "/IRQ",
+          "/PICO",
+          "/POCI",
+          "/RXCLK_N",
+          "/RXCLK_P",
+          "/RXD09_N",
+          "/RXD09_P",
+          "/RXD24_N",
+          "/RXD24_P",
+          "/SCLK",
+          "/TXCLK_N",
+          "/TXCLK_P",
+          "/TXD_N",
+          "/TXD_P",
+          "/~{RSTN}",
+          "/~{SELN}",
+          "GND"
+        ]
+      },
+      "states": [
+        "run"
+      ],
+      "status": "needs_human",
+      "known_checks": [],
+      "pending_checks": [
+        "DEV-C04.J1",
+        "DEV-D03.J1",
+        "PRO-D03.J1",
+        "PRO-D04.J1"
+      ],
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C04.J1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D03.J1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PRO-D03.J1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PRO-D04.J1"
+        }
+      ]
+    },
+    {
+      "id": "FN-EXT-J2",
+      "question": "连接器 EXT-J2 的针定义、载流与对外防护是否成立",
+      "objects": {
+        "refs": [
+          "C9",
+          "D1",
+          "J2"
+        ],
+        "nets": [
+          "/RF24",
+          "GND"
+        ]
+      },
+      "states": [
+        "run"
+      ],
+      "status": "needs_human",
+      "known_checks": [],
+      "pending_checks": [
+        "DEV-C04.J2",
+        "DEV-D03.J2",
+        "PRO-D03.J2",
+        "PRO-D04.J2"
+      ],
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C04.J2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D03.J2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PRO-D03.J2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PRO-D04.J2"
+        }
+      ]
+    },
+    {
+      "id": "FN-EXT-J3",
+      "question": "连接器 EXT-J3 的针定义、载流与对外防护是否成立",
+      "objects": {
+        "refs": [
+          "C10",
+          "D2",
+          "J3"
+        ],
+        "nets": [
+          "/RF09",
+          "GND"
+        ]
+      },
+      "states": [
+        "run"
+      ],
+      "status": "needs_human",
+      "known_checks": [],
+      "pending_checks": [
+        "DEV-C04.J3",
+        "DEV-D03.J3",
+        "PRO-D03.J3",
+        "PRO-D04.J3"
+      ],
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C04.J3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D03.J3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PRO-D03.J3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PRO-D04.J3"
+        }
+      ]
+    },
+    {
+      "id": "FN-IF-CLOCK-U2-RF-U1",
+      "question": "IF-CLOCK-U2~RF-U1（CLOCK-U2、RF-U1）之间的网络 Net-(U1-TCXO)、Net-(U1-XTAL2)，方向、电平与跨域注入是否都成立",
+      "objects": {
+        "refs": [
+          "R19",
+          "R2",
+          "U1"
+        ],
+        "nets": [
+          "Net-(U1-TCXO)",
+          "Net-(U1-XTAL2)"
+        ]
+      },
+      "states": [
+        "run"
+      ],
+      "status": "needs_human",
+      "known_checks": [
+        "SIG-T04.IF-CLOCK-U2-RF-U1"
+      ],
+      "pending_checks": [
+        "SIG-C07.IF-CLOCK-U2-RF-U1"
+      ],
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-C07.IF-CLOCK-U2-RF-U1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T04.IF-CLOCK-U2-RF-U1"
+        }
+      ]
+    },
+    {
+      "id": "FN-IF-IQ-J1-RF-U1",
+      "question": "IF-IQ-J1~RF-U1（IQ-J1、RF-U1）之间的网络 /IRQ、/PICO、/POCI、/RXCLK_N、/RXCLK_P、/RXD09_N、/RXD09_P、/RXD24_N、/RXD24_P、/SCLK、/~{RSTN}、/~{SELN}、Net-(U1-TXCLKN)、Net-(U1-TXCLKP)、Net-(U1-TXDN)、Net-(U1-TXDP)，方向、电平与跨域注入是否都成立",
+      "objects": {
+        "refs": [
+          "J1",
+          "R10",
+          "R13",
+          "R16",
+          "R7",
+          "U1"
+        ],
+        "nets": [
+          "/IRQ",
+          "/PICO",
+          "/POCI",
+          "/RXCLK_N",
+          "/RXCLK_P",
+          "/RXD09_N",
+          "/RXD09_P",
+          "/RXD24_N",
+          "/RXD24_P",
+          "/SCLK",
+          "/~{RSTN}",
+          "/~{SELN}",
+          "Net-(U1-TXCLKN)",
+          "Net-(U1-TXCLKP)",
+          "Net-(U1-TXDN)",
+          "Net-(U1-TXDP)"
+        ]
+      },
+      "states": [
+        "run"
+      ],
+      "status": "needs_human",
+      "known_checks": [],
+      "pending_checks": [
+        "SIG-C07.IF-IQ-J1-RF-U1",
+        "SIG-T04.IF-IQ-J1-RF-U1"
+      ],
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-C07.IF-IQ-J1-RF-U1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T04.IF-IQ-J1-RF-U1"
+        }
+      ]
+    },
+    {
+      "id": "FN-IQ-J1",
+      "question": "IQ-J1（J1、R10、R13、R16、R7）在 run 各状态下，高速链路的耦合、映射、边带与差分连通是否按规范",
+      "objects": {
+        "refs": [
+          "J1",
+          "R10",
+          "R13",
+          "R16",
+          "R7"
+        ],
+        "nets": []
+      },
+      "states": [
+        "run"
+      ],
+      "status": "needs_human",
+      "known_checks": [
+        "DEV-D05.J1"
+      ],
+      "pending_checks": [
+        "DEV-C01.IQ-J1",
+        "DEV-C01.R10",
+        "DEV-C01.R13",
+        "DEV-C01.R16",
+        "DEV-C01.R7",
+        "DEV-C03.IQ-J1",
+        "DEV-D02.J1",
+        "DEV-E01.J1",
+        "SIG-C13.IQ-J1.J1",
+        "SIG-D14.IQ-J1-RUN.J1",
+        "SIG-T01.IQ-J1-RUN.J1"
+      ],
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.IQ-J1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.R10"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.R13"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.R16"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.R7"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C03.IQ-J1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D02.J1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D05.J1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-E01.J1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-C13.IQ-J1.J1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-D14.IQ-J1-RUN.J1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T01.IQ-J1-RUN.J1"
+        }
+      ]
+    },
+    {
+      "id": "FN-RF-U1",
+      "question": "RF-U1（C10、C11、C12、C13、C14、C2、C4、C5、C6、C7、C8、C9、D1、D2、J2、J3、L1、T1、T2、U1）在 receive/transmit/sleep 各状态下，天线路径、供电与噪声预算是否满足模组要求",
+      "objects": {
+        "refs": [
+          "C10",
+          "C11",
+          "C12",
+          "C13",
+          "C14",
+          "C2",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8",
+          "C9",
+          "D1",
+          "D2",
+          "J2",
+          "J3",
+          "L1",
+          "T1",
+          "T2",
+          "U1"
+        ],
+        "nets": []
+      },
+      "states": [
+        "receive",
+        "transmit",
+        "sleep"
+      ],
+      "status": "needs_human",
+      "known_checks": [
+        "DEV-D01.T1",
+        "DEV-D01.T2",
+        "DEV-D01.U1",
+        "DEV-D02.T1",
+        "DEV-D02.T2",
+        "DEV-D02.U1",
+        "DEV-D05.J2",
+        "DEV-D05.J3",
+        "DEV-D05.T1",
+        "DEV-D05.T2",
+        "DEV-D05.U1",
+        "DRV-C01.T1-UNRESOLVED.T1",
+        "DRV-C01.T2-UNRESOLVED.T2",
+        "DRV-T01.T1-UNRESOLVED.T1",
+        "DRV-T01.T2-UNRESOLVED.T2",
+        "PWR-D02.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1",
+        "PWR-D02.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD",
+        "PWR-D02.DECAP-9034B6404C9FDD63F76C.3V3",
+        "PWR-D02.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0",
+        "PWR-T03.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1",
+        "PWR-T03.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD",
+        "PWR-T03.DECAP-9034B6404C9FDD63F76C.3V3",
+        "PWR-T03.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0"
+      ],
+      "pending_checks": [
+        "DEV-C01.C10",
+        "DEV-C01.C11",
+        "DEV-C01.C12",
+        "DEV-C01.C13",
+        "DEV-C01.C14",
+        "DEV-C01.C2",
+        "DEV-C01.C4",
+        "DEV-C01.C5",
+        "DEV-C01.C6",
+        "DEV-C01.C7",
+        "DEV-C01.C8",
+        "DEV-C01.C9",
+        "DEV-C01.RF-U1",
+        "DEV-C02.RF-U1",
+        "DEV-C05.T1",
+        "DEV-C05.T2",
+        "DEV-C05.U1",
+        "DEV-D02.D1",
+        "DEV-D02.D2",
+        "DEV-D02.J2",
+        "DEV-D02.J3",
+        "DEV-E01.J2",
+        "DEV-E01.J3",
+        "PWR-C09.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1",
+        "PWR-C09.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD",
+        "PWR-C09.DECAP-9034B6404C9FDD63F76C.3V3",
+        "PWR-C09.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0",
+        "PWR-C10.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1",
+        "PWR-C10.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD",
+        "PWR-C10.DECAP-9034B6404C9FDD63F76C.3V3",
+        "PWR-C10.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0",
+        "SIG-D12.RF-U1-RECEIVE.C10",
+        "SIG-D12.RF-U1-SLEEP.C10",
+        "SIG-D12.RF-U1-TRANSMIT.C10"
+      ],
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.C10"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.C11"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.C12"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.C13"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.C14"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.C2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.C4"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.C5"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.C6"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.C7"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.C8"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.C9"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.RF-U1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C02.RF-U1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C05.T1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C05.T2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C05.U1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D01.T1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D01.T2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D01.U1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D02.D1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D02.D2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D02.J2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D02.J3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D02.T1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D02.T2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D02.U1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D05.J2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D05.J3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D05.T1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D05.T2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D05.U1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-E01.J2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-E01.J3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DRV-C01.T1-UNRESOLVED.T1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DRV-C01.T2-UNRESOLVED.T2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DRV-T01.T1-UNRESOLVED.T1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "DRV-T01.T2-UNRESOLVED.T2"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-C09.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-C09.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-C09.DECAP-9034B6404C9FDD63F76C.3V3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-C09.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-C10.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-C10.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-C10.DECAP-9034B6404C9FDD63F76C.3V3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-C10.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-D02.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-D02.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-D02.DECAP-9034B6404C9FDD63F76C.3V3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-D02.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-T03.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-T03.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-T03.DECAP-9034B6404C9FDD63F76C.3V3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-T03.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-D12.RF-U1-RECEIVE.C10"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-D12.RF-U1-SLEEP.C10"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-D12.RF-U1-TRANSMIT.C10"
+        }
+      ]
+    },
+    {
+      "id": "FN-SYS-MONITOR",
+      "question": "需求要求监测的电源域（+3V3）是否都有监测点、阈值与动作",
+      "objects": {
+        "refs": [],
+        "nets": [
+          "+3V3"
+        ]
+      },
+      "states": [
+        "run"
+      ],
+      "status": "needs_human",
+      "known_checks": [],
+      "pending_checks": [
+        "PWR-T04.NATIVE.SUPERVISION-RAILS"
+      ],
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-T04.NATIVE.SUPERVISION-RAILS"
+        }
+      ]
+    },
+    {
+      "id": "FN-SYS-POWER",
+      "question": "电源树（+3V3）每条轨的源、负载、电压窗口与功率预算是否成立，有没有无驱动或同基名混淆的轨",
+      "objects": {
+        "refs": [],
+        "nets": [
+          "+3V3"
+        ]
+      },
+      "states": [
+        "run"
+      ],
+      "status": "needs_human",
+      "known_checks": [
+        "PWR-T01.3V3"
+      ],
+      "pending_checks": [
+        "PWR-C01.3V3"
+      ],
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-C01.3V3"
+        },
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-T01.3V3"
+        }
+      ]
+    }
+  ]
+}

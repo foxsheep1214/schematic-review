@@ -1,0 +1,2046 @@
+{
+  "board": "a2r-lab--crazyflie_fpga_deck",
+  "source": {
+    "repo": "A2R-Lab/Crazyflie_FPGA_Deck",
+    "commit": "a1405c1d2b0994ea3421352c03d7322ef676ebee",
+    "schematic": "Deck_FPGA.kicad_sch",
+    "license": "MIT"
+  },
+  "types": [
+    "POWER_CONVERTER",
+    "STARTUP",
+    "SPI",
+    "CLOCK",
+    "DEBUG",
+    "I2C"
+  ],
+  "run": {
+    "db_sha256": "e40435ce337dff0bfb3228f7450095fc3b3cacb3ba6e51da5755bcb831d5a37e",
+    "source_db_sha256": "f63522899e23600f58aa908991ecb4b94f0670eacf8a2e973cb9937cbaa64e50",
+    "plan_items": 394,
+    "native_plan_items": 390,
+    "reviewer_added": 4,
+    "findings_total": 75,
+    "native_confirmed_findings": 2,
+    "raw_findings_and_candidates": 54,
+    "results_judged": 82,
+    "needs_human_items": 312,
+    "functional_frames": 18,
+    "complete_functional_passes": 0,
+    "gate": "FAIL",
+    "sr_commit": "ea50c4c2103ffee2d48dc62d03ad3025b38740fc",
+    "release": "NO_GO",
+    "gate_valid": false,
+    "gate_errors": 380,
+    "report_status": "diagnostic_only_not_packaged",
+    "results_counting_note": "82 independently judged local checks (77 PASS/5 FAIL); no complete functional PASS. Native functions contains one confirmed FAIL only; all18 frame scopes retained in pending-functions."
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "unconnected-(U2-TRESPWRON-Pad26)"
+      ],
+      "sr_text": "声明输入脚标为 No-Connect：U2.26 -> unconnected-(U2-TRESPWRON-Pad26): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "needs_human",
+      "evidence": "U2.26 TRESPWRON is explicit NC; U2.27 RESPWRON also unused. TPS65023B p42 §8.2.2.7 recommends not leaving signal pins open, internal delay current1.7..2.3uA p8. No external reset consumer identified. Need intended use/acceptance of omitted timer; recommendation alone does not prove device damage.",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "NET-A07.U2-26-978f37"
+      ]
+    },
+    {
+      "id": "F02",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源轨疑似无驱动：+1V0 (27节点): ['C15', 'C16', 'C17', 'C18', 'C26', 'C33']",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A01.1V0-3cbcc6"
+      ]
+    },
+    {
+      "id": "F03",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [],
+      "nets": [
+        "+1V8"
+      ],
+      "sr_text": "电源轨疑似无驱动：+1V8 (12节点): ['C1', 'C27', 'C3', 'C5', 'C6', 'L2']",
+      "verdict": "false_alarm",
+      "evidence": "U2.35 L2 switch -> L2.1 -> L2.2 +1V8 -> U2.33 VDCDC2 and U1 VCCAUX. TPS65023B p5,p38 Fig37; DEFDCDC2 pin32=GND selects1.8V. Source exists; not proof of load margin.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A01.1V8-f08a36"
+      ]
+    },
+    {
+      "id": "F04",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [],
+      "nets": [
+        "/VRTC"
+      ],
+      "sr_text": "电源轨疑似无驱动：/VRTC (3节点): ['C23', 'R10', 'U2']",
+      "verdict": "false_alarm",
+      "evidence": "U2.16 is the internally regulated VRTC OUTPUT; C23=4u7 to GND and R10=100k to HOT_RESET. TPS65023B p6,p10,p42 §8.2.2.5. Native power_in label does not make it an unpowered input.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A01.VRTC-b9adbe"
+      ]
+    },
+    {
+      "id": "F05",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.A17 (VCCO_15，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.A17=VCCO_15; unused Bank15: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-A17-adb49c"
+      ]
+    },
+    {
+      "id": "F06",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.A7 (VCCO_35，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.A7=VCCO_35; unused Bank35: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-A7-20e7f0"
+      ]
+    },
+    {
+      "id": "F07",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.B10 (VCCO_16，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.B10=VCCO_16; unused Bank16: all 11 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-B10-2bc81f"
+      ]
+    },
+    {
+      "id": "F08",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.C13 (VCCO_15，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.C13=VCCO_15; unused Bank15: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-C13-649389"
+      ]
+    },
+    {
+      "id": "F09",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.C3 (VCCO_35，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.C3=VCCO_35; unused Bank35: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-C3-ee7a23"
+      ]
+    },
+    {
+      "id": "F10",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.D16 (VCCO_15，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.D16=VCCO_15; unused Bank15: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-D16-8eff15"
+      ]
+    },
+    {
+      "id": "F11",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.D6 (VCCO_35，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.D6=VCCO_35; unused Bank35: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-D6-fbf7fc"
+      ]
+    },
+    {
+      "id": "F12",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.E8 (VCCBATT_0，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.E8 VCCBATT_0 -> GND. DS181 v1.27.1 p3 Table2 note9 explicitly permits GND or VCCAUX when no backup battery. Does not require BBRAM retention.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-E8-240825"
+      ]
+    },
+    {
+      "id": "F13",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.F10 (VCCBRAM) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-F10-2d930e"
+      ]
+    },
+    {
+      "id": "F14",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V8"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.F12 (VCCAUX) <- +1V8",
+      "verdict": "false_alarm",
+      "evidence": "U2.35 L2 switch -> L2.1 -> L2.2 +1V8 -> U2.33 VDCDC2 and U1 VCCAUX. TPS65023B p5,p38 Fig37; DEFDCDC2 pin32=GND selects1.8V. Source exists; not proof of load margin.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-F12-86e827"
+      ]
+    },
+    {
+      "id": "F15",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.F2 (VCCO_35，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.F2=VCCO_35; unused Bank35: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-F2-738782"
+      ]
+    },
+    {
+      "id": "F16",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.F8 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-F8-7133fb"
+      ]
+    },
+    {
+      "id": "F17",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.G11 (VCCBRAM) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-G11-e9c455"
+      ]
+    },
+    {
+      "id": "F18",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.G15 (VCCO_15，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.G15=VCCO_15; unused Bank15: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-G15-6ec6c6"
+      ]
+    },
+    {
+      "id": "F19",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.G5 (VCCO_35，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.G5=VCCO_35; unused Bank35: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-G5-a6199e"
+      ]
+    },
+    {
+      "id": "F20",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.G7 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-G7-ccf11f"
+      ]
+    },
+    {
+      "id": "F21",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.G9 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-G9-f8606f"
+      ]
+    },
+    {
+      "id": "F22",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "P1",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.H10 (VCCADC_0，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "true_defect",
+      "evidence": "U1.H10=VCCADC_0 -> GND; official xc7a100tcsg324pkg.txt H10; XML/db543 nodes agree; current PDF p1 FPGA Power crop; UG480 v1.11 p9 Table1-1 VCCADC forbids GND even unused; DS181 p3 XADC recommended1.71..1.89V. Violates mandatory connection; does not establish actual damage/MPC failure.",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-FPGA-VCCADC-GND",
+        "mutation": "从有据的修正版出发，仅将U1.H10从+1V8改接GND，同步更新nets/pin2net；保留H9接地及E8可选接地",
+        "target_rule": "PWR-A02"
+      },
+      "check_ids": [
+        "PWR-A02.U1-H10-0d6ba5"
+      ],
+      "native_finding_id": "F-VCCADC"
+    },
+    {
+      "id": "F23",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V8"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.H12 (VCCAUX) <- +1V8",
+      "verdict": "false_alarm",
+      "evidence": "U2.35 L2 switch -> L2.1 -> L2.2 +1V8 -> U2.33 VDCDC2 and U1 VCCAUX. TPS65023B p5,p38 Fig37; DEFDCDC2 pin32=GND selects1.8V. Source exists; not proof of load margin.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-H12-3b9c25"
+      ]
+    },
+    {
+      "id": "F24",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.H18 (VCCO_15，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.H18=VCCO_15; unused Bank15: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-H18-642389"
+      ]
+    },
+    {
+      "id": "F25",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.H8 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-H8-c32946"
+      ]
+    },
+    {
+      "id": "F26",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.J1 (VCCO_35，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.J1=VCCO_35; unused Bank35: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-J1-ee63d1"
+      ]
+    },
+    {
+      "id": "F27",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.J11 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-J11-9d4fe9"
+      ]
+    },
+    {
+      "id": "F28",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.J7 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-J7-937ad9"
+      ]
+    },
+    {
+      "id": "F29",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V8"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.K12 (VCCAUX) <- +1V8",
+      "verdict": "false_alarm",
+      "evidence": "U2.35 L2 switch -> L2.1 -> L2.2 +1V8 -> U2.33 VDCDC2 and U1 VCCAUX. TPS65023B p5,p38 Fig37; DEFDCDC2 pin32=GND selects1.8V. Source exists; not proof of load margin.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-K12-edcfb2"
+      ]
+    },
+    {
+      "id": "F30",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.K14 (VCCO_15，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.K14=VCCO_15; unused Bank15: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-K14-a7cb94"
+      ]
+    },
+    {
+      "id": "F31",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.K4 (VCCO_34，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.K4=VCCO_34; unused Bank34: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-K4-97cae0"
+      ]
+    },
+    {
+      "id": "F32",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.K8 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-K8-8bc5c0"
+      ]
+    },
+    {
+      "id": "F33",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.L11 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-L11-235939"
+      ]
+    },
+    {
+      "id": "F34",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.L7 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-L7-1a5925"
+      ]
+    },
+    {
+      "id": "F35",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.M10 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-M10-d146bb"
+      ]
+    },
+    {
+      "id": "F36",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V8"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.M12 (VCCAUX) <- +1V8",
+      "verdict": "false_alarm",
+      "evidence": "U2.35 L2 switch -> L2.1 -> L2.2 +1V8 -> U2.33 VDCDC2 and U1 VCCAUX. TPS65023B p5,p38 Fig37; DEFDCDC2 pin32=GND selects1.8V. Source exists; not proof of load margin.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-M12-81aac7"
+      ]
+    },
+    {
+      "id": "F37",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.M8 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-M8-d05177"
+      ]
+    },
+    {
+      "id": "F38",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.N11 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-N11-94e1fa"
+      ]
+    },
+    {
+      "id": "F39",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.N3 (VCCO_34，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.N3=VCCO_34; unused Bank34: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-N3-ab1747"
+      ]
+    },
+    {
+      "id": "F40",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.N7 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-N7-dac55f"
+      ]
+    },
+    {
+      "id": "F41",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0"
+      ],
+      "sr_text": "电源球所在轨无驱动：U1.N9 (VCCINT) <- +1V0",
+      "verdict": "false_alarm",
+      "evidence": "U2.7 L1 switch -> L1.2 -> L1.1 +1V0 -> U2.9 VDCDC1 and U1 VCCINT/BRAM. TPS65023B p5/p38 Fig37/p42 identifies output and feedback; source exists, regulation/current corners separate.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-N9-9db619"
+      ]
+    },
+    {
+      "id": "F42",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.P6 (VCCO_34，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.P6=VCCO_34; unused Bank34: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-P6-7d5d52"
+      ]
+    },
+    {
+      "id": "F43",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.T2 (VCCO_34，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.T2=VCCO_34; unused Bank34: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-T2-e7a2e7"
+      ]
+    },
+    {
+      "id": "F44",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.U5 (VCCO_34，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.U5=VCCO_34; unused Bank34: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-U5-fc7658"
+      ]
+    },
+    {
+      "id": "F45",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U1.V8 (VCCO_34，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U1.V8=VCCO_34; unused Bank34: all 56 native bank pins at GND, including VCCO and I/O (official324-ball list matches all names). UG483 v1.14 p36 permits common GND for an unused bank. No active output may be configured in that bank; this is distinct from VCCADC.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U1-V8-3a3d19"
+      ]
+    },
+    {
+      "id": "F46",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "/VRTC"
+      ],
+      "sr_text": "电源球所在轨无驱动：U2.16 (VRTC) <- /VRTC",
+      "verdict": "false_alarm",
+      "evidence": "U2.16 is the internally regulated VRTC OUTPUT; C23=4u7 to GND and R10=100k to HOT_RESET. TPS65023B p6,p10,p42 §8.2.2.5. Native power_in label does not make it an unpowered input.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U2-16-920e02"
+      ]
+    },
+    {
+      "id": "F47",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U2.18 (VLDO2，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U2.18=VLDO2->GND with U2.22 LDO_EN=GND, both LDOs unused. TPS65023B p37 §8.1.2 requires VINLDO, VLDO1 and VLDO2 all tied GND in this case; legal unused-regulator disposition.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U2-18-4581d2"
+      ]
+    },
+    {
+      "id": "F48",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U2.19 (VINLDO，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U2.19=VINLDO->GND with U2.22 LDO_EN=GND, both LDOs unused. TPS65023B p37 §8.1.2 requires VINLDO, VLDO1 and VLDO2 all tied GND in this case; legal unused-regulator disposition.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U2-19-8eeba9"
+      ]
+    },
+    {
+      "id": "F49",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "电源脚落在地网：U2.20 (VLDO1，原生 power_in) <- GND：供电脚直接接地，器件无供电或供电被短路",
+      "verdict": "false_alarm",
+      "evidence": "U2.20=VLDO1->GND with U2.22 LDO_EN=GND, both LDOs unused. TPS65023B p37 §8.1.2 requires VINLDO, VLDO1 and VLDO2 all tied GND in this case; legal unused-regulator disposition.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.driven / _local_regulator_node; scripts/checkers/powertree.py",
+        "what": "按官方脚义与实际多路buck拓扑追踪VDCDC1/2/3、VRTC；接地例外须同时核未用Bank全成员及原厂条款，不能整体豁免FPGA供电脚；VCCADC接地仍报。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-A02.U2-20-f76707"
+      ]
+    },
+    {
+      "id": "F50",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U2",
+        "U4",
+        "R18"
+      ],
+      "nets": [
+        "/En_1V",
+        "VBUS"
+      ],
+      "sr_text": "EN 脚上拉/下拉待复核（极性+Abs Max）：/En_1V: R18 上拉->VBUS",
+      "verdict": "needs_human",
+      "evidence": "U4.6 open-drain FLAG -> U2.25 DCDC_EN; R18100k pulls to VBUS. LM3880 p3,p5,p9; TPS65023B p8 EN input thresholds1.3V high/0.4V low. VBUS upper/minimum/ramps and flag leakage corner required. Internal EN bias/100k load must be calculated with actual source; not a floating gate or automatically unsafe pullup.",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "RST-A01.EN-1V-897b97"
+      ]
+    },
+    {
+      "id": "F51",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U2",
+        "U4",
+        "R20"
+      ],
+      "nets": [
+        "/En_1V8",
+        "VBUS"
+      ],
+      "sr_text": "EN 脚上拉/下拉待复核（极性+Abs Max）：/En_1V8: R20 上拉->VBUS",
+      "verdict": "needs_human",
+      "evidence": "U4.5 open-drain FLAG -> U2.24 DCDC_EN; R20100k pulls to VBUS. LM3880 p3,p5,p9; TPS65023B p8 EN input thresholds1.3V high/0.4V low. VBUS upper/minimum/ramps and flag leakage corner required. Internal EN bias/100k load must be calculated with actual source; not a floating gate or automatically unsafe pullup.",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "RST-A01.EN-1V8-c9c98b"
+      ]
+    },
+    {
+      "id": "F52",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U2",
+        "U4",
+        "R21"
+      ],
+      "nets": [
+        "/En_3V3",
+        "VBUS"
+      ],
+      "sr_text": "EN 脚上拉/下拉待复核（极性+Abs Max）：/En_3V3: R21 上拉->VBUS",
+      "verdict": "needs_human",
+      "evidence": "U4.4 open-drain FLAG -> U2.23 DCDC_EN; R21100k pulls to VBUS. LM3880 p3,p5,p9; TPS65023B p8 EN input thresholds1.3V high/0.4V low. VBUS upper/minimum/ramps and flag leakage corner required. Internal EN bias/100k load must be calculated with actual source; not a floating gate or automatically unsafe pullup.",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "RST-A01.EN-3V3-972943"
+      ]
+    },
+    {
+      "id": "F53",
+      "sr_rule": "SIG-A03",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "J1",
+        "U1"
+      ],
+      "nets": [
+        "/SCL"
+      ],
+      "sr_text": "I²C 线无上拉：/SCL: ['J1', 'U1'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "verdict": "needs_human",
+      "evidence": "J1.5 directly connects U1.R10; no board-local pullup. These are host deck contacts, unlike internal SCLK_PWR/SDAT_PWR with R14/R15. Need actual Crazyflie host pullups, parallel decks, bus mode and capacitance. No absence-of-local-resistor defect inferred.",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "SIG-A03.SCL-f3e809"
+      ]
+    },
+    {
+      "id": "F54",
+      "sr_rule": "SIG-A03",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "J1",
+        "U1"
+      ],
+      "nets": [
+        "/SDA"
+      ],
+      "sr_text": "I²C 线无上拉：/SDA: ['J1', 'U1'] 上没有接到非地网的电阻；确认上拉由主机侧、片内或其他段提供，否则补上拉（阻值按 SIG-C01）",
+      "verdict": "needs_human",
+      "evidence": "J1.4 directly connects U1.R11; no board-local pullup. These are host deck contacts, unlike internal SCLK_PWR/SDAT_PWR with R14/R15. Need actual Crazyflie host pullups, parallel decks, bus mode and capacitance. No absence-of-local-resistor defect inferred.",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "SIG-A03.SDA-92d98a"
+      ]
+    },
+    {
+      "id": "F55",
+      "sr_rule": "DEV-D04",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "X1"
+      ],
+      "nets": [
+        "+3V3",
+        "/CLK100MHZ"
+      ],
+      "sr_text": "X1 图面、BOM采购码和资料链接不一致",
+      "verdict": "true_defect",
+      "evidence": "固定提交csv X1=C496694，对照当前图X1=C596959；Value ASE-100MHz而手册链接ASV.pdf。当前供应商映射C596959=ASEM1-100.000MHZ-LC-T；C496694=YXC O93225100MEDA4SI-13。仅确认设计资料冲突，未判任何分支装上必坏。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-OSC-MATERIAL-CONFLICT",
+        "mutation": "在正确同一MPN的合成基线中，仅将BOM的X1采购字段改为另一料号、保持图面字段与datasheet不变；比较BOM字段不可改线路",
+        "target_rule": "DEV-D04"
+      },
+      "check_ids": [
+        "DEV-D01.X1",
+        "DEV-D04.BOARD",
+        "DOC-Q01.INPUT-CONSISTENCY"
+      ],
+      "native_finding_id": "F-X1-DATA"
+    },
+    {
+      "id": "F56",
+      "sr_rule": "PWR-E02",
+      "criteria": [
+        "G03-034"
+      ],
+      "severity": "ungraded",
+      "refs": [
+        "X1"
+      ],
+      "nets": [
+        "+3V3"
+      ],
+      "sr_text": "X1 被要求核线性稳压压差",
+      "verdict": "false_alarm",
+      "evidence": "PWR-E02.X1-3V3.X1-1把STBY直连VDD当线性供电链；X1为4脚有源时钟，pin4供电、pin1使能、pin3输出；ASE p1,p3，无VIN-VOUT稳压通路。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/power_up.py / scripts/plan_circuits.py:subject_precondition",
+        "what": "按角色oscillator及正式power/return分组排除LDO dropout；保留STBY高低/断电检查，不能将STBY当稳压输出。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-E02.X1-3V3.X1-1"
+      ]
+    },
+    {
+      "id": "F57",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "D1",
+        "D2",
+        "D3"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "两端LED官方脚差集为空仍因类别手册等待",
+      "verdict": "false_alarm",
+      "evidence": "DEV-D02.D1/D2/D3的pin_difference均official_only=[]/symbol_only=[]，basis two-pin A/K+two-pad；规则明文快速通道可PASS，但readiness仍要求device_kinds/专属手册；极性采购/电流另核，不扩充本项关闭依赖。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_review.py:DEV-D02 readiness / datasheet-kind dependency",
+        "what": "两端A/K+2pad快速通道在空差集成立时READY；对多色多脚/身份冲突继续阻断，不把采购极性验收混进引脚集合。"
+      },
+      "seed": null,
+      "check_ids": [
+        "DEV-D02.D1",
+        "DEV-D02.D2",
+        "DEV-D02.D3"
+      ]
+    },
+    {
+      "id": "F58",
+      "sr_rule": "PWR-C15",
+      "criteria": [
+        "G03-005",
+        "G03-006",
+        "G03-007",
+        "G03-008",
+        "G03-009",
+        "G03-026",
+        "G03-044",
+        "G03-045",
+        "G03-046"
+      ],
+      "severity": "ungraded",
+      "refs": [
+        "U2",
+        "U1",
+        "C1"
+      ],
+      "nets": [
+        "/DEFDCDC1",
+        "+1V0"
+      ],
+      "sr_text": "POWER_CONVERTER-U2电压项anchor C1，反馈项anchor邻接U1",
+      "verdict": "false_alarm",
+      "evidence": "PWR-C02/03/05/18/C24主ref=C1，PWR-C15主ref=U1（requires FEEDBACK_PIN found U1,U2,X1）；实际稳压核心U2，C1是+1V8旁路、U1是负载。add并入成员后circuits.nets=[]且anchors丢失，主体选到邻接器件。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_decisions.py:_circuit / add; scripts/plan_circuits.py:subject_precondition",
+        "what": "add并入既有电路保留候选anchor/nets与官方端口语义；主体优先本电路有证核心U2，不按字典序C1或邻接FPGA选主控。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-C15.POWER-CONVERTER-U2-FAULT.U1",
+        "PWR-C15.POWER-CONVERTER-U2-RUN.U1",
+        "PWR-C15.POWER-CONVERTER-U2-STARTUP.U1"
+      ]
+    },
+    {
+      "id": "F59",
+      "sr_rule": "SIG-C09",
+      "criteria": [
+        "G02-022",
+        "G04-011",
+        "G04-038"
+      ],
+      "severity": "ungraded",
+      "refs": [
+        "U3",
+        "R16"
+      ],
+      "nets": [
+        "/NCS",
+        "/CCLK"
+      ],
+      "sr_text": "SPI-CONFIG以R16作为主器件",
+      "verdict": "false_alarm",
+      "evidence": "手工add的SPI成员R16/R24/R25/U3，自动主ref=R16；这是NCS4k7上拉而不是SPI控制器/Flash；U3.6时钟、U1.E9源端、R16仅片选偏置。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_decisions.py:_circuit; scripts/plan_circuits.py circuit subject selection",
+        "what": "手工add须可声明/保留有证锚U3及信号网，检查器选语义器件而非排序首件；容许共享U1为接口端点。"
+      },
+      "seed": null,
+      "check_ids": [
+        "SIG-C09.SPI-CONFIG-ACTIVE.R16",
+        "SIG-C09.SPI-CONFIG-IDLE.R16"
+      ]
+    },
+    {
+      "id": "F60",
+      "sr_rule": "PWR-D02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "GND"
+      ],
+      "sr_text": "未用LDO供电脚产生普通GND去耦组",
+      "verdict": "false_alarm",
+      "evidence": "U2.14 VSYSIN、.15 VBACKUP、.18 VLDO2、.19 VINLDO、.20 VLDO1合进GND供电组；.18/.19/.20按p37未用LDO必须接地，此段无需普通旁路；未用备份端口资格仍单核。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/decoupling.py group generation",
+        "what": "按原厂未用电源端处置建立非供电状态；保留零电容库存但不派生普通Ceff/耐压缺口，不能对含U1.H10的GND组整体豁免。"
+      },
+      "seed": null,
+      "check_ids": [
+        "PWR-D02.DECAP-08B6C211865BF704D903.GND"
+      ]
+    },
+    {
+      "id": "F61",
+      "sr_rule": "REQ-Q08",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U1"
+      ],
+      "nets": [
+        "+1V0",
+        "+1V8",
+        "+3V3"
+      ],
+      "sr_text": "Artix FPGA只能归泛称ic，未形成核心候选",
+      "verdict": "knowledge_gap",
+      "evidence": "DS181标题Artix7 FPGAs无现有DEVICE_ROLES匹配；324球官方针表已齐，仍不能形成FPGA配置/电源/Bank对象。已用有据STARTUP add恢复可表达部分；应补FPGA典型电路与角色，不要求用户把FPGA冒称MCU。",
+      "proposed_fix": {
+        "owner": "typical_circuit",
+        "where": "scripts/catalog.py:DEVICE_ROLES; references/typical-circuits/",
+        "what": "增加FPGA/可编程逻辑角色、专用电源/Bank和配置审查框架及公开原厂接法依据。"
+      },
+      "seed": null,
+      "check_ids": []
+    },
+    {
+      "id": "F62",
+      "sr_rule": "REQ-Q08",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U4"
+      ],
+      "nets": [
+        "/En_seq",
+        "/En_1V",
+        "/En_1V8",
+        "/En_3V3"
+      ],
+      "sr_text": "LM3880电源时序器只能归泛称ic",
+      "verdict": "knowledge_gap",
+      "evidence": "LM3880标题Three-Rail Simple Power Supply Sequencer没有supervisor/复位监控角色词；不能因没有新角色就把开漏时序器当电压监控器。已add SEQUENCER恢复STARTUP；供电电容延时和flags语义仍须专模。",
+      "proposed_fix": {
+        "owner": "typical_circuit",
+        "where": "scripts/catalog.py:DEVICE_ROLES; references/typical-circuits/",
+        "what": "登记power sequencer角色和FLAG时序、未供电/EN电容模板。"
+      },
+      "seed": null,
+      "check_ids": []
+    },
+    {
+      "id": "F63",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U3"
+      ],
+      "nets": [
+        "+3V3",
+        "GND",
+        "/CCLK",
+        "/NCS",
+        "/SIO0",
+        "/SIO1",
+        "/SIO2",
+        "/SIO3"
+      ],
+      "sr_text": "Flash准确8脚+裸露焊盘资格尚未核全",
+      "verdict": "knowledge_gap",
+      "evidence": "U3 S25FL128SAGNFI000, WNG008, native9=GND。官方Infineon产品页确认NFI=PG-WSON8，在线001-98283 Rev*T p11-18可读信号描述；HTTP202 WAF/0字节使完整PDF未取得，不能把空文件当AVAILABLE，也不把物理9脚直接当需IC旁路的电源。Need exact package/slug/errata confirmation.",
+      "proposed_fix": {
+        "owner": "datasheet",
+        "where": "datasheet S25FL128SAGNFI000 WNG008 p11-18/ordering table",
+        "what": "收取准确NFI WSON8图形/裸露焊盘条款及相关errata，核native1..9脚集合和允许接地后关闭。"
+      },
+      "seed": null,
+      "check_ids": []
+    },
+    {
+      "id": "F64",
+      "sr_rule": "REQ-D03",
+      "criteria": [
+        "G01-001",
+        "G01-002",
+        "G01-003",
+        "G01-004",
+        "G01-006",
+        "G01-007",
+        "G01-008"
+      ],
+      "severity": "ungraded",
+      "refs": [],
+      "nets": [],
+      "sr_text": "产品工况未锁定",
+      "verdict": "needs_human",
+      "evidence": "README仅给无人机MPC扩展用途；用户指定industrial_telecom为审查基线，不给VBUS范围/负载/温度/寿命/故障合同。scope.md把用途标推断，未造requirements。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "REQ-D03.BOARD"
+      ]
+    },
+    {
+      "id": "F65",
+      "sr_rule": "PWR-C01",
+      "criteria": [
+        "G01-010",
+        "G03-001",
+        "G03-042",
+        "G03-043"
+      ],
+      "severity": "ungraded",
+      "refs": [
+        "U1",
+        "U2",
+        "J2"
+      ],
+      "nets": [
+        "VBUS",
+        "+1V0",
+        "+1V8",
+        "+3V3"
+      ],
+      "sr_text": "三轨电流预算未闭",
+      "verdict": "needs_human",
+      "evidence": "TPS65023B保证额定DCDC1/2/3=1.7/1.2/1A；FPGA实际位流动态负载、主机VBUS源能力/线阻未知；不能以额定和宽泛6V上界代替负载保证。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": []
+    },
+    {
+      "id": "F66",
+      "sr_rule": "PWR-C04",
+      "criteria": [
+        "G03-003",
+        "G03-004"
+      ],
+      "severity": "ungraded",
+      "refs": [
+        "U2",
+        "C26",
+        "C27",
+        "C28"
+      ],
+      "nets": [
+        "+1V0",
+        "+1V8",
+        "+3V3"
+      ],
+      "sr_text": "总输出电容与有效容量需按全部并联件核",
+      "verdict": "needs_human",
+      "evidence": "独立直接名义合计+1V0=76.05uF，+1V8=74.64uF，+3V3=128.32uF；VRTC C23=4.7uF。p7列10uF min/22uF nominal，p40允许陶瓷低ESR且未给22uF硬最大；无Ceff/负载预算不判缺容或超容，4u7名义也不证明VRTC有效>=4.7uF。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PWR-C04.GAP-PMIC-COUT.U2"
+      ]
+    },
+    {
+      "id": "F67",
+      "sr_rule": "PWR-C24",
+      "criteria": [
+        "G03-028",
+        "G03-029"
+      ],
+      "severity": "ungraded",
+      "refs": [
+        "U1",
+        "U2",
+        "U4",
+        "C31"
+      ],
+      "nets": [
+        "/En_seq",
+        "/En_1V",
+        "/En_1V8",
+        "/En_3V3"
+      ],
+      "sr_text": "全掉电/快速再上电顺序未闭",
+      "verdict": "needs_human",
+      "evidence": "C31=470n，LM3880 EN内部7uA typ，名义延时1.25*470n/7u=83.93ms；LCSC码指向1AA的30ms时序分支。各轨400..1000us(5%-95%)爬升，启动顺序INT/BRAM->AUX->IO接法可追。EN仅电容且由VBUS供电，掉电放电、再启动初值、主机源衰减和轨放电未知，不拿定时flag当全掉电保证。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": []
+    },
+    {
+      "id": "F68",
+      "sr_rule": "SIG-C01",
+      "criteria": [
+        "G04-017",
+        "G04-018",
+        "G04-022"
+      ],
+      "severity": "ungraded",
+      "refs": [
+        "U1",
+        "U2",
+        "R14",
+        "R15"
+      ],
+      "nets": [
+        "/SCLK_PWR",
+        "/SDAT_PWR"
+      ],
+      "sr_text": "PMIC内部I2C上升/低态角点需定模式和电容",
+      "verdict": "needs_human",
+      "evidence": "两线4.7k上拉+3V3；tr=0.8473*4700*Cb，400kHz/300ns例子Cb<=75.33pF，100kHz/1us例子Cb<=251.11pF；(3.366-0.4)/4700=0.631mA名义R，5%低端0.664mA。缺最弱端口实际IOL/VOL保证与Cb/模式，不将示例当既定需求。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "SIG-C01.GAP-PMIC-I2C-RC.U2"
+      ]
+    },
+    {
+      "id": "F69",
+      "sr_rule": "PRO-C04",
+      "criteria": [
+        "G05-019",
+        "G05-020"
+      ],
+      "severity": "ungraded",
+      "refs": [
+        "J2",
+        "U2",
+        "R26"
+      ],
+      "nets": [
+        "VBUS",
+        "/VCC"
+      ],
+      "sr_text": "源侧支路保护边界需主机合同",
+      "verdict": "needs_human",
+      "evidence": "原生已有PRO-C04.J2-9.J2-9与J2-9-R26.VCC；J2.9直供U2.5/6/36、U4.1及C22/C25/C32三只22u和C30=470n（66.47uF），另一支R26到VCC。无板上保险不证明上游没有覆盖，需Crazyflie源限流/线束耐受。不是本轮漏报。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "PRO-C04.J2-9-R26.VCC",
+        "PRO-C04.J2-9.J2-9"
+      ]
+    },
+    {
+      "id": "F70",
+      "sr_rule": "DEV-D03",
+      "criteria": [
+        "G01-013"
+      ],
+      "severity": "ungraded",
+      "refs": [
+        "J1"
+      ],
+      "nets": [
+        "/IO1",
+        "/IO2",
+        "/SDA",
+        "/SCL",
+        "/RX1",
+        "/TX1",
+        "GND"
+      ],
+      "sr_text": "左侧deck对端针序与装配朝向待核",
+      "verdict": "needs_human",
+      "evidence": "J1.2 RX1 .3 TX1 .4 SDA .5 SCL .6 IO1 .7 IO2 .10 GND；.1/.8/.9 NC。源只写Left side，自定义BF090封装未带库文件；需Crazyflie平台逐针/装配视图合同。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D03.J1"
+      ]
+    },
+    {
+      "id": "F71",
+      "sr_rule": "DEV-D03",
+      "criteria": [
+        "G01-013"
+      ],
+      "severity": "ungraded",
+      "refs": [
+        "J2"
+      ],
+      "nets": [
+        "VBUS",
+        "/SCK",
+        "/MISO",
+        "/MOSI",
+        "/RX2",
+        "/TX2"
+      ],
+      "sr_text": "右侧deck对端针序与VBUS属性待核",
+      "verdict": "needs_human",
+      "evidence": "J2.1 TX2 .2 RX2 .3 SCK .4 MISO .5 MOSI .9 VBUS，6/7/8/10 NC。VBUS只是deck针名，图上没有USB数据/TypeC口，不套USB100uF或vSafe5V。需host源输入窗及针序镜像定义。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D03.J2"
+      ]
+    },
+    {
+      "id": "F72",
+      "sr_rule": "DEV-D03",
+      "criteria": [
+        "G01-013"
+      ],
+      "severity": "ungraded",
+      "refs": [
+        "J3"
+      ],
+      "nets": [
+        "+3V3",
+        "/TMS",
+        "/TDI",
+        "/TCK",
+        "/TDO",
+        "GND"
+      ],
+      "sr_text": "JTAG参考电源方向及外接工具合同待核",
+      "verdict": "needs_human",
+      "evidence": "J3.1直接连+3V3，无串隔离；2TMS/3TDI/4TCK/5TDO/6GND。烧录器应将1当参考还是供电源未给；先上电/双源条件决定U2反灌及IO注入，不能把J3默认外部源。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-D03.J3"
+      ]
+    },
+    {
+      "id": "F73",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "ungraded",
+      "refs": [
+        "U1",
+        "J1",
+        "J2",
+        "J3"
+      ],
+      "nets": [
+        "/SDA",
+        "/SCL",
+        "/RX1",
+        "/RX2",
+        "/MOSI",
+        "/MISO",
+        "/SCK",
+        "/TCK",
+        "/TDI",
+        "/TMS"
+      ],
+      "sr_text": "外部主机带电而FPGA_IO掉电时的注入待核",
+      "verdict": "needs_human",
+      "evidence": "各信号直接入Bank14，无Ioff隔离/串阻；DS181 p2允许钳位电流每脚最大10mA是损坏边界，不能证明多路抬轨可接受。外部输出高电压/阻抗、先上电/掉电状态、等效负载未知，保留原生SIG-C08逐接口项。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": []
+    },
+    {
+      "id": "F74",
+      "sr_rule": "DEV-C05",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "U2",
+        "U4",
+        "X1"
+      ],
+      "nets": [
+        "VBUS",
+        "+3V3"
+      ],
+      "sr_text": "实际环境/供入窗与器件保证范围待核",
+      "verdict": "needs_human",
+      "evidence": "U2输入2.5..6V、TA -40..85C；U4输入2.7..5.5V；ASE分支供电3.135..3.465V，标称100MHz。X1身份冲突先改文件；VBUS6V仅审查安全包络上界、不是可接受供电声明，不能据之虚构U4实际过压。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": [
+        "DEV-C05.U2",
+        "DEV-C05.U4",
+        "DEV-C05.X1"
+      ]
+    },
+    {
+      "id": "F75",
+      "sr_rule": "DOC-T01",
+      "criteria": [],
+      "severity": "ungraded",
+      "refs": [
+        "TP1"
+      ],
+      "nets": [
+        "/PROGRAM_B"
+      ],
+      "sr_text": "图面装配态与采购BOM范围待确认",
+      "verdict": "needs_human",
+      "evidence": "图75件，BOM74件，唯一缺TP1 ProgramB_Pad；可能为免采购的铜盘。未给装配规范，不将遗漏测试铜盘自动判电路缺件，也不声称CSV覆盖75件。",
+      "proposed_fix": null,
+      "seed": null,
+      "check_ids": []
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G03-003",
+      "criteria": [
+        "G03-003",
+        "G03-004"
+      ],
+      "sr_rule": "PWR-C04",
+      "refs": [
+        "U2",
+        "L1",
+        "L2",
+        "L3",
+        "C26",
+        "C27",
+        "C28"
+      ],
+      "nets": [
+        "+1V0",
+        "+1V8",
+        "+3V3"
+      ],
+      "why_expected": "PMIC三路buck有输出电容机制，最终原生390项中仍not_asked SWITCH_PIN；手工PMIC-COUT已恢复问题，PWR-C09容量泛问不能替代C04稳定窗。",
+      "evidence": "review-plan.json functions.not_asked + explicit rule_gaps; db.json physical pins/nets; TPS65023B p5-8,p11-13,p18,p40-43. This is a rule-plan/model miss, not a confirmed original-board electrical defect.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:subject_precondition; REGULATOR_OUT_RE",
+        "what": "官方L1/L2/L3开关脚和VDCDCx输出须进语义端口模型；逐输出展开Cout/ESR与时序，不把固定22u当硬最大。"
+      },
+      "seed": {
+        "kind": "D-PMIC-COUT-PORT",
+        "mutation": "在绑定有效C/ESR窗口及准确U2端口的合成基线中，仅使全部输出直接电容DNP并重建库存，不能只改C26而漏并联FPGA电容",
+        "target_rule": "PWR-C04"
+      },
+      "seed_scope": "planning regression; electrical failures require explicit manufacturer/operating contracts",
+      "layer": "plan_gap_recovered_by_reviewer",
+      "confirmed_board_defect": false
+    },
+    {
+      "id": "M02",
+      "criterion": "G03-018",
+      "criteria": [
+        "G03-018",
+        "G03-019"
+      ],
+      "sr_rule": "PWR-C06",
+      "refs": [
+        "U2",
+        "R26",
+        "U4"
+      ],
+      "nets": [
+        "VBUS",
+        "/VCC",
+        "/En_1V",
+        "/En_1V8",
+        "/En_3V3"
+      ],
+      "why_expected": "DCDCx_EN后缀式使能和内部UVLO未触发PROTECTION_PART，原生not_asked；手工PMIC-UVLO补问，缺真实源窗不等于已有欠压缺陷。",
+      "evidence": "review-plan.json functions.not_asked + explicit rule_gaps; db.json physical pins/nets; TPS65023B p5-8,p11-13,p18,p40-43. This is a rule-plan/model miss, not a confirmed original-board electrical defect.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:subject_precondition PROTECTION_PART",
+        "what": "以已核角色/物理脚义匹配DCDC1_EN等，不仅前缀EN；将U2内部UVLO与R26压降纳入C06。"
+      },
+      "seed": {
+        "kind": "D-PMIC-EN-SUFFIX",
+        "mutation": "在有据PMIC合成基线中仅将EN_DCDC1/2/3别名改为DCDC1/2/3_EN，正式输入角色和归网不变；PWR-C06计划对象应不变",
+        "target_rule": "PWR-C06"
+      },
+      "seed_scope": "planning regression; electrical failures require explicit manufacturer/operating contracts",
+      "layer": "plan_gap_recovered_by_reviewer",
+      "confirmed_board_defect": false
+    },
+    {
+      "id": "M03",
+      "criterion": "G03-021",
+      "criteria": [
+        "G03-021"
+      ],
+      "sr_rule": "PWR-D03",
+      "refs": [
+        "U2",
+        "C26",
+        "C27",
+        "C28"
+      ],
+      "nets": [
+        "+1V0",
+        "+1V8",
+        "+3V3"
+      ],
+      "why_expected": "全板有PMIC内部软启动400..1000us及大并联输出电容，原生完全没有PWR-D03；手工PMIC-START-CURRENT恢复。",
+      "evidence": "review-plan.json functions.not_asked + explicit rule_gaps; db.json physical pins/nets; TPS65023B p5-8,p11-13,p18,p40-43. This is a rule-plan/model miss, not a confirmed original-board electrical defect.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py POWER_CONVERTER rule mapping; scripts/plan_circuits.py",
+        "what": "内部软启动即应展开D03，按0.9*Cmax*V/tRamp_min+Iload与最小限流比较；积分斜率估算不得伪称瞬时最大。"
+      },
+      "seed": null,
+      "seed_scope": "tRamp/Cmax/startup-load/limit contract cannot be expressed by netlist alone",
+      "layer": "plan_gap_recovered_by_reviewer",
+      "confirmed_board_defect": false
+    },
+    {
+      "id": "M04",
+      "criterion": "G04-017",
+      "criteria": [
+        "G04-017",
+        "G04-018"
+      ],
+      "sr_rule": "SIG-C01",
+      "refs": [
+        "U1",
+        "U2",
+        "R14",
+        "R15"
+      ],
+      "nets": [
+        "/SCLK_PWR",
+        "/SDAT_PWR"
+      ],
+      "why_expected": "实际PMIC I2C pins29/30分别4k7上拉，拓扑仅包含外部SDA/SCL；内部段的G04-017/018两侧RC/IOL问题未自动问，手工PMIC-I2C-RC补问。",
+      "evidence": "review-plan.json functions.not_asked + explicit rule_gaps; db.json physical pins/nets; TPS65023B p5-8,p11-13,p18,p40-43. This is a rule-plan/model miss, not a confirmed original-board electrical defect.",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/i2c_topology.py:Inventory.seeds / SIGNAL; scripts/circuit_candidates.py",
+        "what": "允许官方SCLK/SDAT成对角色，优先器件接口语义；避免把SPI的SCLK单独误作I2C。补两条内部线的上拉计算，不默认100/400kHz。"
+      },
+      "seed": {
+        "kind": "D-I2C-SDAT-SCLK-ALIAS",
+        "mutation": "在绑定Cb/模式/IOL合同且有效的内部I2C基线中，等价改名SDA/SCL为SDAT_PWR/SCLK_PWR、原件/归网保持；再把R14/R15改10Mohm或1ohm作上下界变异",
+        "target_rule": "SIG-C01"
+      },
+      "seed_scope": "planning regression; electrical failures require explicit manufacturer/operating contracts",
+      "layer": "plan_gap_recovered_by_reviewer",
+      "confirmed_board_defect": false
+    }
+  ],
+  "summary": {
+    "true_defect": 2,
+    "false_alarm": 52,
+    "criterion_issue": 0,
+    "knowledge_gap": 3,
+    "needs_human": 18,
+    "misses": 4
+  },
+  "evidence_root": "/Users/skyfend/.cache/sr-boards/a2r-lab--crazyflie_fpga_deck/review",
+  "counting_note": "findings按逐条原始警报/候选及单独工具/资料/人工根因计数；native确定硬件/资料缺陷仅2根因。needs_human计划项数不能与归因根因数相加。四处misses为已补问的计划/模型漏问，0项已证原板电气漏检。"
+}

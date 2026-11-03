@@ -1,0 +1,1563 @@
+{
+  "schema_version": 5,
+  "review_mode": "first",
+  "review_phase": "design_iteration",
+  "guideline_baseline": "industrial_telecom",
+  "input_sha256": "aaf6848c025abf74693ac1559e03629f126f8e1c2f05f2f3529263094f253259",
+  "requirements": [],
+  "assemblies": [
+    {
+      "id": "native",
+      "citation": "原理图原生DNP及SolderJumper Open/Bridged/Measure符号；推断原绘默认配置，非实物装配认证。",
+      "population": {
+        "C1": true,
+        "C2": true,
+        "C8": true,
+        "C53": true,
+        "C54": true,
+        "C60": true,
+        "D11": true,
+        "D12": true,
+        "FID1": true,
+        "FID2": true,
+        "FID3": true,
+        "FID4": true,
+        "G1": true,
+        "G2": true,
+        "J7": true,
+        "J9": true,
+        "JP15": true,
+        "JP16": true,
+        "JP17": true,
+        "JP18": true,
+        "JP19": true,
+        "JP20": true,
+        "JP21": true,
+        "JP24": true,
+        "R1": true,
+        "R4": true,
+        "R6": true,
+        "R7": true,
+        "R8": true,
+        "R12": true,
+        "R13": true,
+        "R38": true,
+        "R39": true,
+        "R40": true,
+        "R42": true,
+        "ST1": true,
+        "ST2": true,
+        "ST3": true,
+        "ST4": true,
+        "TP20": true,
+        "TP24": true,
+        "TP25": true,
+        "TP26": true,
+        "TP30": true,
+        "TP31": true,
+        "TP32": true,
+        "TP42": true,
+        "TP43": true,
+        "TP44": true,
+        "TP45": true,
+        "U1": true,
+        "U18": true,
+        "C6": true,
+        "C7": true,
+        "C20": true,
+        "C21": true,
+        "C22": true,
+        "C32": true,
+        "C33": true,
+        "C34": true,
+        "C35": true,
+        "C36": true,
+        "C37": true,
+        "C38": true,
+        "C89": true,
+        "C90": true,
+        "D4": true,
+        "D5": true,
+        "D8": true,
+        "D9": true,
+        "D10": true,
+        "F1": true,
+        "JP2": true,
+        "JP3": true,
+        "JP4": true,
+        "JP5": true,
+        "JP6": true,
+        "L3": true,
+        "L4": true,
+        "R36": true,
+        "R92": true,
+        "R93": true,
+        "TP1": true,
+        "TP2": true,
+        "TP3": true,
+        "TP5": true,
+        "TP6": true,
+        "TP7": true,
+        "TP21": true,
+        "TP29": true,
+        "U5": true,
+        "U6": true,
+        "U7": true,
+        "U11": true,
+        "U25": true,
+        "C4": true,
+        "C5": true,
+        "D2": true,
+        "D3": true,
+        "J2": true,
+        "J4": true,
+        "JP8": true,
+        "JP9": true,
+        "JP10": true,
+        "JP11": true,
+        "JP25": true,
+        "Q1": true,
+        "R2": true,
+        "R3": true,
+        "R9": true,
+        "R10": true,
+        "R14": true,
+        "R15": true,
+        "R37": true,
+        "SW1": true,
+        "SW2": true,
+        "SW3": true,
+        "TP8": true,
+        "TP9": true,
+        "TP34": true,
+        "TP35": true,
+        "TP36": true,
+        "TP37": true,
+        "TP38": true,
+        "TP39": true,
+        "TR1": true,
+        "U3": true,
+        "C3": true,
+        "C16": true,
+        "C17": true,
+        "C18": true,
+        "C19": true,
+        "C28": true,
+        "C29": true,
+        "C30": true,
+        "C31": true,
+        "C73": true,
+        "C74": true,
+        "D1": true,
+        "D7": true,
+        "J1": true,
+        "J6": true,
+        "L1": true,
+        "R5": true,
+        "R11": true,
+        "R27": true,
+        "R28": true,
+        "R29": true,
+        "TP10": true,
+        "TP11": true,
+        "TP12": true,
+        "TP13": true,
+        "TP14": true,
+        "TP15": true,
+        "TP16": true,
+        "TP17": true,
+        "TP18": true,
+        "TP19": true,
+        "TP22": true,
+        "TP41": true,
+        "U2": true,
+        "C9": true,
+        "C10": true,
+        "C11": true,
+        "C12": true,
+        "C13": true,
+        "C14": true,
+        "C15": true,
+        "C23": true,
+        "C25": true,
+        "C26": true,
+        "C27": true,
+        "D6": true,
+        "J5": true,
+        "JP12": true,
+        "JP13": true,
+        "L2": true,
+        "R17": true,
+        "R18": true,
+        "R19": true,
+        "R20": true,
+        "R21": true,
+        "R22": true,
+        "R23": true,
+        "R24": true,
+        "R25": true,
+        "R26": true,
+        "R33": true,
+        "R34": true,
+        "R35": true,
+        "TP23": true,
+        "U4": true,
+        "A.1": true,
+        "B.1": true,
+        "C.1": true,
+        "C24": true,
+        "C39": true,
+        "C40": true,
+        "C41": true,
+        "C42": true,
+        "C43": true,
+        "C44": true,
+        "C45": true,
+        "C46": true,
+        "C50": true,
+        "C56": true,
+        "C57": true,
+        "C59": true,
+        "C61": true,
+        "C62": true,
+        "C63": true,
+        "D.1": true,
+        "D13": true,
+        "D14": true,
+        "D15": true,
+        "J3": true,
+        "R16": true,
+        "R41": true,
+        "R43": true,
+        "R44": true,
+        "R47": true,
+        "SW4": true,
+        "TP40": true,
+        "TP48": true,
+        "U8": true,
+        "U9": true,
+        "U10": true,
+        "U12": true,
+        "U14": true,
+        "C51": false,
+        "C55": true,
+        "C64": true,
+        "C67": true,
+        "C68": true,
+        "C69": true,
+        "C70": true,
+        "C71": true,
+        "C72": true,
+        "C75": true,
+        "C76": true,
+        "C80": true,
+        "C81": true,
+        "C82": false,
+        "C83": true,
+        "C84": true,
+        "C85": true,
+        "C86": true,
+        "C87": true,
+        "C88": true,
+        "D16": true,
+        "D17": true,
+        "J8": true,
+        "J10": true,
+        "R45": true,
+        "R48": true,
+        "R50": true,
+        "R51": true,
+        "R52": true,
+        "R53": true,
+        "R54": true,
+        "R55": true,
+        "R56": true,
+        "R57": true,
+        "R58": true,
+        "R59": true,
+        "R61": true,
+        "R64": true,
+        "R66": true,
+        "R67": true,
+        "R68": true,
+        "R69": true,
+        "R70": true,
+        "R71": true,
+        "R72": false,
+        "R73": true,
+        "R74": false,
+        "R75": true,
+        "R76": true,
+        "R77": true,
+        "R78": true,
+        "R79": true,
+        "TP46": true,
+        "TP47": true,
+        "U15": true,
+        "U17": true,
+        "U20": true,
+        "U23": true,
+        "U24": true,
+        "C47": true,
+        "C48": true,
+        "C58": true,
+        "C66": false,
+        "C77": true,
+        "C79": true,
+        "JP22": true,
+        "JP23": true,
+        "R30": true,
+        "R31": true,
+        "R32": true,
+        "R60": true,
+        "R62": true,
+        "R63": true,
+        "R65": true,
+        "TP27": true,
+        "TP28": true,
+        "TP33": true,
+        "U13": true,
+        "U16": true,
+        "U19": true,
+        "C65": true,
+        "C92": true,
+        "C93": true,
+        "C94": true,
+        "C95": true,
+        "C96": true,
+        "C97": true,
+        "C98": true,
+        "C99": true,
+        "C100": true,
+        "C101": true,
+        "C102": true,
+        "C103": true,
+        "C104": true,
+        "C105": true,
+        "F2": true,
+        "JP14": true,
+        "Q2": true,
+        "Q3": true,
+        "Q4": true,
+        "Q5": true,
+        "Q6": true,
+        "Q7": true,
+        "Q8": true,
+        "Q9": true,
+        "R46": true,
+        "R49": true,
+        "R80": true,
+        "R81": true,
+        "R82": true,
+        "R83": true,
+        "R84": true,
+        "R85": true,
+        "R86": true,
+        "R87": true,
+        "R88": true,
+        "R89": true,
+        "R94": true,
+        "R95": true,
+        "R96": true,
+        "R97": true,
+        "TP4": true,
+        "U26": true,
+        "U27": true
+      },
+      "jumpers": {
+        "JP15": "open",
+        "JP16": "closed",
+        "JP17": "closed",
+        "JP18": "closed",
+        "JP19": "closed",
+        "JP20": "closed",
+        "JP21": "closed",
+        "JP24": "closed",
+        "JP2": "closed",
+        "JP3": "closed",
+        "JP4": "closed",
+        "JP5": "closed",
+        "JP6": "closed",
+        "JP8": "closed",
+        "JP9": "closed",
+        "JP10": "closed",
+        "JP11": "closed",
+        "JP25": "closed",
+        "JP12": "closed",
+        "JP13": "closed",
+        "A.1": "closed",
+        "B.1": "open",
+        "C.1": "open",
+        "D.1": "open",
+        "JP22": "closed",
+        "JP23": "closed",
+        "JP14": "closed"
+      }
+    }
+  ],
+  "materials": {
+    "datasheets": {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets"
+    },
+    "schematic_pdf": {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/schematic.pdf"
+    }
+  },
+  "power_rails": {
+    "GND": {
+      "voltage_v": {
+        "min": 0,
+        "max": 0
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 GND 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "GND-ISO": {
+      "voltage_v": {
+        "min": 0,
+        "max": 0
+      },
+      "domain": "GND-ISO",
+      "citation": "推断/名义点：原理图网络 GND-ISO 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "1.8V": {
+      "voltage_v": {
+        "min": 1.8,
+        "max": 1.8
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 1.8V 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "2.8V": {
+      "voltage_v": {
+        "min": 2.8,
+        "max": 2.8
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 2.8V 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "3.3V": {
+      "voltage_v": {
+        "min": 3.3,
+        "max": 3.3
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 3.3V 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "3.3V_P": {
+      "voltage_v": {
+        "min": 3.3,
+        "max": 3.3
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 3.3V_P 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "3.3V_A": {
+      "voltage_v": {
+        "min": 3.3,
+        "max": 3.3
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 3.3V_A 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "5V": {
+      "voltage_v": {
+        "min": 5,
+        "max": 5
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 5V 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "VBUS": {
+      "voltage_v": {
+        "min": 5,
+        "max": 5
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 VBUS 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "VUSB": {
+      "voltage_v": {
+        "min": 5,
+        "max": 5
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 VUSB 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "VUSB2": {
+      "voltage_v": {
+        "min": 5,
+        "max": 5
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 VUSB2 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "VCCIO": {
+      "voltage_v": {
+        "min": 3.3,
+        "max": 3.3
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 VCCIO 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "VIN_POE": {
+      "voltage_v": {
+        "min": 5,
+        "max": 5
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 VIN_POE 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "VIN_DC": {
+      "voltage_v": {
+        "min": 5,
+        "max": 5
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 VIN_DC 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "VOCXO": {
+      "voltage_v": {
+        "min": 5,
+        "max": 5
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 VOCXO 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "VDDA": {
+      "voltage_v": {
+        "min": 3.3,
+        "max": 3.3
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 VDDA 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "VANT": {
+      "voltage_v": {
+        "min": 5,
+        "max": 5
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 VANT 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "Net-(U4-VDDP_1.8)": {
+      "voltage_v": {
+        "min": 1.8,
+        "max": 1.8
+      },
+      "domain": "GND",
+      "citation": "推断/名义点：原理图网络 Net-(U4-VDDP_1.8) 和所接电源输出；只有标称值，无受控全温/负载/容差窗口，不能以本单点放行最坏电气条件。"
+    },
+    "Net-(A.1-A)": {
+      "voltage_v": {
+        "min": 3.3,
+        "max": 3.3
+      },
+      "domain": "GND",
+      "citation": "原理图 p6 A.1默认bridged到VCCIO，B.1默认open到2.8V；标称点受SW4选择影响；仅名义定位，不以此通过全温/公差应力。"
+    },
+    "Net-(D8-K)": {
+      "voltage_v": {
+        "min": 24,
+        "max": 24
+      },
+      "domain": "GND-ISO",
+      "citation": "原理图 p2 J_DC_IN经JP2/D8；README的9–36V仅用途线索，不作工作保证窗，本名义24V；仅名义定位，不以此通过全温/公差应力。"
+    },
+    "Net-(JP3-B)": {
+      "voltage_v": {
+        "min": 0,
+        "max": 0
+      },
+      "domain": "GND-ISO",
+      "citation": "原理图 p2 JP3闭合连GND-ISO；仅名义定位，不以此通过全温/公差应力。"
+    },
+    "Net-(JP4-B)": {
+      "voltage_v": {
+        "min": 48,
+        "max": 48
+      },
+      "domain": "POE_RETURN",
+      "citation": "原图p2 POE+/POE-到U7输入；0V仅PoE浮动返回参考，独立于DC_IN的GND-ISO；44–57V保证输入窗另见DP5305 2025手册p1，不以这里48V名义点放行。"
+    },
+    "Net-(JP5-B)": {
+      "voltage_v": {
+        "min": 0,
+        "max": 0
+      },
+      "domain": "POE_RETURN",
+      "citation": "原图p2 POE+/POE-到U7输入；0V仅PoE浮动返回参考，独立于DC_IN的GND-ISO；44–57V保证输入窗另见DP5305 2025手册p1，不以这里48V名义点放行。"
+    }
+  },
+  "device_kinds": {
+    "U1": {
+      "kind": "ic",
+      "page": 1,
+      "quote": "ESP32-WROVER-E & ESP32-WROVER-IE"
+    },
+    "U2": {
+      "kind": "ic",
+      "page": 1,
+      "quote": "mosaic Hardware Manual"
+    },
+    "U3": {
+      "kind": "ic",
+      "page": 1,
+      "quote": "USB to Serial Port Chip CH340"
+    },
+    "U4": {
+      "kind": "transceiver",
+      "page": 1,
+      "quote": "Ethernet Physical Layer Transceiver"
+    },
+    "U5": {
+      "kind": "regulator",
+      "page": 1,
+      "quote": "1A LOW DROPOUT ADJUSTABLE AND FIXED-MODE REGULATOR WITH ENABLE"
+    },
+    "U6": {
+      "kind": "regulator",
+      "page": 1,
+      "quote": "DC/DC Converter"
+    },
+    "U8": {
+      "kind": "level_shifter",
+      "page": 1,
+      "quote": "bidirectional level translation",
+      "kind_reason": "74LVC2T45 Rev13 p1: two independently powered external nA/nB domains with DIR-controlled voltage translation. External function is level translation; title transceiver alone cannot select CAN/RS485/UART."
+    },
+    "U9": {
+      "kind": "level_shifter",
+      "page": 1,
+      "quote": "bidirectional level translation",
+      "kind_reason": "74LVC2T45 Rev13 p1: two independently powered external nA/nB domains with DIR-controlled voltage translation. External function is level translation; title transceiver alone cannot select CAN/RS485/UART."
+    },
+    "U10": {
+      "kind": "level_shifter",
+      "page": 1,
+      "quote": "bidirectional level translation",
+      "kind_reason": "74LVC2T45 Rev13 p1: two independently powered external nA/nB domains with DIR-controlled voltage translation. External function is level translation; title transceiver alone cannot select CAN/RS485/UART."
+    },
+    "U11": {
+      "kind": "regulator",
+      "page": 1,
+      "quote": "1A LOW DROPOUT ADJUSTABLE AND FIXED-MODE REGULATOR WITH ENABLE"
+    },
+    "U12": {
+      "kind": "level_shifter",
+      "page": 1,
+      "quote": "bidirectional level translation",
+      "kind_reason": "74LVC2T45 Rev13 p1: two independently powered external nA/nB domains with DIR-controlled voltage translation. External function is level translation; title transceiver alone cannot select CAN/RS485/UART."
+    },
+    "U13": {
+      "kind": "oscillator",
+      "page": 2,
+      "quote": "The oscillator will continue to provide"
+    },
+    "U14": {
+      "kind": "level_shifter",
+      "page": 1,
+      "quote": "bidirectional level translation",
+      "kind_reason": "74LVC2T45 Rev13 p1: two independently powered external nA/nB domains with DIR-controlled voltage translation. External function is level translation; title transceiver alone cannot select CAN/RS485/UART."
+    },
+    "U15": {
+      "kind": "ic",
+      "page": 1,
+      "quote": "SN74LVC1G175",
+      "kind_reason": "SN74LVC1G175 datasheet p1 title Single D-Type Flip-Flop With Asynchronous Clear; external CLK/D/Q/CLR implement storage logic. ESD Protection Exceeds JESD22 is a robustness feature, not its external role."
+    },
+    "U16": {
+      "kind": "ic",
+      "page": 1,
+      "quote": "Power Splitter/Combiner"
+    },
+    "U17": {
+      "kind": "opamp_comparator",
+      "page": 1,
+      "quote": "Comparator with Rail-to-Rail Output"
+    },
+    "U19": {
+      "kind": "level_shifter",
+      "page": 1,
+      "quote": "PCA9306 Dual Bidirectional I2C Bus and SMBus Voltage-Level Translator"
+    },
+    "U20": {
+      "kind": "opamp_comparator",
+      "page": 1,
+      "quote": "Comparator with Rail-to-Rail Output"
+    },
+    "U23": {
+      "kind": "opamp_comparator",
+      "page": 1,
+      "quote": "Comparator with Rail-to-Rail Output"
+    },
+    "U24": {
+      "kind": "opamp_comparator",
+      "page": 1,
+      "quote": "Comparator with Rail-to-Rail Output"
+    },
+    "U25": {
+      "kind": "regulator",
+      "page": 1,
+      "quote": "600mA CMOS LDO REGULATOR WITH ENABLE"
+    },
+    "Q2": {
+      "kind": "mosfet",
+      "page": 1,
+      "quote": "P-CHANNEL ENHANCEMENT MODE MOSFET"
+    },
+    "Q3": {
+      "kind": "mosfet",
+      "page": 1,
+      "quote": "P-CHANNEL ENHANCEMENT MODE MOSFET"
+    },
+    "Q4": {
+      "kind": "mosfet",
+      "page": 1,
+      "quote": "P-CHANNEL ENHANCEMENT MODE MOSFET"
+    },
+    "Q5": {
+      "kind": "mosfet",
+      "page": 1,
+      "quote": "P-CHANNEL ENHANCEMENT MODE MOSFET"
+    },
+    "Q6": {
+      "kind": "mosfet",
+      "page": 1,
+      "quote": "P-CHANNEL ENHANCEMENT MODE MOSFET"
+    },
+    "Q7": {
+      "kind": "mosfet",
+      "page": 1,
+      "quote": "P-CHANNEL ENHANCEMENT MODE MOSFET"
+    },
+    "Q8": {
+      "kind": "mosfet",
+      "page": 1,
+      "quote": "P-CHANNEL ENHANCEMENT MODE MOSFET"
+    },
+    "Q9": {
+      "kind": "mosfet",
+      "page": 1,
+      "quote": "P-CHANNEL ENHANCEMENT MODE MOSFET"
+    },
+    "D2": {
+      "kind": "tvs",
+      "page": 1,
+      "quote": "ESD Protection"
+    },
+    "D3": {
+      "kind": "tvs",
+      "page": 1,
+      "quote": "ESD Protection"
+    },
+    "D6": {
+      "kind": "tvs",
+      "page": 1,
+      "quote": "ESD Protection"
+    },
+    "U7": {
+      "kind": "ic",
+      "page": 1,
+      "quote": "PD (Powered Device) Integrated Module (Isolation Type)"
+    }
+  },
+  "rail_exclusions": {
+    "ESP_~{RST}": "原图p3 U1.EN/R1/C3为复位信号，C3=10µF不是供电轨。",
+    "Net-(U19-EN)": "原图p8 PCA9306 VREF2/EN经R63=200k到5V，是钳位偏置节点，非独立电源轨。"
+  },
+  "devices": {
+    "U8": {
+      "mpn": "74LVC2T45DC",
+      "package": "VSSOP8",
+      "identity_citation": "74LVC2T45 Rev13 p2 Table1 DC=SOT765-1",
+      "citation": "74LVC2T45 Rev13 p3 Table3",
+      "pinout_complete": true,
+      "pins": {
+        "1": {
+          "name": "VCC(A)",
+          "role": "power"
+        },
+        "2": {
+          "name": "1A",
+          "role": "other"
+        },
+        "3": {
+          "name": "2A",
+          "role": "other"
+        },
+        "4": {
+          "name": "GND",
+          "role": "return"
+        },
+        "5": {
+          "name": "DIR",
+          "role": "other"
+        },
+        "6": {
+          "name": "2B",
+          "role": "other"
+        },
+        "7": {
+          "name": "1B",
+          "role": "other"
+        },
+        "8": {
+          "name": "VCC(B)",
+          "role": "power"
+        }
+      }
+    },
+    "U9": {
+      "mpn": "74LVC2T45DC",
+      "package": "VSSOP8",
+      "identity_citation": "74LVC2T45 Rev13 p2 Table1 DC=SOT765-1",
+      "citation": "74LVC2T45 Rev13 p3 Table3",
+      "pinout_complete": true,
+      "pins": {
+        "1": {
+          "name": "VCC(A)",
+          "role": "power"
+        },
+        "2": {
+          "name": "1A",
+          "role": "other"
+        },
+        "3": {
+          "name": "2A",
+          "role": "other"
+        },
+        "4": {
+          "name": "GND",
+          "role": "return"
+        },
+        "5": {
+          "name": "DIR",
+          "role": "other"
+        },
+        "6": {
+          "name": "2B",
+          "role": "other"
+        },
+        "7": {
+          "name": "1B",
+          "role": "other"
+        },
+        "8": {
+          "name": "VCC(B)",
+          "role": "power"
+        }
+      }
+    },
+    "U10": {
+      "mpn": "74LVC2T45DC",
+      "package": "VSSOP8",
+      "identity_citation": "74LVC2T45 Rev13 p2 Table1 DC=SOT765-1",
+      "citation": "74LVC2T45 Rev13 p3 Table3",
+      "pinout_complete": true,
+      "pins": {
+        "1": {
+          "name": "VCC(A)",
+          "role": "power"
+        },
+        "2": {
+          "name": "1A",
+          "role": "other"
+        },
+        "3": {
+          "name": "2A",
+          "role": "other"
+        },
+        "4": {
+          "name": "GND",
+          "role": "return"
+        },
+        "5": {
+          "name": "DIR",
+          "role": "other"
+        },
+        "6": {
+          "name": "2B",
+          "role": "other"
+        },
+        "7": {
+          "name": "1B",
+          "role": "other"
+        },
+        "8": {
+          "name": "VCC(B)",
+          "role": "power"
+        }
+      }
+    },
+    "U12": {
+      "mpn": "74LVC2T45DC",
+      "package": "VSSOP8",
+      "identity_citation": "74LVC2T45 Rev13 p2 Table1 DC=SOT765-1",
+      "citation": "74LVC2T45 Rev13 p3 Table3",
+      "pinout_complete": true,
+      "pins": {
+        "1": {
+          "name": "VCC(A)",
+          "role": "power"
+        },
+        "2": {
+          "name": "1A",
+          "role": "other"
+        },
+        "3": {
+          "name": "2A",
+          "role": "other"
+        },
+        "4": {
+          "name": "GND",
+          "role": "return"
+        },
+        "5": {
+          "name": "DIR",
+          "role": "other"
+        },
+        "6": {
+          "name": "2B",
+          "role": "other"
+        },
+        "7": {
+          "name": "1B",
+          "role": "other"
+        },
+        "8": {
+          "name": "VCC(B)",
+          "role": "power"
+        }
+      }
+    },
+    "U14": {
+      "mpn": "74LVC2T45DC",
+      "package": "VSSOP8",
+      "identity_citation": "74LVC2T45 Rev13 p2 Table1 DC=SOT765-1",
+      "citation": "74LVC2T45 Rev13 p3 Table3",
+      "pinout_complete": true,
+      "pins": {
+        "1": {
+          "name": "VCC(A)",
+          "role": "power"
+        },
+        "2": {
+          "name": "1A",
+          "role": "other"
+        },
+        "3": {
+          "name": "2A",
+          "role": "other"
+        },
+        "4": {
+          "name": "GND",
+          "role": "return"
+        },
+        "5": {
+          "name": "DIR",
+          "role": "other"
+        },
+        "6": {
+          "name": "2B",
+          "role": "other"
+        },
+        "7": {
+          "name": "1B",
+          "role": "other"
+        },
+        "8": {
+          "name": "VCC(B)",
+          "role": "power"
+        }
+      }
+    },
+    "U17": {
+      "mpn": "LMV7219M5",
+      "package": "SOT-23-5",
+      "identity_citation": "LMV7219 SNOS458I p3 DBV pinout and orderable M5",
+      "citation": "LMV7219 SNOS458I p3 Pin Functions",
+      "pinout_complete": true,
+      "pins": {
+        "1": {
+          "name": "OUT",
+          "role": "other"
+        },
+        "2": {
+          "name": "V-",
+          "role": "return"
+        },
+        "3": {
+          "name": "IN+",
+          "role": "other"
+        },
+        "4": {
+          "name": "IN-",
+          "role": "other"
+        },
+        "5": {
+          "name": "V+",
+          "role": "power"
+        }
+      }
+    },
+    "U20": {
+      "mpn": "LMV7219M5",
+      "package": "SOT-23-5",
+      "identity_citation": "LMV7219 SNOS458I p3 DBV pinout and orderable M5",
+      "citation": "LMV7219 SNOS458I p3 Pin Functions",
+      "pinout_complete": true,
+      "pins": {
+        "1": {
+          "name": "OUT",
+          "role": "other"
+        },
+        "2": {
+          "name": "V-",
+          "role": "return"
+        },
+        "3": {
+          "name": "IN+",
+          "role": "other"
+        },
+        "4": {
+          "name": "IN-",
+          "role": "other"
+        },
+        "5": {
+          "name": "V+",
+          "role": "power"
+        }
+      }
+    },
+    "U23": {
+      "mpn": "LMV7219M5",
+      "package": "SOT-23-5",
+      "identity_citation": "LMV7219 SNOS458I p3 DBV pinout and orderable M5",
+      "citation": "LMV7219 SNOS458I p3 Pin Functions",
+      "pinout_complete": true,
+      "pins": {
+        "1": {
+          "name": "OUT",
+          "role": "other"
+        },
+        "2": {
+          "name": "V-",
+          "role": "return"
+        },
+        "3": {
+          "name": "IN+",
+          "role": "other"
+        },
+        "4": {
+          "name": "IN-",
+          "role": "other"
+        },
+        "5": {
+          "name": "V+",
+          "role": "power"
+        }
+      }
+    },
+    "U24": {
+      "mpn": "LMV7219M5",
+      "package": "SOT-23-5",
+      "identity_citation": "LMV7219 SNOS458I p3 DBV pinout and orderable M5",
+      "citation": "LMV7219 SNOS458I p3 Pin Functions",
+      "pinout_complete": true,
+      "pins": {
+        "1": {
+          "name": "OUT",
+          "role": "other"
+        },
+        "2": {
+          "name": "V-",
+          "role": "return"
+        },
+        "3": {
+          "name": "IN+",
+          "role": "other"
+        },
+        "4": {
+          "name": "IN-",
+          "role": "other"
+        },
+        "5": {
+          "name": "V+",
+          "role": "power"
+        }
+      }
+    }
+  },
+  "features": {
+    "RF": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p1/4/8 U1/U2/U16射频与分配；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "CLOCK": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p7/8 U13/U15 10MHz与PPS；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "POE_PD": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p2/5 U7/J5；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "ETHERNET": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p5 U4 PHY与J5；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "POWER_CONVERTER": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p2 U5/U6/U7/U11/U25；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "POWER_PROTECTION": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p9 U26/U27/Q2–Q9和p2 F1/F2；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "ANALOG": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p7 U17/U20/U23/U24比较器；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "LEVEL_SHIFT": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p6 U8/U9/U10/U12/U14、p8 U19；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "I2C": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p1 U18/J7与p8 U19/U13两段；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "USB": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p3 J2/J4；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "STORAGE": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p4 J6 microSD；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "UART": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p1/3/4 U1/U2/U3串口；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "STARTUP": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p1/3 U1 EN/BOOT；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "ISOLATION": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p2 U6/U7、p5 J5；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    },
+    "DEBUG": {
+      "applicability": "APPLICABLE",
+      "citation": "推断：原图p1/3 UART救援和TP；catalog RF/CLOCK/POE_PD/ETHERNET保留，补实际类型。本诊断回退没有电路候选决定，不能替代完整逐电路计划。"
+    }
+  },
+  "decoupling": {
+    "schema_version": 4,
+    "components": {
+      "C1": {
+        "kind": "capacitor",
+        "citation": "原图p1 C1 的无源电容符号与原生元件类型 SparkFun-Capacitor:10uF_0603_6.3V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C2": {
+        "kind": "capacitor",
+        "citation": "原图p1 C2 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C8": {
+        "kind": "capacitor",
+        "citation": "原图p1 C8 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0uF_0603_16V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C53": {
+        "kind": "capacitor",
+        "citation": "原图p1 C53 的无源电容符号与原生元件类型 SparkFun-Capacitor:10uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C54": {
+        "kind": "capacitor",
+        "citation": "原图p1 C54 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C60": {
+        "kind": "capacitor",
+        "citation": "原图p1 C60 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C6": {
+        "kind": "capacitor",
+        "citation": "原图p2 C6 的无源电容符号与原生元件类型 SparkFun-Capacitor:100uF_6.6x6.6_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C7": {
+        "kind": "capacitor",
+        "citation": "原图p2 C7 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0uF_0603_16V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C20": {
+        "kind": "capacitor",
+        "citation": "原图p2 C20 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0uF_0603_16V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C21": {
+        "kind": "capacitor",
+        "citation": "原图p2 C21 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0uF_0603_16V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C22": {
+        "kind": "capacitor",
+        "citation": "原图p2 C22 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0uF_0603_16V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C32": {
+        "kind": "capacitor",
+        "citation": "原图p2 C32 的无源电容符号与原生元件类型 SparkFun-Capacitor:100uF_6.6x6.6_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C33": {
+        "kind": "capacitor",
+        "citation": "原图p2 C33 的无源电容符号与原生元件类型 SparkFun-Capacitor:10uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C34": {
+        "kind": "capacitor",
+        "citation": "原图p2 C34 的无源电容符号与原生元件类型 SparkFun-Capacitor:10uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C35": {
+        "kind": "capacitor",
+        "citation": "原图p2 C35 的无源电容符号与原生元件类型 SparkFun-Capacitor:47uF_6.6x6.6_50V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C36": {
+        "kind": "capacitor",
+        "citation": "原图p2 C36 的无源电容符号与原生元件类型 SparkFun-Capacitor:100uF_6.6x6.6_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C37": {
+        "kind": "capacitor",
+        "citation": "原图p2 C37 的无源电容符号与原生元件类型 SparkFun-Capacitor:10uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C38": {
+        "kind": "capacitor",
+        "citation": "原图p2 C38 的无源电容符号与原生元件类型 SparkFun-Capacitor:10uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C89": {
+        "kind": "capacitor",
+        "citation": "原图p2 C89 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0uF_0603_16V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C90": {
+        "kind": "capacitor",
+        "citation": "原图p2 C90 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0uF_0603_16V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C4": {
+        "kind": "capacitor",
+        "citation": "原图p3 C4 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C5": {
+        "kind": "capacitor",
+        "citation": "原图p3 C5 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C3": {
+        "kind": "capacitor",
+        "citation": "原图p4 C3 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C16": {
+        "kind": "capacitor",
+        "citation": "原图p4 C16 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C17": {
+        "kind": "capacitor",
+        "citation": "原图p4 C17 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C18": {
+        "kind": "capacitor",
+        "citation": "原图p4 C18 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C19": {
+        "kind": "capacitor",
+        "citation": "原图p4 C19 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C28": {
+        "kind": "capacitor",
+        "citation": "原图p4 C28 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C29": {
+        "kind": "capacitor",
+        "citation": "原图p4 C29 的无源电容符号与原生元件类型 SparkFun-Capacitor:22uF_0603_6.3V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C30": {
+        "kind": "capacitor",
+        "citation": "原图p4 C30 的无源电容符号与原生元件类型 SparkFun-Capacitor:10uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C31": {
+        "kind": "capacitor",
+        "citation": "原图p4 C31 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C73": {
+        "kind": "capacitor",
+        "citation": "原图p4 C73 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C74": {
+        "kind": "capacitor",
+        "citation": "原图p4 C74 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C9": {
+        "kind": "capacitor",
+        "citation": "原图p5 C9 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0nF_1206_2kV_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C10": {
+        "kind": "capacitor",
+        "citation": "原图p5 C10 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C11": {
+        "kind": "capacitor",
+        "citation": "原图p5 C11 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C12": {
+        "kind": "capacitor",
+        "citation": "原图p5 C12 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C13": {
+        "kind": "capacitor",
+        "citation": "原图p5 C13 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C14": {
+        "kind": "capacitor",
+        "citation": "原图p5 C14 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C15": {
+        "kind": "capacitor",
+        "citation": "原图p5 C15 的无源电容符号与原生元件类型 SparkFun-Capacitor:100pF_0603_50V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C23": {
+        "kind": "capacitor",
+        "citation": "原图p5 C23 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C25": {
+        "kind": "capacitor",
+        "citation": "原图p5 C25 的无源电容符号与原生元件类型 SparkFun-Capacitor:10uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C26": {
+        "kind": "capacitor",
+        "citation": "原图p5 C26 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C27": {
+        "kind": "capacitor",
+        "citation": "原图p5 C27 的无源电容符号与原生元件类型 SparkFun-Capacitor:10uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C24": {
+        "kind": "capacitor",
+        "citation": "原图p6 C24 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C39": {
+        "kind": "capacitor",
+        "citation": "原图p6 C39 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C40": {
+        "kind": "capacitor",
+        "citation": "原图p6 C40 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C41": {
+        "kind": "capacitor",
+        "citation": "原图p6 C41 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C42": {
+        "kind": "capacitor",
+        "citation": "原图p6 C42 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C43": {
+        "kind": "capacitor",
+        "citation": "原图p6 C43 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C44": {
+        "kind": "capacitor",
+        "citation": "原图p6 C44 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C45": {
+        "kind": "capacitor",
+        "citation": "原图p6 C45 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C46": {
+        "kind": "capacitor",
+        "citation": "原图p6 C46 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C50": {
+        "kind": "capacitor",
+        "citation": "原图p6 C50 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C56": {
+        "kind": "capacitor",
+        "citation": "原图p6 C56 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C57": {
+        "kind": "capacitor",
+        "citation": "原图p6 C57 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C59": {
+        "kind": "capacitor",
+        "citation": "原图p6 C59 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C61": {
+        "kind": "capacitor",
+        "citation": "原图p6 C61 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C62": {
+        "kind": "capacitor",
+        "citation": "原图p6 C62 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C63": {
+        "kind": "capacitor",
+        "citation": "原图p6 C63 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C51": {
+        "kind": "capacitor",
+        "citation": "原图p7 C51 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0nF_0603_50V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C55": {
+        "kind": "capacitor",
+        "citation": "原图p7 C55 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C64": {
+        "kind": "capacitor",
+        "citation": "原图p7 C64 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0nF_0603_50V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C67": {
+        "kind": "capacitor",
+        "citation": "原图p7 C67 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0nF_0603_50V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C68": {
+        "kind": "capacitor",
+        "citation": "原图p7 C68 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C69": {
+        "kind": "capacitor",
+        "citation": "原图p7 C69 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C70": {
+        "kind": "capacitor",
+        "citation": "原图p7 C70 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C71": {
+        "kind": "capacitor",
+        "citation": "原图p7 C71 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C72": {
+        "kind": "capacitor",
+        "citation": "原图p7 C72 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C75": {
+        "kind": "capacitor",
+        "citation": "原图p7 C75 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0nF_0603_50V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C76": {
+        "kind": "capacitor",
+        "citation": "原图p7 C76 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0nF_0603_50V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C80": {
+        "kind": "capacitor",
+        "citation": "原图p7 C80 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C81": {
+        "kind": "capacitor",
+        "citation": "原图p7 C81 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C82": {
+        "kind": "capacitor",
+        "citation": "原图p7 C82 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0nF_0603_50V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C83": {
+        "kind": "capacitor",
+        "citation": "原图p7 C83 的无源电容符号与原生元件类型 SparkFun-Capacitor:33pF_0603_50V_5%；仅分类不构成容值/耐压保证。"
+      },
+      "C84": {
+        "kind": "capacitor",
+        "citation": "原图p7 C84 的无源电容符号与原生元件类型 SparkFun-Capacitor:2.2uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C85": {
+        "kind": "capacitor",
+        "citation": "原图p7 C85 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C86": {
+        "kind": "capacitor",
+        "citation": "原图p7 C86 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C87": {
+        "kind": "capacitor",
+        "citation": "原图p7 C87 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0nF_0603_50V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C88": {
+        "kind": "capacitor",
+        "citation": "原图p7 C88 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0nF_0603_50V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C47": {
+        "kind": "capacitor",
+        "citation": "原图p8 C47 的无源电容符号与原生元件类型 SparkFun-Capacitor:10uF_0603_10V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C48": {
+        "kind": "capacitor",
+        "citation": "原图p8 C48 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C58": {
+        "kind": "capacitor",
+        "citation": "原图p8 C58 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0uF_0603_16V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C66": {
+        "kind": "capacitor",
+        "citation": "原图p8 C66 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0nF_0603_50V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C77": {
+        "kind": "capacitor",
+        "citation": "原图p8 C77 的无源电容符号与原生元件类型 SparkFun-Capacitor:1.0uF_0603_16V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C79": {
+        "kind": "capacitor",
+        "citation": "原图p8 C79 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C65": {
+        "kind": "capacitor",
+        "citation": "原图p9 C65 的无源电容符号与原生元件类型 SparkFun-Capacitor:100uF_6.6x6.6_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C92": {
+        "kind": "capacitor",
+        "citation": "原图p9 C92 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C93": {
+        "kind": "capacitor",
+        "citation": "原图p9 C93 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C94": {
+        "kind": "capacitor",
+        "citation": "原图p9 C94 的无源电容符号与原生元件类型 SparkFun-Capacitor:10nF_0603_50V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C95": {
+        "kind": "capacitor",
+        "citation": "原图p9 C95 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C96": {
+        "kind": "capacitor",
+        "citation": "原图p9 C96 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C97": {
+        "kind": "capacitor",
+        "citation": "原图p9 C97 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C98": {
+        "kind": "capacitor",
+        "citation": "原图p9 C98 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C99": {
+        "kind": "capacitor",
+        "citation": "原图p9 C99 的无源电容符号与原生元件类型 SparkFun-Capacitor:4.7uF_0603_35V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C100": {
+        "kind": "capacitor",
+        "citation": "原图p9 C100 的无源电容符号与原生元件类型 SparkFun-Capacitor:4.7uF_0603_35V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C101": {
+        "kind": "capacitor",
+        "citation": "原图p9 C101 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C102": {
+        "kind": "capacitor",
+        "citation": "原图p9 C102 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C103": {
+        "kind": "capacitor",
+        "citation": "原图p9 C103 的无源电容符号与原生元件类型 SparkFun-Capacitor:10nF_0603_50V_10%；仅分类不构成容值/耐压保证。"
+      },
+      "C104": {
+        "kind": "capacitor",
+        "citation": "原图p9 C104 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      },
+      "C105": {
+        "kind": "capacitor",
+        "citation": "原图p9 C105 的无源电容符号与原生元件类型 SparkFun-Capacitor:0.1uF_0603_25V_20%；仅分类不构成容值/耐压保证。"
+      }
+    }
+  }
+}

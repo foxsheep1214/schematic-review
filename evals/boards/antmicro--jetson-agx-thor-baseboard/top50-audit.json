@@ -1,0 +1,1123 @@
+{
+  "board": "antmicro--jetson-agx-thor-baseboard",
+  "baseline": "industrial_telecom",
+  "types_reviewed": [
+    "HSSERIAL",
+    "ETHERNET",
+    "USB",
+    "POWER_CONVERTER",
+    "POWER_PROTECTION",
+    "STARTUP",
+    "LEVEL_SHIFT",
+    "ANALOG",
+    "DEBUG",
+    "I2C",
+    "SPI",
+    "UART"
+  ],
+  "source": "docs/proposals/criteria-top50-examples-2026-11-02.md",
+  "scope_note": "50条逐条筛查；unresolved不当PASS，不当漏报。缺完整候选计划和受控产品工况，本轮misses=0只表示未确认新增漏报，不表示已证明无漏报。",
+  "counts": {
+    "not_applicable": 18,
+    "unresolved": 31,
+    "reported_true_defect": 1
+  },
+  "items": [
+    {
+      "number": 1,
+      "criterion": "G01-018",
+      "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+      "sr_rules": [
+        "PWR-C17"
+      ],
+      "status": "not_applicable",
+      "refs": [
+        "J2"
+      ],
+      "nets": [
+        "VCC_IN"
+      ],
+      "evidence": "源README及PDF p5为+24VDC输入；无−48V电信输入、RTN接地或ETSI电压/电流合同。industrial_telecom基线不等于−48V接口。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 2,
+      "criterion": "G01-019",
+      "title": "−48 V 输入的工作电压范围与耐受范围",
+      "sr_rules": [
+        "PWR-C17"
+      ],
+      "status": "not_applicable",
+      "refs": [
+        "J2"
+      ],
+      "nets": [
+        "VCC_IN"
+      ],
+      "evidence": "源README及PDF p5为+24VDC输入；无−48V电信输入、RTN接地或ETSI电压/电流合同。industrial_telecom基线不等于−48V接口。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 3,
+      "criterion": "G01-020",
+      "title": "−48 V 输入 0.1 s 中断后自恢复",
+      "sr_rules": [
+        "PWR-C18"
+      ],
+      "status": "not_applicable",
+      "refs": [
+        "J2"
+      ],
+      "nets": [
+        "VCC_IN"
+      ],
+      "evidence": "源README及PDF p5为+24VDC输入；无−48V电信输入、RTN接地或ETSI电压/电流合同。industrial_telecom基线不等于−48V接口。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 4,
+      "criterion": "G01-021",
+      "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+      "sr_rules": [
+        "PRO-C01"
+      ],
+      "status": "not_applicable",
+      "refs": [
+        "J2"
+      ],
+      "nets": [
+        "VCC_IN"
+      ],
+      "evidence": "源README及PDF p5为+24VDC输入；无−48V电信输入、RTN接地或ETSI电压/电流合同。industrial_telecom基线不等于−48V接口。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 5,
+      "criterion": "G01-022",
+      "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+      "sr_rules": [
+        "PWR-C19"
+      ],
+      "status": "not_applicable",
+      "refs": [
+        "J2"
+      ],
+      "nets": [
+        "VCC_IN"
+      ],
+      "evidence": "源README及PDF p5为+24VDC输入；无−48V电信输入、RTN接地或ETSI电压/电流合同。industrial_telecom基线不等于−48V接口。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 6,
+      "criterion": "G01-023",
+      "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+      "sr_rules": [
+        "PWR-C13"
+      ],
+      "status": "not_applicable",
+      "refs": [
+        "J2"
+      ],
+      "nets": [
+        "VCC_IN"
+      ],
+      "evidence": "源README及PDF p5为+24VDC输入；无−48V电信输入、RTN接地或ETSI电压/电流合同。industrial_telecom基线不等于−48V接口。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 7,
+      "criterion": "G01-024",
+      "title": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+      "sr_rules": [
+        "PWR-C18"
+      ],
+      "status": "not_applicable",
+      "refs": [
+        "J2"
+      ],
+      "nets": [
+        "VCC_IN"
+      ],
+      "evidence": "本板为直流载板，无交流整流/市电输入；不能向DC端套交流周期保持试验。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 8,
+      "criterion": "G01-025",
+      "title": "交流输入较长暂降与中断后自恢复（判据 C）",
+      "sr_rules": [
+        "PWR-C18"
+      ],
+      "status": "not_applicable",
+      "refs": [
+        "J2"
+      ],
+      "nets": [
+        "VCC_IN"
+      ],
+      "evidence": "本板为直流载板，无交流整流/市电输入；不能向DC端套交流周期保持试验。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 9,
+      "criterion": "G01-026",
+      "title": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+      "sr_rules": [
+        "SIG-C05"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "J7",
+        "U30",
+        "U32"
+      ],
+      "nets": [
+        "/USB Debug, PD/USBC0_VBUS"
+      ],
+      "evidence": "p9调试PD端具备源/汇模式，VBUS也给U32前端供电；README有100W源/汇能力说明，未给具体附着/协商状态、线缆压降和完整输入窗。",
+      "closure": "取得U30端口角色、协商输入窗及源阻抗，逐状态核U32和后级压差。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 10,
+      "criterion": "G01-027",
+      "title": "USB 可用电流按实际协商档取",
+      "sr_rules": [
+        "SIG-C05"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U30",
+        "U35",
+        "U40",
+        "U56"
+      ],
+      "nets": [
+        "/USB Debug, PD/USBC0_VBUS",
+        "/USB DP Alt mode/USBC1_VBUS"
+      ],
+      "evidence": "U30控制两端口，U56另有CURRENT_MODE电阻；没有PDO/固件角色及负载预算，不以100W宣传或电流限流电阻证明协商电流。",
+      "closure": "核每端实际PDO和所选AP22615限流公差、线缆/连接器电流。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 11,
+      "criterion": "G01-029",
+      "title": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+      "sr_rules": [
+        "PWR-C13",
+        "SIG-C05"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "C123",
+        "C151",
+        "C152",
+        "U40"
+      ],
+      "nets": [
+        "/USB Debug, PD/USBC0_VBUS"
+      ],
+      "evidence": "直接VBUS电容为22uF+22uF+0.1uF=44.1uF标称；另一PD端C68+C153=22.1uF；均未见反例中的220uF直接挂接。缺容差/附着状态及开关体二极管可见的后级有效电容，未把标称小于100uF当完整合格。",
+      "closure": "确认各Sink状态下跨开关可见电容上限与限浪涌机制；仅缺证不计漏报。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 12,
+      "criterion": "G01-030",
+      "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+      "sr_rules": [
+        "SIG-D07"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U30",
+        "U56",
+        "R267"
+      ],
+      "nets": [
+        "/Recovery USB/USBC2_VBUS"
+      ],
+      "evidence": "p7 U56.VBUS_DET经R267=887k取样；另两PD端U30负责检测。没有对应模式检测门限/去抖上限的完整计算，不能证明超过40ms。",
+      "closure": "按保证门限、RC与去抖上限核检测时延，明确所选Source/Sink模式。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 13,
+      "criterion": "G01-031",
+      "title": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+      "sr_rules": [
+        "SIG-C05"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U18",
+        "U20",
+        "U23",
+        "U35",
+        "U40",
+        "U56"
+      ],
+      "nets": [
+        "/USB Hub/USBC3_VBUS",
+        "/USB Hub/USBC4_VBUS",
+        "/Recovery USB/USBC2_VBUS"
+      ],
+      "evidence": "p6–9的Source端均见独立开关而非裸直连；p7 U23.EN有Q19角色联动、R268 FLG反馈。每端22.1uF标称并不自动满足所有Type-C模式表格，缺未连接目标态和放电/开关保证。",
+      "closure": "分端核未连接EN、反向阻断、放电及允许端口电容；当前没有直短开关的已证反例。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 14,
+      "criterion": "G03-003",
+      "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+      "sr_rules": [
+        "PWR-C04"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U79",
+        "C75",
+        "U11",
+        "U12",
+        "U13",
+        "U65",
+        "U75",
+        "U8"
+      ],
+      "nets": [
+        "/Power/3V3_LDO",
+        "/DCDC/5V_{AON}_OUT"
+      ],
+      "evidence": "p5 U79 LD39100输出C75=10uF；p15 SiC437各路并22uF阵列。ST LD39100、Vishay SiC437手册已取得，但准确MLCC偏压/温度有效值和装配BOM未取得，不能按标称值关有效容量窗口。",
+      "closure": "取得准确电容MPN的偏压/温度/容差界及所选稳压器适用窗口后比较。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 15,
+      "criterion": "G03-004",
+      "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+      "sr_rules": [
+        "PWR-C04"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U79",
+        "C75",
+        "C378",
+        "C379",
+        "C380",
+        "C381"
+      ],
+      "nets": [
+        "/Power/3V3_LDO",
+        "/DCDC/5V_{AON}_OUT"
+      ],
+      "evidence": "拓扑有输出电容，未见电解串联均压反例；缺准确MLCC的ESR极值与频段，以及各路并联后的允许稳定窗口。",
+      "closure": "按手册频率/电容量条件比较ESR，不用“都是陶瓷所以稳定”收口。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 16,
+      "criterion": "G03-016",
+      "title": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+      "sr_rules": [
+        "DRV-C02"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U9",
+        "Q32",
+        "Q33",
+        "Q41",
+        "Q42"
+      ],
+      "nets": [
+        "VCC_IN",
+        "VCC_NO_OVP",
+        "VCC"
+      ],
+      "evidence": "p5 MAX16013控制前后两组SiSS05；Vishay p1只给额定电流/绝限，不能当线性启动SOA。源阻抗、全部充电负载和控制器最大导通斜率未给。",
+      "closure": "取得控制器启动过程及源/负载条件，按实到VDS/ID/t和开始温度核SOA。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 17,
+      "criterion": "G03-018",
+      "title": "变换器 UVLO 开启点低于输入窗下限",
+      "sr_rules": [
+        "PWR-C06"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U11",
+        "U12",
+        "U13",
+        "U65",
+        "U75",
+        "U8"
+      ],
+      "nets": [
+        "VCC",
+        "/DCDC/5V_{AON}_EN"
+      ],
+      "evidence": "p15 U75 EN由R75=499k/R251=10k取VCC，手册已取得；README24V不构成保证输入下限，不能虚构UVLO余量。",
+      "closure": "锁定DC输入最低电压与PD供电角色后算EN门限极值。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 18,
+      "criterion": "G03-019",
+      "title": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+      "sr_rules": [
+        "PWR-C06"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "J2",
+        "U9",
+        "U75"
+      ],
+      "nets": [
+        "VCC_IN",
+        "VCC"
+      ],
+      "evidence": "没有线缆/接触/电源源阻抗和满载预算；故无法判定压降是否超过UVLO滞回。不是已证明的漏检。",
+      "closure": "用Imax×Rsource_max与上/下门限极值比较。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 19,
+      "criterion": "G03-021",
+      "title": "软启动充电电流加启动期负载低于器件限流下限",
+      "sr_rules": [
+        "PWR-D03"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U11",
+        "U12",
+        "U13",
+        "U65",
+        "U75"
+      ],
+      "nets": [
+        "SYS_VIN_HV",
+        "+5V_AON"
+      ],
+      "evidence": "p15 MODE2电阻设置软启动/限流；SiC437手册具表格，缺各输出真实启动负载/装配电容有效上限与开始工况。",
+      "closure": "逐级按MODE2选项及最小限流算Cmax*dV/dt+Iload_start；不能抄典型软启动时间。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 20,
+      "criterion": "G03-025",
+      "title": "复位门限高于各负载最低工作电压，掉电先复位",
+      "sr_rules": [
+        "PWR-T04"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U72",
+        "U70",
+        "U74",
+        "J1"
+      ],
+      "nets": [
+        "+3V3_AON",
+        "/SoM_Power/~{VDDIN_PWR_BAD}"
+      ],
+      "evidence": "U72 TPS3840PL30输出用于模拟按键而非直接SoM复位；U11/U75 PGOOD并联反馈启动链。缺T5000各电压最低工作值及专用复位约束，不能用3.0V supervisor料号关闭整板门限。",
+      "closure": "用模块最低工作电压、PGOOD/RESET传播和掉电斜率核复位先后。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 21,
+      "criterion": "G03-028",
+      "title": "上电时序在极值时间下满足约束",
+      "sr_rules": [
+        "PWR-C24"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U70",
+        "U74",
+        "U72",
+        "J1"
+      ],
+      "nets": [
+        "/SoM_Power/VIN_PWR_ON",
+        "/DCDC/CARRIER_PWR_ON"
+      ],
+      "evidence": "p5有设计方时序表（VIN_PWR_ON后+5V_SOM/SYS_VIN_HV≥20ms，MODULE_POWER_ON≥50ms）；这是设计描述，非独立满足证明。MAX16150去抖、自启动Q22/C251波形及SoM时序合同未完成极值计算。",
+      "closure": "保留该已有表为待核输入，逐延迟链核Min/Max；不能说没有时序意图。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 22,
+      "criterion": "G03-032",
+      "title": "稳压器反向电流在手册允许内或已阻断",
+      "sr_rules": [
+        "PWR-C05"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U79",
+        "U32",
+        "U63",
+        "U64",
+        "Q24",
+        "Q25"
+      ],
+      "nets": [
+        "+3V3_AON",
+        "/USB Debug, PD/USBC0_VBUS",
+        "+20V"
+      ],
+      "evidence": "有LTC4412及SiSS05反向路径控制；不能只看MOS体二极管就断言正反向都隔离。LD39100/NCP718掉电/外部口注入需按准确手册工况核。",
+      "closure": "列输入断电而外部VBUS/IO有电组合，核反向电流允许值与阻断链。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 23,
+      "criterion": "G03-037",
+      "title": "电解与钽电容不承受反压",
+      "sr_rules": [
+        "DEV-C01"
+      ],
+      "status": "not_applicable",
+      "refs": [],
+      "nets": [],
+      "evidence": "对1170器件的prim/value/part/footprint与PDF电源页交叉筛查，未找到电解或钽电容：无100uF以上器件，电源阵列为C_22u_25V_0805等陶瓷电容。该组仅针对电解/钽反压、降额及串联均压；MLCC耐压仍需DEV-C01独立核查，未被豁免。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 24,
+      "criterion": "G03-038",
+      "title": "电解与钽电容的直流加纹波峰值在降额内",
+      "sr_rules": [
+        "DEV-C01"
+      ],
+      "status": "not_applicable",
+      "refs": [],
+      "nets": [],
+      "evidence": "对1170器件的prim/value/part/footprint与PDF电源页交叉筛查，未找到电解或钽电容：无100uF以上器件，电源阵列为C_22u_25V_0805等陶瓷电容。该组仅针对电解/钽反压、降额及串联均压；MLCC耐压仍需DEV-C01独立核查，未被豁免。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 25,
+      "criterion": "G03-040",
+      "title": "串联使用的电解电容有均压措施",
+      "sr_rules": [
+        "DEV-C01"
+      ],
+      "status": "not_applicable",
+      "refs": [],
+      "nets": [],
+      "evidence": "对1170器件的prim/value/part/footprint与PDF电源页交叉筛查，未找到电解或钽电容：无100uF以上器件，电源阵列为C_22u_25V_0805等陶瓷电容。该组仅针对电解/钽反压、降额及串联均压；MLCC耐压仍需DEV-C01独立核查，未被豁免。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 26,
+      "criterion": "G04-005",
+      "title": "输入信号不超接收端绝对最大值",
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "J1",
+        "U5",
+        "U78",
+        "U48",
+        "U49",
+        "U51"
+      ],
+      "nets": [
+        "+1V8",
+        "+3V3",
+        "+5V"
+      ],
+      "evidence": "p2跨1.8/3.3V转换、p13 NTS0102跨1.8/5V风扇逻辑。SN74AXC8T245准确手册已取得；缺模块真实IO规格、NTS0102准确页及各先掉电状态源端约束，不能将已识别电压域当全接口绝限/反灌通过。",
+      "closure": "逐接收脚按供电有/无核输入绝限、Ioff和允许注入电流；内部电源域须模块资料。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 27,
+      "criterion": "G04-007",
+      "title": "未上电接口承受正常或故障信号不损坏",
+      "sr_rules": [
+        "PRO-D04",
+        "SIG-C08"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "J1",
+        "U5",
+        "U78",
+        "U48",
+        "U49",
+        "U51"
+      ],
+      "nets": [
+        "+1V8",
+        "+3V3",
+        "+5V"
+      ],
+      "evidence": "p2跨1.8/3.3V转换、p13 NTS0102跨1.8/5V风扇逻辑。SN74AXC8T245准确手册已取得；缺模块真实IO规格、NTS0102准确页及各先掉电状态源端约束，不能将已识别电压域当全接口绝限/反灌通过。",
+      "closure": "逐接收脚按供电有/无核输入绝限、Ioff和允许注入电流；内部电源域须模块资料。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 28,
+      "criterion": "G04-009",
+      "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+      "sr_rules": [
+        "SIG-C08"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "J1",
+        "U5",
+        "U78",
+        "U48",
+        "U49",
+        "U51"
+      ],
+      "nets": [
+        "+1V8",
+        "+3V3",
+        "+5V"
+      ],
+      "evidence": "p2跨1.8/3.3V转换、p13 NTS0102跨1.8/5V风扇逻辑。SN74AXC8T245准确手册已取得；缺模块真实IO规格、NTS0102准确页及各先掉电状态源端约束，不能将已识别电压域当全接口绝限/反灌通过。",
+      "closure": "逐接收脚按供电有/无核输入绝限、Ioff和允许注入电流；内部电源域须模块资料。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 29,
+      "criterion": "G04-010",
+      "title": "上电和复位期间关键输出有确定状态",
+      "sr_rules": [
+        "RST-T04"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U5",
+        "U78",
+        "U71",
+        "U56",
+        "Q19"
+      ],
+      "nets": [
+        "/DCDC/CARRIER_PWR_ON",
+        "/Recovery USB/USBC2_ID"
+      ],
+      "evidence": "有上下拉及方向脚设置，不等于所有默认态可控。R217控制网被误读20V已归因；未锁定J1 pinmux、PCAL复位默认与PD角色，不能判关键输出目标态。",
+      "closure": "从系统启动/关断需求与准确复位默认表核控制链；不把固件缺交付当板缺陷。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 30,
+      "criterion": "G04-017",
+      "title": "I²C 上拉电阻不超上升时间决定的上限",
+      "sr_rules": [
+        "SIG-C01"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U1",
+        "U80",
+        "R356",
+        "R357",
+        "R352",
+        "R228",
+        "R358",
+        "R359",
+        "R353",
+        "R354"
+      ],
+      "nets": [
+        "/SoM_IO/I2C0_SCL_1V8",
+        "/SoM_IO/I2C0_SDA_1V8"
+      ],
+      "evidence": "8条I2C候选均已有SIG-A03提示；8只本板1.8V上拉DNP。另一侧多组上拉经转换器参与总灌电流，但模块内部上拉、电容与速度未取得。未找到可独立证明超/欠上下界的数值反例。",
+      "closure": "核各段等效上拉、跨段总灌电流、VOL/限流与0.8473RC上升时间；需模块内部值而非猜测。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 31,
+      "criterion": "G04-018",
+      "title": "I²C 上拉电阻不低于灌电流决定的下限",
+      "sr_rules": [
+        "SIG-C01"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U1",
+        "U80",
+        "R356",
+        "R357",
+        "R352",
+        "R228",
+        "R358",
+        "R359",
+        "R353",
+        "R354"
+      ],
+      "nets": [
+        "/SoM_IO/I2C0_SCL_1V8",
+        "/SoM_IO/I2C0_SDA_1V8"
+      ],
+      "evidence": "8条I2C候选均已有SIG-A03提示；8只本板1.8V上拉DNP。另一侧多组上拉经转换器参与总灌电流，但模块内部上拉、电容与速度未取得。未找到可独立证明超/欠上下界的数值反例。",
+      "closure": "核各段等效上拉、跨段总灌电流、VOL/限流与0.8473RC上升时间；需模块内部值而非猜测。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 32,
+      "criterion": "G04-032",
+      "title": "CAN 总线两端端接，总阻约 60 Ω",
+      "sr_rules": [
+        "SIG-C03"
+      ],
+      "status": "not_applicable",
+      "refs": [
+        "J1",
+        "J18"
+      ],
+      "nets": [
+        "/Expansion connector/CAN0.DIN",
+        "/Expansion connector/CAN0.DOUT"
+      ],
+      "evidence": "本板只将SoM CAN控制器的DIN/DOUT逻辑经FMC+引出；未找到CAN收发器、CANH/CANL物理总线或两端线路拓扑。不能在逻辑脚之间要求120Ω或总60Ω。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 33,
+      "criterion": "G04-040",
+      "title": "隔离接口两侧的供电和地不被无意短接",
+      "sr_rules": [
+        "PRO-D02"
+      ],
+      "status": "not_applicable",
+      "refs": [],
+      "nets": [
+        "GND"
+      ],
+      "evidence": "源图/网表没有隔离器、光耦、隔离电源或两个宣称隔离的地域；大部分端口共用GND。本板未声明安全隔离边界，不能把共享地当隔离短接。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 34,
+      "criterion": "G04-041",
+      "title": "运放两个输入在最坏工况下不超共模范围",
+      "sr_rules": [
+        "ANA-C01"
+      ],
+      "status": "not_applicable",
+      "refs": [],
+      "nets": [],
+      "evidence": "没有独立运放/比较器信号调理通道；U22/U50/U60/U66/U76为INA219集成电流监测，输入资格按其准确手册及供电测量规则另核，不硬套外部运放共模条款。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 35,
+      "criterion": "G04-054",
+      "title": "ADC 输入不超满量程和绝对最大值",
+      "sr_rules": [
+        "ANA-C03"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U22",
+        "U50",
+        "U60",
+        "U66",
+        "U76"
+      ],
+      "nets": [
+        "SYS_VIN_HV",
+        "+20V",
+        "+5V_AON"
+      ],
+      "evidence": "INA219测量分流电阻与总线电压；TI SBOS448G手册有输入范围与PGA档。缺最大负载电流/校准PGA约束，不把电压监测直接当全量程合格，也没有可证超量程的负载工况。",
+      "closure": "按对应分流电阻与Imax、PGA档/可用满量程及VIN绝限分开核算。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 36,
+      "criterion": "G04-078",
+      "title": "晶振负载电容与晶振规定 CL 相符",
+      "sr_rules": [
+        "CLK-C01"
+      ],
+      "status": "not_applicable",
+      "refs": [
+        "Y1",
+        "Y2",
+        "Y3",
+        "Y5"
+      ],
+      "nets": [
+        "/M.2/SUSCLK",
+        "Net-(U21-XTALI)"
+      ],
+      "evidence": "Y1=100MHz NX324、Y2=25MHz ECS2016MV、Y3=32.768kHz ECS2520MV、Y5=156.25MHz AK3LPHEF1均为有源振荡器，网表具VCC/GND/OUT/EN。无外置两脚无源晶体。因此不要求本板外接CL网络/晶体环路增益，也不将Y3扇出两插座误报一颗晶体驱动多器件；时钟模块电平/负载/启动规格仍待核。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 37,
+      "criterion": "G04-079",
+      "title": "振荡器增益裕量足够起振",
+      "sr_rules": [
+        "CLK-C01"
+      ],
+      "status": "not_applicable",
+      "refs": [
+        "Y1",
+        "Y2",
+        "Y3",
+        "Y5"
+      ],
+      "nets": [
+        "/M.2/SUSCLK",
+        "Net-(U21-XTALI)"
+      ],
+      "evidence": "Y1=100MHz NX324、Y2=25MHz ECS2016MV、Y3=32.768kHz ECS2520MV、Y5=156.25MHz AK3LPHEF1均为有源振荡器，网表具VCC/GND/OUT/EN。无外置两脚无源晶体。因此不要求本板外接CL网络/晶体环路增益，也不将Y3扇出两插座误报一颗晶体驱动多器件；时钟模块电平/负载/启动规格仍待核。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 38,
+      "criterion": "G04-082",
+      "title": "一颗晶振只驱动一个器件",
+      "sr_rules": [
+        "CLK-C01"
+      ],
+      "status": "not_applicable",
+      "refs": [
+        "Y1",
+        "Y2",
+        "Y3",
+        "Y5"
+      ],
+      "nets": [
+        "/M.2/SUSCLK",
+        "Net-(U21-XTALI)"
+      ],
+      "evidence": "Y1=100MHz NX324、Y2=25MHz ECS2016MV、Y3=32.768kHz ECS2520MV、Y5=156.25MHz AK3LPHEF1均为有源振荡器，网表具VCC/GND/OUT/EN。无外置两脚无源晶体。因此不要求本板外接CL网络/晶体环路增益，也不将Y3扇出两插座误报一颗晶体驱动多器件；时钟模块电平/负载/启动规格仍待核。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 39,
+      "criterion": "G05-019",
+      "title": "每条配电支路在源侧有保护",
+      "sr_rules": [
+        "PRO-C04"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U18",
+        "U20",
+        "U35",
+        "U40",
+        "U44",
+        "U46",
+        "U53",
+        "U55"
+      ],
+      "nets": [
+        "+5V",
+        "+3V3"
+      ],
+      "evidence": "USB/CSI/I2C配电支路多用AP22615负载开关；部分直连到FMC+/风扇等端口。缺每支路故障后果和允许保护共用边界，不因未放独立保险丝就证实违反“每支路源侧保护”。",
+      "closure": "逐对外支路列源与开关/电阻/连接器、确认故障不跨支路和所需动作。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 40,
+      "criterion": "G05-022",
+      "title": "过流动作点上限下通路器件与连接器不超额定",
+      "sr_rules": [
+        "DEV-C01",
+        "DEV-C04"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U18",
+        "U20",
+        "U35",
+        "U40",
+        "U44",
+        "U46",
+        "J15",
+        "J18"
+      ],
+      "nets": [
+        "+5V",
+        "+3V3"
+      ],
+      "evidence": "AP22615限流由ISET电阻决定，手册有6800/RLIM关系，但连接器真实端子载流、环境和所需支路电流未知；不能以符号名22.4A零欧给连接器额定。",
+      "closure": "按最坏限流/容差及环境降额比较通路与单针载流。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 41,
+      "criterion": "G05-025",
+      "title": "故障电流下的动作时间短于被保护对象的耐受时间",
+      "sr_rules": [
+        "PRO-C05"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "U9",
+        "U18",
+        "Q32",
+        "Q33"
+      ],
+      "nets": [
+        "VCC_IN",
+        "VCC",
+        "+5V"
+      ],
+      "evidence": "有过压控制与支路限流器；缺预期故障电流、最大动作时间及线路热耐受，未证明动作过慢。",
+      "closure": "先锁定故障源与控制器最大去抖/关断，再与MOS/线缆耐受时间比较。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 42,
+      "criterion": "G05-030",
+      "title": "TVS 工作电压不低于被钳节点最高工作电压",
+      "sr_rules": [
+        "PRO-E02"
+      ],
+      "status": "reported_true_defect",
+      "refs": [
+        "D54",
+        "R288",
+        "U70",
+        "U75",
+        "R312",
+        "R313"
+      ],
+      "nets": [
+        "/SoM_Power/~{PWR_BTN}",
+        "+5V_AON"
+      ],
+      "evidence": "PRO-E02已列D54候选；独立读TI SLVSDG9C p4 §5.4/p5 §5.6确认工作上限3.6V，而R288接+5V_AON，U75分压设定4.992V。已在findings.json记true_defect并给D-TVS-VRWM种子，属于专家闭合已有候选，不计漏报。",
+      "closure": "换覆盖最高正常工作电压的ESD并另核钳位，不用典型VBR=6.7V豁免。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 43,
+      "criterion": "G05-031",
+      "title": "TVS 钳位电压不超被保护器件绝对最大值",
+      "sr_rules": [
+        "PRO-E02"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "D2",
+        "D7",
+        "D22",
+        "D23",
+        "D54",
+        "U9"
+      ],
+      "nets": [
+        "VCC_IN",
+        "SYS_VIN_HV",
+        "/SoM_Power/~{PWR_BTN}"
+      ],
+      "evidence": "PRO-E02已有21条候选；D54的VRWM问题已判，不代表其钳位/浪涌能力已判。多数准确TVS资料未取得，外部波形与同网最低耐受未锁，不能按26/25等型号数字结案。",
+      "closure": "按指定电流/波形VC保证与被保护脚绝限比较；并按温度核脉冲功率/能量。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 44,
+      "criterion": "G05-032",
+      "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+      "sr_rules": [
+        "PRO-E02"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "D2",
+        "D7",
+        "D22",
+        "D23",
+        "D54",
+        "U9"
+      ],
+      "nets": [
+        "VCC_IN",
+        "SYS_VIN_HV",
+        "/SoM_Power/~{PWR_BTN}"
+      ],
+      "evidence": "PRO-E02已有21条候选；D54的VRWM问题已判，不代表其钳位/浪涌能力已判。多数准确TVS资料未取得，外部波形与同网最低耐受未锁，不能按26/25等型号数字结案。",
+      "closure": "按指定电流/波形VC保证与被保护脚绝限比较；并按温度核脉冲功率/能量。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 45,
+      "criterion": "G05-040",
+      "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+      "sr_rules": [
+        "DRV-C02"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "Q32",
+        "Q33",
+        "Q41",
+        "Q42",
+        "U9",
+        "Q24",
+        "Q25"
+      ],
+      "nets": [
+        "VCC_IN",
+        "VCC_NO_OVP",
+        "+20V"
+      ],
+      "evidence": "SiSS05准确手册已取得；p1电流额定不能替代SOA，MAX16013 Rev6手册已取得，但缺源故障电流/负载及热稳态开始温度。LTC4412存在GATE驱动已反证浮栅，却不能顺带保证短路SOA。",
+      "closure": "逐短路启动/热短路工况锁VDS、ID、动作时间及开始壳温，按曲线降额。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 46,
+      "criterion": "G05-041",
+      "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+      "sr_rules": [
+        "DRV-C02"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "Q32",
+        "Q33",
+        "Q41",
+        "Q42",
+        "U9",
+        "Q24",
+        "Q25"
+      ],
+      "nets": [
+        "VCC_IN",
+        "VCC_NO_OVP",
+        "+20V"
+      ],
+      "evidence": "SiSS05准确手册已取得；p1电流额定不能替代SOA，MAX16013 Rev6手册已取得，但缺源故障电流/负载及热稳态开始温度。LTC4412存在GATE驱动已反证浮栅，却不能顺带保证短路SOA。",
+      "closure": "逐短路启动/热短路工况锁VDS、ID、动作时间及开始壳温，按曲线降额。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 47,
+      "criterion": "G05-048",
+      "title": "熔断器分断能力不小于预期短路电流",
+      "sr_rules": [
+        "PRO-C01"
+      ],
+      "status": "not_applicable",
+      "refs": [],
+      "nets": [],
+      "evidence": "本板器件表未见熔断器F位号；FD1..FD8为光学定位点，不是保险丝。上级外部电源是否有熔断器未提供，不能在本板虚构分断能力数值。",
+      "closure": "",
+      "confirmed_miss": false
+    },
+    {
+      "number": 48,
+      "criterion": "G05-054",
+      "title": "每个对外电源接口的反接有明确处置",
+      "sr_rules": [
+        "PRO-D04",
+        "PWR-T05"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "J2",
+        "D2",
+        "Q32",
+        "Q33",
+        "U9",
+        "J7",
+        "J9"
+      ],
+      "nets": [
+        "VCC_IN",
+        "VCC_NO_OVP",
+        "VCC"
+      ],
+      "evidence": "p5输入先接D2 PTVS26VS1UR再到受MAX16013控制的SiSS05通路；Nexperia 1Dec2025 p1/p2已确认D2单向且1=K至VCC_IN、2=A至GND，确在阻断之前；反接时将正向导通。G05-054/057的必要前提是接口可能反接/声明耐受，默认基线不强制所有接口防反接；J2为带键连接器且源仓库未给线缆误接/源限流合同，故仍不能把条件风险当已证缺陷或漏报。",
+      "closure": "取得输入反接工况/源限流合同，按已知D2单向IV核源短路后果；Q32/Q33须按MAX16013 Rev6 p5及所选MOS体二极管核正接/反接VGS，不能仅凭有控制器判过。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 49,
+      "criterion": "G05-057",
+      "title": "反接阻断之前没有单向 TVS 造成源短路",
+      "sr_rules": [
+        "PWR-C26"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "J2",
+        "D2",
+        "Q32",
+        "Q33",
+        "U9",
+        "J7",
+        "J9"
+      ],
+      "nets": [
+        "VCC_IN",
+        "VCC_NO_OVP",
+        "VCC"
+      ],
+      "evidence": "p5输入先接D2 PTVS26VS1UR再到受MAX16013控制的SiSS05通路；Nexperia 1Dec2025 p1/p2已确认D2单向且1=K至VCC_IN、2=A至GND，确在阻断之前；反接时将正向导通。G05-054/057的必要前提是接口可能反接/声明耐受，默认基线不强制所有接口防反接；J2为带键连接器且源仓库未给线缆误接/源限流合同，故仍不能把条件风险当已证缺陷或漏报。",
+      "closure": "取得输入反接工况/源限流合同，按已知D2单向IV核源短路后果；Q32/Q33须按MAX16013 Rev6 p5及所选MOS体二极管核正接/反接VGS，不能仅凭有控制器判过。",
+      "confirmed_miss": false
+    },
+    {
+      "number": 50,
+      "criterion": "G05-087",
+      "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+      "sr_rules": [
+        "PWR-T05"
+      ],
+      "status": "unresolved",
+      "refs": [
+        "J2",
+        "D2",
+        "Q32",
+        "Q33",
+        "U9",
+        "J7",
+        "J9"
+      ],
+      "nets": [
+        "VCC_IN",
+        "VCC_NO_OVP",
+        "VCC"
+      ],
+      "evidence": "p5输入先接D2 PTVS26VS1UR再到受MAX16013控制的SiSS05通路；Nexperia 1Dec2025 p1/p2已确认D2单向且1=K至VCC_IN、2=A至GND，确在阻断之前；反接时将正向导通。G05-054/057的必要前提是接口可能反接/声明耐受，默认基线不强制所有接口防反接；J2为带键连接器且源仓库未给线缆误接/源限流合同，故仍不能把条件风险当已证缺陷或漏报。",
+      "closure": "取得输入反接工况/源限流合同，按已知D2单向IV核源短路后果；Q32/Q33须按MAX16013 Rev6 p5及所选MOS体二极管核正接/反接VGS，不能仅凭有控制器判过。",
+      "confirmed_miss": false
+    }
+  ]
+}

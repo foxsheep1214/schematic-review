@@ -1,0 +1,45 @@
+{
+  "scope": "ADVISORY_ONLY",
+  "gate_errors_disposition": "88条错误主要为15个未完功能/741未完成检查、六维覆盖未完成；保留FAIL。已纠正局部功能失败条件引用与PWR-T03工具限制说明，不删未知项。",
+  "candidates": [
+    {
+      "code": "REUSED_RATIONALE_ACROSS_SCOPES",
+      "check_ids": [
+        "DEV-D02.D1",
+        "DEV-D02.D15",
+        "DEV-D02.D16",
+        "DEV-D02.D17"
+      ],
+      "disposition": "REVIEWED_RETAINED_LOCAL_CLAIM",
+      "reason": "同族两端子/相同8或5脚封装的针集合可按同一官方表/规则快速分支核对，各位号归网由XML独立比对；这里仅判针集合，不以此替代极性/额定/电气/供电时序。已核U8/U9/U10/U12/U14方向和未用通道处置，未用pin差集PASS证明整体安全。"
+    },
+    {
+      "code": "REUSED_RATIONALE_ACROSS_SCOPES",
+      "check_ids": [
+        "DEV-D02.D10",
+        "DEV-D02.D4",
+        "DEV-D02.D5",
+        "DEV-D02.D8",
+        "DEV-D02.D9"
+      ],
+      "disposition": "REVIEWED_RETAINED_LOCAL_CLAIM",
+      "reason": "同族两端子/相同8或5脚封装的针集合可按同一官方表/规则快速分支核对，各位号归网由XML独立比对；这里仅判针集合，不以此替代极性/额定/电气/供电时序。已核U8/U9/U10/U12/U14方向和未用通道处置，未用pin差集PASS证明整体安全。"
+    },
+    {
+      "code": "REUSED_RATIONALE_ACROSS_SCOPES",
+      "check_ids": [
+        "DEV-D02.U10",
+        "DEV-D02.U12",
+        "DEV-D02.U14",
+        "DEV-D02.U17",
+        "DEV-D02.U20",
+        "DEV-D02.U23",
+        "DEV-D02.U24",
+        "DEV-D02.U8",
+        "DEV-D02.U9"
+      ],
+      "disposition": "REVIEWED_RETAINED_LOCAL_CLAIM",
+      "reason": "同族两端子/相同8或5脚封装的针集合可按同一官方表/规则快速分支核对，各位号归网由XML独立比对；这里仅判针集合，不以此替代极性/额定/电气/供电时序。已核U8/U9/U10/U12/U14方向和未用通道处置，未用pin差集PASS证明整体安全。"
+    }
+  ]
+}

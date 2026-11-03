@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "identity": "AT86RF215IQ",
+      "status": "FOUND",
+      "path": "/Users/skyfend/.cache/sr-boards/greatscottgadgets--amalthea-hardware/review/evidence/datasheets/AT86RF215IQ-ZU.pdf",
+      "document_model": "AT86RF215IQ",
+      "document_version": "Atmel-42415E May2016",
+      "identity_verified": true,
+      "source_kind": "network",
+      "source_url": "https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-42415-WIRELESS-AT86RF215_Datasheet.pdf",
+      "retrieved_at": "2026-11-02"
+    },
+    {
+      "identity": "BALUN24",
+      "status": "FOUND",
+      "path": "/Users/skyfend/.cache/sr-boards/greatscottgadgets--amalthea-hardware/review/evidence/datasheets/2450FB15A050.pdf",
+      "document_model": "2450FB15A050",
+      "document_version": "Ver2.0 2020-01-15",
+      "identity_verified": true,
+      "source_kind": "network",
+      "source_url": "https://www.johansontechnology.com/datasheets/2450FB15A050/2450FB15A050.pdf",
+      "retrieved_at": "2026-11-02"
+    },
+    {
+      "identity": "BALUN09",
+      "status": "FOUND",
+      "path": "/Users/skyfend/.cache/sr-boards/greatscottgadgets--amalthea-hardware/review/evidence/datasheets/0896BM15E0025.pdf",
+      "document_model": "0896BM15E0025",
+      "document_version": "Ver2.0 2018-04-23",
+      "identity_verified": true,
+      "source_kind": "network",
+      "source_url": "https://www.johansontechnology.com/datasheets/0896BM15E0025/0896BM15E0025.pdf",
+      "retrieved_at": "2026-11-02"
+    }
+  ]
+}

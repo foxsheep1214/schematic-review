@@ -1,0 +1,779 @@
+{
+  "board": "sparkfun--sparkfun_gnssdo",
+  "source": {
+    "repo": "sparkfun/SparkFun_GNSSDO",
+    "commit": "ae355fce6102a1ea69501edc98e5d240f0495b3a",
+    "schematic": "Hardware/GNSSDO_Plus/SparkPNT_GNSSDO_Plus.kicad_sch",
+    "license": "CC-BY-SA-4.0"
+  },
+  "types": [
+    "RF",
+    "CLOCK",
+    "POE_PD",
+    "ETHERNET",
+    "POWER_CONVERTER",
+    "POWER_PROTECTION",
+    "ANALOG",
+    "LEVEL_SHIFT",
+    "I2C",
+    "USB",
+    "STORAGE",
+    "UART",
+    "STARTUP",
+    "ISOLATION",
+    "DEBUG"
+  ],
+  "run": {
+    "db_sha256": "1f54ab60ef650c357a5ad330b8ad4a3e4a9e9922d882ce0ba1b51262e7e49f95",
+    "plan_items": 824,
+    "findings_total": 21,
+    "results_judged": 83,
+    "gate": "FAIL",
+    "sr_commit": "d4fd2b25b8d4185ca64294cd51fcad3374b7472c",
+    "plan_kind": "DIAGNOSTIC_FALLBACK_NOT_COMPLETE_CANDIDATE_PLAN",
+    "native_failure": "8 candidate circuits.states empty; original files/logs retained",
+    "raw_scan_noninfo": 54,
+    "raw_scan_info": 7,
+    "findings_count_basis": "21根因/处置组覆盖54条非INFO扫描、器件识别/隔离/空态诊断和人工注释发现；2个确认缺陷根因，其余为候选/工具反馈，非21个硬件缺陷。",
+    "pending_checks": 741,
+    "judged_breakdown": {
+      "NA": 34,
+      "PASS": 46,
+      "FAIL": 3
+    },
+    "local_functions_completed": 1,
+    "planned_functions_pending": 15
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "NET-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "SW1",
+        "SW2",
+        "SW3"
+      ],
+      "nets": [
+        "unconnected-(SW1-PadM1)",
+        "unconnected-(SW2-PadM1)",
+        "unconnected-(SW3-PadM1)"
+      ],
+      "sr_text": "unconnected-(SW1-PadM1) <- SW1.M1 (PTH_RA_h7.5mm，脚名 M1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核\nunconnected-(SW1-PadM2) <- SW1.M2 (PTH_RA_h7.5mm，脚名 M2) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核\nunconnected-(SW2-PadM1) <- SW2.M1 (PTH_RA_h7.5mm，脚名 M1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核\nunconnected-(SW2-PadM2) <- SW2.M2 (PTH_RA_h7.5mm，脚名 M2) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核\nunconnected-(SW3-PadM1) <- SW3.M1 (PTH_RA_h7.5mm，脚名 M1) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核\nunconnected-(SW3-PadM2) <- SW3.M2 (PTH_RA_h7.5mm，脚名 M2) 未连接且没有 NC 标记：确认有意悬空（未用输出、连接器备用脚）后补 NC 标记，输入脚另按 NET-A07 核",
+      "verdict": "needs_human",
+      "evidence": "固定源 ae355fce；原图p3：六个M1/M2均为按键附属安装脚，信号开关通路另在1/2脚。未取得确切按键型号/机械针图，不能断言安装脚必须接地或无电气意义；需按键针图及机壳接地意图。这里是候选，不是已判硬件缺陷。",
+      "proposed_fix": null,
+      "seed": null,
+      "scan_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "title": "按键安装脚M1/M2的电气处置未定"
+    },
+    {
+      "id": "F02",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "A.1",
+        "B.1",
+        "C.1",
+        "D.1",
+        "U10"
+      ],
+      "nets": [
+        "Net-(A.1-A)",
+        "VCCIO"
+      ],
+      "sr_text": "Net-(A.1-A) (6节点): ['A', 'B', 'C', 'C61', 'C63', 'U10']\nU10.8 (VCCB) <- Net-(A.1-A)\nA.1: 位号含 ? 或缺序号，无法定位与对账\nB.1: 位号含 ? 或缺序号，无法定位与对账\nC.1: 位号含 ? 或缺序号，无法定位与对账\nD.1: 位号含 ? 或缺序号，无法定位与对账",
+      "verdict": "false_alarm",
+      "evidence": "固定源 ae355fce；原图p6、netlist.xml exact ref/pin：A.1.1在Net-(A.1-A)，A.1.2在VCCIO，A.1为默认bridged；B/C/D为备用open。四个位号均唯一、有后缀序号，可用原生XML精确定位。解析/refs_of按首个点拆成A/B/C/D，从而同时制造四条未标注、八个缺实例和U10.8无源。供电选择经SW4到VBUS或3.3V_P，不能从本错误推实物断供。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/parse_kicad.py:parse; scripts/lint.py:Lint.refs_of/Lint.run; scripts/checkers/netgraph.py",
+        "what": "节点用独立(ref,pin)或按已知ref最长前缀解析；位号语法接受KiCad导出中唯一且有终止序号的点号ref。以exact XML索引对账后再追A.1闭合路径；对未知符号仍保留检查。"
+      },
+      "seed": null,
+      "scan_indices": [
+        6,
+        12,
+        33,
+        34,
+        35,
+        36
+      ],
+      "title": "点号位号被拆错，派生假缺件和假断供"
+    },
+    {
+      "id": "F03",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U4",
+        "C13",
+        "C14"
+      ],
+      "nets": [
+        "Net-(U4-VDDP_1.8)"
+      ],
+      "sr_text": "Net-(U4-VDDP_1.8) (3节点): ['C13', 'C14', 'U4']",
+      "verdict": "false_alarm",
+      "evidence": "固定源 ae355fce；原图p5 U4.2接C13=2.2µF/C14=0.1µF到GND；Microchip DS00002245B p27 §3.19及p28 Figure3-8明确3.3V输入、内置1.8V regulator输出到pin2。符号把此脚标power_in且名VDDP_1.8不能抹去内部源。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint._local_regulator_node; scripts/checkers/powertree.py:PowerTree.source_of",
+        "what": "消耗已核厂家脚义的内部regulator输出声明，允许pin2为源；不按VDD前缀一律要求板外驱动。"
+      },
+      "seed": null,
+      "scan_indices": [
+        9
+      ],
+      "title": "PHY内部1.8V输出被识别成缺源"
+    },
+    {
+      "id": "F04",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U11",
+        "U13",
+        "U25",
+        "U5",
+        "U6",
+        "U7",
+        "JP2",
+        "JP3",
+        "JP4",
+        "JP5",
+        "JP6",
+        "JP14"
+      ],
+      "nets": [
+        "VBUS",
+        "5V",
+        "Net-(D8-K)",
+        "Net-(JP3-B)",
+        "Net-(JP4-B)",
+        "Net-(JP5-B)"
+      ],
+      "sr_text": "U11.8 (VIN) <- VBUS：经跳线 JP6 才接到供电，核该装配下跳线是否闭合\nU13.4 (VCC) <- 5V：经跳线 JP14 才接到供电，核该装配下跳线是否闭合\nU25.1 (VIN) <- VBUS：经跳线 JP6 才接到供电，核该装配下跳线是否闭合\nU5.8 (VIN) <- VBUS：经跳线 JP6 才接到供电，核该装配下跳线是否闭合\nU6.1 (VIN+) <- Net-(D8-K)：经跳线 JP2 才接到供电，核该装配下跳线是否闭合\nU6.2 (VIN-) <- Net-(JP3-B)：经跳线 JP3 才接到供电，核该装配下跳线是否闭合\nU7.1 (VIN+) <- Net-(JP4-B)：经跳线 JP4 才接到供电，核该装配下跳线是否闭合\nU7.2 (VIN-) <- Net-(JP5-B)：经跳线 JP5 才接到供电，核该装配下跳线是否闭合",
+      "verdict": "false_alarm",
+      "evidence": "固定源 ae355fce；原图pp2/9：JP2–JP6/JP14为Measure默认桥接，intent.assemblies.native逐个写closed；U6±输入经JP2/3、U7±输入经JP4/5、VBUS经JP6/F1、OCXO经JP14/F2。工具仍提示核是否闭合，是未消费当前装配声明。只关闭跳线存在性，不证明来源容量、压降及启动通过。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run/bridged_jumper_peer",
+        "what": "PWR-A02基于本assembly实际jumpers追路，已closed不重复发缺装配候选；open/unknown继续报告，分支额定与启动另审。"
+      },
+      "seed": null,
+      "scan_indices": [
+        13,
+        15,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "title": "已声明闭合的测量跳线仍重复要求确认"
+    },
+    {
+      "id": "F05",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U8",
+        "U9",
+        "U12",
+        "U14",
+        "JP15",
+        "SW4"
+      ],
+      "nets": [
+        "VCCIO",
+        "MCTS2_I",
+        "VBUS",
+        "3.3V_P"
+      ],
+      "sr_text": "U12.8 (VCCB) <- VCCIO：经跳线 JP15 才接到供电，核该装配下跳线是否闭合\nU14.8 (VCCB) <- VCCIO：经跳线 JP15 才接到供电，核该装配下跳线是否闭合\nU8.8 (VCCB) <- VCCIO：经跳线 JP15 才接到供电，核该装配下跳线是否闭合\nU9.8 (VCCB) <- VCCIO：经跳线 JP15 才接到供电，核该装配下跳线是否闭合",
+      "verdict": "false_alarm",
+      "evidence": "固定源 ae355fce；原图pp1/6：JP15.1=MCTS2_I、JP15.2=VCCIO，注释Close jumper to use CTS for VCCIO power output；默认open。VCCIO真正供电为SW4选择VBUS或3.3V_P，不以CTS信号接点为正常电源源端。Native Lint反向经过JP15把J9.4识别为外部供电，导致四只转换器提示错的供电路径；SW4实际选择和外接电平仍待核。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/powertree.py:PowerTree._search; scripts/lint.py:Lint._external_entry",
+        "what": "优先识别开关公共端与已声明位置，排除open JP15路径；连接器有CTS脚而不等于电源输入。源方向需厂家/连接器功能证据。"
+      },
+      "seed": null,
+      "scan_indices": [
+        14,
+        16,
+        24,
+        25
+      ],
+      "title": "VCCIO选择开关漏认，反将CTS可选桥作电源入口"
+    },
+    {
+      "id": "F06",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U19",
+        "R63"
+      ],
+      "nets": [
+        "Net-(U19-EN)",
+        "5V",
+        "3.3V_P"
+      ],
+      "sr_text": "U19.7 (VREF2) <- Net-(U19-EN)\nNet-(U19-EN): R63 上拉->5V(5.0V)",
+      "verdict": "false_alarm",
+      "evidence": "固定源 ae355fce；原图p8 U19.7(VREF2)/8(EN)同网，经R63=200kΩ到5V；U19.2(VREF1)=3.3V_P。TI PCA9306 SCPS113O pp17–18 Figure9-1/§9.2的200k偏置接法；这是pass-FET栅压偏置而非普通VCC供电。未见低阻电源源端不能报缺源，RST-A01这里的5V上拉也应按此专用脚义核。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint._resistor_fed/Lint.run; scripts/checkers/powertree.py:PowerTree._search",
+        "what": "支持VREF2/EN经200k到高侧轨的已核厂家角色；分别核VREF1/2和EN允许值，不把偏置脚套普通供电路径或一般EN阈值。"
+      },
+      "seed": null,
+      "scan_indices": [
+        17,
+        28
+      ],
+      "title": "PCA9306的200k偏置被识别成无供电"
+    },
+    {
+      "id": "F07",
+      "sr_rule": "NET-A06",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U26",
+        "U27"
+      ],
+      "nets": [
+        "CAS",
+        "unconnected-(U27-CAS-Pad9)"
+      ],
+      "sr_text": "CAS: ['U26.9', 'U27.18']\nU27.9 -> unconnected-(U27-CAS-Pad9): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空\nU27（状态 native）：使能脚 U27.18 所在网 CAS 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "verdict": "false_alarm",
+      "evidence": "固定源 ae355fce；原图p9 U26.9→CAS→U27.18；LTC4418 RevA p7 pin9为Cascade OUTPUT，内部20µA上拉，接下级EN；p7说末级未用CAS可开路。当前符号将CAS标input产生全输入网、末级NC输入和下级EN无驱动三重候选。官方文档仅获取网页文本摘录，并非完整本地PDF；该文字脚义明确足以否定输入-only主张。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run; scripts/checkers/power_up.py:build_inventory",
+        "what": "以核验官方pin9角色覆盖错误原生输入类型，并把CAS→EN识别为级联驱动；保持厂家针号证据和原符号差异。"
+      },
+      "seed": null,
+      "scan_indices": [
+        26,
+        41,
+        58
+      ],
+      "title": "LTC4418 CAS输出被当输入"
+    },
+    {
+      "id": "F08",
+      "sr_rule": "RST-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U1",
+        "R1",
+        "C3"
+      ],
+      "nets": [
+        "ESP_~{RST}",
+        "3.3V"
+      ],
+      "sr_text": "ESP_~{RST}: R1 上拉->3.3V(3.3V)",
+      "verdict": "needs_human",
+      "evidence": "固定源 ae355fce；原图p1 R1=10k/C3=10µF，名义RC=0.1s，U1.3=EN，EN由Q1/SW1也可拉低；ESP32-WROVER-E/IE v2.0 EN脚表可判方向，但不能把RC当复位脉宽。实际供电斜率、有效复位最短/最长和恢复要求未给，继续needs_human，不能由3.3V上拉本身判错。",
+      "proposed_fix": null,
+      "seed": null,
+      "scan_indices": [
+        27
+      ],
+      "title": "ESP32的EN复位时序缺供电/恢复边界"
+    },
+    {
+      "id": "F09",
+      "sr_rule": "PRO-E02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D1",
+        "D15",
+        "D16",
+        "D17"
+      ],
+      "nets": [
+        "MOSAIC_RF_IN",
+        "Net-(D.1-B)",
+        "Net-(D16-A2)",
+        "Net-(D17-A2)"
+      ],
+      "sr_text": "D1 (D_TVS_0402_14V PESD0402 SparkFun-DiscreteSemi:D_TVS_0402_14V) 跨 MOSAIC_RF_IN；轨名提示=无，型号提示=14V。同网 IC 脚 U2.AC20(ANT_1) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 J1：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。\nD15 (D_TVS_0402_14V PESD0402 SparkFun-DiscreteSemi:D_TVS_0402_14V) 跨 Net-(D.1-B)；轨名提示=无，型号提示=14V。同网 IC 脚 U10.7(1B) 直接并在钳位上（无串联阻抗，钳位电压对脚绝限比较）；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 J1、J10、J2、J3、J4、J6、J7、J8、J9：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。\nD16 (D_TVS_0402_14V PESD0402 SparkFun-DiscreteSemi:D_TVS_0402_14V) 跨 Net-(D16-A2)；轨名提示=无，型号提示=14V。同网没有 IC 脚；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 J10：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。\nD17 (D_TVS_0402_14V PESD0402 SparkFun-DiscreteSemi:D_TVS_0402_14V) 跨 Net-(D17-A2)；轨名提示=无，型号提示=14V。同网没有 IC 脚；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 J8：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。",
+      "verdict": "knowledge_gap",
+      "evidence": "固定源 ae355fce；原图pp4/6/7均为PESD0402，符号标14VWM/40VC；缺准确制造商/订货号、ESD波形下clamp和RF/逻辑脚适用保证。D1直并U2.AC20；D15直并U10.7且D.1默认open到49.9Ω；D16在PPS输出、D17在10MHz输出。14V/40V字样不是器件实际起钳/芯片损坏证据，不能据此下FAIL；逐端口补同型号数据、威胁波形、芯片允许的应力/注入边界。",
+      "proposed_fix": null,
+      "seed": null,
+      "scan_indices": [
+        29,
+        30,
+        31,
+        32
+      ],
+      "title": "四个PESD0402端口缺准确保护窗口"
+    },
+    {
+      "id": "F10",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "unconnected-(U2-ONOFF-PadA10)"
+      ],
+      "sr_text": "U2.A10 -> unconnected-(U2-ONOFF-PadA10): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "固定源 ae355fce；原图p4 U2.A10 ONOFF明确NC；Septentrio mosaic manual v1.11.0 p28 §4.13: ONOFF有内部上拉和去抖，外部低脉冲切换。未用按钮允许不接，不是无偏置输入。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run",
+        "what": "NET-A07消费按位号/物理脚核验的内部偏置及允许NC条款；不要用任意MCU通用豁免。"
+      },
+      "seed": null,
+      "scan_indices": [
+        37
+      ],
+      "title": "mosaic ONOFF内部上拉未被消费"
+    },
+    {
+      "id": "F11",
+      "sr_rule": "RST-A04",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U26",
+        "U27"
+      ],
+      "nets": [
+        "unconnected-(U26-EN-Pad18)",
+        "unconnected-(U26-~{SHDN}-Pad19)",
+        "unconnected-(U27-~{SHDN}-Pad19)"
+      ],
+      "sr_text": "U26.18 -> unconnected-(U26-EN-Pad18): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空\nU26.19 -> unconnected-(U26-~{SHDN}-Pad19): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空\nU27.19 -> unconnected-(U27-~{SHDN}-Pad19): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空\nU26（状态 native）：使能脚 U26.18 所在网 unconnected-(U26-EN-Pad18) 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定\nU26（状态 native）：使能脚 U26.19 所在网 unconnected-(U26-~{SHDN}-Pad19) 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定\nU27（状态 native）：使能脚 U27.19 所在网 unconnected-(U27-~{SHDN}-Pad19) 上未找到驱动源、UVLO 分压、RC 或任何上/下拉；悬空或来源不明时开启行为不确定",
+      "verdict": "needs_human",
+      "evidence": "固定源 ae355fce；原图p9 U26.EN/SHDN及U27.SHDN为NC；LTC4418 RevA p8明确内部3.2µA上拉，故不能断言开启状态无定义；同页又要求未用脚接INTVCC。本图没有按该指示外连，是否接受内部偏置、是否需抗干扰/外部关断要求未定。保留待人工，不把厂商接法偏离直接夸大为上电必失效。",
+      "proposed_fix": null,
+      "seed": null,
+      "scan_indices": [
+        38,
+        39,
+        40,
+        56,
+        57,
+        59
+      ],
+      "title": "LTC4418未用控制脚内部有偏置，但未遵循外连接法"
+    },
+    {
+      "id": "F12",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U3"
+      ],
+      "nets": [
+        "unconnected-(U3-~{CTS}-Pad9)",
+        "unconnected-(U3-~{DSR}-Pad10)",
+        "unconnected-(U3-~{RI}-Pad11)",
+        "unconnected-(U3-~{DCD}-Pad12)",
+        "unconnected-(U3-R232-Pad15)"
+      ],
+      "sr_text": "U3.10 -> unconnected-(U3-~{DSR}-Pad10): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空\nU3.11 -> unconnected-(U3-~{RI}-Pad11): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空\nU3.12 -> unconnected-(U3-~{DCD}-Pad12): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空\nU3.15 -> unconnected-(U3-R232-Pad15): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空\nU3.9 -> unconnected-(U3-~{CTS}-Pad9): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "固定源 ae355fce；原图p3：U3为CH340C，不是G/T/R型。WCH CH340 Datasheet(I) v3B pp3–4脚表，p4 Note明确Unused I/O pins of CH340 should be NC；R232内部下拉。未用MODEM输入允许NC；这不证明UART电平/供电注入通过。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run",
+        "what": "按C后缀的厂家未用脚条款消候选；NC/输出/内部偏置按型号变体分支，不把所有9–15脚一律拉电平。"
+      },
+      "seed": null,
+      "scan_indices": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "title": "CH340C厂家允许的MODEM脚NC被重复提示"
+    },
+    {
+      "id": "F13",
+      "sr_rule": "NET-A07",
+      "criteria": [
+        "G04-010"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U4"
+      ],
+      "nets": [
+        "unconnected-(U4-TXD2-Pad26)",
+        "unconnected-(U4-TXD3-Pad27)"
+      ],
+      "sr_text": "U4.26 -> unconnected-(U4-TXD2-Pad26): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空\nU4.27 -> unconnected-(U4-TXD3-Pad27): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "true_defect",
+      "evidence": "固定源 ae355fce；原图p5和当前XML：U4.26 TXD2、U4.27 TXD3均NC；R23将CONFIG0拉高，CONFIG1/2为内部下拉，mosaic的50MHz ETH_CLK到U4.9，链路为RMII。Microchip DS00002245B PDF p22 §3.13明确RMII未用TXD[3:2] pins27/26接GND；已渲染该页核原文。两只输入悬空偏离指定接法，不等于已证实链路必坏。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-RMII-UNUSED-FLOAT",
+        "mutation": "先建立有据RMII夹具：U4.26/U4.27均GND，锁KSZ8041NL及CONFIG=001；只将其中一个移到单节点NC网并同步nets/pin2net/no_connect_nodes。原板已含缺陷，不作合格正例。",
+        "target_rule": "NET-A07"
+      },
+      "scan_indices": [
+        47,
+        48
+      ],
+      "title": "RMII模式下PHY未用TXD2/TXD3未按手册接地"
+    },
+    {
+      "id": "F14",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U6"
+      ],
+      "nets": [
+        "unconnected-(U6-CTRL-Pad3)",
+        "unconnected-(U6-TRIM-Pad5)"
+      ],
+      "sr_text": "U6.3 -> unconnected-(U6-CTRL-Pad3): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空\nU6.5 -> unconnected-(U6-TRIM-Pad5): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "固定源 ae355fce；原图p2 REC15E-2405SZ CTRL3/TRIM5均NC。RECOM REC15E-Z Rev3-2026 p2: DC-DC ON=Open or 3.5–15V；p3输出TRIM为可选外接调整，nominal输出无外接调整电阻。精确后缀无/X2，不能混成/X2缺物理脚；开路保留标称输出，不构成缺偏置。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run",
+        "what": "消费同后缀CTRL开路开机和TRIM可选条款；未用NC不再提示为无定义输入。"
+      },
+      "seed": null,
+      "scan_indices": [
+        49,
+        50
+      ],
+      "title": "隔离模块合法CTRL/TRIM开路被标候选"
+    },
+    {
+      "id": "F15",
+      "sr_rule": "NET-A07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U7"
+      ],
+      "nets": [
+        "unconnected-(U7-ADJ-Pad7)"
+      ],
+      "sr_text": "U7.7 -> unconnected-(U7-ADJ-Pad7): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+      "verdict": "false_alarm",
+      "evidence": "固定源 ae355fce；原图p2 U7 DP5305的ADJ7=NC；SDaPo DP5300/5400/5500 2025 PDF p4 Table3/4列Open Circuit对应5.00V（典型调整表），p3 ADJ为可选外接调节。此处只关闭允许开路，5V全温/负载保证另核。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.run",
+        "what": "按DP5305变体ADJ可选功能判NC，不能把所有ADJ视作必须反馈脚。"
+      },
+      "seed": null,
+      "scan_indices": [
+        51
+      ],
+      "title": "PoE模块ADJ可选开路被标输入悬空"
+    },
+    {
+      "id": "F16",
+      "sr_rule": "DRV-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "L3",
+        "L4",
+        "U6",
+        "U7"
+      ],
+      "nets": [
+        "VIN_DC",
+        "Net-(U6-VOUT+)",
+        "VIN_POE",
+        "Net-(U7-VOUT+)"
+      ],
+      "sr_text": "L3（inductor，状态 native）: 开关节点 VIN_DC 与 Net-(U6-VOUT+) 之间未见续流二极管、钳位器件或 RC 吸收；若由驱动器内部钳位需给出资料证据\nL4（inductor，状态 native）: 开关节点 VIN_POE 与 Net-(U7-VOUT+) 之间未见续流二极管、钳位器件或 RC 吸收；若由驱动器内部钳位需给出资料证据",
+      "verdict": "false_alarm",
+      "evidence": "固定源 ae355fce；原图p2 L3/L4均6.8µH，接在已隔离稳压模块+VOUT与负载供电轨之间，前后C32/C33/C34、C36/C37/C38构成输出滤波。无分立开关驱动该电感作为执行器/储能节点；不能把整条电源轨当需续流开关节点。实际断流暂态另归PRO-C06。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/inductive_load.py:build_inventory",
+        "what": "先识别模块DC输出后级LC滤波/储能用途；只有驱动器受控断流的感性执行器才套DRV-A01，断流电源线电感按适用PRO-C06保留。"
+      },
+      "seed": null,
+      "scan_indices": [
+        52,
+        53
+      ],
+      "title": "模块输出滤波电感被误识别为感性执行负载"
+    },
+    {
+      "id": "F17",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U15"
+      ],
+      "nets": [
+        "3.3V_A"
+      ],
+      "sr_text": "[KIND_CONFLICT] U15: 分类器 ic，手册标题 tvs",
+      "verdict": "false_alarm",
+      "evidence": "datasheet-audit.json kind_conflicts.U15：分类器ic而手册标题tvs。TI SN74LVC1G175 SCES560G p1标题Single D-Type Flip-Flop With Asynchronous Clear，首屏ESD Protection是芯片耐受特性；外部CLK/D/Q/CLR构成触发器，没有TVS泄放功能。已用kind_reason保留ic声明，审计仍产生标题冲突。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/datasheet_kinds.py:title_text/kind_conflict",
+        "what": "改进标题区提取，ESD Protection作为FEATURE而不是产品身份时不覆盖已核D触发器标题；对真正Discrete TVS标题仍报。"
+      },
+      "seed": null,
+      "scan_indices": [],
+      "title": "触发器的ESD耐受说明误当TVS身份"
+    },
+    {
+      "id": "F18",
+      "sr_rule": "PRO-D02",
+      "criteria": [
+        "G04-040"
+      ],
+      "severity": "P2",
+      "refs": [
+        "U6",
+        "U7",
+        "C9"
+      ],
+      "nets": [
+        "GND",
+        "GND-ISO"
+      ],
+      "sr_text": "DOMAIN_MERGED: GND/GND-ISO via U6,U7；DOMAIN_CONFLICT: Net-(D8-K),Net-(JP4-B)",
+      "verdict": "false_alarm",
+      "evidence": "review-plan diagnostics DOMAIN_MERGED/DOMAIN_CONFLICT：经U6/U7把GND/GND-ISO并域；原图p2 U6输入±属DC_IN回线、输出GND独立，RECOM手册pp1/4声明隔离；U7为厂家隔离PoE模块，2025 pp1/3输入1/2、输出5/6/8分侧。domains.conducts把regulator所有脚一律直流并接，捏造跨模块直连。C9=1nF高压电容仅接J5壳/中心公共端与GND，不形成直流短接；隔离工作资格和PCB间距仍未判。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/domains.py:conducts/_components",
+        "what": "为隔离DC/DC的官方针脚组保存输入/输出内部导通分组；一般IC所有脚不能直接并查集。没有内部连接证据时保留未知，不能输出已合域结论。"
+      },
+      "seed": null,
+      "scan_indices": [],
+      "title": "隔离DC/DC的全部脚被并查集短接"
+    },
+    {
+      "id": "F19",
+      "sr_rule": "REQ-Q07",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U13",
+        "U4",
+        "U8",
+        "U9",
+        "U10",
+        "U12",
+        "U14",
+        "U19"
+      ],
+      "nets": [],
+      "sr_text": "[FATAL] intent.json 无效: circuits.states 必须为非空字符串数组（8条）",
+      "verdict": "false_alarm",
+      "evidence": "circuit-candidates.json的CLOCK-U13/ETHERNET-U4/六个LEVEL_SHIFT states=[]；37个电路由70决定原样推出。circuit_decisions.py --write成功，lint候选重扫8次FATAL circuits.states必须为非空字符串数组。catalog.CANDIDATE_STATES未给这些类型固定态；这是生成器/消费者契约错误，不能靠编需求states_add或改生成清单修复。本轮只用独立诊断intent生成824项继续，不声称完整正式计划。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py:CANDIDATE_STATES; scripts/circuit_candidates.py:Generator; scripts/circuit_decisions.py:derive; scripts/plan_review.py",
+        "what": "为CLOCK/ETHERNET/LEVEL_SHIFT给有定义的基础运行态，或同一契约允许不按态展开；候选生成后立刻验证；回归本板8个空态并保持禁止凭空编需求。"
+      },
+      "seed": null,
+      "scan_indices": [],
+      "title": "候选空states造成SR自身流程中断"
+    },
+    {
+      "id": "F20",
+      "sr_rule": "DEV-D01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D1",
+        "D10",
+        "D11",
+        "D12",
+        "D13",
+        "D14",
+        "D15",
+        "D16",
+        "D17",
+        "D4",
+        "D5",
+        "D7",
+        "D8",
+        "D9",
+        "Q1",
+        "TR1",
+        "U18"
+      ],
+      "nets": [],
+      "sr_text": "DEV-D01：datasheet audit unresolved=8（不是普通阻容缺手册）",
+      "verdict": "knowledge_gap",
+      "evidence": "datasheet-audit.json剩8类未取齐：BAT60A, CBI_LED_3mm_YGR, DF5A5.6LFU, MBT3904DW1, MS8607-02BA, PESD0402, RFCMF1220100M4T, SK34A。HardwareWiki已检索、原厂/LCSC补取日志在acquisition-sources/retrieval-status；BAT60A证书链、MS8607/MBT3904 HTTP403，其他准确身份/曲线未齐；没有把网络失败写成NOT_FOUND。普通R/C/L不在此整本索取。Q1符号DS链接BC846BS与VALUE MBT3904DW1不一致，须核实际同型号脚表，不因此宣称实物装错。 对应实例：BAT60A=D10,D4,D5,D9；CBI_LED_3mm_YGR=D11,D12；DF5A5.6LFU=D13,D14,D7；MBT3904DW1=Q1；MS8607-02BA=U18；PESD0402=D1,D15,D16,D17；RFCMF1220100M4T=TR1；SK34A=D8。",
+      "proposed_fix": null,
+      "seed": null,
+      "scan_indices": [],
+      "title": "少量关键器件和保护阵列准确资料未取得"
+    },
+    {
+      "id": "F21",
+      "sr_rule": "DOC-V02",
+      "criteria": [],
+      "severity": "P3",
+      "refs": [
+        "U5",
+        "U11"
+      ],
+      "nets": [
+        "VBUS",
+        "3.3V",
+        "3.3V_P"
+      ],
+      "sr_text": "DOC-V02 人工目检：U5/U11旁 Imax:1.5A 与AP7361C保证输出1A不一致。",
+      "verdict": "true_defect",
+      "evidence": "固定源 ae355fce；原图p2 两个AP7361C旁均写Imax:1.5A；Diodes AP7361C DS37274 Rev5-2 p1规格1A，p5表Maximum Output Current min1.0A，Current Limit min1.1A/typ1.5A。把典型限流值写成电源Imax混淆保证能力；这是一处两位号的图面额定注释错误，未证明本板实际负载超过1A。",
+      "proposed_fix": null,
+      "seed": null,
+      "scan_indices": [],
+      "title": "AP7361C把典型1.5A限流当成输出能力标注"
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G01-029",
+      "sr_rule": "SIG-C05",
+      "refs": [
+        "J2",
+        "J4",
+        "D4",
+        "D5",
+        "JP6",
+        "F1",
+        "C6",
+        "C7",
+        "C20",
+        "C89",
+        "C98",
+        "C100",
+        "C97",
+        "C99"
+      ],
+      "nets": [
+        "VUSB",
+        "VUSB2",
+        "VBUS"
+      ],
+      "why_expected": "自动层漏提示：两USB-C口有5.1k Rd明确Sink；应沿已闭合、正向二极管/PTC路径累计启动电容。通用SIG-C05.USB已问，不声称人工SR本可无须计算自动判缺陷。",
+      "evidence": "原图pp2/3：J2→D4→JP6(closed)→F1→VBUS，J4→D5→同节点；VBUS C6=100µF/20%及C7/C20/C89各1µF，名义103µF，另本端C98+C100或C97+C99=4.8µF，名义合计107.8µF；C6单独容差上界120µF。U26/27受控开关只在VOCXO支路，不能限制这条二极管主电源支路。PTC额定2A不能代替指定USB合规浪涌限流。需按实际USB供电合同、充电波形/有效C、源阻抗核是否需改限流；本条记录确定拓扑遗漏及待判合规风险，不假称实测过流。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/powertree.py:PowerTree._search; scripts/plan_circuits.py; SIG-C05",
+        "what": "按每个Sink入口、装配、二极管方向、PTC/开关的真实限流身份列路径和上下界C；超过100µF且无经证据确认的限流时发待核候选，不用OCXO支路限流替代主路。"
+      },
+      "seed": {
+        "kind": "D-USB-BULK-DIODE-PPTC",
+        "mutation": "在锁定Sink/默认JP6闭合且无主动限流的专用夹具中，将D4或D5下游C6改220µF；保持另一支路有LTC4418软启动，验证检查不能错误借用该支路限流。不得把原板当已合格正例。",
+        "target_rule": "SIG-C05"
+      },
+      "scope": "automatic_miss; generic expert plan present; compliance needs_human"
+    },
+    {
+      "id": "M02",
+      "criterion": "G04-018",
+      "sr_rule": "SIG-C01",
+      "refs": [
+        "U19",
+        "U13",
+        "U1",
+        "R31",
+        "R32",
+        "R60",
+        "R62",
+        "JP22",
+        "JP23"
+      ],
+      "nets": [
+        "ESP18/SDA2",
+        "ESP19/SCL2",
+        "SDA_5V",
+        "SCL_5V"
+      ],
+      "why_expected": "自动拓扑模型漏识别：U19及三脚JP22/JP23在I2C库存中均component-stop，上拉清单为空；已verified的level_shifter角色未自动转换成pass-FET电流耦合。通用SIG-C01判据已要求跨段耦合，专家可通过intent补模型；不是没有人工问题，也不是确认的原板过流。",
+      "evidence": "原图p8 JP22/JP23默认bridged123；3.3V_P侧R31/R32=2.2k，5V侧R60/R62=2.2k。以VOL=0.4V、名义3.3/5V演算，同一SDA低态总电流=(3.3-.4)/2200+(5-.4)/2200=3.409mA；这是条件计算，不是已证超限。TI PCA9306 pp17–18 pass-FET接法，Rakon OCXO PDF p4 §11只给最小外置上拉2k、VOL<0.4V、未明确本工况IOL保证。应补最弱端IOL/全温供电界，不能拿每段1.318/2.091mA各自小于3mA就整体通过。 当前库存I2C-ee834e8805125122f2e0与I2C-43521cb46e6173f5a01b：pullups=[]，U19/JP22/JP23均component-stop，保留pin-role-or-model缺口。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/i2c.py:I2CTopologyChecker.build/plan; scripts/i2c_topology.py:build_i2c_topology; scripts/plan_review.py",
+        "what": "对官方确认的pass-FET translator建立低态电流连通边，两侧并联上拉按不同电压求和；保留高态两域隔离与每段rise-time计算，最低IOL未知发明确待核项。"
+      },
+      "seed": null,
+      "scope": "automatic_topology_model_gap; generic expert criterion exists; diagnostic fallback only; no confirmed original-board violation"
+    },
+    {
+      "id": "M03",
+      "criterion": "G04-009",
+      "sr_rule": "SIG-C08",
+      "refs": [
+        "U1",
+        "U2",
+        "U5",
+        "U11"
+      ],
+      "nets": [
+        "ESP13/MTX1",
+        "ESP14/MRX1",
+        "ESP23/MRX3",
+        "ESP34/MTX3",
+        "3.3V",
+        "3.3V_P"
+      ],
+      "why_expected": "计划漏对象：非I2C、未经过电平转换器的板内UART直连也要在一域未建立/被关断时核注入；最终计划只有I2C段和泛LEVEL-SHIFT的SIG-C08，没有这条UART双端/状态对象。",
+      "evidence": "原图pp1/2/4 U1由U11供3.3V，U2由U5供3.3V_P，两颗独立LDO；例如U2.D1 TXD1→ESP13/MTX1→U1.16、U1.13→ESP14/MRX1→U2.B1无隔离/串阻。共同VBUS输入不证明两LDO瞬态/保护时始终同电位；需上/掉电/保护状态合同及两芯片Ioff/注入保证，不能由正常3.3V数字电平判通过，也未证实实物注入损坏。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:derive; scripts/checkers/domains.py; SIG-C08 interface expansion",
+        "what": "按不同实际供电源/可关断域及有向信号端点生成非I2C跨轨注入对象，不以地相同或标称同电压消除；未知状态作为待核，不自动报硬件损坏。"
+      },
+      "seed": null,
+      "scope": "diagnostic_fallback_planning_gap; must rerun after candidate-states repair; no claim about unavailable complete native plan"
+    }
+  ],
+  "summary": {
+    "true_defect": 2,
+    "false_alarm": 14,
+    "criterion_issue": 0,
+    "knowledge_gap": 2,
+    "needs_human": 3,
+    "misses": 3
+  }
+}

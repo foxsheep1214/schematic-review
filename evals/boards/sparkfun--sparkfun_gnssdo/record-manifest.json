@@ -1,0 +1,52 @@
+{
+  "board": "sparkfun--sparkfun_gnssdo",
+  "status": "DIAGNOSTIC_REVIEW_RECORD_NOT_VALID_PACKAGE",
+  "third_party_policy": "No schematic/PCB/XML/PDF or raw db content copied into repository; db.json/evidence are external cache symlinks, not portable archive content.",
+  "external_inputs": [
+    {
+      "link": "record/db.json",
+      "target": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/db.json",
+      "sha256": "1f54ab60ef650c357a5ad330b8ad4a3e4a9e9922d882ce0ba1b51262e7e49f95"
+    },
+    {
+      "link": "record/evidence",
+      "target": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence",
+      "files": "source-lock.json manufacturer_materials"
+    }
+  ],
+  "authoritative_intent": "record/intent-native.json retained failed candidate route",
+  "report_intent": "record/intent.json = intent-diagnostic.json; fallback, no circuit decisions",
+  "records": {
+    "record/intent.json": "9d35ab67cf8c48a06e309967b603c1d9be22932b54d604f3e26eab072b1c8f0c",
+    "record/derive.log": "b9e82d390f70b5bd6a6919dde831fd469968b60c68a5f71deba777c631b54a92",
+    "record/circuit-candidates.json": "fc551c127190d6acc469d6c5434bb1d091343c0b5db3399cb57ad386622dd2d0",
+    "record/review-gate.json": "c4fad3a41d5256129cf5cfde6b7899fd375b5de6f91a13ee19c62704c758a618",
+    "record/native-candidate-lint.log": "584756cb84933eda0bde25b01711484cd0656140dcd9eff967c84993f1c0e635",
+    "record/quality-screening-disposition.json": "5053fbd58d21a9ab40e29c462208e734f97388185ce3e8d821e46ca16af00308",
+    "record/review-plan-cold.json": "75738493ba8a48a697b3bd321d86a5122f204e003d262c84d5eb87472153493c",
+    "record/review-plan.json": "75738493ba8a48a697b3bd321d86a5122f204e003d262c84d5eb87472153493c",
+    "record/acquisition-sources.json": "1cdca2e13aa0cd22f0c093b6377c57bac1df0d6e7ac22a03ca5581957b19c333",
+    "record/intent-native.json": "8445fff40b21ebbcdd20649913c32efb4a316913fe7099fdce792d1098a74301",
+    "record/item-dispositions.json": "5f5d2993901a1fe04ca7325f19c792fa1410843bbac6fe22b21346f429412acb",
+    "record/intent-diagnostic.json": "9d35ab67cf8c48a06e309967b603c1d9be22932b54d604f3e26eab072b1c8f0c",
+    "record/engineering-review.md": "2c96665b498ad4bf948bbed426d2765b98f2c590f3bc5f38b147fa94934220cb",
+    "record/xml-comparison.json": "1f924e95ff0b1073715b59d42d7ed033a571d064dcd8de33aa78eb9cfe369282",
+    "record/datasheet-resolution.json": "50b9bce73ef390f626ff55b783efeeb245eae9e39faf43d20ef1df2e65b260e5",
+    "record/retrieval-status.json": "71986fb939a0b27edca07b30f5ee79d89604dd5342752ea955f26693078555ad",
+    "record/circuit-decisions.log": "e9a631d5469b3bb3e81f97719772d941e65d9759acf7195e5612637bd1125681",
+    "record/notes.json": "bea563ddd5b3086679af3d1c80a968e9d6d665d3483e51fb099a05da8fb95c40",
+    "record/lint-initial.json": "59c52f90b9270d43d87f3df2c034d49920ceefc60d385ecb580f10f6808c75a2",
+    "record/lint-cold.json": "f1b5a37fe797282f2005e957eebd21e642e288f59e32d496c052089d32922e7f",
+    "record/lint-hot.json": "f1b5a37fe797282f2005e957eebd21e642e288f59e32d496c052089d32922e7f",
+    "record/scan-dispositions.json": "8d73fd7c7e52898265e44c8722fd5e99d52ba2908ffde35115b0cedc6c79c7fb",
+    "record/datasheet-audit.json": "c5e94db1682fdee29ab9239b34fb6d9ef86ebce3539d76c7e44f547e7876b73c",
+    "record/top50-checklist.json": "cf63b8993a9d382f494b363320a9decaae1066261fca1af35622cacd9a0854e5",
+    "record/review-results.json": "943cb8a13f63326b1af2688a90caca58ca5a356d2eaebfa76aac84280f5b3a2b",
+    "record/coverage-index.json": "0c6b3bd0e119ca4e2552a285c13afa42798c1beb1082027851b0380f4794e873",
+    "record/source-lock.json": "840f1cab8d1cdb72ceeeb11d49c4603f56b45d5a23a44c97b0076bc24e824059",
+    "record/function-review.json": "e4c91eb79486a4c58a523f8e7cdb16e10c75e8e76c2b30d7f5b39f2337b9640b"
+  },
+  "gate_valid": false,
+  "release": "NO_GO",
+  "not_packaged_reason": "pack_review requires valid=true, intentionally not bypassed"
+}

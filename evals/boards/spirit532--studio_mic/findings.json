@@ -1,0 +1,756 @@
+{
+  "board": "spirit532--studio_mic",
+  "source": {
+    "repo": "Spirit532/studio_mic",
+    "commit": "8ffc29b48432c2658af3b84805d227cce29ce538",
+    "schematic": "StudioMic.kicad_sch",
+    "license": "MIT"
+  },
+  "types": [
+    "ANALOG",
+    "AV",
+    "POWER_CONVERTER"
+  ],
+  "run": {
+    "db_sha256": "4cb8ef5034bb4a14ae3bb5311dbace1106e7aa626e52bf9e44b460d960990dbf",
+    "fetch_db_sha256": "f5f4bfbb68537e7c198d370773445325e3da80a53110804197e2b39ae643f352",
+    "plan_items": 154,
+    "native_plan_items_before_gap_additions": 152,
+    "findings_total": 25,
+    "results_judged": 40,
+    "results_needs_human": 114,
+    "gate": "FAIL",
+    "sr_commit": "5e7f42c6748982359326fb9f4351b5bb34848ac3",
+    "review_directory": "/Users/skyfend/.cache/sr-boards/spirit532--studio_mic/review",
+    "results_note": "已逐项分流全部计划项；原生checks仅已判，pending_checks逐ID保存needs_human；原生functions未伪造完成。报告无效标志和FAIL必须保留。",
+    "gate_valid": false,
+    "gate_release": "NO_GO",
+    "gate_errors": 143,
+    "plan_sha256": "dd6b144c69e42f542d03ba5a939b711fcb2902b398e678b63a3aa41442da717c",
+    "results_sha256": "99984400fd196119b0d814dde945328f3a67184a9c537fb74c15d38bf4c20d57",
+    "gate_sha256": "87c49d19e88611a17d49b9a5b6c6f2f30f0bc2773eaa8e78d2f1f1031ddb1402",
+    "report_sha256": "9a8fdf480f95e5dc09a1192059624e7e3e298c474fc9af87e5aefb2cf7f48e72",
+    "attribution_basis": "5个自动疑点（4 FINDING + 1 CANDIDATE）、已排除候选/计划误触发、独立发现及未定合同按根因归并，共25条；不是25个已证电气缺陷。",
+    "initial_plan_with_spurious_spi_items": 153,
+    "quality_screening_dispositions": "/Users/skyfend/.cache/sr-boards/spirit532--studio_mic/review/quality-screening-disposition.json",
+    "latest_quality_screening_count": 0
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "待定",
+      "refs": [
+        "R3",
+        "J1"
+      ],
+      "nets": [
+        "+12V"
+      ],
+      "sr_text": "+12V (9节点): ['C10', 'C3', 'C4', 'D1', 'D2', 'R3']",
+      "verdict": "false_alarm",
+      "evidence": "db.json p1：J1.2→R2(47Ω)→R4(2.2kΩ)→+12V及J1.3→R1(47Ω)→R3(2.2kΩ)→+12V；D1阴极在+12V，阳极GNDREF；返回J1.1。 图面Phantom power区与源README只用于用途推断。可证明有外部供入电阻路径，不能证明电流预算通过；F17单独保留。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint._external_entry / scripts/checkers/powertree.py",
+        "what": "追踪连接器供入时保留47Ω和2.2kΩ为有阻供电边；输出external-source候选及路径压降待核，不因电阻大于短接阈值判无驱动。R5后续轨沿同一路径追源。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F02",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "待定",
+      "refs": [
+        "R5",
+        "J1"
+      ],
+      "nets": [
+        "+6V"
+      ],
+      "sr_text": "+6V (5节点): ['C5', 'C6', 'R5', 'R6', 'U1']",
+      "verdict": "false_alarm",
+      "evidence": "db.json p1：J1.2→R2(47Ω)→R4(2.2kΩ)→+12V及J1.3→R1(47Ω)→R3(2.2kΩ)→+12V；D1阴极在+12V，阳极GNDREF；返回J1.1。 +12V→R5(200Ω)→+6V→U1.8；U1.4回GNDREF；这不是6V独立稳压器。 图面Phantom power区与源README只用于用途推断。可证明有外部供入电阻路径，不能证明电流预算通过；F17单独保留。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint._external_entry / scripts/checkers/powertree.py",
+        "what": "追踪连接器供入时保留47Ω和2.2kΩ为有阻供电边；输出external-source候选及路径压降待核，不因电阻大于短接阈值判无驱动。R5后续轨沿同一路径追源。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F03",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "待定",
+      "refs": [
+        "U1",
+        "J1"
+      ],
+      "nets": [
+        "+6V"
+      ],
+      "sr_text": "U1.8 (V+) <- +6V",
+      "verdict": "false_alarm",
+      "evidence": "db.json p1：J1.2→R2(47Ω)→R4(2.2kΩ)→+12V及J1.3→R1(47Ω)→R3(2.2kΩ)→+12V；D1阴极在+12V，阳极GNDREF；返回J1.1。 +12V→R5(200Ω)→+6V→U1.8；U1.4回GNDREF；这不是6V独立稳压器。 图面Phantom power区与源README只用于用途推断。可证明有外部供入电阻路径，不能证明电流预算通过；F17单独保留。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint._external_entry / scripts/checkers/powertree.py",
+        "what": "追踪连接器供入时保留47Ω和2.2kΩ为有阻供电边；输出external-source候选及路径压降待核，不因电阻大于短接阈值判无驱动。R5后续轨沿同一路径追源。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F04",
+      "sr_rule": "PWR-A02",
+      "criteria": [],
+      "severity": "待定",
+      "refs": [
+        "U2",
+        "J1"
+      ],
+      "nets": [
+        "+12V"
+      ],
+      "sr_text": "U2.14 (VCC) <- +12V",
+      "verdict": "false_alarm",
+      "evidence": "db.json p1：J1.2→R2(47Ω)→R4(2.2kΩ)→+12V及J1.3→R1(47Ω)→R3(2.2kΩ)→+12V；D1阴极在+12V，阳极GNDREF；返回J1.1。 HEF40106B Rev11 p2 Table2规定VDD14/VSS7。 图面Phantom power区与源README只用于用途推断。可证明有外部供入电阻路径，不能证明电流预算通过；F17单独保留。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint._external_entry / scripts/checkers/powertree.py",
+        "what": "追踪连接器供入时保留47Ω和2.2kΩ为有阻供电边；输出external-source候选及路径压降待核，不因电阻大于短接阈值判无驱动。R5后续轨沿同一路径追源。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F05",
+      "sr_rule": "PRO-E02",
+      "criteria": [
+        "G05-030",
+        "G05-031",
+        "G05-032",
+        "G05-033",
+        "G05-034"
+      ],
+      "severity": "待定",
+      "refs": [
+        "D1",
+        "U2"
+      ],
+      "nets": [
+        "+12V"
+      ],
+      "sr_text": "D1：防护器件工作/击穿/钳位窗口待复核",
+      "verdict": "needs_human",
+      "evidence": "p1 D1仅12V，BOM row7也仅12V/MiniMELF；实际为持续导通的并联稳压。不能用VZ≥最高工作电压的TVS非导通判据证明稳压不合格。需要D1采购/最弱档范围、外部源窗/阻抗、U2泵负载，以算IZ、PZ、VZ上界对U2推荐15V和绝限18V；无证据证明已损坏。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F06",
+      "sr_rule": "DEV-D04",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "U2"
+      ],
+      "nets": [
+        "+12V"
+      ],
+      "sr_text": "U2 的资料链接与 HEF40106BT 不一致",
+      "verdict": "true_defect",
+      "evidence": "db.parts.U2.value及BOM row18均HEF40106BT；datasheet字段却为http://www.ti.com/lit/gpn/sn74HC14。HEF40106B官方Rev11 p1/p3给3–15V推荐窗，SN74HC14是另一型号资料。74HC14库符号沿用本身不算错误：已核1/3/5/9/11/13为输入、2/4/6/8/10/12输出、7VSS/14VDD兼容；只判资料关联错误，不判实物错装。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-DATASHEET-IDENTITY",
+        "mutation": "保持U2.value=HEF40106BT及正确针表，令datasheet/fields.Datasheet指向SN74HC14；这是元数据种子，不是已证电气损坏。",
+        "target_rule": "DEV-D04"
+      }
+    },
+    {
+      "id": "F07",
+      "sr_rule": "REQ-Q07",
+      "criteria": [
+        "G02-002"
+      ],
+      "severity": "待定",
+      "refs": [
+        "J1",
+        "MK1"
+      ],
+      "nets": [],
+      "sr_text": "REQ-Q07.SPI：SpiritsKiCADLib 被识别为 SPI",
+      "verdict": "false_alarm",
+      "evidence": "p1全板只有U1运放/U2反相器、MK1及XLR3；REQ-Q07.SPI.trigger明确来自J1/MK1的SpiritsKiCADLib:Pads_* footprint。没有SCLK/MOSI/MISO/CS或SPI器件。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:_database_blobs / _feature_hits",
+        "what": "对SPI采用独立词边界和实际信号/角色证据，不对子字符串Spirits或库命名空间触发协议。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F08",
+      "sr_rule": "ANA-C03",
+      "criteria": [
+        "G04-054"
+      ],
+      "severity": "待定",
+      "refs": [
+        "U1",
+        "R6",
+        "R7"
+      ],
+      "nets": [
+        "GNDA"
+      ],
+      "sr_text": "U1.5 的虚地分压被问成 ADC 检测输入",
+      "verdict": "false_alarm",
+      "evidence": "OPA1652.pdf p3：U1.5为+IN B而非ADC；p1及BOM row17指向双运放。R6/R7各47k的中点GNDA接U1.5，C7/C8旁路。ANA-C03.U1-5及两个电路态的ADC基准/满量程问题不适用；真实共模由ANA-C01审。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:CircuitPlanning.plan_concrete_checks / subject_precondition",
+        "what": "分压中点接芯片输入只产生待辨用途，先核官方ADC能力/role。已核opamp_comparator不生成ADC问题，保留ANA-C01与SIG-C08。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F09",
+      "sr_rule": "ANA-D01",
+      "criteria": [],
+      "severity": "待定",
+      "refs": [
+        "MK1",
+        "U1"
+      ],
+      "nets": [],
+      "sr_text": "ANA-D01.ANALOG-U1：话筒前端被问温度传感器",
+      "verdict": "false_alarm",
+      "evidence": "p1 MK1为Condenser capsule，BOM row11为CK12/K67/K47/M7候选；U1 OPA1652双运放；全部58件没有温度传感器或NTC。本项应按无对象NA。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:subject_precondition",
+        "what": "温度传感器条款必须由真实sensor/NTC端点触发，不能对全部ANALOG包一律APPLICABLE。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F10",
+      "sr_rule": "SIG-D13",
+      "criteria": [],
+      "severity": "待定",
+      "refs": [
+        "U2"
+      ],
+      "nets": [],
+      "sr_text": "SIG-D13.SYS-PINMAP：HEF40106BT 被当主控",
+      "verdict": "false_alarm",
+      "evidence": "HEF40106B Rev11 p2 Table2为6组固定反相器及VDD/VSS，所有14脚已用；无MCU、GPIO复用、固件。U2泛称ic只因词表无Schmitt角色，不构成可编程主控。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_system.py:SystemPlanning.plan_system",
+        "what": "未核IC可保留主控候选；已有准确固定逻辑针表的器件应排除pinmux/固件问题。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F11",
+      "sr_rule": "SIG-C07",
+      "criteria": [
+        "G02-023",
+        "G04-003",
+        "G04-004",
+        "G04-016"
+      ],
+      "severity": "待定",
+      "refs": [
+        "U1",
+        "U2",
+        "J1"
+      ],
+      "nets": [
+        "HT",
+        "Net-(D2-K)",
+        "Net-(J1-Pad2)",
+        "Net-(J1-Pad3)"
+      ],
+      "sr_text": "SIG-C07：模拟音频及泵压接口被套数字逻辑门限",
+      "verdict": "false_alarm",
+      "evidence": "IF-ANALOG-U1~MIC-BIAS-PUMP的nets为HT和Net-(D2-K)，为极化泵压/整流节点；XLR接口是经C1/C2隔直的差分模拟输出。没有VOH/VOL→VIH/VIL接收链；应核模拟幅度/负载与供电窗口。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:InterfacePlanning.plan_interfaces / scripts/plan_circuits.py:plan_interfaces",
+        "what": "接口先判模拟信号/电源/逻辑语义，再选规则；HT等应生成供电/偏置接口，音频沿ANA-C01/C02和SIG-D15审。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F12",
+      "sr_rule": "REQ-Q08",
+      "criteria": [],
+      "severity": "待定",
+      "refs": [
+        "H1",
+        "H2"
+      ],
+      "nets": [],
+      "sr_text": "DEBUG-BOARD：H1/H2 安装孔被候选识别为测试点",
+      "verdict": "false_alarm",
+      "evidence": "circuit-candidates.json DEBUG-BOARD.members将H1/H2记testpoint on no net；源primitive均Mechanical:MountingHole，declared_pinname无引脚。已以NOT_A_CIRCUIT拒绝该候选；并非调试测试点。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:Generator.debug / scripts/part_words.py",
+        "what": "Mechanical:MountingHole且零脚的原生符号先排除电气testpoint，不因H前缀或封装词推调试。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F13",
+      "sr_rule": "PWR-T06",
+      "criteria": [
+        "G04-096"
+      ],
+      "severity": "待定",
+      "refs": [
+        "R6",
+        "R7",
+        "C7",
+        "C8",
+        "U1"
+      ],
+      "nets": [
+        "GNDA",
+        "GNDREF",
+        "+6V"
+      ],
+      "sr_text": "GNDA 被扫描说明按 0 V 参考地处理",
+      "verdict": "false_alarm",
+      "evidence": "lint两轮都打印GND=GNDA、REF=GNDREF，虽然intent.power_rails.GNDA.domain=REF。实际R6=R7=47k，GNDA空载V=V(+6V)/2，Thevenin=23.5kΩ；C7=47uF、C8=100nF，名义tau=1.10685s。GNDA不是第二隔离域、不是与GNDREF等电位。只能做有偏置参考节点模型；未知实际源窗不填假0V。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/checkers/domains.py:ground_labels / scripts/checkers/passive_stress.py:ground_name",
+        "what": "地名只产生角色候选；显式虚地/非零窗口必须优先于GND正则，并允许在未知电压时保留非零偏置节点。测试半供电虚地不得被短接或自动赋0V。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F14",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "待定",
+      "refs": [
+        "U2"
+      ],
+      "nets": [],
+      "sr_text": "U2 原厂在线文字被资料核验器记为 NO_TEXT",
+      "verdict": "false_alarm",
+      "evidence": "ds/HEF40106B-web.txt保存原厂PDF在线文字，p1标题、p2 Table2及p3限值可读。audit材料是AVAILABLE且document_format=text_extract；datasheet_kinds.pdf_page_texts却把txt送pdftotext，因不是PDF而NO_TEXT。完整PDF网络请求403是真实限制，但不能宣称已读文字不存在。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/datasheet_kinds.py:pdf_page_texts / page_text",
+        "what": "对text_extract提供带页码的文字读取器，并区分文字证据与未核图形；保留完整PDF未得的限制，勿伪造PDF或错误回退为缺手册。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F15",
+      "sr_rule": "PWR-C02",
+      "criteria": [],
+      "severity": "待定",
+      "refs": [
+        "C11",
+        "C16",
+        "R8",
+        "R9",
+        "R10"
+      ],
+      "nets": [
+        "HT"
+      ],
+      "sr_text": "倍压电压检查要求逐只常规阻容 datasheet",
+      "verdict": "false_alarm",
+      "evidence": "PWR-C02.MIC-BIAS-PUMP-RUN.C11.required_inputs列C11–C18/C9/R8/R9/R10的独立datasheet。拓扑与名义值已在网表，实际缺源、负载和有效容量/额定条件；逐只索取普通阻容datasheet不能建立泵压保证。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:CircuitPlanning.plan_subjects",
+        "what": "按功能核型号必要性；常规件按commodity-floors定界并提出最小采购约束，只给真正决定本判据的参数资料依赖。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F16",
+      "sr_rule": "PWR-C02",
+      "criteria": [],
+      "severity": "待定",
+      "refs": [
+        "U2",
+        "C9",
+        "C11",
+        "C16",
+        "D2",
+        "D8"
+      ],
+      "nets": [
+        "HT"
+      ],
+      "sr_text": "40106 六级倍压没有专用角色与负载模型",
+      "verdict": "knowledge_gap",
+      "evidence": "U2标题Hex inverting Schmitt trigger不在角色表，自动候选不生POWER_CONVERTER，本轮合法add补出MIC-BIAS-PUMP。add丢nets/anchor后PWR-C02主锚C11、PWR-C04因无SW/OUT脚不问。需要RC振荡+多相飞跨二极管泵的典型电路/驱动负载模型；不能拿LDO输出电容稳定窗代用。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F17",
+      "sr_rule": "PWR-C01",
+      "criteria": [
+        "G01-010",
+        "G03-001",
+        "G03-042",
+        "G03-043"
+      ],
+      "severity": "待定",
+      "refs": [
+        "J1",
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "D1",
+        "U1",
+        "U2"
+      ],
+      "nets": [
+        "+12V",
+        "+6V"
+      ],
+      "sr_text": "幻象源和总负载未锁定，供电预算仍未定",
+      "verdict": "needs_human",
+      "evidence": "图面无外部P48电压/源阻抗/限流合同。条件算例仅取48V、每线6.81kΩ，则每支路6.81k+47+2.2k=9057Ω；D1=12V时总供流7.94965mA。OPA1652 p7每通道Iq typ2mA，max2.8mA有表头±15V及温度条件，不能无条件搬到本板低压；R6+R7还消耗V(+6V)/94k，泵/音频负载另计。算例不是基线或全范围PASS。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F18",
+      "sr_rule": "ANA-C01",
+      "criteria": [
+        "G04-041",
+        "G04-042"
+      ],
+      "severity": "待定",
+      "refs": [
+        "U1",
+        "R6",
+        "R7",
+        "R101",
+        "R110",
+        "C19"
+      ],
+      "nets": [
+        "GNDA",
+        "+6V",
+        "Net-(U1A-+)"
+      ],
+      "sr_text": "运放共模与虚地需要真实供电和音头幅度",
+      "verdict": "needs_human",
+      "evidence": "OPA1652.pdf p7共模(V−)+0.5至(V+)−2V；V−=GNDREF，V+=+6V，U1.5=GNDA，U1.3经1GΩ链偏置到GNDA。等值理想分压中点满足共模要求的下界是V+=4V，但器件最低供电另为4.5V；还要计R6/R7公差、Ib×1GΩ、音头信号、掉电状态。+6V不是锁定6V；没有最大声压/源窗不能判全范围。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F19",
+      "sr_rule": "ANA-C02",
+      "criteria": [
+        "G04-044",
+        "G04-045",
+        "G04-046",
+        "G04-055",
+        "G04-056",
+        "G04-057"
+      ],
+      "severity": "待定",
+      "refs": [
+        "U1",
+        "R11",
+        "R12",
+        "C1",
+        "C2",
+        "C19",
+        "J1"
+      ],
+      "nets": [
+        "Net-(J1-Pad2)",
+        "Net-(J1-Pad3)"
+      ],
+      "sr_text": "音频负载、幅度、带宽与噪声目标没有受控数值",
+      "verdict": "needs_human",
+      "evidence": "U1A电压跟随，U1B由R11=R12=2.2k围绕GNDA反相，理想每支路幅度为1，差分幅度为2倍。R101–R110总1GΩ与C19=1nF给理想159mHz高通；R5/C5名义9.4ms低通（16.93Hz）只是供电滤波。OPA1652 p7为18MHz GBW、10V/us典型，不能证明给定线缆/声压失真；J1接收阻抗/电容、目标带宽和SNR待定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F20",
+      "sr_rule": "DEV-C01",
+      "criteria": [
+        "G02-007",
+        "G02-027",
+        "G02-028",
+        "G03-037",
+        "G03-038",
+        "G03-040",
+        "G05-022"
+      ],
+      "severity": "待定",
+      "refs": [
+        "C11",
+        "C12",
+        "C13",
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C18",
+        "C19",
+        "R9",
+        "R10",
+        "R13"
+      ],
+      "nets": [
+        "HT",
+        "Net-(D7-K)",
+        "Net-(D8-K)"
+      ],
+      "sr_text": "倍压飞跨电容及高阻链的额定需按逐节点应力选定",
+      "verdict": "needs_human",
+      "evidence": "BOM C11–C16均10nF且无耐压；并非都只承受12V。忽略二极管压降且每级全摆幅为12V的理想上界算例，C11..C16稳态差压依次12/24/36/48/60/72V，末端空载泵压至84V；真实值依赖频率/输出阻抗/负载。C17/C18/C19图面100V；五只47uF在BOM为63V，不能仅凭图面无耐压报低耐压。要确定工况后给最小额定和有效值，不声称原件已装低压档。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F21",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "待定",
+      "refs": [
+        "U1",
+        "R9",
+        "R10",
+        "R13",
+        "C17",
+        "C18",
+        "C19",
+        "C1",
+        "C2",
+        "J1"
+      ],
+      "nets": [
+        "HT",
+        "+6V",
+        "Net-(U1A-+)"
+      ],
+      "sr_text": "掉电时保留的极化电荷与接口瞬态仍需核定",
+      "verdict": "needs_human",
+      "evidence": "R9=R10=100M、C17=C18=100nF构成两级RC。忽略负载时两极点时间常数为52.3607s和7.6393s；不是两只独立20s简单串算。HT经R13/C19接U1.3，+6V掉电后偏置可能仍在。J1两线也经47Ω及C1/C2耦入输出。OPA1652.pdf p5规定脚电压/电流限值；需初始电压、断电/插拔轨迹和返回路径后算峰值、总注入与轨残压，不能把存在电容当已证反灌损坏。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F22",
+      "sr_rule": "PRO-D04",
+      "criteria": [
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "待定",
+      "refs": [
+        "J1",
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "D1",
+        "C1",
+        "C2"
+      ],
+      "nets": [
+        "GNDREF",
+        "Net-(J1-Pad2)",
+        "Net-(J1-Pad3)"
+      ],
+      "sr_text": "XLR 的异常接线、热插拔与防护工况尚未定义",
+      "verdict": "needs_human",
+      "evidence": "J1.1=GNDREF；2/3经47Ω、2.2kΩ并入稳压节点，且经47uF分别耦入U1输出。C91/C92=220pF仅RF旁路，不等于ESD/浪涌验收。对称2/3互换不等于电源反接；需P48适用、单脚对地短路、误供电/反向接线范围与外壳回线定义，才能核R1–R4/D1/电解耐受；不机械套负48V通信或USB要求。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F23",
+      "sr_rule": "DEV-C02",
+      "criteria": [
+        "G03-010",
+        "G03-039"
+      ],
+      "severity": "待定",
+      "refs": [
+        "C1",
+        "C2",
+        "C3",
+        "C5",
+        "C7"
+      ],
+      "nets": [
+        "+12V",
+        "+6V",
+        "GNDA"
+      ],
+      "sr_text": "电解电容寿命缺任务剖面，不能直接证明寿命达标",
+      "verdict": "needs_human",
+      "evidence": "BOM row2指定C1/C2/C3/C5/C7=47uF63V；无温度、设计寿命、工作占空和热点预算。先按实际稳态/启动电压核应力，再按寿命估算给BOM耐久约束，热点与纹波自热交下游；不因缺普通电容专用手册作统一阻断。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F24",
+      "sr_rule": "DEV-D03",
+      "criteria": [
+        "G01-013"
+      ],
+      "severity": "待定",
+      "refs": [
+        "MK1",
+        "J1"
+      ],
+      "nets": [
+        "GNDA",
+        "Net-(MK1-+)"
+      ],
+      "sr_text": "话筒音头和外壳针序尚未唯一指定",
+      "verdict": "needs_human",
+      "evidence": "BOM row11列CK12/K67/K47/M7多个音头，README用克隆RK12/CK12只作推断；不能当其耐极化、灵敏度或漏电保证。J1 BOM Qty0注明Comes with the housing，不是电气DNP。板端已追J1.1公共回线、2/3平衡音频；外壳、线缆视图与音头实际极性/偏置规格尚需原设计者确定。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F25",
+      "sr_rule": "REQ-Q01",
+      "criteria": [
+        "G01-005",
+        "G02-001"
+      ],
+      "severity": "待定",
+      "refs": [],
+      "nets": [],
+      "sr_text": "报告的资料不足 0 没有计入逐项待核范围",
+      "verdict": "false_alarm",
+      "evidence": "原生schema15只有PASS/FAIL/INSUFFICIENT/NA；本轮未知源/负载/音头合同保留在pending_checks，不能伪造VENDOR_DATUM。render_report仅统计原生checks而印资料不足0、没有电气错误，且把DOC-Q01未审归成导出失败；XML/db131端点已一致、KiCad导出成功。报告无效标志必须保留，同时明确未判分母，不能让局部结果暗示完整审完。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/render_report.py / scripts/results_model.py:materialize",
+        "what": "存在pending_checks/未完成框架或无效门禁时，将整板状态显示为未完成审查；分别呈现已判/待判/真实资料不足，并区分严格缺脚名与实际导出错误。不得从旁账推PASS。"
+      },
+      "seed": null
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G05-019",
+      "sr_rule": "PRO-C04",
+      "refs": [
+        "J1",
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "nets": [
+        "Net-(J1-Pad2)",
+        "Net-(J1-Pad3)",
+        "+12V"
+      ],
+      "why_expected": "原生153项无PRO-C04；电源源侧每条供入支路应列出保护/源限流合同，即使无保险或保护IC。人工以intent.rule_gaps补问，非已确认板卡缺陷。",
+      "evidence": "J1.2→R2(47Ω)→R4(2.2kΩ)→+12V及J1.3→R1(47Ω)→R3(2.2kΩ)→+12V；D1阴极在+12V，阳极GNDREF；返回J1.1。 见review-plan-before-gaps.json与最终PRO-C04.GAP-PHANTOM-SOURCE-BRANCH.J1；上游限流未知，不断言缺保险不合格。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:InterfacePlanning.plan_interfaces / scripts/plan_circuits.py:CircuitPlanning.plan_single_fault_rows",
+        "what": "由连接器到能量负载的有阻供入路径逐支路建立PRO-C04；记录外部源阻抗/限流为依赖，不以FUSE/MOV关键词作为唯一触发。"
+      },
+      "seed": {
+        "kind": "D-PHANTOM-SOURCE-BRANCH-COVERAGE",
+        "mutation": "保留双XLR电阻供电拓扑；删去保护关键词并对连接器改名，目标断言PRO-C04仍逐支路展开。仅为计划覆盖种子，不证明原板电阻功率违规。",
+        "target_rule": "PRO-C04"
+      }
+    },
+    {
+      "id": "M02",
+      "criterion": "G04-009",
+      "criteria": [
+        "G04-005",
+        "G04-007",
+        "G04-009"
+      ],
+      "sr_rule": "SIG-C08",
+      "refs": [
+        "U1",
+        "R13",
+        "C19",
+        "C17",
+        "C18"
+      ],
+      "nets": [
+        "HT",
+        "Net-(MK1-+)",
+        "Net-(U1A-+)",
+        "+6V"
+      ],
+      "why_expected": "原生SIG-C08只指向J1.2/3，没有 retained HT→C19→U1.3的掉电注入专项；ANA-C01故障通用项仍在，因此是逐路径自动覆盖缺口，非整轮遗漏的已证硬件故障。",
+      "evidence": "HT经R13=100M到音头偏置，C19=1nF耦合至U1.3；C17/C18均100nF且由两只100M充放电。+6V与泵高压不同时间常数，需有状态依据独立核。最终以SIG-C08.GAP-CAPSULE-RETAINED-BIAS.U1-3补问。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:InterfacePlanning.plan_interfaces / scripts/plan_circuits.py:CircuitPlanning.plan_single_fault_rows",
+        "what": "枚举储能轨/电容耦合到接收脚的独立掉电路径；不限数字总线和跨轨上拉。先核实际初始状态与厂家脚限，不把耦合存在当电气FAIL。"
+      },
+      "seed": {
+        "kind": "D-ANALOG-RETAINED-BIAS-COVERAGE",
+        "mutation": "在可掉电运放输入增加由独立储能偏置轨经C耦合的通路，带准确pin角色和掉电态合同；要求生成SIG-C08路径项。额外短接R13等电气反例须另锁初始电压/电流限，不能用原板直接作硬缺陷正例。",
+        "target_rule": "SIG-C08"
+      }
+    }
+  ],
+  "summary": {
+    "true_defect": 1,
+    "false_alarm": 14,
+    "criterion_issue": 0,
+    "knowledge_gap": 1,
+    "needs_human": 9,
+    "misses": 2
+  },
+  "review_evidence": {
+    "input_integrity": "/Users/skyfend/.cache/sr-boards/spirit532--studio_mic/review/input-integrity.json",
+    "bom_comparison": "/Users/skyfend/.cache/sr-boards/spirit532--studio_mic/review/bom-comparison.json",
+    "independent_calculations": "/Users/skyfend/.cache/sr-boards/spirit532--studio_mic/review/independent-calculations.json",
+    "per_check_dispositions": "/Users/skyfend/.cache/sr-boards/spirit532--studio_mic/review/review-dispositions.json",
+    "results": "/Users/skyfend/.cache/sr-boards/spirit532--studio_mic/review/review-results.json",
+    "gate": "/Users/skyfend/.cache/sr-boards/spirit532--studio_mic/review/review-gate.json",
+    "top50": "/Users/skyfend/.cache/sr-boards/spirit532--studio_mic/review/top50-audit.json",
+    "source_schematic_sha256": "71d90598fd94e7a809183cea07c56f8e25d185b7fbbb25d6846583bb70d2c963",
+    "source_lock": "8ffc29b48432c2658af3b84805d227cce29ce538",
+    "datasheets_note": "HardwareWiki精确MPN检索三项均无命中；OPA1652与1N4148WS完整原厂PDF已得，HEF40106B仅原厂在线PDF文字、完整PDF HTTP403；不使用HCF/CD40106或OPA1656代作准确变体保证。"
+  }
+}

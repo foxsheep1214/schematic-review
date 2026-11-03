@@ -1,0 +1,35 @@
+{
+  "repo": "greatscottgadgets/amalthea-hardware",
+  "commit": "b1027cf452365fd1572cb8df8dfed4d3004ec8c2",
+  "db_sha256": "67dcd111fcfc92a2f70abb076770fed8d17dc00dc3b882de77e41e753a0c4ded",
+  "purpose_inference": "推断：README称Cynthion mezzanine experimental SDR；网表U1 AT86RF215IQ、两SMA和TCXO相符；catalog调试用途/DEBUG LEVEL_SHIFT与实图不符。README仅作用途推断，不作保证参数。",
+  "catalog_types": [
+    "DEBUG",
+    "LEVEL_SHIFT",
+    "POWER_PROTECTION"
+  ],
+  "bom": "固定提交稀疏树未见独立BOM；part字段来自原图。",
+  "requirements": "无受控板级输入电压窗、环境、对端脚表和热插拔条件，不虚构。",
+  "native_schematic_sha256": "159bb5a8e1028d1016fee1eea709bb7cfb52b54cf33327a69f5326bc3ec82cab",
+  "kicad_cli": "10.0.7",
+  "license": "CERN-OHL-P-2.0",
+  "strict": true,
+  "third_party_inputs": [
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/greatscottgadgets--amalthea-hardware/review/evidence/datasheets/0896BM15E0025.pdf",
+      "sha256": "de78472015b62a91b28378f923298c23e4457c4adfd9c45809a7e87b3b46789a"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/greatscottgadgets--amalthea-hardware/review/evidence/datasheets/2450FB15A050.pdf",
+      "sha256": "75b905dee5514346057802b276558106b7c6410cb17047f3d724077f7a2e88d1"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/greatscottgadgets--amalthea-hardware/review/evidence/datasheets/AT86RF215IQ-ZU.pdf",
+      "sha256": "4b61a09d20ed2411ad333f6a02012eb1f42642d0bdd39dc9636fa6f7cadf688b"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/greatscottgadgets--amalthea-hardware/review/evidence/schematic.pdf",
+      "sha256": "50fa6df5864f24f6d3d808fbcaf8942bcc64f48c1d81ef0b26e6bd40988b5aa3"
+    }
+  ]
+}

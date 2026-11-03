@@ -1,0 +1,2944 @@
+{
+  "schema_version": 15,
+  "plan_digest": "b69b7bf0900a6776dc2ea795521e61d7a311c1d4b63470571201d676bdc8c0fb",
+  "db_digest": "9ca063f0e01a821ad19607caa49cbb0c6949e73d5c2afcad034819e243de6347",
+  "functions": [],
+  "checks": [
+    {
+      "id": "CLK-C01.CLOCK-U2-RUN.C1",
+      "binding": {
+        "object": {
+          "circuit": "CLOCK-U2",
+          "circuit_key": "CLOCK-U2",
+          "ref": "C1",
+          "refs": [
+            "C1",
+            "R19",
+            "R2",
+            "U2"
+          ],
+          "nets": [],
+          "state": "run"
+        },
+        "criterion": "按晶体准确料号核对 CL/ESR/驱动功率、振荡器适配和起振条件，反馈电阻、串联电阻按 datasheet/参考设计取值；一颗晶振只驱动一个器件；计时用途的频率预算含负载电容牵引；上电时序留够起振时间；寄生及实测裕量转 HANDOFF"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "U2.3→Net-(U2-OUT)→R19(0Ω)→Net-(U1-TCXO)→U1.17；U1.18→R2(0Ω)→GND；R1/C3均DNP。Atmel-42415E pp7–11 Table2-1/Figure3-1及p68 §6.4.3要求DC耦合且XTAL2接地。 有源TCXO模式，无板外两端无源晶体，CL/ESR/负阻检查不适用；幅度/频率仍在CLK-D01待核。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "CLK-C01.CLOCK-U2-RUN.C1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "CLK-C01.CLOCK-U2-RUN.C1",
+          "pins": [
+            "C1.1",
+            "U2.4",
+            "U2.1",
+            "U2.2",
+            "R2.2",
+            "R19.2",
+            "R2.1",
+            "R19.1",
+            "C1.2",
+            "U2.3"
+          ],
+          "nets": []
+        }
+      ]
+    },
+    {
+      "id": "CLK-D03.CLOCK-U2-RUN.C1",
+      "binding": {
+        "object": {
+          "circuit": "CLOCK-U2",
+          "circuit_key": "CLOCK-U2",
+          "ref": "C1",
+          "refs": [
+            "C1",
+            "R19",
+            "R2",
+            "U2"
+          ],
+          "nets": [],
+          "state": "run"
+        },
+        "criterion": "按实际 RTC 的时钟源、频率/负载要求及模式核晶体或外部时钟，不默认固定频率；备份电池/超级电容的充电电压/电流不超器件上限，反向电流符合器件要求"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "U2.3→Net-(U2-OUT)→R19(0Ω)→Net-(U1-TCXO)→U1.17；U1.18→R2(0Ω)→GND；R1/C3均DNP。Atmel-42415E pp7–11 Table2-1/Figure3-1及p68 §6.4.3要求DC耦合且XTAL2接地。 无RTC或备份供电，不套RTC启动/充电判据。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "CLK-D03.CLOCK-U2-RUN.C1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "CLK-D03.CLOCK-U2-RUN.C1",
+          "pins": [
+            "C1.1",
+            "U2.4",
+            "U2.1",
+            "U2.2",
+            "R2.2",
+            "R19.2",
+            "R2.1",
+            "R19.1",
+            "C1.2",
+            "U2.3"
+          ],
+          "nets": []
+        }
+      ]
+    },
+    {
+      "id": "DEV-C01.BOARD",
+      "binding": {
+        "object": {
+          "board": "BOARD",
+          "refs": [
+            "H1",
+            "H2"
+          ]
+        },
+        "criterion": "受应力的电阻、电容、开关与稳压器逐颗核功耗、连续/脉冲电压、电流及适用温度条件下的额定值；本项核过应力（应力上界对额定）；IC 脚经外接电阻驱动内部开关或检测通路（放电、泄放、驱动、检测脚）时，按外部节点最高电压与外接电阻最小值核脚电流不超手册上限，逐脚补查 DEV-C01.<IC位号>-<脚名> 并由所在的 DEV-C01 项以 split_out 拆出；供电或输入整个窗口确定低于推荐工作范围下限时，与 DEV-C05 同判 FAIL、共用 finding，理由引用 DEV-C05.<位号>；下限是否满足取决于未知压降或参数时，本检查项不因下限判 INSUFFICIENT，归 DEV-C05；连接器/排针/按键触点连续（有效值）电流与电压不超过 commodity-floors 微应力阈值（最低触点额定 × 本级降额值）时判 PASS(B)，信号边沿瞬态电流不计；连接器库名/封装名指向具体原厂系列或料号（如 JST_VH、MKDS、XT30UPB）时按该系列原厂触点额定定界，不超过该额定 × 本级 CONN-I 取值判 PASS(B)，“须采购该原厂系列”归 DEV-D04，不因无 MPN 记 INSUFFICIENT；泛称排针/间距不适用；先按用途和受控采购范围定界：有适用最弱档时，应力上界不超过最弱档 × 本级降额规范取值（等级未定按工程取值 unset_level）可判PASS；超过且仍可选到满足档位时写最低额定约束，不当作已满足；无适用范围不借用最弱档；计划已生成逐颗预判检查项（proposal）的器件按该检查项计算判定，改判只用其封闭理由码；陶瓷电容与功率电感优先按commodity-floors的独立可订购额定/BOM约束分支判断，满足该分支全部适用条件时可判局部PASS，采购字段仍由DEV-D04核对，不以普通最弱档路径重复阻断；降额按项目等级（intent.derating）取降额规范的值、按应力规范判：超额定 FAIL，超降额未超额定是应力风险（basis.derating_rule 点名规则，门禁按等级重算），等级没定时转需求澄清；电位器按实际分压/rheostat接法核活动轨段、滑臂与端点，不能把整轨功率额定用于任意局部轨段；按wca-formulas的适用模型全范围核轨电流、局部功耗及滑臂/脉冲限制，未选实际器件不借候选或通用最弱档放行；实际温升与散热实现转 HANDOFF，不以缺热测试判电气缺陷"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "本项对象仅H1/H2，均为悬空安装孔焊盘，无负载电流、供电或电应力；其机械可靠性不由本条电应力判定。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.BOARD"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-C01.BOARD",
+          "pins": [
+            "H2.1",
+            "H1.1"
+          ],
+          "nets": []
+        }
+      ]
+    },
+    {
+      "id": "DEV-D01.T1",
+      "binding": {
+        "object": {
+          "ref": "T1"
+        },
+        "criterion": "核对实例 MPN/BOM、符号引脚、封装字段、参数档位和替代兼容性；符号缓存来源名不独自证明实际采购身份冲突"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "原图PART 2450FB15A050与Johanson同型号Ver2.0 p1一致；0805六端RF Balun；封装复用0896BM15A0001仅为名称，尺寸/焊盘最终由PCB核，不据名字断言错料。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D01.T1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DEV-D01.T2",
+      "binding": {
+        "object": {
+          "ref": "T2"
+        },
+        "criterion": "核对实例 MPN/BOM、符号引脚、封装字段、参数档位和替代兼容性；符号缓存来源名不独自证明实际采购身份冲突"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "原图PART 0896BM15E0025与Johanson Ver2.0 p1一致，适用AT86RF215IQ、863–928MHz六端Balun；未以封装库名字替代器件身份。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D01.T2"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DEV-D01.U1",
+      "binding": {
+        "object": {
+          "ref": "U1"
+        },
+        "criterion": "核对实例 MPN/BOM、符号引脚、封装字段、参数档位和替代兼容性；符号缓存来源名不独自证明实际采购身份冲突"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "原图PART AT86RF215IQ-ZU与p224 §14订货表一致，QFN48、裸焊盘、双频IQ变体；p3 §1.1确认IQ变体不含baseband，未误用AT86RF215M限制。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D01.U1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DEV-D02.T1",
+      "binding": {
+        "object": {
+          "ref": "T1"
+        },
+        "criterion": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "T1=2450FB15A050 p1:1不平衡、2/5地、3/4平衡、6NC；T2=0896BM15E0025 p1:1不平衡、2/5/6地、3/4平衡。两者为RF Balun，非开关续流线圈。 本位号1..6与原图物理脚逐一对应。只核官方脚义，不证明PCB footprint映射。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D02.T1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DEV-D02.T2",
+      "binding": {
+        "object": {
+          "ref": "T2"
+        },
+        "criterion": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "T1=2450FB15A050 p1:1不平衡、2/5地、3/4平衡、6NC；T2=0896BM15E0025 p1:1不平衡、2/5/6地、3/4平衡。两者为RF Balun，非开关续流线圈。 本位号1..6与原图物理脚逐一对应。只核官方脚义，不证明PCB footprint映射。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D02.T2"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DEV-D02.U1",
+      "binding": {
+        "object": {
+          "ref": "U1"
+        },
+        "criterion": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "Atmel-42415E pp7–11 Table2-1/Figure3-1逐项对照1..48和49裸焊盘无差集；14/47为AVDD0/1输出，37为DVDD输出；15/46 EVDD与21/29/39 DEVDD供入；全部14地脚含49接GND。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D02.U1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DEV-D05.J1",
+      "binding": {
+        "object": {
+          "ref": "J1"
+        },
+        "criterion": "按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "J1未用1/6/7/22/23/24/25/30及MP均明确NC，其他触点均接供电/返回或IQ/SPI/RSTN；这些为无源触点，不存在片内偏置要求。只关闭图上未用触点处置，Cynthion对端定义另在DEV-D03。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D05.J1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DEV-D05.J2",
+      "binding": {
+        "object": {
+          "ref": "J2"
+        },
+        "criterion": "按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "J2.1为SMA中心信号，J2.2为壳/外导体接GND，两物理端均使用，无悬空有源输入。仅核使用处置，对端规格另判。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D05.J2"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DEV-D05.J3",
+      "binding": {
+        "object": {
+          "ref": "J3"
+        },
+        "criterion": "按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "J3.1为SMA中心信号，J3.2为壳/外导体接GND，两物理端均使用，无悬空有源输入。仅核使用处置，对端规格另判。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D05.J3"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DEV-D05.T1",
+      "binding": {
+        "object": {
+          "ref": "T1"
+        },
+        "criterion": "按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "T1=2450FB15A050 p1:1不平衡、2/5地、3/4平衡、6NC；T2=0896BM15E0025 p1:1不平衡、2/5/6地、3/4平衡。两者为RF Balun，非开关续流线圈。 T1.6已NC，T1.2/.5接地；T2.2/.5/.6均接GND，其他端各进对应RF路径，无未处置输入脚。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D05.T1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DEV-D05.T2",
+      "binding": {
+        "object": {
+          "ref": "T2"
+        },
+        "criterion": "按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "T1=2450FB15A050 p1:1不平衡、2/5地、3/4平衡、6NC；T2=0896BM15E0025 p1:1不平衡、2/5/6地、3/4平衡。两者为RF Balun，非开关续流线圈。 T1.6已NC，T1.2/.5接地；T2.2/.5/.6均接GND，其他端各进对应RF路径，无未处置输入脚。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D05.T2"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DEV-D05.U1",
+      "binding": {
+        "object": {
+          "ref": "U1"
+        },
+        "criterion": "按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "U1全部49物理脚已核：供电/地均入正确网，RF/SPI/IQ/RSTN均使用；未用CLKO U1.22、FEA24/FEB24 U1.1/.2和FEA09/FEB09 U1.11/.12为输出且已NC。Atmel p12建议未用CLKO在初始化关闭，作为配置移交；不把未用输出当悬空输入。仅关闭引脚处置，主机高阻期RSTN/SELN默认态另待M03。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DEV-D05.U1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DOC-D01.BOARD",
+      "binding": {
+        "object": {
+          "board": "BOARD"
+        },
+        "criterion": "BOM 值字段无异常字符串（如 4.7F），数值、单位与器件类型一致"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "逐值核对：C1/C2/C4/C5/C6/C9/C10/C11–14=1uF，C7/C8=1.8pF，L1=5.6nH；R2/R19=0Ω、R7/R10/R13/R16=47Ω。占位R仅存在DNP偏置选件，不是已贴阻值缺失；未见4.7F等量级异常。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DOC-D01.BOARD"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DOC-Q01.INPUT-CONSISTENCY",
+      "binding": {
+        "object": {
+          "feature": "input_consistency"
+        },
+        "criterion": "核对本轮输入版本、哈希、导出完整性与装配配置；网表、PDF 与 BOM 之间已证矛盾判FAIL，缺数据或无法可靠解析记证据不足；文件哈希一致不替代内容一致；严格自检只因功能名/类型覆盖不足失败、编号与归网已核实时记证据不足并写明已证实范围，库符号缺陷归 DEV-D04，不判本项 FAIL"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "源提交b1027cf固定；根图SHA256与catalog一致；KiCad10.0.7导网表strict=true、41器件、1页；本次直接导出的PDF与网表同源，原生DNP保留。完整git tree仅电路/库/README/LICENSE等，无独立BOM；没有声称BOM与实物核验。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DOC-Q01.INPUT-CONSISTENCY"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DOC-T01.NATIVE",
+      "binding": {
+        "object": {
+          "assembly": "native"
+        },
+        "criterion": "逐装配配置核 0Ω/跳线/不贴选项：互斥件不同时贴装，每种配置的供电、信号与配置通路完整，BOM 选项表与图面标注一致"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "仅按原生native装配：C3/R1及8只未定值偏置R8/R9/R11/R12/R14/R15/R17/R18不贴；R2/R19=0、R7/R10/R13/R16=47Ω贴；TCXO供入及TX四路串阻各完整，不将DNP R当上拉或短路。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DOC-T01.NATIVE"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DOC-V01.1",
+      "binding": {
+        "object": {
+          "page": 1,
+          "sheet_path": "/"
+        },
+        "criterion": "目检极性、方向、pin1、Option/NC 表和图形语义；页间连接符与层次端口的名称、方向一致；原生图面功能脚名、标签和关键注释可可靠辨认，真实墨迹重叠/遮挡造成混读记独立可读性缺陷；邻近或边界框相交本身不判FAIL，疑点用原生局部图核实；连接正确不关闭可读性缺陷"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "已目检本次KiCad10.0.7导出单页PDF全页和TCXO/RF/TX区：NC、DNP红叉、RF24/RF09、R2接地、T1/T2端号与图框Rev.r0.2可辨；无已证实遮挡/极性错误。导出显示器版本10.0.7不冒充源设计KiCad7版本。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DOC-V01.1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DOC-V02.BOARD",
+      "binding": {
+        "object": {
+          "board": "BOARD"
+        },
+        "criterion": "页面注释与实贴 BOM 一致（注释是意图，BOM 是现实，两者都核），换方案残留的命名与注释已清理；网络命名与实际电平、功能一致（如 DBG_*_3V3 实为 1.8V 属误导）；图框信息与 PDF/网表版本一致"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "图框Amalthea/r0.2/2023-03-25与源图一致；RF09/24、PICO/POCI、TX/RX语义和U1脚义一致。catalog“调试适配器”是评测目录元数据错误，不是原图遗留命名缺陷。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DOC-V02.BOARD"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "DRV-C01.T1-UNRESOLVED.T1",
+      "binding": {
+        "object": {
+          "ref": "T1",
+          "state": "native",
+          "inductive_load": "T1-UNRESOLVED",
+          "inductive_load_digest": "937606b7325d0e847c270afc9722a21c0ac72e37987f4301c2ec9f258643d7bc"
+        },
+        "criterion": "仅对被切换感性负载按关断电流与电源最高电压核钳位额定；共模滤波和变换器磁件另按实际拓扑查：反向耐压、峰值/重复电流、钳位电压加电源电压不超过开关器件耐压、重复频率下的耗散"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "T1=2450FB15A050 p1:1不平衡、2/5地、3/4平衡、6NC；T2=0896BM15E0025 p1:1不平衡、2/5/6地、3/4平衡。两者为RF Balun，非开关续流线圈。 无直流开关磁化/关断储能机制，不适用续流钳位拓扑及其额定审查。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DRV-C01.T1-UNRESOLVED.T1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DRV-C01.T1-UNRESOLVED.T1",
+          "pins": [
+            "T1.5",
+            "T1.1",
+            "T1.4",
+            "T1.2",
+            "T1.6",
+            "T1.3"
+          ],
+          "nets": []
+        }
+      ]
+    },
+    {
+      "id": "DRV-C01.T2-UNRESOLVED.T2",
+      "binding": {
+        "object": {
+          "ref": "T2",
+          "state": "native",
+          "inductive_load": "T2-UNRESOLVED",
+          "inductive_load_digest": "937606b7325d0e847c270afc9722a21c0ac72e37987f4301c2ec9f258643d7bc"
+        },
+        "criterion": "仅对被切换感性负载按关断电流与电源最高电压核钳位额定；共模滤波和变换器磁件另按实际拓扑查：反向耐压、峰值/重复电流、钳位电压加电源电压不超过开关器件耐压、重复频率下的耗散"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "T1=2450FB15A050 p1:1不平衡、2/5地、3/4平衡、6NC；T2=0896BM15E0025 p1:1不平衡、2/5/6地、3/4平衡。两者为RF Balun，非开关续流线圈。 无直流开关磁化/关断储能机制，不适用续流钳位拓扑及其额定审查。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DRV-C01.T2-UNRESOLVED.T2"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DRV-C01.T2-UNRESOLVED.T2",
+          "pins": [
+            "T2.4",
+            "T2.3",
+            "T2.1",
+            "T2.6",
+            "T2.5",
+            "T2.2"
+          ],
+          "nets": []
+        }
+      ]
+    },
+    {
+      "id": "DRV-T01.T1-UNRESOLVED.T1",
+      "binding": {
+        "object": {
+          "ref": "T1",
+          "state": "native",
+          "inductive_load": "T1-UNRESOLVED",
+          "inductive_load_digest": "937606b7325d0e847c270afc9722a21c0ac72e37987f4301c2ec9f258643d7bc"
+        },
+        "criterion": "核对本状态该感性负载的续流/钳位路径是否存在、方向是否正确、钳位器件是否贴装；驱动器内部钳位须有资料证据，网名或型号不构成结论"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "T1=2450FB15A050 p1:1不平衡、2/5地、3/4平衡、6NC；T2=0896BM15E0025 p1:1不平衡、2/5/6地、3/4平衡。两者为RF Balun，非开关续流线圈。 无直流开关磁化/关断储能机制，不适用续流钳位拓扑及其额定审查。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DRV-T01.T1-UNRESOLVED.T1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DRV-T01.T1-UNRESOLVED.T1",
+          "pins": [
+            "T1.5",
+            "T1.1",
+            "T1.4",
+            "T1.2",
+            "T1.6",
+            "T1.3"
+          ],
+          "nets": []
+        }
+      ]
+    },
+    {
+      "id": "DRV-T01.T2-UNRESOLVED.T2",
+      "binding": {
+        "object": {
+          "ref": "T2",
+          "state": "native",
+          "inductive_load": "T2-UNRESOLVED",
+          "inductive_load_digest": "937606b7325d0e847c270afc9722a21c0ac72e37987f4301c2ec9f258643d7bc"
+        },
+        "criterion": "核对本状态该感性负载的续流/钳位路径是否存在、方向是否正确、钳位器件是否贴装；驱动器内部钳位须有资料证据，网名或型号不构成结论"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "T1=2450FB15A050 p1:1不平衡、2/5地、3/4平衡、6NC；T2=0896BM15E0025 p1:1不平衡、2/5/6地、3/4平衡。两者为RF Balun，非开关续流线圈。 无直流开关磁化/关断储能机制，不适用续流钳位拓扑及其额定审查。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DRV-T01.T2-UNRESOLVED.T2"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "DRV-T01.T2-UNRESOLVED.T2",
+          "pins": [
+            "T2.4",
+            "T2.3",
+            "T2.1",
+            "T2.6",
+            "T2.5",
+            "T2.2"
+          ],
+          "nets": []
+        }
+      ]
+    },
+    {
+      "id": "NET-A07.H1-1-21d5b9",
+      "binding": {
+        "object": {
+          "lint_detail": "H1.1 -> unconnected-(H1-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+          "ref": "H1"
+        },
+        "criterion": "声明输入脚标为 No-Connect：H1.1 -> unconnected-(H1-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "H1.1是Mechanical:MountingHole_Pad单焊盘，原图p1明确为MountingHole且NC；没有逻辑输入或片内偏置要求。符号electrical_type=input不能赋予安装孔有源脚义。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "NET-A07.H1-1-21d5b9"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "NET-A07.H1-1-21d5b9",
+          "pins": [
+            "H1.1"
+          ],
+          "nets": []
+        }
+      ]
+    },
+    {
+      "id": "NET-A07.H2-1-fac3b9",
+      "binding": {
+        "object": {
+          "lint_detail": "H2.1 -> unconnected-(H2-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空",
+          "ref": "H2"
+        },
+        "criterion": "声明输入脚标为 No-Connect：H2.1 -> unconnected-(H2-Pad1): 输入脚被标为 No-Connect，需确认内部上下拉或有意悬空"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "H2.1是Mechanical:MountingHole_Pad单焊盘，原图p1明确为MountingHole且NC；没有逻辑输入或片内偏置要求。符号electrical_type=input不能赋予安装孔有源脚义。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "NET-A07.H2-1-fac3b9"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "NET-A07.H2-1-fac3b9",
+          "pins": [
+            "H2.1"
+          ],
+          "nets": []
+        }
+      ]
+    },
+    {
+      "id": "PWR-D02.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1",
+      "binding": {
+        "object": {
+          "ref": "U1",
+          "nodes": [
+            "U1.47"
+          ],
+          "return_nodes": [
+            "U1.10",
+            "U1.16",
+            "U1.19",
+            "U1.20",
+            "U1.23",
+            "U1.24",
+            "U1.3",
+            "U1.32",
+            "U1.38",
+            "U1.45",
+            "U1.48",
+            "U1.49",
+            "U1.6",
+            "U1.7"
+          ],
+          "nets": [
+            "Net-(U1-AVDD1)"
+          ],
+          "return_nets": [
+            "GND"
+          ],
+          "state": "native",
+          "decoupling_group": "DECAP-191ac03515d7bf7dbfbb",
+          "decoupling_inventory_digest": "44919cb9e92a1de67266ff7f4fbb75cab700504d70630aa9088a22ce5280ca39",
+          "net": "Net-(U1-AVDD1)"
+        },
+        "criterion": "按准确器件条款核对本组实际电源脚、直接供电/返回段和串联边界；无直接电容须核适用替代接法，不用普通旁路证明专用滤波组；同网电容不证明布局充分"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "Atmel-42415E pp7–11 Table2-1/Figure3-1以及p75 §6.6：C4/C5/C6分别跨独立片内输出到GND，输出彼此不短接、无外供负载，符合专用补偿连接。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-D02.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "PWR-D02.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD",
+      "binding": {
+        "object": {
+          "ref": "U1",
+          "nodes": [
+            "U1.37"
+          ],
+          "return_nodes": [
+            "U1.10",
+            "U1.16",
+            "U1.19",
+            "U1.20",
+            "U1.23",
+            "U1.24",
+            "U1.3",
+            "U1.32",
+            "U1.38",
+            "U1.45",
+            "U1.48",
+            "U1.49",
+            "U1.6",
+            "U1.7"
+          ],
+          "nets": [
+            "Net-(U1-DVDD)"
+          ],
+          "return_nets": [
+            "GND"
+          ],
+          "state": "native",
+          "decoupling_group": "DECAP-628a077e270c9a7fd1e2",
+          "decoupling_inventory_digest": "44919cb9e92a1de67266ff7f4fbb75cab700504d70630aa9088a22ce5280ca39",
+          "net": "Net-(U1-DVDD)"
+        },
+        "criterion": "按准确器件条款核对本组实际电源脚、直接供电/返回段和串联边界；无直接电容须核适用替代接法，不用普通旁路证明专用滤波组；同网电容不证明布局充分"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "Atmel-42415E pp7–11 Table2-1/Figure3-1以及p75 §6.6：C4/C5/C6分别跨独立片内输出到GND，输出彼此不短接、无外供负载，符合专用补偿连接。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-D02.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "PWR-D02.DECAP-9034B6404C9FDD63F76C.3V3",
+      "binding": {
+        "object": {
+          "ref": "U1",
+          "nodes": [
+            "U1.15",
+            "U1.21",
+            "U1.29",
+            "U1.39",
+            "U1.46"
+          ],
+          "return_nodes": [
+            "U1.10",
+            "U1.16",
+            "U1.19",
+            "U1.20",
+            "U1.23",
+            "U1.24",
+            "U1.3",
+            "U1.32",
+            "U1.38",
+            "U1.45",
+            "U1.48",
+            "U1.49",
+            "U1.6",
+            "U1.7"
+          ],
+          "nets": [
+            "+3V3"
+          ],
+          "return_nets": [
+            "GND"
+          ],
+          "state": "native",
+          "decoupling_group": "DECAP-9034b6404c9fdd63f76c",
+          "decoupling_inventory_digest": "44919cb9e92a1de67266ff7f4fbb75cab700504d70630aa9088a22ce5280ca39",
+          "net": "+3V3"
+        },
+        "criterion": "按准确器件条款核对本组实际电源脚、直接供电/返回段和串联边界；无直接电容须核适用替代接法，不用普通旁路证明专用滤波组；同网电容不证明布局充分"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "Atmel-42415E pp7–11 Table2-1/Figure3-1以及p75 §6.6：EVDD/DEVDD五个供电脚同接+3V3，C2/C11–14接GND，本图满足同电位和并联旁路电气接法；物理距离/回路交PCB。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-D02.DECAP-9034B6404C9FDD63F76C.3V3"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "PWR-D02.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0",
+      "binding": {
+        "object": {
+          "ref": "U1",
+          "nodes": [
+            "U1.14"
+          ],
+          "return_nodes": [
+            "U1.10",
+            "U1.16",
+            "U1.19",
+            "U1.20",
+            "U1.23",
+            "U1.24",
+            "U1.3",
+            "U1.32",
+            "U1.38",
+            "U1.45",
+            "U1.48",
+            "U1.49",
+            "U1.6",
+            "U1.7"
+          ],
+          "nets": [
+            "Net-(U1-AVDD0)"
+          ],
+          "return_nets": [
+            "GND"
+          ],
+          "state": "native",
+          "decoupling_group": "DECAP-ce5540bfb0c92787aa88",
+          "decoupling_inventory_digest": "44919cb9e92a1de67266ff7f4fbb75cab700504d70630aa9088a22ce5280ca39",
+          "net": "Net-(U1-AVDD0)"
+        },
+        "criterion": "按准确器件条款核对本组实际电源脚、直接供电/返回段和串联边界；无直接电容须核适用替代接法，不用普通旁路证明专用滤波组；同网电容不证明布局充分"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "Atmel-42415E pp7–11 Table2-1/Figure3-1以及p75 §6.6：C4/C5/C6分别跨独立片内输出到GND，输出彼此不短接、无外供负载，符合专用补偿连接。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-D02.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "PWR-T01.3V3",
+      "binding": {
+        "object": {
+          "net": "+3V3"
+        },
+        "criterion": "确认电源轨驱动源、负载、域电压、时序与反灌路径"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "供入路径J1.15与J1.16均→+3V3→U1.15/.21/.29/.39/.46、U2.4及所有贴装3V3旁路；返回J1.2/.14/.17/.29→GND。片内AVDD0/AVDD1/DVDD各仅接1uF不与外轨短接。只关闭原图电源树，供电能力/窗口另判。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-T01.3V3"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "PWR-T03.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1",
+      "binding": {
+        "object": {
+          "ref": "U1",
+          "nodes": [
+            "U1.47"
+          ],
+          "return_nodes": [
+            "U1.10",
+            "U1.16",
+            "U1.19",
+            "U1.20",
+            "U1.23",
+            "U1.24",
+            "U1.3",
+            "U1.32",
+            "U1.38",
+            "U1.45",
+            "U1.48",
+            "U1.49",
+            "U1.6",
+            "U1.7"
+          ],
+          "nets": [
+            "Net-(U1-AVDD1)"
+          ],
+          "return_nets": [
+            "GND"
+          ],
+          "state": "native",
+          "decoupling_group": "DECAP-191ac03515d7bf7dbfbb",
+          "decoupling_inventory_digest": "44919cb9e92a1de67266ff7f4fbb75cab700504d70630aa9088a22ce5280ca39",
+          "net": "Net-(U1-AVDD1)"
+        },
+        "criterion": "逐物理脚核对本状态分组、返回节点、直接连接电容和装配；保留零电容/不贴/未知项，不跨串联边界，不判断电气合格"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "U1.47→Net-(U1-AVDD1)→C4.1→GND→U1地脚；全部贴装，无串联隔断。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-T03.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "PWR-T03.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD",
+      "binding": {
+        "object": {
+          "ref": "U1",
+          "nodes": [
+            "U1.37"
+          ],
+          "return_nodes": [
+            "U1.10",
+            "U1.16",
+            "U1.19",
+            "U1.20",
+            "U1.23",
+            "U1.24",
+            "U1.3",
+            "U1.32",
+            "U1.38",
+            "U1.45",
+            "U1.48",
+            "U1.49",
+            "U1.6",
+            "U1.7"
+          ],
+          "nets": [
+            "Net-(U1-DVDD)"
+          ],
+          "return_nets": [
+            "GND"
+          ],
+          "state": "native",
+          "decoupling_group": "DECAP-628a077e270c9a7fd1e2",
+          "decoupling_inventory_digest": "44919cb9e92a1de67266ff7f4fbb75cab700504d70630aa9088a22ce5280ca39",
+          "net": "Net-(U1-DVDD)"
+        },
+        "criterion": "逐物理脚核对本状态分组、返回节点、直接连接电容和装配；保留零电容/不贴/未知项，不跨串联边界，不判断电气合格"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "U1.37→Net-(U1-DVDD)→C6.1→GND→U1地脚；全部贴装，无串联隔断。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-T03.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "PWR-T03.DECAP-9034B6404C9FDD63F76C.3V3",
+      "binding": {
+        "object": {
+          "ref": "U1",
+          "nodes": [
+            "U1.15",
+            "U1.21",
+            "U1.29",
+            "U1.39",
+            "U1.46"
+          ],
+          "return_nodes": [
+            "U1.10",
+            "U1.16",
+            "U1.19",
+            "U1.20",
+            "U1.23",
+            "U1.24",
+            "U1.3",
+            "U1.32",
+            "U1.38",
+            "U1.45",
+            "U1.48",
+            "U1.49",
+            "U1.6",
+            "U1.7"
+          ],
+          "nets": [
+            "+3V3"
+          ],
+          "return_nets": [
+            "GND"
+          ],
+          "state": "native",
+          "decoupling_group": "DECAP-9034b6404c9fdd63f76c",
+          "decoupling_inventory_digest": "44919cb9e92a1de67266ff7f4fbb75cab700504d70630aa9088a22ce5280ca39",
+          "net": "+3V3"
+        },
+        "criterion": "逐物理脚核对本状态分组、返回节点、直接连接电容和装配；保留零电容/不贴/未知项，不跨串联边界，不判断电气合格"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "U1.15→+3V3→C2/C11–C14→GND→U1地脚；全部贴装，无串联隔断。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-T03.DECAP-9034B6404C9FDD63F76C.3V3"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "PWR-T03.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0",
+      "binding": {
+        "object": {
+          "ref": "U1",
+          "nodes": [
+            "U1.14"
+          ],
+          "return_nodes": [
+            "U1.10",
+            "U1.16",
+            "U1.19",
+            "U1.20",
+            "U1.23",
+            "U1.24",
+            "U1.3",
+            "U1.32",
+            "U1.38",
+            "U1.45",
+            "U1.48",
+            "U1.49",
+            "U1.6",
+            "U1.7"
+          ],
+          "nets": [
+            "Net-(U1-AVDD0)"
+          ],
+          "return_nets": [
+            "GND"
+          ],
+          "state": "native",
+          "decoupling_group": "DECAP-ce5540bfb0c92787aa88",
+          "decoupling_inventory_digest": "44919cb9e92a1de67266ff7f4fbb75cab700504d70630aa9088a22ce5280ca39",
+          "net": "Net-(U1-AVDD0)"
+        },
+        "criterion": "逐物理脚核对本状态分组、返回节点、直接连接电容和装配；保留零电容/不贴/未知项，不跨串联边界，不判断电气合格"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "U1.14→Net-(U1-AVDD0)→C5.1→GND→U1地脚；全部贴装，无串联隔断。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "PWR-T03.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "REQ-Q04.HISTORY",
+      "binding": {
+        "object": {
+          "feature": "history"
+        },
+        "criterion": "首审/复审已裁定，历史意见逐条复验并保留撤回/复发"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "首次审查固定提交，无提供的旧审查意见、改版闭环要求或可验证历史基线；不借其他板历史作本板结论。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "REQ-Q04.HISTORY"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "REQ-Q04.HISTORY",
+          "pins": [],
+          "nets": []
+        }
+      ]
+    },
+    {
+      "id": "REQ-Q07.ANALOG",
+      "binding": {
+        "object": {
+          "circuit_type": "ANALOG"
+        },
+        "criterion": "执行模拟前端与监测功能电路：ANA-C01 直流范围与误差、ANA-C02 动态与负载、ANA-C03 基准与输入保护、ANA-T01 检测与监测链、ANA-D01 温度传感器、ANA-C05 运放使用条件、ANA-C06 模拟链误差与噪声预算；电路检查项全部完成后汇总，禁止整类电路一次性 PASS"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "本板模拟RF端由RF-U1功能持有，无独立运放/ADC/通用模拟采样电路；不能把RF收发器内部ADC当板外ANALOG电路。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "REQ-Q07.ANALOG"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "REQ-Q07.ANALOG",
+          "pins": [],
+          "nets": []
+        }
+      ]
+    },
+    {
+      "id": "REQ-Q07.UART",
+      "binding": {
+        "object": {
+          "circuit_type": "UART"
+        },
+        "criterion": "执行UART/RS232功能电路：SIG-D08 串口与现场总线、SIG-T04 接口方向语义、SIG-C07 逻辑电平与驱动匹配、SIG-C13 接口预算与规范模式、SIG-C18 航天：标准接口与命令线；电路检查项全部完成后汇总，禁止整类电路一次性 PASS"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "核p1 U1.25–36为LVDS IQ，U1.41–44为SPI，无UART RX/TX或RS232收发器；TXD/RXD命名属于RF基带IQ，不能按UART套用。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "REQ-Q07.UART"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "REQ-Q07.UART",
+          "pins": [],
+          "nets": []
+        }
+      ]
+    },
+    {
+      "id": "REQ-Q08.BOARD",
+      "binding": {
+        "object": {
+          "board": "BOARD",
+          "circuit_types": [
+            "POWER_CONVERTER",
+            "POWER_PROTECTION",
+            "STARTUP",
+            "I2C",
+            "LEVEL_SHIFT",
+            "CAN",
+            "RS485",
+            "USB",
+            "ETHERNET",
+            "DDR",
+            "STORAGE",
+            "AV",
+            "ISOLATION",
+            "DEBUG",
+            "DC_48V",
+            "AC_MAINS",
+            "INDUSTRIAL_DI",
+            "POE_PD",
+            "VEHICLE_28V",
+            "SHIP_AC"
+          ],
+          "unassigned": [
+            "H1",
+            "H2"
+          ]
+        },
+        "criterion": "网表未检出的功能电路逐个确认不适用并给出依据；候选没有归属的器件和被拒候选的成员逐颗确认去处（写 add 决定，或留在清单上写原因）；未检出特征不等于不适用：POWER_CONVERTER（变换器与稳压器）、POWER_PROTECTION（电源输入保护）、STARTUP（上电、复位与启动）、I2C（I²C）、LEVEL_SHIFT（电平转换与跨电压域互连）、CAN、RS485、USB（USB/Type-C）、ETHERNET（以太网）、DDR、STORAGE（eMMC/SD）、AV（音视频接口）、ISOLATION（隔离）、DEBUG（调试与烧录）、DC_48V（−48 V 直流输入）、AC_MAINS（交流市电输入）、INDUSTRIAL_DI（工业 24 V 数字输入）、POE_PD（PoE 受电端）、VEHICLE_28V（军车 28 V 输入）、SHIP_AC（舰船交流输入）；已声明不适用（features）的：DEBUG、LEVEL_SHIFT、POWER_PROTECTION；候选生成没有归属的器件，逐颗确认属于哪个功能或为何不审：H1、H2"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "全41项中10个原生DNP不参与通路；29个电气器件归RF/CLOCK/IQ，H1/H2明确为无电气功能安装孔。无USB、CAN、I2C、隔离、DC48/AC/工业输入等器件；U1是RF/SPI/LVDS多功能端点。此处只审未归属清单，不关闭SPI遗漏。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "REQ-Q08.BOARD"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "SIG-E02.RF09.RF09-P",
+      "binding": {
+        "object": {
+          "net": "/RF09_P",
+          "state": "native",
+          "nets": [
+            "/RF09_N",
+            "/RF09_P"
+          ],
+          "diff_pair": "RF09",
+          "diff_levels_digest": "1585c6d9f34a4532a61357dd2d1331b95e60045d4f27de7495f1bfeba1b95b84"
+        },
+        "criterion": "仅对实际差分数据链路按两端保证范围核电平：充电识别或未启用差分模式另查实际功能；直流耦合时发送共模与摆幅落在接收端共模/差分输入范围内；交流耦合时核接收端偏置共模、耦合电容与低频截止"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "T1=2450FB15A050 p1:1不平衡、2/5地、3/4平衡、6NC；T2=0896BM15E0025 p1:1不平衡、2/5/6地、3/4平衡。两者为RF Balun，非开关续流线圈。 ['/RF09_N', '/RF09_P']是U1双向RF模拟端口，按p9 §2.2.1的RF负载/匹配要求审；不是LVDS数字链路，不比较数字接收共模或100Ω数字端接。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-E02.RF09.RF09-P"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-E02.RF09.RF09-P",
+          "pins": [],
+          "nets": [
+            "/RF09_N",
+            "/RF09_P"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SIG-E02.RF24.RF24-P",
+      "binding": {
+        "object": {
+          "net": "/RF24_P",
+          "state": "native",
+          "nets": [
+            "/RF24_N",
+            "/RF24_P"
+          ],
+          "diff_pair": "RF24",
+          "diff_levels_digest": "1585c6d9f34a4532a61357dd2d1331b95e60045d4f27de7495f1bfeba1b95b84"
+        },
+        "criterion": "仅对实际差分数据链路按两端保证范围核电平：充电识别或未启用差分模式另查实际功能；直流耦合时发送共模与摆幅落在接收端共模/差分输入范围内；交流耦合时核接收端偏置共模、耦合电容与低频截止"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "T1=2450FB15A050 p1:1不平衡、2/5地、3/4平衡、6NC；T2=0896BM15E0025 p1:1不平衡、2/5/6地、3/4平衡。两者为RF Balun，非开关续流线圈。 ['/RF24_N', '/RF24_P']是U1双向RF模拟端口，按p9 §2.2.1的RF负载/匹配要求审；不是LVDS数字链路，不比较数字接收共模或100Ω数字端接。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-E02.RF24.RF24-P"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-E02.RF24.RF24-P",
+          "pins": [],
+          "nets": [
+            "/RF24_N",
+            "/RF24_P"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SIG-T01.RF09-P",
+      "binding": {
+        "object": {
+          "net_p": "/RF09_P",
+          "net_n": "/RF09_N",
+          "net": "/RF09_P"
+        },
+        "criterion": "核对差分 P/N 两端语义、耦合/端接拓扑和全链路连通"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "U1.8/RFP09→/RF09_P→T2.4；U1.9/RFN09→/RF09_N→T2.3；T2.1经C10到J3中心。Johanson T2 p1定义3/4平衡端，未发现P/N配对断路；不是LVDS电平放行。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T01.RF09-P"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "SIG-T01.RF24-P",
+      "binding": {
+        "object": {
+          "net_p": "/RF24_P",
+          "net_n": "/RF24_N",
+          "net": "/RF24_P"
+        },
+        "criterion": "核对差分 P/N 两端语义、耦合/端接拓扑和全链路连通"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "U1.4/RFP24→C8(1.8pF)→T1.4、U1.5/RFN24→C7(1.8pF)→T1.3；L1=5.6nH跨T1.3/.4；T1.1经C9到J2中心；T1.2/.5接GND、.6NC。仅核RF两支路拓扑，不证明匹配/带宽。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T01.RF24-P"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "SIG-T01.RXCLK-P",
+      "binding": {
+        "object": {
+          "net_p": "/RXCLK_P",
+          "net_n": "/RXCLK_N",
+          "net": "/RXCLK_P"
+        },
+        "criterion": "核对差分 P/N 两端语义、耦合/端接拓扑和全链路连通"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "J1.11→U1.34 RXCLKP；J1.10→U1.33 RXCLKN；原图J1标签与U1物理脚极性一致。只关闭板内拓扑，尚无Cynthion对端脚表，不能证明整机端到端。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T01.RXCLK-P"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "SIG-T01.RXD09-P",
+      "binding": {
+        "object": {
+          "net_p": "/RXD09_P",
+          "net_n": "/RXD09_N",
+          "net": "/RXD09_P"
+        },
+        "criterion": "核对差分 P/N 两端语义、耦合/端接拓扑和全链路连通"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "J1.13→U1.31 RXDP09；J1.12→U1.30 RXDN09；原图J1标签与U1物理脚极性一致。只关闭板内拓扑，尚无Cynthion对端脚表，不能证明整机端到端。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T01.RXD09-P"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "SIG-T01.RXD24-P",
+      "binding": {
+        "object": {
+          "net_p": "/RXD24_P",
+          "net_n": "/RXD24_N",
+          "net": "/RXD24_P"
+        },
+        "criterion": "核对差分 P/N 两端语义、耦合/端接拓扑和全链路连通"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "J1.9→U1.36 RXDP24；J1.8→U1.35 RXDN24；原图J1标签与U1物理脚极性一致。只关闭板内拓扑，尚无Cynthion对端脚表，不能证明整机端到端。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T01.RXD24-P"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "SIG-T01.TXCLK-P",
+      "binding": {
+        "object": {
+          "net_p": "/TXCLK_P",
+          "net_n": "/TXCLK_N",
+          "net": "/TXCLK_P"
+        },
+        "criterion": "核对差分 P/N 两端语义、耦合/端接拓扑和全链路连通"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "J1.18→R10=47Ω→U1.26 TXCLKP；J1.19→R7=47Ω→U1.25 TXCLKN；原图J1标签与U1物理脚极性一致。只关闭板内拓扑，尚无Cynthion对端脚表，不能证明整机端到端。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T01.TXCLK-P"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "SIG-T01.TXD-P",
+      "binding": {
+        "object": {
+          "net_p": "/TXD_P",
+          "net_n": "/TXD_N",
+          "net": "/TXD_P"
+        },
+        "criterion": "核对差分 P/N 两端语义、耦合/端接拓扑和全链路连通"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "J1.20→R16=47Ω→U1.28 TXDP；J1.21→R13=47Ω→U1.27 TXDN；原图J1标签与U1物理脚极性一致。只关闭板内拓扑，尚无Cynthion对端脚表，不能证明整机端到端。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T01.TXD-P"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    },
+    {
+      "id": "SIG-T03.RF09.RF09-P",
+      "binding": {
+        "object": {
+          "net": "/RF09_P",
+          "state": "native",
+          "nets": [
+            "/RF09_N",
+            "/RF09_P"
+          ],
+          "diff_pair": "RF09",
+          "diff_levels_digest": "1585c6d9f34a4532a61357dd2d1331b95e60045d4f27de7495f1bfeba1b95b84"
+        },
+        "criterion": "核端接与偏置网络的位置、阻值与电源域：差分端接、接收端偏置、发送端直流通路，以及未用通道与掉电状态的处置"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "T1=2450FB15A050 p1:1不平衡、2/5地、3/4平衡、6NC；T2=0896BM15E0025 p1:1不平衡、2/5/6地、3/4平衡。两者为RF Balun，非开关续流线圈。 ['/RF09_N', '/RF09_P']是U1双向RF模拟端口，按p9 §2.2.1的RF负载/匹配要求审；不是LVDS数字链路，不比较数字接收共模或100Ω数字端接。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T03.RF09.RF09-P"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T03.RF09.RF09-P",
+          "pins": [],
+          "nets": [
+            "/RF09_N",
+            "/RF09_P"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SIG-T03.RF24.RF24-P",
+      "binding": {
+        "object": {
+          "net": "/RF24_P",
+          "state": "native",
+          "nets": [
+            "/RF24_N",
+            "/RF24_P"
+          ],
+          "diff_pair": "RF24",
+          "diff_levels_digest": "1585c6d9f34a4532a61357dd2d1331b95e60045d4f27de7495f1bfeba1b95b84"
+        },
+        "criterion": "核端接与偏置网络的位置、阻值与电源域：差分端接、接收端偏置、发送端直流通路，以及未用通道与掉电状态的处置"
+      },
+      "applicability": "NOT_APPLICABLE",
+      "review_result": "NA",
+      "rationale": "T1=2450FB15A050 p1:1不平衡、2/5地、3/4平衡、6NC；T2=0896BM15E0025 p1:1不平衡、2/5/6地、3/4平衡。两者为RF Balun，非开关续流线圈。 ['/RF24_N', '/RF24_P']是U1双向RF模拟端口，按p9 §2.2.1的RF负载/匹配要求审；不是LVDS数字链路，不比较数字接收共模或100Ω数字端接。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T03.RF24.RF24-P"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ],
+      "applicability_evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T03.RF24.RF24-P",
+          "pins": [],
+          "nets": [
+            "/RF24_N",
+            "/RF24_P"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SIG-T04.IF-CLOCK-U2-RF-U1",
+      "binding": {
+        "object": {
+          "interface": "IF-CLOCK-U2~RF-U1",
+          "nets": [
+            "Net-(U1-TCXO)",
+            "Net-(U1-XTAL2)"
+          ]
+        },
+        "criterion": "TX/RX、P/N、Host/Device、Source/Sink 按两端官方语义复述，核对对端连接器视图与线缆针序；连通只证明导电路径"
+      },
+      "applicability": "APPLICABLE",
+      "review_result": "PASS",
+      "rationale": "U2.3→Net-(U2-OUT)→R19(0Ω)→Net-(U1-TCXO)→U1.17；U1.18→R2(0Ω)→GND；R1/C3均DNP。Atmel-42415E pp7–11 Table2-1/Figure3-1及p68 §6.4.3要求DC耦合且XTAL2接地。 方向为U2 OUT到U1输入，R2不承载时钟输出；幅度规格不由方向关闭。",
+      "evidence": [
+        {
+          "source": "engineering-review.md",
+          "locator": "SIG-T04.IF-CLOCK-U2-RF-U1"
+        },
+        {
+          "source": "source-lock.json",
+          "locator": "commit/db_sha256"
+        }
+      ]
+    }
+  ],
+  "findings": [],
+  "pending_checks": [
+    {
+      "id": "CLK-D01.CLOCK-U2-RUN.C1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "CLK-D01.CLOCK-U2-RUN.C1：网表对象{\"circuit\": \"CLOCK-U2\", \"circuit_key\": \"CLOCK-U2\", \"ref\": \"C1\", \"refs\": [\"C1\", \"R19\", \"R2\", \"U2\"], \"nets\": [], \"state\": \"run\"}已核；尚无足以关闭本条判据的对端/工况或厂家独立界限，保留人工决定，不据名称判不适用。",
+      "required_inputs": [
+        "datasheet:C1",
+        "datasheet:R19",
+        "datasheet:R2",
+        "datasheet:U2"
+      ],
+      "closing_criterion": "有源时钟输出幅度/电源域、使能态和上电有效时间"
+    },
+    {
+      "id": "DEV-C01.C1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象C1：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.C10",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象C10：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.C11",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象C11：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.C12",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象C12：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.C13",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象C13：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.C14",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象C14：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.C2",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象C2：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.C4",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象C4：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.C5",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象C5：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.C6",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象C6：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.C7",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象C7：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.C8",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象C8：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.C9",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象C9：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.CLOCK-U2",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象CLOCK-U2：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [
+        "datasheets",
+        "requirements"
+      ],
+      "closing_criterion": "受应力的电阻、电容、开关与稳压器逐颗核功耗、连续/脉冲电压、电流及适用温度条件下的额定值；本项核过应力（应力上界对额定）；IC 脚经外接电阻驱动内部开关或检测通路（放电、泄放、驱动、检测脚）时，按外部节点最高电压与外接电阻最小值核脚电流不超手册上限，逐脚补查 DEV-C01.<IC位号>-<脚名> 并由所在的 DEV-C01 项以 split_out 拆出；供电或输入整个窗口确定低于推荐工作范围下限时，与 DEV-C05 同判 FAIL、共用 finding，理由引用 DEV-C05.<位号>；下限是否满足取决于未知压降或参数时，本检查项不因下限判 INSUFFICIENT，归 DEV-C05；连接器/排针/按键触点连续（有效值）电流与电压不超过 commodity-floors 微应力阈值（最低触点额定 × 本级降额值）时判 PASS(B)，信号边沿瞬态电流不计；连接器库名/封装名指向具体原厂系列或料号（如 JST_VH、MKDS、XT30UPB）时按该系列原厂触点额定定界，不超过该额定 × 本级 CONN-I 取值判 PASS(B)，“须采购该原厂系列”归 DEV-D04，不因无 MPN 记 INSUFFICIENT；泛称排针/间距不适用；先按用途和受控采购范围定界：有适用最弱档时，应力上界不超过最弱档 × 本级降额规范取值（等级未定按工程取值 unset_level）可判PASS；超过且仍可选到满足档位时写最低额定约束，不当作已满足；无适用范围不借用最弱档；计划已生成逐颗预判检查项（proposal）的器件按该检查项计算判定，改判只用其封闭理由码；陶瓷电容与功率电感优先按commodity-floors的独立可订购额定/BOM约束分支判断，满足该分支全部适用条件时可判局部PASS，采购字段仍由DEV-D04核对，不以普通最弱档路径重复阻断；降额按项目等级（intent.derating）取降额规范的值、按应力规范判：超额定 FAIL，超降额未超额定是应力风险（basis.derating_rule 点名规则，门禁按等级重算），等级没定时转需求澄清；电位器按实际分压/rheostat接法核活动轨段、滑臂与端点，不能把整轨功率额定用于任意局部轨段；按wca-formulas的适用模型全范围核轨电流、局部功耗及滑臂/脉冲限制，未选实际器件不借候选或通用最弱档放行；实际温升与散热实现转 HANDOFF，不以缺热测试判电气缺陷"
+    },
+    {
+      "id": "DEV-C01.IQ-J1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象IQ-J1：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [
+        "datasheets",
+        "requirements"
+      ],
+      "closing_criterion": "受应力的电阻、电容、开关与稳压器逐颗核功耗、连续/脉冲电压、电流及适用温度条件下的额定值；本项核过应力（应力上界对额定）；IC 脚经外接电阻驱动内部开关或检测通路（放电、泄放、驱动、检测脚）时，按外部节点最高电压与外接电阻最小值核脚电流不超手册上限，逐脚补查 DEV-C01.<IC位号>-<脚名> 并由所在的 DEV-C01 项以 split_out 拆出；供电或输入整个窗口确定低于推荐工作范围下限时，与 DEV-C05 同判 FAIL、共用 finding，理由引用 DEV-C05.<位号>；下限是否满足取决于未知压降或参数时，本检查项不因下限判 INSUFFICIENT，归 DEV-C05；连接器/排针/按键触点连续（有效值）电流与电压不超过 commodity-floors 微应力阈值（最低触点额定 × 本级降额值）时判 PASS(B)，信号边沿瞬态电流不计；连接器库名/封装名指向具体原厂系列或料号（如 JST_VH、MKDS、XT30UPB）时按该系列原厂触点额定定界，不超过该额定 × 本级 CONN-I 取值判 PASS(B)，“须采购该原厂系列”归 DEV-D04，不因无 MPN 记 INSUFFICIENT；泛称排针/间距不适用；先按用途和受控采购范围定界：有适用最弱档时，应力上界不超过最弱档 × 本级降额规范取值（等级未定按工程取值 unset_level）可判PASS；超过且仍可选到满足档位时写最低额定约束，不当作已满足；无适用范围不借用最弱档；计划已生成逐颗预判检查项（proposal）的器件按该检查项计算判定，改判只用其封闭理由码；陶瓷电容与功率电感优先按commodity-floors的独立可订购额定/BOM约束分支判断，满足该分支全部适用条件时可判局部PASS，采购字段仍由DEV-D04核对，不以普通最弱档路径重复阻断；降额按项目等级（intent.derating）取降额规范的值、按应力规范判：超额定 FAIL，超降额未超额定是应力风险（basis.derating_rule 点名规则，门禁按等级重算），等级没定时转需求澄清；电位器按实际分压/rheostat接法核活动轨段、滑臂与端点，不能把整轨功率额定用于任意局部轨段；按wca-formulas的适用模型全范围核轨电流、局部功耗及滑臂/脉冲限制，未选实际器件不借候选或通用最弱档放行；实际温升与散热实现转 HANDOFF，不以缺热测试判电气缺陷"
+    },
+    {
+      "id": "DEV-C01.R10",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象R10：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.R13",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象R13：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.R16",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象R16：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.R19",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象R19：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.R2",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象R2：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.R7",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象R7：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [],
+      "closing_criterion": "按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由"
+    },
+    {
+      "id": "DEV-C01.RF-U1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "对象RF-U1：已按实际DNP与串/并联网络追踪；+3V3只有名义点，RF峰值/对端故障、环境和降额等级未受控，不能用3.3V或1.8V名义点的proposal当全窗应力PASS。普通阻容不因缺独立手册自动阻断；先确定本项实际应力包络。",
+      "required_inputs": [
+        "datasheets",
+        "requirements"
+      ],
+      "closing_criterion": "受应力的电阻、电容、开关与稳压器逐颗核功耗、连续/脉冲电压、电流及适用温度条件下的额定值；本项核过应力（应力上界对额定）；IC 脚经外接电阻驱动内部开关或检测通路（放电、泄放、驱动、检测脚）时，按外部节点最高电压与外接电阻最小值核脚电流不超手册上限，逐脚补查 DEV-C01.<IC位号>-<脚名> 并由所在的 DEV-C01 项以 split_out 拆出；供电或输入整个窗口确定低于推荐工作范围下限时，与 DEV-C05 同判 FAIL、共用 finding，理由引用 DEV-C05.<位号>；下限是否满足取决于未知压降或参数时，本检查项不因下限判 INSUFFICIENT，归 DEV-C05；连接器/排针/按键触点连续（有效值）电流与电压不超过 commodity-floors 微应力阈值（最低触点额定 × 本级降额值）时判 PASS(B)，信号边沿瞬态电流不计；连接器库名/封装名指向具体原厂系列或料号（如 JST_VH、MKDS、XT30UPB）时按该系列原厂触点额定定界，不超过该额定 × 本级 CONN-I 取值判 PASS(B)，“须采购该原厂系列”归 DEV-D04，不因无 MPN 记 INSUFFICIENT；泛称排针/间距不适用；先按用途和受控采购范围定界：有适用最弱档时，应力上界不超过最弱档 × 本级降额规范取值（等级未定按工程取值 unset_level）可判PASS；超过且仍可选到满足档位时写最低额定约束，不当作已满足；无适用范围不借用最弱档；计划已生成逐颗预判检查项（proposal）的器件按该检查项计算判定，改判只用其封闭理由码；陶瓷电容与功率电感优先按commodity-floors的独立可订购额定/BOM约束分支判断，满足该分支全部适用条件时可判局部PASS，采购字段仍由DEV-D04核对，不以普通最弱档路径重复阻断；降额按项目等级（intent.derating）取降额规范的值、按应力规范判：超额定 FAIL，超降额未超额定是应力风险（basis.derating_rule 点名规则，门禁按等级重算），等级没定时转需求澄清；电位器按实际分压/rheostat接法核活动轨段、滑臂与端点，不能把整轨功率额定用于任意局部轨段；按wca-formulas的适用模型全范围核轨电流、局部功耗及滑臂/脉冲限制，未选实际器件不借候选或通用最弱档放行；实际温升与散热实现转 HANDOFF，不以缺热测试判电气缺陷"
+    },
+    {
+      "id": "DEV-C02.CLOCK-U2",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F16",
+      "reason": "CLOCK-U2 电容均为0402无极性MLCC，非电解耐久件；名义1uF/1.8pF可读。需确定各自电源/RF节点的持续/脉冲工作窗及温度，再按最弱档/所选MLCC核有效容量和耐压，不虚构寿命或厂家参数。",
+      "required_inputs": [
+        "datasheets",
+        "requirements"
+      ],
+      "closing_criterion": "按电容实际用途核耐压与容量；仅当该用途的原厂条款或受控需求依赖有效容量/ESR时索取对应边界，不能给所有旁路、BOOT或SS电容统一加联合Ceff/ESR证明；电解、固态与超级电容的寿命按 intent.mission_profile 估算所需耐久等级（厂家寿命公式，没有就 10 °C 翻倍，都标估算），写成 bom_constraint“耐久 ≥ X h @T（估算，热点 ≤ Y °C）”，不开厂家数据缺口；热点温度与纹波自热移交热设计实测后复算"
+    },
+    {
+      "id": "DEV-C02.RF-U1",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F16",
+      "reason": "RF-U1 电容均为0402无极性MLCC，非电解耐久件；名义1uF/1.8pF可读。需确定各自电源/RF节点的持续/脉冲工作窗及温度，再按最弱档/所选MLCC核有效容量和耐压，不虚构寿命或厂家参数。",
+      "required_inputs": [
+        "datasheets",
+        "requirements"
+      ],
+      "closing_criterion": "按电容实际用途核耐压与容量；仅当该用途的原厂条款或受控需求依赖有效容量/ESR时索取对应边界，不能给所有旁路、BOOT或SS电容统一加联合Ceff/ESR证明；电解、固态与超级电容的寿命按 intent.mission_profile 估算所需耐久等级（厂家寿命公式，没有就 10 °C 翻倍，都标估算），写成 bom_constraint“耐久 ≥ X h @T（估算，热点 ≤ Y °C）”，不开厂家数据缺口；热点温度与纹波自热移交热设计实测后复算"
+    },
+    {
+      "id": "DEV-C03.CLOCK-U2",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "CLOCK-U2中R2/R19是0Ω连接，不是精密分压；其时钟负载/瞬态电流仍需U2精确规格。",
+      "required_inputs": [
+        "requirements"
+      ],
+      "closing_criterion": "分压、采样、ZQ 等精度要求由允许误差窗口与器件要求决定，不能默认 1% 即合格；按实际误差传递及适用角点核本项，不用无关热、载流或接口接受任务替代精度判据；这些条件只有真实改变该误差窗口时才成为本项关闭依赖，其余另按适用准则核对"
+    },
+    {
+      "id": "DEV-C03.IQ-J1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "IQ-J1中TX两对47Ω串联电阻相等，接收器内置100Ω；差分摆幅经100/(100+94)=0.515名义传递（忽略源阻抗），不是已证明违例；需驱动源阻抗/实际模式与R公差核预算。",
+      "required_inputs": [
+        "requirements"
+      ],
+      "closing_criterion": "分压、采样、ZQ 等精度要求由允许误差窗口与器件要求决定，不能默认 1% 即合格；按实际误差传递及适用角点核本项，不用无关热、载流或接口接受任务替代精度判据；这些条件只有真实改变该误差窗口时才成为本项关闭依赖，其余另按适用准则核对"
+    },
+    {
+      "id": "DEV-C04.J1",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "J1：J1.15/.16供+3V3；J1.2/.14/.17/.29返回；同版Cynthion对端针序、源限流/载流窗未提供，物料10132797原厂图403。",
+      "required_inputs": [
+        "datasheets",
+        "requirements"
+      ],
+      "closing_criterion": "按实际并针降额、接触电阻/均流、线缆与故障电流核连接器载流，不能按单针额定乘针数放行；额定取实际采购系列的资料，只有间距或泛称时不借用他厂系列额定或“通常”值放行，按范围未定处理；PCB 走线载流另交 HANDOFF"
+    },
+    {
+      "id": "DEV-C04.J2",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "J2：SMA中心接RF、外壳接GND，选用CONSMA003.062；准确连接器原厂图403，外部天线/偏置器最大功率/DC与误接工况未提供。",
+      "required_inputs": [
+        "datasheets",
+        "requirements"
+      ],
+      "closing_criterion": "按实际并针降额、接触电阻/均流、线缆与故障电流核连接器载流，不能按单针额定乘针数放行；额定取实际采购系列的资料，只有间距或泛称时不借用他厂系列额定或“通常”值放行，按范围未定处理；PCB 走线载流另交 HANDOFF"
+    },
+    {
+      "id": "DEV-C04.J3",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "J3：SMA中心接RF、外壳接GND，选用CONSMA003.062；准确连接器原厂图403，外部天线/偏置器最大功率/DC与误接工况未提供。",
+      "required_inputs": [
+        "datasheets",
+        "requirements"
+      ],
+      "closing_criterion": "按实际并针降额、接触电阻/均流、线缆与故障电流核连接器载流，不能按单针额定乘针数放行；额定取实际采购系列的资料，只有间距或泛称时不借用他厂系列额定或“通常”值放行，按范围未定处理；PCB 走线载流另交 HANDOFF"
+    },
+    {
+      "id": "DEV-C05.T1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "DEV-C05对象T1：U1 p187允许VDD1.8–3.6V、−40..85°C；p203–204各状态电流多为典型，双频同时工作和U2电流/上游能力未知。+3V3仅名义3.3V，不能据此保证供电/温度/噪声或启动全过程。",
+      "required_inputs": [
+        "requirements"
+      ],
+      "closing_criterion": "逐颗核供电电压、输入电压、负载、频率及温度等级/参数保证条件覆盖声明工况；区分环境温度、壳温与结温，形成允许温度约束，实际结温实现转 HANDOFF；借用相似器件保证范围或典型±typical_band（G02 工程取值）估算可用于必需功能和性能判据（含P1，P1时整个范围内结论不变，并把样机实测记为必需移交），不能据此放行损坏边界、过热或保护保证；本器件或受控身份全分支均适用的保证边界仍可按实际判据核对，不属于借相似器件估算；供电/输入低于推荐范围下限在本项判定（整个窗口确定欠压时 DEV-C01 同判 FAIL 并共用 finding）；绝对最大额定只作损坏边界，不当作工作范围"
+    },
+    {
+      "id": "DEV-C05.T2",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "DEV-C05对象T2：U1 p187允许VDD1.8–3.6V、−40..85°C；p203–204各状态电流多为典型，双频同时工作和U2电流/上游能力未知。+3V3仅名义3.3V，不能据此保证供电/温度/噪声或启动全过程。",
+      "required_inputs": [
+        "requirements"
+      ],
+      "closing_criterion": "逐颗核供电电压、输入电压、负载、频率及温度等级/参数保证条件覆盖声明工况；区分环境温度、壳温与结温，形成允许温度约束，实际结温实现转 HANDOFF；借用相似器件保证范围或典型±typical_band（G02 工程取值）估算可用于必需功能和性能判据（含P1，P1时整个范围内结论不变，并把样机实测记为必需移交），不能据此放行损坏边界、过热或保护保证；本器件或受控身份全分支均适用的保证边界仍可按实际判据核对，不属于借相似器件估算；供电/输入低于推荐范围下限在本项判定（整个窗口确定欠压时 DEV-C01 同判 FAIL 并共用 finding）；绝对最大额定只作损坏边界，不当作工作范围"
+    },
+    {
+      "id": "DEV-C05.U1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "DEV-C05对象U1：U1 p187允许VDD1.8–3.6V、−40..85°C；p203–204各状态电流多为典型，双频同时工作和U2电流/上游能力未知。+3V3仅名义3.3V，不能据此保证供电/温度/噪声或启动全过程。",
+      "required_inputs": [
+        "requirements"
+      ],
+      "closing_criterion": "逐颗核供电电压、输入电压、负载、频率及温度等级/参数保证条件覆盖声明工况；区分环境温度、壳温与结温，形成允许温度约束，实际结温实现转 HANDOFF；借用相似器件保证范围或典型±typical_band（G02 工程取值）估算可用于必需功能和性能判据（含P1，P1时整个范围内结论不变，并把样机实测记为必需移交），不能据此放行损坏边界、过热或保护保证；本器件或受控身份全分支均适用的保证边界仍可按实际判据核对，不属于借相似器件估算；供电/输入低于推荐范围下限在本项判定（整个窗口确定欠压时 DEV-C01 同判 FAIL 并共用 finding）；绝对最大额定只作损坏边界，不当作工作范围"
+    },
+    {
+      "id": "DEV-C05.U2",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "DEV-C05对象U2：U1 p187允许VDD1.8–3.6V、−40..85°C；p203–204各状态电流多为典型，双频同时工作和U2电流/上游能力未知。+3V3仅名义3.3V，不能据此保证供电/温度/噪声或启动全过程。",
+      "required_inputs": [
+        "datasheet:TCXO",
+        "requirements"
+      ],
+      "closing_criterion": "逐颗核供电电压、输入电压、负载、频率及温度等级/参数保证条件覆盖声明工况；区分环境温度、壳温与结温，形成允许温度约束，实际结温实现转 HANDOFF；借用相似器件保证范围或典型±typical_band（G02 工程取值）估算可用于必需功能和性能判据（含P1，P1时整个范围内结论不变，并把样机实测记为必需移交），不能据此放行损坏边界、过热或保护保证；本器件或受控身份全分支均适用的保证边界仍可按实际判据核对，不属于借相似器件估算；供电/输入低于推荐范围下限在本项判定（整个窗口确定欠压时 DEV-C01 同判 FAIL 并共用 finding）；绝对最大额定只作损坏边界，不当作工作范围"
+    },
+    {
+      "id": "DEV-D01.U2",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F13",
+      "reason": "U2准确物料/脚义尚需原厂资料：原图part=6TG2600001、symbol=Oscillator:FT5HN；网表连接可读但不能把库符号当独立厂商脚表。",
+      "required_inputs": [
+        "datasheet:TCXO"
+      ],
+      "closing_criterion": "核对实例 MPN/BOM、符号引脚、封装字段、参数档位和替代兼容性；符号缓存来源名不独自证明实际采购身份冲突"
+    },
+    {
+      "id": "DEV-D02.D1",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "D1准确物料/脚义尚需原厂资料：原图part=ESDSLC5V0LBS、symbol=Device:D_TVS；网表连接可读但不能把库符号当独立厂商脚表。",
+      "required_inputs": [
+        "intent.device_kinds.D1: datasheet page + verbatim quote stating the device type (audit UNDECLARED)",
+        "intent.devices.D1: official full pinout + exact MPN/package"
+      ],
+      "closing_criterion": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+    },
+    {
+      "id": "DEV-D02.D2",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "D2准确物料/脚义尚需原厂资料：原图part=ESDSLC5V0LBS、symbol=Device:D_TVS；网表连接可读但不能把库符号当独立厂商脚表。",
+      "required_inputs": [
+        "intent.device_kinds.D2: datasheet page + verbatim quote stating the device type (audit UNDECLARED)",
+        "intent.devices.D2: official full pinout + exact MPN/package"
+      ],
+      "closing_criterion": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+    },
+    {
+      "id": "DEV-D02.J1",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "J1准确物料/脚义尚需原厂资料：原图part=10132797-033100LF、symbol=Connector_Generic_MountingPin:Conn_02x15_Counter_Clockwise_MountingPin；网表连接可读但不能把库符号当独立厂商脚表。",
+      "required_inputs": [
+        "intent.devices.J1: official full pinout + exact MPN/package"
+      ],
+      "closing_criterion": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+    },
+    {
+      "id": "DEV-D02.J2",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "J2准确物料/脚义尚需原厂资料：原图part=CONSMA003.062、symbol=Connector:Conn_Coaxial；网表连接可读但不能把库符号当独立厂商脚表。",
+      "required_inputs": [
+        "intent.devices.J2: official full pinout + exact MPN/package"
+      ],
+      "closing_criterion": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+    },
+    {
+      "id": "DEV-D02.J3",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "J3准确物料/脚义尚需原厂资料：原图part=CONSMA003.062、symbol=Connector:Conn_Coaxial；网表连接可读但不能把库符号当独立厂商脚表。",
+      "required_inputs": [
+        "intent.devices.J3: official full pinout + exact MPN/package"
+      ],
+      "closing_criterion": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+    },
+    {
+      "id": "DEV-D02.U2",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F13",
+      "reason": "U2准确物料/脚义尚需原厂资料：原图part=6TG2600001、symbol=Oscillator:FT5HN；网表连接可读但不能把库符号当独立厂商脚表。",
+      "required_inputs": [
+        "intent.devices.U2: official full pinout + exact MPN/package"
+      ],
+      "closing_criterion": "官方物理脚与符号声明/网表实有脚双向差集，含未连/EP/隐藏电源；已取得准确完整针表并核实对应映射时，不以无关载流额定或尚未选定外部设备阻断该差集；实际缺针图或映射仍留缺口，额定、端点兼容及其他输入资格分别按适用判据核对；计划按两端子快速通道给出空差集（pin_difference 写明依据）时直接判 PASS，不再索取官方针图"
+    },
+    {
+      "id": "DEV-D03.J1",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "J1：J1.15/.16供+3V3；J1.2/.14/.17/.29返回；同版Cynthion对端针序、源限流/载流窗未提供，物料10132797原厂图403。",
+      "required_inputs": [
+        "requirements"
+      ],
+      "closing_criterion": "pinout 与对端定义逐针核对（板内自洽不等于对端正确）；防误插与 pin1 标识按平台规则"
+    },
+    {
+      "id": "DEV-D03.J2",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "J2：SMA中心接RF、外壳接GND，选用CONSMA003.062；准确连接器原厂图403，外部天线/偏置器最大功率/DC与误接工况未提供。",
+      "required_inputs": [
+        "requirements"
+      ],
+      "closing_criterion": "pinout 与对端定义逐针核对（板内自洽不等于对端正确）；防误插与 pin1 标识按平台规则"
+    },
+    {
+      "id": "DEV-D03.J3",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "J3：SMA中心接RF、外壳接GND，选用CONSMA003.062；准确连接器原厂图403，外部天线/偏置器最大功率/DC与误接工况未提供。",
+      "required_inputs": [
+        "requirements"
+      ],
+      "closing_criterion": "pinout 与对端定义逐针核对（板内自洽不等于对端正确）；防误插与 pin1 标识按平台规则"
+    },
+    {
+      "id": "DEV-D04.BOARD",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F12",
+      "reason": "原图有真实PART，未发现已证身份冲突；但U2 TCXO与FT5HN符号的精确映射、T1/T2复用footprint及各RF通用件的指定性能尚未完全独立核实。KIND_CONFLICT T1→connector属手册文字识别误触发，不能据此报错料。",
+      "required_inputs": [],
+      "closing_criterion": "实际实例采购字段、BOM 参数与原厂 MPN 订货组合一致，包含关键无源件；已证实的物料/参数/资料冲突判本项FAIL，典型值或测试条件不得改称额定保证；需选料的最低额定汇总为BOM约束，并按误选的最严重可信后果定级；候选身份不得冒充已核准；沿用库按实际 MPN/封装/符号版本验证兼容映射，缓存来源名不单独视为采购冲突；BOM 同一行自相矛盾的器件（容差写了两个值、类别与器件类型不符）计划逐颗另出 DEV-D04.BOM.<位号>，全板项只答其余器件"
+    },
+    {
+      "id": "DEV-D05.U2",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F13",
+      "reason": "U2准确物料/脚义尚需原厂资料：原图part=6TG2600001、symbol=Oscillator:FT5HN；网表连接可读但不能把库符号当独立厂商脚表。",
+      "required_inputs": [
+        "datasheet:TCXO"
+      ],
+      "closing_criterion": "按官方脚表逐脚核未用与特殊引脚：输入不悬空；NC/DNU 按手册处理，不随意接网；未用电源脚按平台规范悬空、接地或关闭；未用运放/比较器通道输入钳定、输出不短接到轨；连接器未用针按平台规则；未用不等于可以悬空"
+    },
+    {
+      "id": "DEV-E01.J1",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "J1准确物料/脚义尚需原厂资料：原图part=10132797-033100LF、symbol=Connector_Generic_MountingPin:Conn_02x15_Counter_Clockwise_MountingPin；网表连接可读但不能把库符号当独立厂商脚表。",
+      "required_inputs": [
+        "connector drawing/opposite-side pinout"
+      ],
+      "closing_criterion": "逐脚核对连接器符号与官方/对端 pinout；多排排针/跳线座的配对与档位按封装焊盘坐标或符号图形读取，不按编号习惯推测"
+    },
+    {
+      "id": "DEV-E01.J2",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "J2符号1中心/2壳与原图SMA角色一致，但CONSMA003.062原厂图下载403，尚不能独立确认精确料号的物理引脚/封装映射。",
+      "required_inputs": [
+        "connector drawing/opposite-side pinout"
+      ],
+      "closing_criterion": "逐脚核对连接器符号与官方/对端 pinout；多排排针/跳线座的配对与档位按封装焊盘坐标或符号图形读取，不按编号习惯推测"
+    },
+    {
+      "id": "DEV-E01.J3",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F14",
+      "reason": "J3符号1中心/2壳与原图SMA角色一致，但CONSMA003.062原厂图下载403，尚不能独立确认精确料号的物理引脚/封装映射。",
+      "required_inputs": [
+        "connector drawing/opposite-side pinout"
+      ],
+      "closing_criterion": "逐脚核对连接器符号与官方/对端 pinout；多排排针/跳线座的配对与档位按封装焊盘坐标或符号图形读取，不按编号习惯推测"
+    },
+    {
+      "id": "DEV-Q01.DATASHEETS",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F13",
+      "reason": "当前审计required=4个物料身份，U1/T1/T2已绑定原厂PDF，D_TVS仍缺本地文件；更关键的是U2因Crystal封装被分类为crystal而未入必需手册清单，6TG2600001数据仍需补。",
+      "required_inputs": [],
+      "closing_criterion": "全部关键器件适用章节/errata及官方物理脚双向差集已审"
+    },
+    {
+      "id": "DOC-D02.BOARD",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "J1各SPI/IQ/RSTN及SMA可作电气观察点，板上无独立TP；缺测试/夹具策略，无法判应增加哪些测试节点，不能按“没有TP位号”直接报缺陷。",
+      "required_inputs": [
+        "requirements"
+      ],
+      "closing_criterion": "关键电源轨、strap 点与调试信号按需要电气预留测试节点；可触达性、邻近地与夹具另交 HANDOFF"
+    },
+    {
+      "id": "PRO-D03.J1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "J1：D1跨/RF24-GND、D2跨/RF09-GND，经C9/C10和Balun连接U1。原图手册链接404；官网可检索Rev1.1 PDF预览（未成功本地下载），未锁定系统RF/DC偏置及ESD波形/源阻抗、匹配网络对残压的传递。不能拿5V VRWM或14V典型TLP钳位直接证明U1±模拟脚安全；需按实际事件比较。",
+      "required_inputs": [],
+      "closing_criterion": "对外连接器逐针考虑防护，ESD 器件挂在活线上，泄放路径接到对应的地；钳位器件的工作与钳位电压对被保护脚的数值核算归 PRO-E02；板内互连器件可按依据判不适用"
+    },
+    {
+      "id": "PRO-D03.J2",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "J2：D1跨/RF24-GND、D2跨/RF09-GND，经C9/C10和Balun连接U1。原图手册链接404；官网可检索Rev1.1 PDF预览（未成功本地下载），未锁定系统RF/DC偏置及ESD波形/源阻抗、匹配网络对残压的传递。不能拿5V VRWM或14V典型TLP钳位直接证明U1±模拟脚安全；需按实际事件比较。",
+      "required_inputs": [],
+      "closing_criterion": "对外连接器逐针考虑防护，ESD 器件挂在活线上，泄放路径接到对应的地；钳位器件的工作与钳位电压对被保护脚的数值核算归 PRO-E02；板内互连器件可按依据判不适用"
+    },
+    {
+      "id": "PRO-D03.J3",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "J3：D1跨/RF24-GND、D2跨/RF09-GND，经C9/C10和Balun连接U1。原图手册链接404；官网可检索Rev1.1 PDF预览（未成功本地下载），未锁定系统RF/DC偏置及ESD波形/源阻抗、匹配网络对残压的传递。不能拿5V VRWM或14V典型TLP钳位直接证明U1±模拟脚安全；需按实际事件比较。",
+      "required_inputs": [],
+      "closing_criterion": "对外连接器逐针考虑防护，ESD 器件挂在活线上，泄放路径接到对应的地；钳位器件的工作与钳位电压对被保护脚的数值核算归 PRO-E02；板内互连器件可按依据判不适用"
+    },
+    {
+      "id": "PRO-D04.J1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "J1：D1跨/RF24-GND、D2跨/RF09-GND，经C9/C10和Balun连接U1。原图手册链接404；官网可检索Rev1.1 PDF预览（未成功本地下载），未锁定系统RF/DC偏置及ESD波形/源阻抗、匹配网络对残压的传递。不能拿5V VRWM或14V典型TLP钳位直接证明U1±模拟脚安全；需按实际事件比较。",
+      "required_inputs": [],
+      "closing_criterion": "逐对外接口核：未供电、热插拔、误接等非正常行为有定义；接口承受规定的故障（短路到电源或地、过压）不损坏；本板故障不向外发射超出规定的电压电流"
+    },
+    {
+      "id": "PRO-D04.J2",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "J2：D1跨/RF24-GND、D2跨/RF09-GND，经C9/C10和Balun连接U1。原图手册链接404；官网可检索Rev1.1 PDF预览（未成功本地下载），未锁定系统RF/DC偏置及ESD波形/源阻抗、匹配网络对残压的传递。不能拿5V VRWM或14V典型TLP钳位直接证明U1±模拟脚安全；需按实际事件比较。",
+      "required_inputs": [],
+      "closing_criterion": "逐对外接口核：未供电、热插拔、误接等非正常行为有定义；接口承受规定的故障（短路到电源或地、过压）不损坏；本板故障不向外发射超出规定的电压电流"
+    },
+    {
+      "id": "PRO-D04.J3",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "J3：D1跨/RF24-GND、D2跨/RF09-GND，经C9/C10和Balun连接U1。原图手册链接404；官网可检索Rev1.1 PDF预览（未成功本地下载），未锁定系统RF/DC偏置及ESD波形/源阻抗、匹配网络对残压的传递。不能拿5V VRWM或14V典型TLP钳位直接证明U1±模拟脚安全；需按实际事件比较。",
+      "required_inputs": [],
+      "closing_criterion": "逐对外接口核：未供电、热插拔、误接等非正常行为有定义；接口承受规定的故障（短路到电源或地、过压）不损坏；本板故障不向外发射超出规定的电压电流"
+    },
+    {
+      "id": "PRO-D05.BOARD",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "无受控FMEA范围/关键功能清单；已识别J1误接/掉电注入、D1/D2开短和U2失钟到RF功能的路径，但“实验SDR”推断不能替代损坏/可接受后果和恢复时间要求。",
+      "required_inputs": [],
+      "closing_criterion": "按网表核故障向接口和相邻电路的传播路径；同一检测手段覆盖多种模式时能区分或动作一致；检测加恢复时间短于不可逆后果时间；潜伏故障和共因失效已登记；软件参与的列软件响应；限流件、通路开关和钳位器件失效的后果已判定"
+    },
+    {
+      "id": "PRO-D06.BOARD",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "无受控FMEA范围/关键功能清单；已识别J1误接/掉电注入、D1/D2开短和U2失钟到RF功能的路径，但“实验SDR”推断不能替代损坏/可接受后果和恢复时间要求。",
+      "required_inputs": [],
+      "closing_criterion": "单点失效的关键项进入清单并有措施或接受理由；关键功能恢复不依赖切断外部供电；关键功能的保护不与其共用器件、基准或辅助电源"
+    },
+    {
+      "id": "PRO-E02.D1-02c212",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F04",
+      "reason": "D1：D1跨/RF24-GND、D2跨/RF09-GND，经C9/C10和Balun连接U1。原图手册链接404；官网可检索Rev1.1 PDF预览（未成功本地下载），未锁定系统RF/DC偏置及ESD波形/源阻抗、匹配网络对残压的传递。不能拿5V VRWM或14V典型TLP钳位直接证明U1±模拟脚安全；需按实际事件比较。",
+      "required_inputs": [],
+      "closing_criterion": "防护器件工作/击穿/钳位窗口待复核：D1 (ESDSLC5V0LBS D_TVS Device:D_TVS) 跨 /RF24；轨名提示=无，型号提示=无。同网没有 IC 脚；同网其他器件 C9 各按自身耐压比较；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 J2：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。"
+    },
+    {
+      "id": "PRO-E02.D2-235b1c",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F05",
+      "reason": "D2：D1跨/RF24-GND、D2跨/RF09-GND，经C9/C10和Balun连接U1。原图手册链接404；官网可检索Rev1.1 PDF预览（未成功本地下载），未锁定系统RF/DC偏置及ESD波形/源阻抗、匹配网络对残压的传递。不能拿5V VRWM或14V典型TLP钳位直接证明U1±模拟脚安全；需按实际事件比较。",
+      "required_inputs": [],
+      "closing_criterion": "防护器件工作/击穿/钳位窗口待复核：D2 (ESDSLC5V0LBS D_TVS Device:D_TVS) 跨 /RF09；轨名提示=无，型号提示=无。同网没有 IC 脚；同网其他器件 C10 各按自身耐压比较；VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；该网接连接器 J3：对外端口按需求的浪涌或 ESD 波形取钳位电流（板内互连按能到达的瞬态）；该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。"
+    },
+    {
+      "id": "PWR-C01.3V3",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "PWR-C01对象+3V3：U1 p187允许VDD1.8–3.6V、−40..85°C；p203–204各状态电流多为典型，双频同时工作和U2电流/上游能力未知。+3V3仅名义3.3V，不能据此保证供电/温度/噪声或启动全过程。",
+      "required_inputs": [
+        "power_rails.+3V3.available_a_min",
+        "power_rails.+3V3.load_a.min/max",
+        "power_rails.+3V3.refs",
+        "power_rails.+3V3.state"
+      ],
+      "closing_criterion": "按最大负载、电压范围与器件能力验证功率预算和裕量；负载手册按工作模式列电流时取所列最重模式的最大值（只有典型值取典型×1.3）定界，需求声明超出所列模式的负载才另算，不向设计方索取逐模式或最高时钟预算；最坏峰值直接与手册保证额定比较，不另加余量（g03_budget_margin）；航天项目另覆盖全部任务阶段并留不少于 5% 的系统余量"
+    },
+    {
+      "id": "PWR-C09.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F16",
+      "reason": "U1 C4/C5/C6各名义1uF；p188 Table10-4允许100nF–10000nF，名义值在窗内（下界裕量900nF、上界9000nF），但实际温度/偏压下Ceff与稳定性要按本料号和工作窗核，不把名义裕量当保证。",
+      "required_inputs": [
+        "state-specific engineering evidence: capacitance"
+      ],
+      "closing_criterion": "按本状态器件条款分别核对直接供电/返回段的数量、容量组合及有效容量要求；串联边界另一侧电容不计本段；替代接法需适用依据，标称总量不代替保证容量"
+    },
+    {
+      "id": "PWR-C09.DECAP-1F14371D2C473775C9EB.3V3",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F16",
+      "reason": "U1外供电旁路C2+C11–14名义5uF，U2处C1=1uF，同+3V3网合计6uF；U1 p11只给每脚Cdec接法，未给外供电组强制总容量。缺源阻抗/脉冲负载与U2手册，不能将同网总和当动态裕量。",
+      "required_inputs": [
+        "confirm-group-and-return:candidate:U2:+3V3",
+        "datasheet-requirement:capacitance",
+        "official-full-pinout:U2",
+        "state-specific engineering evidence: capacitance"
+      ],
+      "closing_criterion": "按本状态器件条款分别核对直接供电/返回段的数量、容量组合及有效容量要求；串联边界另一侧电容不计本段；替代接法需适用依据，标称总量不代替保证容量"
+    },
+    {
+      "id": "PWR-C09.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F16",
+      "reason": "U1 C4/C5/C6各名义1uF；p188 Table10-4允许100nF–10000nF，名义值在窗内（下界裕量900nF、上界9000nF），但实际温度/偏压下Ceff与稳定性要按本料号和工作窗核，不把名义裕量当保证。",
+      "required_inputs": [
+        "state-specific engineering evidence: capacitance"
+      ],
+      "closing_criterion": "按本状态器件条款分别核对直接供电/返回段的数量、容量组合及有效容量要求；串联边界另一侧电容不计本段；替代接法需适用依据，标称总量不代替保证容量"
+    },
+    {
+      "id": "PWR-C09.DECAP-9034B6404C9FDD63F76C.3V3",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F16",
+      "reason": "U1外供电旁路C2+C11–14名义5uF，U2处C1=1uF，同+3V3网合计6uF；U1 p11只给每脚Cdec接法，未给外供电组强制总容量。缺源阻抗/脉冲负载与U2手册，不能将同网总和当动态裕量。",
+      "required_inputs": [
+        "state-specific engineering evidence: capacitance"
+      ],
+      "closing_criterion": "按本状态器件条款分别核对直接供电/返回段的数量、容量组合及有效容量要求；串联边界另一侧电容不计本段；替代接法需适用依据，标称总量不代替保证容量"
+    },
+    {
+      "id": "PWR-C09.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F16",
+      "reason": "U1 C4/C5/C6各名义1uF；p188 Table10-4允许100nF–10000nF，名义值在窗内（下界裕量900nF、上界9000nF），但实际温度/偏压下Ceff与稳定性要按本料号和工作窗核，不把名义裕量当保证。",
+      "required_inputs": [
+        "state-specific engineering evidence: capacitance"
+      ],
+      "closing_criterion": "按本状态器件条款分别核对直接供电/返回段的数量、容量组合及有效容量要求；串联边界另一侧电容不计本段；替代接法需适用依据，标称总量不代替保证容量"
+    },
+    {
+      "id": "PWR-C10.DECAP-191AC03515D7BF7DBFBB.NET-U1-AVDD1",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F16",
+      "reason": "U1 电容均为0402无极性MLCC，非电解耐久件；名义1uF/1.8pF可读。需确定Net-(U1-AVDD1)的持续/脉冲工作窗及温度，再按最弱档/所选MLCC核有效容量和耐压，不虚构寿命或厂家参数。",
+      "required_inputs": [
+        "state-specific engineering evidence: rating",
+        "capacitor-qualification:C4"
+      ],
+      "closing_criterion": "按受控电容规格与工况核耐压/降额及适用 ESR；依赖具体型号特性时核实际料号，不从封装或轨名猜参数；计划带预判（proposal）时按预判判定，改判只用其封闭理由码；ESR 只在器件条款或稳定性判据要求时核"
+    },
+    {
+      "id": "PWR-C10.DECAP-1F14371D2C473775C9EB.3V3",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F16",
+      "reason": "U2 电容均为0402无极性MLCC，非电解耐久件；名义1uF/1.8pF可读。需确定+3V3的持续/脉冲工作窗及温度，再按最弱档/所选MLCC核有效容量和耐压，不虚构寿命或厂家参数。",
+      "required_inputs": [
+        "confirm-group-and-return:candidate:U2:+3V3",
+        "official-full-pinout:U2",
+        "state-specific engineering evidence: rating",
+        "capacitor-qualification:C1",
+        "capacitor-qualification:C11",
+        "capacitor-qualification:C12",
+        "capacitor-qualification:C13",
+        "capacitor-qualification:C14",
+        "capacitor-qualification:C2"
+      ],
+      "closing_criterion": "按受控电容规格与工况核耐压/降额及适用 ESR；依赖具体型号特性时核实际料号，不从封装或轨名猜参数；计划带预判（proposal）时按预判判定，改判只用其封闭理由码；ESR 只在器件条款或稳定性判据要求时核"
+    },
+    {
+      "id": "PWR-C10.DECAP-628A077E270C9A7FD1E2.NET-U1-DVDD",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F16",
+      "reason": "U1 电容均为0402无极性MLCC，非电解耐久件；名义1uF/1.8pF可读。需确定Net-(U1-DVDD)的持续/脉冲工作窗及温度，再按最弱档/所选MLCC核有效容量和耐压，不虚构寿命或厂家参数。",
+      "required_inputs": [
+        "state-specific engineering evidence: rating",
+        "capacitor-qualification:C6"
+      ],
+      "closing_criterion": "按受控电容规格与工况核耐压/降额及适用 ESR；依赖具体型号特性时核实际料号，不从封装或轨名猜参数；计划带预判（proposal）时按预判判定，改判只用其封闭理由码；ESR 只在器件条款或稳定性判据要求时核"
+    },
+    {
+      "id": "PWR-C10.DECAP-9034B6404C9FDD63F76C.3V3",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F16",
+      "reason": "U1 电容均为0402无极性MLCC，非电解耐久件；名义1uF/1.8pF可读。需确定+3V3的持续/脉冲工作窗及温度，再按最弱档/所选MLCC核有效容量和耐压，不虚构寿命或厂家参数。",
+      "required_inputs": [
+        "state-specific engineering evidence: rating",
+        "capacitor-qualification:C1",
+        "capacitor-qualification:C11",
+        "capacitor-qualification:C12",
+        "capacitor-qualification:C13",
+        "capacitor-qualification:C14",
+        "capacitor-qualification:C2"
+      ],
+      "closing_criterion": "按受控电容规格与工况核耐压/降额及适用 ESR；依赖具体型号特性时核实际料号，不从封装或轨名猜参数；计划带预判（proposal）时按预判判定，改判只用其封闭理由码；ESR 只在器件条款或稳定性判据要求时核"
+    },
+    {
+      "id": "PWR-C10.DECAP-CE5540BFB0C92787AA88.NET-U1-AVDD0",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F16",
+      "reason": "U1 电容均为0402无极性MLCC，非电解耐久件；名义1uF/1.8pF可读。需确定Net-(U1-AVDD0)的持续/脉冲工作窗及温度，再按最弱档/所选MLCC核有效容量和耐压，不虚构寿命或厂家参数。",
+      "required_inputs": [
+        "state-specific engineering evidence: rating",
+        "capacitor-qualification:C5"
+      ],
+      "closing_criterion": "按受控电容规格与工况核耐压/降额及适用 ESR；依赖具体型号特性时核实际料号，不从封装或轨名猜参数；计划带预判（proposal）时按预判判定，改判只用其封闭理由码；ESR 只在器件条款或稳定性判据要求时核"
+    },
+    {
+      "id": "PWR-C14.3V3",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "PWR-C14对象+3V3：U1 p187允许VDD1.8–3.6V、−40..85°C；p203–204各状态电流多为典型，双频同时工作和U2电流/上游能力未知。+3V3仅名义3.3V，不能据此保证供电/温度/噪声或启动全过程。",
+      "required_inputs": [
+        "datasheet:U2",
+        "rail-source:RAIL-+3V3"
+      ],
+      "closing_criterion": "逐供电接口生成：轨的负载里有敏感功能电路（ANALOG、CLOCK、RF）时每条轨一项，不随变换器生成；按敏感负载（PLL、ADC、RF、基准）的电源噪声/PSRR 要求核纹波与噪声预算，含开关频率、后级 LDO/滤波与去耦；实测另交 HANDOFF"
+    },
+    {
+      "id": "PWR-C19.BOARD",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "PWR-C19对象全板：U1 p187允许VDD1.8–3.6V、−40..85°C；p203–204各状态电流多为典型，双频同时工作和U2电流/上游能力未知。+3V3仅名义3.3V，不能据此保证供电/温度/噪声或启动全过程。",
+      "required_inputs": [],
+      "closing_criterion": "按最低输入电压、最大功耗与最低效率求每个对外电源输入的输入电流，不超过接口限值（如 −48 V 在 −40.5 V 下不大于 1.5 Im、USB 协商电流、PoE 分级功率）"
+    },
+    {
+      "id": "PWR-D01.DECOUPLING-INVENTORY",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F13",
+      "reason": "U1已按官方全49脚分为外部+3V3与三个独立片内输出组；U2尚无6TG2600001准确脚表，符号FT5HN的GND/NC不能替代原厂依据。T1/T2不是需去耦有源IC。",
+      "required_inputs": [
+        "unverified-device-pinout:H1",
+        "unverified-device-pinout:H2",
+        "unverified-device-pinout:U2"
+      ],
+      "closing_criterion": "结合完整器件/官方物理脚清单核对供电脚与去耦分组覆盖；无名称命中不代表不适用"
+    },
+    {
+      "id": "PWR-D02.DECAP-1F14371D2C473775C9EB.3V3",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "PWR-D02.DECAP-1F14371D2C473775C9EB.3V3：网表对象{\"ref\": \"U2\", \"nodes\": [\"U2.4\"], \"return_nodes\": [\"U2.1\", \"U2.2\"], \"nets\": [\"+3V3\"], \"return_nets\": [\"GND\"], \"state\": \"native\", \"decoupling_group\": \"DECAP-1f14371d2c473775c9eb\", \"decoupling_inventory_digest\": \"44919cb9e92a1de67266ff7f4fbb75cab700504d70630aa9088a22ce5280ca39\", \"net\": \"+3V3\"}已核；尚无足以关闭本条判据的对端/工况或厂家独立界限，保留人工决定，不据名称判不适用。",
+      "required_inputs": [
+        "confirm-group-and-return:candidate:U2:+3V3",
+        "datasheet-requirement:connection",
+        "official-full-pinout:U2",
+        "state-specific engineering evidence: connection"
+      ],
+      "closing_criterion": "按准确器件条款核对本组实际电源脚、直接供电/返回段和串联边界；无直接电容须核适用替代接法，不用普通旁路证明专用滤波组；同网电容不证明布局充分"
+    },
+    {
+      "id": "PWR-D04.BOARD",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "PWR-D04对象全板：U1 p187允许VDD1.8–3.6V、−40..85°C；p203–204各状态电流多为典型，双频同时工作和U2电流/上游能力未知。+3V3仅名义3.3V，不能据此保证供电/温度/噪声或启动全过程。",
+      "required_inputs": [],
+      "closing_criterion": "每个电源输入接口的工况清单齐全：输入电压窗、瞬态（跌落、中断、浪涌）、源阻抗、上游保护与测量点；缺项记输入缺口"
+    },
+    {
+      "id": "PWR-T03.DECAP-1F14371D2C473775C9EB.3V3",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F13",
+      "reason": "图上U2.4/C1.1在+3V3，C1.2/U2.1/.2在GND；这是可读连通事实，但6TG2600001精确脚表未得，不能确认官方供电/返回分组。保留局部拓扑，不把FT5HN库符号当准确型号证据。",
+      "required_inputs": [
+        "confirm-group-and-return:candidate:U2:+3V3",
+        "official-full-pinout:U2"
+      ],
+      "closing_criterion": "逐物理脚核对本状态分组、返回节点、直接连接电容和装配；保留零电容/不贴/未知项，不跨串联边界，不判断电气合格"
+    },
+    {
+      "id": "PWR-T04.NATIVE.SUPERVISION-RAILS",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F17",
+      "reason": "U1 p13–14含POR，p188上升阈值1.55–1.65V、下降1.45–1.55V，最低工作1.8V；不能从有POR推保证棕断复位。J1.26直接到RSTN，需对端复位/供电斜率/阈值与时序合同；不因缺外置监控器直接判缺陷。",
+      "required_inputs": [
+        "intent:supervision.rail_requirements 逐轨声明 required=false 或 internal_monitor（片内 UVLO/复位，附出处）",
+        "requirements:必须监测的电源域与动作要求"
+      ],
+      "closing_criterion": "按需求确定哪些电源域必须监测，逐轨核监测点、阈值与动作；未监测的轨需给出书面依据，不能因为有一颗监控器就判全板覆盖"
+    },
+    {
+      "id": "REQ-C01.BOARD",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "REQ-C01：README仅证明实验SDR用途推断，无带编号受控需求/环境/接口/故障范围；不得把catalog或本次分析假设写成客户要求。本项需要设计者确定本条输入或适用范围。",
+      "required_inputs": [],
+      "closing_criterion": "本审查的工程计算按共用规范 G02：参数取准确料号保证值且条件匹配（超条件按定界表），计入全部变化因素与寿命末老化（无数据按类别估算并标注），温度端点取自工况，先用极值法，方向与内部极值正确，无不可能组合；统计法满足项数、覆盖率与适用后果类；每项给 min/典型/max、判据与裕量，不符合项单列，仿真有模型验证，复用电路按新工况复算，记录可独立复核"
+    },
+    {
+      "id": "REQ-D02.BOARD",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "REQ-D02：README仅证明实验SDR用途推断，无带编号受控需求/环境/接口/故障范围；不得把catalog或本次分析假设写成客户要求。本项需要设计者确定本条输入或适用范围。",
+      "required_inputs": [
+        "requirements"
+      ],
+      "closing_criterion": "需求/规格书与原理图参数口径统一（电流/电压数字唯一来源）"
+    },
+    {
+      "id": "REQ-D03.BOARD",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "REQ-D03：README仅证明实验SDR用途推断，无带编号受控需求/环境/接口/故障范围；不得把catalog或本次分析假设写成客户要求。本项需要设计者确定本条输入或适用范围。",
+      "required_inputs": [],
+      "closing_criterion": "逐条核设计输入：给范围或容差，写明测量点与线路压降，有唯一编号，单一自含，无不可验证用词，未知项按 TBR 登记，设计假设不冒充用户要求；缺的记输入缺口（资料不足），不当电路缺陷"
+    },
+    {
+      "id": "REQ-D04.BOARD",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "REQ-D04：README仅证明实验SDR用途推断，无带编号受控需求/环境/接口/故障范围；不得把catalog或本次分析假设写成客户要求。本项需要设计者确定本条输入或适用范围。",
+      "required_inputs": [],
+      "closing_criterion": "每条需求有验证方法与阶段；只靠分析或评审关闭的主要需求、校准或选配位号、只能靠计算或仿真预测的分析项、电源动态实测项都进入下游转交清单"
+    },
+    {
+      "id": "REQ-D05.BOARD",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "无受控FMEA范围/关键功能清单；已识别J1误接/掉电注入、D1/D2开短和U2失钟到RF功能的路径，但“实验SDR”推断不能替代损坏/可接受后果和恢复时间要求。",
+      "required_inputs": [],
+      "closing_criterion": "FMEA 范围与判据在分析前写定，覆盖电源入口、对外接口、保护链与声明的关键功能；条目字段和故障模式齐全；严重度按不计补偿措施的最坏后果；不凭 RPN 关闭；需处置的都有结论；版本与待审原理图一致；项目要求 FTA 时顶事件明确、共因标出"
+    },
+    {
+      "id": "REQ-Q01.REQUIREMENTS",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "REQ-Q01：README仅证明实验SDR用途推断，无带编号受控需求/环境/接口/故障范围；不得把catalog或本次分析假设写成客户要求。本项需要设计者确定本条输入或适用范围。",
+      "required_inputs": [],
+      "closing_criterion": "需求逐条拆解并与电路检查双向追溯，缺口不得隐藏"
+    },
+    {
+      "id": "REQ-Q02.CHAINS",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "REQ-Q02：README仅证明实验SDR用途推断，无带编号受控需求/环境/接口/故障范围；不得把catalog或本次分析假设写成客户要求。本项需要设计者确定本条输入或适用范围。",
+      "required_inputs": [],
+      "closing_criterion": "全部接口/电源/检测/使能/复位/时钟逐路终点与返回路径覆盖"
+    },
+    {
+      "id": "REQ-Q03.STATES",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "REQ-Q03：README仅证明实验SDR用途推断，无带编号受控需求/环境/接口/故障范围；不得把catalog或本次分析假设写成客户要求。本项需要设计者确定本条输入或适用范围。",
+      "required_inputs": [],
+      "closing_criterion": "逐关键电路覆盖启动、复位、运行、掉电、外部带电及需求内故障状态"
+    },
+    {
+      "id": "REQ-Q07.CLOCK",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "REQ-Q07：README仅证明实验SDR用途推断，无带编号受控需求/环境/接口/故障范围；不得把catalog或本次分析假设写成客户要求。本项需要设计者确定本条输入或适用范围。",
+      "required_inputs": [
+        "datasheets"
+      ],
+      "closing_criterion": "执行时钟功能电路：CLK-C01 晶体负载与起振、CLK-D01 有源时钟输出与使能、CLK-D03 RTC 晶体与备份电源、SIG-C13 接口预算与规范模式、SIG-C18 航天：标准接口与命令线；电路检查项全部完成后汇总，禁止整类电路一次性 PASS"
+    },
+    {
+      "id": "REQ-Q07.HSSERIAL",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "REQ-Q07：README仅证明实验SDR用途推断，无带编号受控需求/环境/接口/故障范围；不得把catalog或本次分析假设写成客户要求。本项需要设计者确定本条输入或适用范围。",
+      "required_inputs": [
+        "datasheets",
+        "platform_checklist",
+        "requirements"
+      ],
+      "closing_criterion": "执行高速串行功能电路：SIG-D14 高速串行链路、SIG-T01 差分对连通、SIG-C13 接口预算与规范模式、SIG-C18 航天：标准接口与命令线；电路检查项全部完成后汇总，禁止整类电路一次性 PASS"
+    },
+    {
+      "id": "REQ-Q07.RF",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "REQ-Q07：README仅证明实验SDR用途推断，无带编号受控需求/环境/接口/故障范围；不得把catalog或本次分析假设写成客户要求。本项需要设计者确定本条输入或适用范围。",
+      "required_inputs": [
+        "datasheets",
+        "requirements"
+      ],
+      "closing_criterion": "执行射频与模组功能电路：SIG-D12 射频与模组；电路检查项全部完成后汇总，禁止整类电路一次性 PASS"
+    },
+    {
+      "id": "REQ-Q07.SPI",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "U1.41/42/43/44与J1.4/5/28/27构成实际SPI；当前RF/HSSERIAL成员覆盖了物理互连，却未生成SPI专属功能/掉电注入问题。需显式建模多接口IC，不能因候选0或UART命名就判无SPI。",
+      "required_inputs": [
+        "intent.features.SPI"
+      ],
+      "closing_criterion": "执行SPI功能电路：SIG-D09 SPI 与 SPI Flash、SIG-C07 逻辑电平与驱动匹配、SIG-C09 时序裕量、SIG-C13 接口预算与规范模式、SIG-C18 航天：标准接口与命令线；电路检查项全部完成后汇总，禁止整类电路一次性 PASS"
+    },
+    {
+      "id": "SIG-C07.IF-CLOCK-U2-RF-U1",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F13",
+      "reason": "U2.3→Net-(U2-OUT)→R19(0Ω)→Net-(U1-TCXO)→U1.17；U1.18→R2(0Ω)→GND；R1/C3均DNP。Atmel-42415E pp7–11 Table2-1/Figure3-1及p68 §6.4.3要求DC耦合且XTAL2接地。 接收端p68要求26MHz clipped-sine、600–1600mVpp；6TG2600001准确手册未得，不能由TCXO名称推输出幅度/电源/使能。",
+      "required_inputs": [],
+      "closing_criterion": "先按需求与实际装配拆分本体和外部端点：未指定外部主机、探头或负载且未承诺具体组合或标准兼容时，读算本体并给出门限、电压、灌电流、漏电、总电容/速率及掉电驱动的定量集成约束；未知外端数据不自动记证据不足或需求待决，整链子判据按范围记 NA，保留本体判据与真实缺口；已有指定对端或兼容承诺仍须核两端保证；本体关键参数、身份、低轨/启动默认、供电与反灌缺口不能由集成约束关闭，不能假定配置已启用；逐条实际链路核驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对所有接收端门限与耐压的满足情况；开漏端核上拉条款中“外部”的器件边界、真实实现及默认/掉电状态；另一 IC 内建上拉须按保证阻值与漏电核高低电平，并明确受控启用条件，不能假设已启用；明确要求离散上拉、禁止替代或已有实现不满足保证条件时，不能以固件配置关闭问题；跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确"
+    },
+    {
+      "id": "SIG-C07.IF-IQ-J1-RF-U1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "U1 p22–23为128Mb/s IQ、64MHz时钟，可选0.2V共模SLVDS或1.2V共模IEEE模式；p205–207给两类驱动/接收窗口，TX每线47Ω。未提供Cynthion端电压模式/收发驱动/端接/时序，无法完成双端预算。",
+      "required_inputs": [],
+      "closing_criterion": "先按需求与实际装配拆分本体和外部端点：未指定外部主机、探头或负载且未承诺具体组合或标准兼容时，读算本体并给出门限、电压、灌电流、漏电、总电容/速率及掉电驱动的定量集成约束；未知外端数据不自动记证据不足或需求待决，整链子判据按范围记 NA，保留本体判据与真实缺口；已有指定对端或兼容承诺仍须核两端保证；本体关键参数、身份、低轨/启动默认、供电与反灌缺口不能由集成约束关闭，不能假定配置已启用；逐条实际链路核驱动端 VOH/VOL 与接收端 VIH/VIL（含负载电流与温度角）、驱动电流与扇出、上拉轨对所有接收端门限与耐压的满足情况；开漏端核上拉条款中“外部”的器件边界、真实实现及默认/掉电状态；另一 IC 内建上拉须按保证阻值与漏电核高低电平，并明确受控启用条件，不能假设已启用；明确要求离散上拉、禁止替代或已有实现不满足保证条件时，不能以固件配置关闭问题；跨电压域直连须由两端保证条件证明兼容，不兼容时采用适当转换；转换器方向与使能态明确"
+    },
+    {
+      "id": "SIG-C13.CLOCK-U2.C1",
+      "status": "needs_human",
+      "attribution": "knowledge_gap",
+      "evidence_id": "F13",
+      "reason": "U2.3→Net-(U2-OUT)→R19(0Ω)→Net-(U1-TCXO)→U1.17；U1.18→R2(0Ω)→GND；R1/C3均DNP。Atmel-42415E pp7–11 Table2-1/Figure3-1及p68 §6.4.3要求DC耦合且XTAL2接地。 接收端p68要求26MHz clipped-sine、600–1600mVpp；6TG2600001准确手册未得，不能由TCXO名称推输出幅度/电源/使能。",
+      "required_inputs": [
+        "datasheet:C1",
+        "datasheet:R19",
+        "datasheet:R2",
+        "datasheet:U2"
+      ],
+      "closing_criterion": "每个接口写明依据的规范版本与工作模式（决定上拉、电容和时序判据），接口预算表字段齐全、取两端保证值；缺对端资料记资料不足，不按常见器件假定"
+    },
+    {
+      "id": "SIG-C13.IQ-J1.J1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "U1 p22–23为128Mb/s IQ、64MHz时钟，可选0.2V共模SLVDS或1.2V共模IEEE模式；p205–207给两类驱动/接收窗口，TX每线47Ω。未提供Cynthion端电压模式/收发驱动/端接/时序，无法完成双端预算。",
+      "required_inputs": [
+        "datasheet:J1",
+        "datasheet:R10",
+        "datasheet:R13",
+        "datasheet:R16",
+        "datasheet:R7"
+      ],
+      "closing_criterion": "每个接口写明依据的规范版本与工作模式（决定上拉、电容和时序判据），接口预算表字段齐全、取两端保证值；缺对端资料记资料不足，不按常见器件假定"
+    },
+    {
+      "id": "SIG-D12.RF-U1-RECEIVE.C10",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "RF-U1的receive状态：U1 p3为双频IQ、p75列内部AVDD/DVDD开关状态；T2 p1仅保证863–928MHz，T1 p1为2400–2500MHz，均有匹配/滤波接口。板上C7/C8=1.8pF/L1=5.6nH及C9/C10=1uF路径已追；没有受控目标频带、输出功率/增益/噪声/睡眠预算和Cynthion接口模式，不能把U1覆盖389.5–510MHz等芯片能力当本板全频带性能保证。无需实测才能写出的系统指标先由设计者锁定；射频匹配实现交PCB/样机。",
+      "required_inputs": [
+        "datasheet:C10",
+        "datasheet:C11",
+        "datasheet:C12",
+        "datasheet:C13",
+        "datasheet:C14",
+        "datasheet:C2",
+        "datasheet:C4",
+        "datasheet:C5",
+        "datasheet:C6",
+        "datasheet:C7",
+        "datasheet:C8",
+        "datasheet:C9",
+        "datasheet:D1",
+        "datasheet:D2",
+        "datasheet:J2",
+        "datasheet:J3",
+        "datasheet:L1"
+      ],
+      "closing_criterion": "按实际模组要求核天线路径默认通断、供电电容、开关机/复位及适用的 SIM 接口保护；参考设计作依据线索，偏离须按本设计条件验证，不以照抄为通过条件"
+    },
+    {
+      "id": "SIG-D12.RF-U1-SLEEP.C10",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "RF-U1的sleep状态：U1 p3为双频IQ、p75列内部AVDD/DVDD开关状态；T2 p1仅保证863–928MHz，T1 p1为2400–2500MHz，均有匹配/滤波接口。板上C7/C8=1.8pF/L1=5.6nH及C9/C10=1uF路径已追；没有受控目标频带、输出功率/增益/噪声/睡眠预算和Cynthion接口模式，不能把U1覆盖389.5–510MHz等芯片能力当本板全频带性能保证。无需实测才能写出的系统指标先由设计者锁定；射频匹配实现交PCB/样机。",
+      "required_inputs": [
+        "datasheet:C10",
+        "datasheet:C11",
+        "datasheet:C12",
+        "datasheet:C13",
+        "datasheet:C14",
+        "datasheet:C2",
+        "datasheet:C4",
+        "datasheet:C5",
+        "datasheet:C6",
+        "datasheet:C7",
+        "datasheet:C8",
+        "datasheet:C9",
+        "datasheet:D1",
+        "datasheet:D2",
+        "datasheet:J2",
+        "datasheet:J3",
+        "datasheet:L1"
+      ],
+      "closing_criterion": "按实际模组要求核天线路径默认通断、供电电容、开关机/复位及适用的 SIM 接口保护；参考设计作依据线索，偏离须按本设计条件验证，不以照抄为通过条件"
+    },
+    {
+      "id": "SIG-D12.RF-U1-TRANSMIT.C10",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "RF-U1的transmit状态：U1 p3为双频IQ、p75列内部AVDD/DVDD开关状态；T2 p1仅保证863–928MHz，T1 p1为2400–2500MHz，均有匹配/滤波接口。板上C7/C8=1.8pF/L1=5.6nH及C9/C10=1uF路径已追；没有受控目标频带、输出功率/增益/噪声/睡眠预算和Cynthion接口模式，不能把U1覆盖389.5–510MHz等芯片能力当本板全频带性能保证。无需实测才能写出的系统指标先由设计者锁定；射频匹配实现交PCB/样机。",
+      "required_inputs": [
+        "datasheet:C10",
+        "datasheet:C11",
+        "datasheet:C12",
+        "datasheet:C13",
+        "datasheet:C14",
+        "datasheet:C2",
+        "datasheet:C4",
+        "datasheet:C5",
+        "datasheet:C6",
+        "datasheet:C7",
+        "datasheet:C8",
+        "datasheet:C9",
+        "datasheet:D1",
+        "datasheet:D2",
+        "datasheet:J2",
+        "datasheet:J3",
+        "datasheet:L1"
+      ],
+      "closing_criterion": "按实际模组要求核天线路径默认通断、供电电容、开关机/复位及适用的 SIM 接口保护；参考设计作依据线索，偏离须按本设计条件验证，不以照抄为通过条件"
+    },
+    {
+      "id": "SIG-D14.IQ-J1-RUN.J1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "U1 p22–23为128Mb/s IQ、64MHz时钟，可选0.2V共模SLVDS或1.2V共模IEEE模式；p205–207给两类驱动/接收窗口，TX每线47Ω。未提供Cynthion端电压模式/收发驱动/端接/时序，无法完成双端预算。",
+      "required_inputs": [
+        "datasheet:J1",
+        "datasheet:R10",
+        "datasheet:R13",
+        "datasheet:R16",
+        "datasheet:R7"
+      ],
+      "closing_criterion": "PCIe/SATA/USB3/SerDes 链路的交流耦合电容位置与容值、极性与通道映射、参考时钟与边带信号（PERST#/CLKREQ#/WAKE#）按规范连接"
+    },
+    {
+      "id": "SIG-E02.RXCLK.RXCLK-P",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "U1 p22–23为128Mb/s IQ、64MHz时钟，可选0.2V共模SLVDS或1.2V共模IEEE模式；p205–207给两类驱动/接收窗口，TX每线47Ω。未提供Cynthion端电压模式/收发驱动/端接/时序，无法完成双端预算。",
+      "required_inputs": [
+        "datasheet: SIG-E02 两端共模/摆幅保证范围",
+        "intent.diff_levels: 电平标准与出处",
+        "level-standard:/RXCLK"
+      ],
+      "closing_criterion": "仅对实际差分数据链路按两端保证范围核电平：充电识别或未启用差分模式另查实际功能；直流耦合时发送共模与摆幅落在接收端共模/差分输入范围内；交流耦合时核接收端偏置共模、耦合电容与低频截止"
+    },
+    {
+      "id": "SIG-E02.RXD09.RXD09-P",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "U1 p22–23为128Mb/s IQ、64MHz时钟，可选0.2V共模SLVDS或1.2V共模IEEE模式；p205–207给两类驱动/接收窗口，TX每线47Ω。未提供Cynthion端电压模式/收发驱动/端接/时序，无法完成双端预算。",
+      "required_inputs": [
+        "datasheet: SIG-E02 两端共模/摆幅保证范围",
+        "intent.diff_levels: 电平标准与出处",
+        "level-standard:/RXD09"
+      ],
+      "closing_criterion": "仅对实际差分数据链路按两端保证范围核电平：充电识别或未启用差分模式另查实际功能；直流耦合时发送共模与摆幅落在接收端共模/差分输入范围内；交流耦合时核接收端偏置共模、耦合电容与低频截止"
+    },
+    {
+      "id": "SIG-E02.RXD24.RXD24-P",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "U1 p22–23为128Mb/s IQ、64MHz时钟，可选0.2V共模SLVDS或1.2V共模IEEE模式；p205–207给两类驱动/接收窗口，TX每线47Ω。未提供Cynthion端电压模式/收发驱动/端接/时序，无法完成双端预算。",
+      "required_inputs": [
+        "datasheet: SIG-E02 两端共模/摆幅保证范围",
+        "intent.diff_levels: 电平标准与出处",
+        "level-standard:/RXD24"
+      ],
+      "closing_criterion": "仅对实际差分数据链路按两端保证范围核电平：充电识别或未启用差分模式另查实际功能；直流耦合时发送共模与摆幅落在接收端共模/差分输入范围内；交流耦合时核接收端偏置共模、耦合电容与低频截止"
+    },
+    {
+      "id": "SIG-E02.TXCLK.TXCLK-P",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "U1 p22–23为128Mb/s IQ、64MHz时钟，可选0.2V共模SLVDS或1.2V共模IEEE模式；p205–207给两类驱动/接收窗口，TX每线47Ω。未提供Cynthion端电压模式/收发驱动/端接/时序，无法完成双端预算。",
+      "required_inputs": [
+        "datasheet: SIG-E02 两端共模/摆幅保证范围",
+        "intent.diff_levels: 电平标准与出处",
+        "level-standard:/TXCLK"
+      ],
+      "closing_criterion": "仅对实际差分数据链路按两端保证范围核电平：充电识别或未启用差分模式另查实际功能；直流耦合时发送共模与摆幅落在接收端共模/差分输入范围内；交流耦合时核接收端偏置共模、耦合电容与低频截止"
+    },
+    {
+      "id": "SIG-E02.TXD.TXD-P",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "U1 p22–23为128Mb/s IQ、64MHz时钟，可选0.2V共模SLVDS或1.2V共模IEEE模式；p205–207给两类驱动/接收窗口，TX每线47Ω。未提供Cynthion端电压模式/收发驱动/端接/时序，无法完成双端预算。",
+      "required_inputs": [
+        "datasheet: SIG-E02 两端共模/摆幅保证范围",
+        "intent.diff_levels: 电平标准与出处",
+        "level-standard:/TXD"
+      ],
+      "closing_criterion": "仅对实际差分数据链路按两端保证范围核电平：充电识别或未启用差分模式另查实际功能；直流耦合时发送共模与摆幅落在接收端共模/差分输入范围内；交流耦合时核接收端偏置共模、耦合电容与低频截止"
+    },
+    {
+      "id": "SIG-T01.IQ-J1-RUN.J1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "J1五对IQ已逐路核板内P/N与47Ω串阻，尚无Cynthion对端精确版本/脚表，完整高速链路未能关闭。",
+      "required_inputs": [
+        "datasheet:J1",
+        "datasheet:R10",
+        "datasheet:R13",
+        "datasheet:R16",
+        "datasheet:R7"
+      ],
+      "closing_criterion": "核对差分 P/N 两端语义、耦合/端接拓扑和全链路连通"
+    },
+    {
+      "id": "SIG-T03.RXCLK.RXCLK-P",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "SIG-T03.RXCLK.RXCLK-P：网表对象{\"net\": \"/RXCLK_P\", \"state\": \"native\", \"nets\": [\"/RXCLK_N\", \"/RXCLK_P\"], \"diff_pair\": \"RXCLK\", \"diff_levels_digest\": \"1585c6d9f34a4532a61357dd2d1331b95e60045d4f27de7495f1bfeba1b95b84\"}已核；尚无足以关闭本条判据的对端/工况或厂家独立界限，保留人工决定，不据名称判不适用。",
+      "required_inputs": [
+        "datasheet:收发两端电平与端接要求",
+        "level-standard:/RXCLK"
+      ],
+      "closing_criterion": "核端接与偏置网络的位置、阻值与电源域：差分端接、接收端偏置、发送端直流通路，以及未用通道与掉电状态的处置"
+    },
+    {
+      "id": "SIG-T03.RXD09.RXD09-P",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "SIG-T03.RXD09.RXD09-P：网表对象{\"net\": \"/RXD09_P\", \"state\": \"native\", \"nets\": [\"/RXD09_N\", \"/RXD09_P\"], \"diff_pair\": \"RXD09\", \"diff_levels_digest\": \"1585c6d9f34a4532a61357dd2d1331b95e60045d4f27de7495f1bfeba1b95b84\"}已核；尚无足以关闭本条判据的对端/工况或厂家独立界限，保留人工决定，不据名称判不适用。",
+      "required_inputs": [
+        "datasheet:收发两端电平与端接要求",
+        "level-standard:/RXD09"
+      ],
+      "closing_criterion": "核端接与偏置网络的位置、阻值与电源域：差分端接、接收端偏置、发送端直流通路，以及未用通道与掉电状态的处置"
+    },
+    {
+      "id": "SIG-T03.RXD24.RXD24-P",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F18",
+      "reason": "SIG-T03.RXD24.RXD24-P：网表对象{\"net\": \"/RXD24_P\", \"state\": \"native\", \"nets\": [\"/RXD24_N\", \"/RXD24_P\"], \"diff_pair\": \"RXD24\", \"diff_levels_digest\": \"1585c6d9f34a4532a61357dd2d1331b95e60045d4f27de7495f1bfeba1b95b84\"}已核；尚无足以关闭本条判据的对端/工况或厂家独立界限，保留人工决定，不据名称判不适用。",
+      "required_inputs": [
+        "datasheet:收发两端电平与端接要求",
+        "level-standard:/RXD24"
+      ],
+      "closing_criterion": "核端接与偏置网络的位置、阻值与电源域：差分端接、接收端偏置、发送端直流通路，以及未用通道与掉电状态的处置"
+    },
+    {
+      "id": "SIG-T03.TXCLK.TXCLK-P",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "Atmel p23 §4.5.2明确U1内部含100Ω差分端接与开路fail-safe；R7/R10/R13/R16为47Ω串阻，DNP偏置不计入。无需以“缺外置100Ω”报错，但需Cynthion驱动模式/幅度/源阻抗核串阻衰减。",
+      "required_inputs": [
+        "datasheet:收发两端电平与端接要求",
+        "level-standard:/TXCLK"
+      ],
+      "closing_criterion": "核端接与偏置网络的位置、阻值与电源域：差分端接、接收端偏置、发送端直流通路，以及未用通道与掉电状态的处置"
+    },
+    {
+      "id": "SIG-T03.TXD.TXD-P",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "Atmel p23 §4.5.2明确U1内部含100Ω差分端接与开路fail-safe；R7/R10/R13/R16为47Ω串阻，DNP偏置不计入。无需以“缺外置100Ω”报错，但需Cynthion驱动模式/幅度/源阻抗核串阻衰减。",
+      "required_inputs": [
+        "datasheet:收发两端电平与端接要求",
+        "level-standard:/TXD"
+      ],
+      "closing_criterion": "核端接与偏置网络的位置、阻值与电源域：差分端接、接收端偏置、发送端直流通路，以及未用通道与掉电状态的处置"
+    },
+    {
+      "id": "SIG-T04.IF-IQ-J1-RF-U1",
+      "status": "needs_human",
+      "attribution": "needs_human",
+      "evidence_id": "F15",
+      "reason": "板内SPI方向：J1.28→U1.43 MOSI，U1.44 MISO→J1.27，J1.4→U1.41 SCLK，J1.5→U1.42 SELN，U1.40 IRQ→J1.3，J1.26→U1.13 RSTN；尚无对端同版针序，PICO/POCI名称本身不能证明整链语义。",
+      "required_inputs": [],
+      "closing_criterion": "TX/RX、P/N、Host/Device、Source/Sink 按两端官方语义复述，核对对端连接器视图与线缆针序；连通只证明导电路径"
+    }
+  ],
+  "board_round_status": "INCOMPLETE_NEEDS_HUMAN",
+  "board_round_note": "评测任务要求未能独立判定的记needs_human；原生schema15只接受PASS/FAIL/OPEN功能及严格VENDOR_DATUM，无法诚实表达缺受控工况/对端决定。仅保存已核局部结论和完整逐项pending，功能框架待补不伪造；原生门禁必须FAIL，不是整板审结/准出。"
+}

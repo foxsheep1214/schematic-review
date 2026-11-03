@@ -1,0 +1,330 @@
+{
+  "board": "vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project",
+  "source_commit": "60cf01ee9ff44718fd258eeae0f71823e3685706",
+  "sr_commit": "05718367027cb1415f026744737b648c3d204d87",
+  "cache": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project",
+  "scratch": "/tmp/codex-work/sr-lane-1-transformerless",
+  "license": "MIT; reviewed fixed-commit LICENSE; third-party files retained only in cache",
+  "inputs_and_records": [
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/verification.json",
+      "sha256": "4402542f9a0105e62dd70c096aefaec526aa17005a51d9713b54992fff77cb08",
+      "bytes": 459,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/verification.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/fetch.log",
+      "sha256": "0d5efb1d00c199099af9519eadde3945f89bdf979ad58be169bb576b810112ab",
+      "bytes": 7066,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/fetch.log"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/src/LICENSE",
+      "sha256": "1ffd6388d4a0d399602e03f8bb5f358c9ebade3f4f9813a76300e9b1b6a79c4f",
+      "bytes": 1066,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/src/LICENSE"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/src/README.md",
+      "sha256": "046eef3790ca234b06a6efe928d100bf4804087d81119a79ef83f094a6359956",
+      "bytes": 1747,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/src/README.md"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/src/schematic/transformer_less_sch.kicad_sch",
+      "sha256": "05ce3ebcaf9b9ba674142b98d5fefc7c96219da79c89131a8f3b67a1d7b82eac",
+      "bytes": 63821,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/src/schematic/transformer_less_sch.kicad_sch"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/source-extras/bom/transformer_less.csv",
+      "sha256": "ed7ada12e58213a3e0118183b63ffb9d8b8d6caef8d083ffac9167a4def7d09b",
+      "bytes": 1177,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/source-extras/bom/transformer_less.csv"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/netlist.xml",
+      "sha256": "717d1833c6b022457746422f88032d9739269009a00cddc242a0ce63c5beac2c",
+      "bytes": 31894,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/netlist.xml"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/db.json",
+      "sha256": "4559e1497697673a1948aa06800ba45b50cb6daf365f96105c252109d6a40828",
+      "bytes": 8987,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/db.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/db.json",
+      "sha256": "7288e7ccee3f2fd5df3744e136d41e25ac621c3b0aa6e48944eb3e2be72b9307",
+      "bytes": 13144,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/db.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/intent.json",
+      "sha256": "33d14d2e1c47049d6863500f162b689e58ddff63fd05f486968ac6d8a8e7c297",
+      "bytes": 7531,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/intent.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-context.json",
+      "sha256": "74b1d47f6aa5cfb34254d3bad22041e9ab8921dc8440ca8679a2011da05e6625",
+      "bytes": 871,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-context.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/circuit-candidates.json",
+      "sha256": "863d8d5c7b183ddbec269b85ba3b7704bd30d7ff0418dcd87aafaea12fc89a29",
+      "bytes": 3095,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/circuit-candidates.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/datasheet-resolution.json",
+      "sha256": "d8b0b23bfc06d03d3b957b1a98dfe5f63d7f1fef171fff7030cb13decb1652eb",
+      "bytes": 989,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/datasheet-resolution.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/datasheet-audit.json",
+      "sha256": "93a12942f7ca185f8ff4bc8853222775eb977f304f01a8297b651e22f945f887",
+      "bytes": 10815,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/datasheet-audit.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-plan-initial.json",
+      "sha256": "b86b68fcb9820f6a51940ee96f71dee018e3d0e12be51fcba80f0f3396c70bbd",
+      "bytes": 176701,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-plan-initial.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-plan-cold.json",
+      "sha256": "b0e6b09c7b1aa8a6a07c9b729775ccba1475eb50138aa583cf97a9460e80b109",
+      "bytes": 363502,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-plan-cold.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-plan.json",
+      "sha256": "b0e6b09c7b1aa8a6a07c9b729775ccba1475eb50138aa583cf97a9460e80b109",
+      "bytes": 363502,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-plan.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/lint-initial.json",
+      "sha256": "9a7018e5b8ea6d79b923df9c2dd3d31f20eff9dcaea041b63ed9368ad18fecb3",
+      "bytes": 164033,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/lint-initial.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/lint-cold.json",
+      "sha256": "e1961d507dc1770030327891822fa8b27d407e1310d143be71f49cbab599a16c",
+      "bytes": 333111,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/lint-cold.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/lint-hot.json",
+      "sha256": "e1961d507dc1770030327891822fa8b27d407e1310d143be71f49cbab599a16c",
+      "bytes": 333111,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/lint-hot.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-results.json",
+      "sha256": "ecfc49f9fe125946d23872dd2c92c62e808c5de38ed09df7eaec683978e1557b",
+      "bytes": 130247,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-results.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-gate.json",
+      "sha256": "3bf2b61b03ae46cf9ed400095f45b5938726920e00f992d6b55ca46782496b4f",
+      "bytes": 29622,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-gate.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/notes.json",
+      "sha256": "cb04108ad6b65e3285565bdd8e6b69f4fe8ee3af1276bee3fc47002a969880cb",
+      "bytes": 9882,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/notes.json"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/审查报告.md",
+      "sha256": "fcbdb89e7649e7b3680489df6686e8b3b51d604d2243edff3ba0df0bf6b359d1",
+      "bytes": 73776,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/审查报告.md"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/审查报告.html",
+      "sha256": "10dc4fae3e3278958c003271239bfce6be183df210002f7fe37cfc42bf753ac4",
+      "bytes": 82892,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/审查报告.html"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/datasheets/Microchip-AN954.pdf",
+      "sha256": "6165ac02bb1f9e2ce1e71c0a4193725b058b17be7e44a7f06b650789b0feb75b",
+      "bytes": 254545,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/datasheets/Microchip-AN954.pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/datasheets/TI-LM7805.pdf",
+      "sha256": "49391342cf3b05f89ae94607257ef03f678ae9f1a3bdd388252adb8b00da043d",
+      "bytes": 2712955,
+      "resolved_path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/datasheets/TI-LM7805.pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/datasheets/Vishay-1N4001.pdf",
+      "sha256": "56a77c6615c90c11993d37d94e67f335cf3a2d1fe00f25d2a1a4833834356d07",
+      "bytes": 74632,
+      "resolved_path": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/23_分立半导体/整流二极管/Vishay - 1N4007.pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/datasheets/onsemi-MC7800.pdf",
+      "sha256": "a0dc9ea9bd60d9c6f9b2b6e05fd7864d76e1c4a9bbd318b0cef02c849e34ae4c",
+      "bytes": 1201154,
+      "resolved_path": "/Users/skyfend/Documents/知识库/HardwareWiki/raw/Datasheet/08_电源管理/线性稳压器(LDO_标准压差)/onsemi - MC7800.pdf"
+    }
+  ],
+  "commands": [
+    [
+      "python3",
+      "-B",
+      "evals/boards/_tools/fetch_board.py",
+      "vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project",
+      "--cache",
+      "/Users/skyfend/.cache/sr-boards"
+    ],
+    [
+      "python3",
+      "-B",
+      "/tmp/codex-work/sr-lane-1-transformerless/final_plan.py"
+    ],
+    [
+      "python3",
+      "-B",
+      "/tmp/codex-work/sr-lane-1-transformerless/judge.py"
+    ],
+    [
+      "python3",
+      "-B",
+      "/tmp/codex-work/sr-lane-1-transformerless/deliver.py"
+    ],
+    [
+      "python3",
+      "-B",
+      "scripts/validate_review.py",
+      "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-plan.json",
+      "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-results.json",
+      "--db",
+      "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/db.json",
+      "--lint",
+      "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/lint-cold.json",
+      "--lint",
+      "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/lint-hot.json",
+      "--json",
+      "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-gate.json"
+    ],
+    [
+      "python3",
+      "-B",
+      "scripts/render_report.py",
+      "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-plan.json",
+      "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-results.json",
+      "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/review-gate.json",
+      "--notes",
+      "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/notes.json",
+      "--detail",
+      "full",
+      "--title",
+      "容降非隔离市电电源：lane-1独立审查",
+      "-o",
+      "/Users/skyfend/.cache/sr-boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/review/审查报告.md"
+    ]
+  ],
+  "command_boundary": "fetch会重建缓存；scratch脚本是本轮审查员实现，不属于仓库交付或可长期依赖接口。最终原生复验与渲染命令可直接读取上列已锁文件。",
+  "counts": {
+    "plan_items": 100,
+    "functions": 5,
+    "dispositions": {
+      "needs_human": 69,
+      "FAIL": 2,
+      "PASS": 21,
+      "NA": 8
+    }
+  },
+  "gate": {
+    "run": "FAIL",
+    "valid": false,
+    "release": "NO_GO",
+    "validation_exit": 2,
+    "error_count": 55,
+    "causes": [
+      "69计划项缺决定性输入/资格，原生schema15无needs_human，覆盖/对应功能/范围引用如实未闭合",
+      "关键选值数据缺陷非数值越限；原生功能fail证明载体尚不支持此情形，未伪造强制限值"
+    ],
+    "quality_advisory": {
+      "status": "NEEDS_SEMANTIC_REVIEW",
+      "scope": "ADVISORY_PATTERN_SCREENING_ONLY",
+      "candidate_count": 1,
+      "flagged_check_count": 4,
+      "candidates": [
+        {
+          "code": "REUSED_RATIONALE_ACROSS_SCOPES",
+          "check_ids": [
+            "PRO-C02.NOTRIP.D5",
+            "PRO-C02.NOTRIP.D6",
+            "PRO-C02.TRIP.D5",
+            "PRO-C02.TRIP.D6"
+          ],
+          "message": "Different scopes reuse identical reasoning; verify each criterion or document the shared proof."
+        }
+      ]
+    },
+    "quality_disposition": "D5/D6两支路已逐个核：阳极各只连对应20k，无检测/执行链；四个NOTRIP/TRIP项共用NA前提，不关闭连续支路电气资格。详见evidence-notes.md。"
+  },
+  "independent_input_checks": {
+    "xml_node_to_net": "37/37 exact match with source db",
+    "csv_value_and_footprint": "18/18 exact match with source db; original Value independently checked",
+    "native_visual": "current fixed-commit KiCad SVG single page visually reviewed; older source screenshot only corroborating"
+  },
+  "output_records": [
+    {
+      "path": "evals/boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/check-disposition.json",
+      "sha256": "d403fb032666cb8f6e2554ad3e684e0b001d426345013db3f81853a04eba4cf0"
+    },
+    {
+      "path": "evals/boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/evidence-notes.md",
+      "sha256": "dbb546fb76007688bfc42f5e7328606493e8ad7ab1f98cbbb1d9cf3aad627eaf"
+    },
+    {
+      "path": "evals/boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/findings.json",
+      "sha256": "bbc8ee645f138e6047dfbb7788adce067a4d6ea275c4e9fe3adf1f6afb1d96cc"
+    },
+    {
+      "path": "evals/boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/round-report.md",
+      "sha256": "c490dad86db4d760ec06b0935568e3f22a8ff19746a76922af37e825488d7693"
+    },
+    {
+      "path": "evals/boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/top50-audit.json",
+      "sha256": "3de483075f62813c06b464c6ad415a2d4c6022d9624060c9021e612bde47a46f"
+    },
+    {
+      "path": "evals/boards/vadivelvaishnavi--transformer_less_power_supply_kicad_pcb_design_project/审查报告.md",
+      "sha256": "fcbdb89e7649e7b3680489df6686e8b3b51d604d2243edff3ba0df0bf6b359d1"
+    }
+  ],
+  "write_scope": [
+    "this board output directory",
+    "evals/boards/_lanes/lane-1/memo.md"
+  ],
+  "prohibited_paths_changed": false,
+  "committed": false,
+  "final_integrity_checks": {
+    "all_plan_ids_once": 100,
+    "native_judged": 31,
+    "pending_ids_match": 69,
+    "findings_five_category_total": 10,
+    "top50_unique_criteria": 50,
+    "source_commit_matches": true,
+    "render_copy_byte_identical": true,
+    "tracked_changes_only_lane_memo": true,
+    "untracked_files_only_this_board": true,
+    "third_party_files_in_repository": false
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "id": "sparkfun--sparkfun_gnssdo",
+  "repo": "sparkfun/SparkFun_GNSSDO",
+  "commit": "ae355fce6102a1ea69501edc98e5d240f0495b3a",
+  "schematic": "Hardware/GNSSDO_Plus/SparkPNT_GNSSDO_Plus.kicad_sch",
+  "schema_version": 20250114,
+  "parts": 353,
+  "strict": false,
+  "strict_failure": "parse strict: exit 2 (see fetch.log)",
+  "db_sha256": "1f54ab60ef650c357a5ad330b8ad4a3e4a9e9922d882ce0ba1b51262e7e49f95",
+  "sr_commit": "d4fd2b25b8d4185ca64294cd51fcad3374b7472c",
+  "kicad_version": "10.0.7",
+  "purpose_inference": "推断：固定README和GNSSDO_Plus文件名及U2 mosaic-T、U13 OCXO、U4 PHY、U7 PoE模块连接表明，这是SXT-D GNSS驯服10MHz/1PPS授时板；README只用于用途线索，不作保证/设计计算依据。",
+  "bom": "固定源树无装配BOM，未运行read_bom.py；原生器件属性保留。",
+  "license": "CC-BY-SA-4.0; LICENSE.md hardware paragraph",
+  "db_file_sha256": "1f54ab60ef650c357a5ad330b8ad4a3e4a9e9922d882ce0ba1b51262e7e49f95",
+  "native_pipeline": {
+    "candidates": 30,
+    "decisions": 70,
+    "circuits": 37,
+    "empty_states": 8,
+    "status": "BLOCKED_BY_TOOL_CONTRACT",
+    "diagnostic_plan_checks": 824,
+    "completed_checks": 83,
+    "pending_checks": 741,
+    "gate_valid": false,
+    "release": "NO_GO"
+  },
+  "source_hashes": {
+    "netlist.xml": "1745c37a7f078e9bea0a5f06d6e9985b53fb6b224f42a39538797651cb82a48e",
+    "db.json": "1f54ab60ef650c357a5ad330b8ad4a3e4a9e9922d882ce0ba1b51262e7e49f95",
+    "review/schematic.pdf": "1ff4eb5ff83c4d0186749c8aca6827e40f3e35a685776a8d7a0051bc61bcb524",
+    "src/Hardware/GNSSDO_Plus/SparkPNT_GNSSDO_Plus.kicad_sch": "c11f73dc6358268b7d489ebe0f180cf25f9d5775ea665da9c45fdf440fe99be2",
+    "src/LICENSE.md": "0087c6bc705486f673011de62e744cb72746a457516fc8d8d748906b4928ed3f",
+    "src/README.md": "a21822e4c3147716d715a10e2d5cd74120b0879c0909f18f309d19946cab1b3d"
+  },
+  "manufacturer_materials": [
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/0ZCH.pdf",
+      "sha256": "a5b030037f2f9113cf19bd0f102ff711b81b0c71ae651bc0b052df28f7461031",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/74LVC2T45.pdf",
+      "sha256": "7938b8afda0c6155ae58892380ac38169468ed54f53006abcbe66498d0feaed6",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/AP2112.pdf",
+      "sha256": "ef8d376f2ec356e29172eb9e053819a0ebdcc576dba7fc9ab0505c568427920f",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/AP7361C.pdf",
+      "sha256": "9b64f49c5975b2baf2360248a75212599bde8bf083d315d936e4f1c93b2e1f92",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/CH340.pdf",
+      "sha256": "f4b76c52222358bec25f328517d9801036e606d57648e62e2ac59e3027a6c050",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/DMG2305UX.pdf",
+      "sha256": "7421a75157a2e700a217d1a20d075216abed29e81192bf7609d3df6dbb08eb2d",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/DP5305.pdf",
+      "sha256": "4186db85995fe5cb44a7ea0fe2a345fcfab68e4f852ef4d8c517bbd31cdc72fa",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/DT1042.pdf",
+      "sha256": "ec6bdb2990e6511d164c8e6a4ae53a162cd2cb6fff2dedb953da66d8c302b514",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/ESP32.pdf",
+      "sha256": "80f48da23f6adcbd4cae16d219e1ec3c736eb34f6ef48e2ca868b120d288c81b",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/JPS-3-1.pdf",
+      "sha256": "ab0cd6237136bb8205482fd2fce786dc118dae03a7e266d69a7eaa726a7af900",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/KSZ8041.pdf",
+      "sha256": "e265b33ddbb7a21bea799fe7181f54d9b6a008fb09423561172bbfeef69fd58a",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/LMV7219.pdf",
+      "sha256": "a235b43f905ac80a266fe6d78e962023d64ddb385a7bf7ef930d7d0d86b60cdb",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/LTC4418-web.txt",
+      "sha256": "5302157bb29ecc11a31487d0aa227367a745ef9b1e4c65372bb720f818cbb969",
+      "format": "web_text_extract"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/OCXO.pdf",
+      "sha256": "8ba9f39d2d49d0cf9d77b5a40a4d748193c15657043dfefce298feb65598bb7c",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/PCA9306.pdf",
+      "sha256": "a7ca094d77688827ed7b458822a66655fe6804dc2c565da178828c95b9c8124d",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/REC15E.pdf",
+      "sha256": "2525241bed16503cb2ec26a26164534a557092c7e6fababab726de45da166809",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/SN74LVC1G175.pdf",
+      "sha256": "6f19e0a69062e117c53102666ad904537010044b2bd980c6515483db8c83b887",
+      "format": "pdf"
+    },
+    {
+      "path": "/Users/skyfend/.cache/sr-boards/sparkfun--sparkfun_gnssdo/review/evidence/datasheets/mosaic.pdf",
+      "sha256": "8f3b832d839e91710bcd5de38f94a404093c87893b2fb8a0e18b60bcbd0b6556",
+      "format": "pdf"
+    }
+  ],
+  "limits": [
+    "无装配BOM，无受控温度/负载/供电/状态/对端需求；README仅用途推断。",
+    "LTC4418只取得官方网页文字摘录，未取得本地完整原厂PDF；只据明确脚义判定，未依赖未取得的图形SOA。",
+    "不是有效整板报告包；未执行pack_review，不把valid=false改PASS。"
+  ]
+}

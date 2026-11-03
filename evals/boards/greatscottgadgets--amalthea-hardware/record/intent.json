@@ -1,0 +1,690 @@
+{
+ "schema_version": 5,
+ "review_mode": "first",
+ "review_phase": "design_iteration",
+ "guideline_baseline": "industrial_telecom",
+ "input_sha256": "867a65b0d3dedd19238e0e52c8537168a12766e2e62560ef387312ccf2b3447b",
+ "requirements": [],
+ "assemblies": [
+  {
+   "id": "native",
+   "citation": "原理图p1原生DNP属性：C3/R1/R8/R9/R11/R12/R14/R15/R17/R18不贴；只按本版绘图装配推断，未作实物声明。",
+   "population": {
+    "C1": true,
+    "C2": true,
+    "C3": false,
+    "C4": true,
+    "C5": true,
+    "C6": true,
+    "C7": true,
+    "C8": true,
+    "C9": true,
+    "C10": true,
+    "C11": true,
+    "C12": true,
+    "C13": true,
+    "C14": true,
+    "D1": true,
+    "D2": true,
+    "H1": true,
+    "H2": true,
+    "J1": true,
+    "J2": true,
+    "J3": true,
+    "L1": true,
+    "R1": false,
+    "R2": true,
+    "R7": true,
+    "R8": false,
+    "R9": false,
+    "R10": true,
+    "R11": false,
+    "R12": false,
+    "R13": true,
+    "R14": false,
+    "R15": false,
+    "R16": true,
+    "R17": false,
+    "R18": false,
+    "R19": true,
+    "T1": true,
+    "T2": true,
+    "U1": true,
+    "U2": true
+   }
+  }
+ ],
+ "features": {
+  "DEBUG": {
+   "applicability": "NOT_APPLICABLE",
+   "citation": "原理图p1 U1为AT86RF215IQ射频收发器，J1为LVDS/SPI夹层互连；无调试烧录/电平转换器/串联电源保护电路。catalog类型与本版实图不符。"
+  },
+  "LEVEL_SHIFT": {
+   "applicability": "NOT_APPLICABLE",
+   "citation": "原理图p1 U1为AT86RF215IQ射频收发器，J1为LVDS/SPI夹层互连；无调试烧录/电平转换器/串联电源保护电路。catalog类型与本版实图不符。"
+  },
+  "POWER_PROTECTION": {
+   "applicability": "NOT_APPLICABLE",
+   "citation": "原理图p1 U1为AT86RF215IQ射频收发器，J1为LVDS/SPI夹层互连；无调试烧录/电平转换器/串联电源保护电路。catalog类型与本版实图不符。"
+  }
+ },
+ "power_rails": {
+  "GND": {
+   "voltage_v": {
+    "min": 0,
+    "max": 0
+   },
+   "domain": "GND",
+   "citation": "网表p1 GND参考网；非地电位实测。"
+  },
+  "Net-(U1-AVDD0)": {
+   "voltage_v": {
+    "min": 1.8,
+    "max": 1.8
+   },
+   "domain": "GND",
+   "citation": "Atmel-42415E p75 §6.6明确标称1.8V片内输出；未提供电压公差，1.8仅名义点，不能据此放行最坏额定/关断。"
+  },
+  "Net-(U1-AVDD1)": {
+   "voltage_v": {
+    "min": 1.8,
+    "max": 1.8
+   },
+   "domain": "GND",
+   "citation": "Atmel-42415E p75 §6.6明确标称1.8V片内输出；未提供电压公差，1.8仅名义点，不能据此放行最坏额定/关断。"
+  },
+  "Net-(U1-DVDD)": {
+   "voltage_v": {
+    "min": 1.8,
+    "max": 1.8
+   },
+   "domain": "GND",
+   "citation": "Atmel-42415E p75 §6.6明确标称1.8V片内输出；未提供电压公差，1.8仅名义点，不能据此放行最坏额定/关断。"
+  },
+  "+3V3": {
+   "voltage_v": {
+    "min": 3.3,
+    "max": 3.3
+   },
+   "domain": "GND",
+   "citation": "原理图p1 +3V3名称只证明标称3.3V，未提供公差/源阻抗/热插拔；本点用于名义计算，不能当工作窗放行。"
+  }
+ },
+ "materials": {
+  "schematic_pdf": {
+   "path": "/Users/skyfend/.cache/sr-boards/greatscottgadgets--amalthea-hardware/review/evidence/schematic.pdf"
+  },
+  "datasheets": {
+   "path": "/Users/skyfend/.cache/sr-boards/greatscottgadgets--amalthea-hardware/review/evidence/datasheets"
+  }
+ },
+ "device_kinds": {
+  "U1": {
+   "kind": "transceiver",
+   "page": 1,
+   "quote": "Sub-1GHz/2.4GHz Transceiver and I/Q Radio"
+  }
+ },
+ "devices": {
+  "U1": {
+   "mpn": "AT86RF215IQ-ZU",
+   "package": "QFN-48",
+   "identity_citation": "原图p1 PART AT86RF215IQ-ZU；Atmel-42415E p3 §1.1/p224订货信息的IQ variant；不是M变体。",
+   "citation": "Atmel-42415E pp7-9 Figure2-1/Table2-1全脚，裸焊盘接AVSS",
+   "pinout_complete": true,
+   "pins": {
+    "1": {
+     "name": "FEA24",
+     "role": "other"
+    },
+    "2": {
+     "name": "FEB24",
+     "role": "other"
+    },
+    "3": {
+     "name": "AVSS",
+     "role": "return"
+    },
+    "4": {
+     "name": "RFP24",
+     "role": "other"
+    },
+    "5": {
+     "name": "RFN24",
+     "role": "other"
+    },
+    "6": {
+     "name": "AVSS",
+     "role": "return"
+    },
+    "7": {
+     "name": "AVSS",
+     "role": "return"
+    },
+    "8": {
+     "name": "RFP09",
+     "role": "other"
+    },
+    "9": {
+     "name": "RFN09",
+     "role": "other"
+    },
+    "10": {
+     "name": "AVSS",
+     "role": "return"
+    },
+    "11": {
+     "name": "FEA09",
+     "role": "other"
+    },
+    "12": {
+     "name": "FEB09",
+     "role": "other"
+    },
+    "13": {
+     "name": "~{RSTN}",
+     "role": "other"
+    },
+    "14": {
+     "name": "AVDD0",
+     "role": "power"
+    },
+    "15": {
+     "name": "EVDD",
+     "role": "power"
+    },
+    "16": {
+     "name": "AVSS",
+     "role": "return"
+    },
+    "17": {
+     "name": "TCXO",
+     "role": "other"
+    },
+    "18": {
+     "name": "XTAL2",
+     "role": "other"
+    },
+    "19": {
+     "name": "AVSS",
+     "role": "return"
+    },
+    "20": {
+     "name": "DVSS",
+     "role": "return"
+    },
+    "21": {
+     "name": "DEVDD",
+     "role": "power"
+    },
+    "22": {
+     "name": "CLKO",
+     "role": "other"
+    },
+    "23": {
+     "name": "DVSS",
+     "role": "return"
+    },
+    "24": {
+     "name": "DVSS",
+     "role": "return"
+    },
+    "25": {
+     "name": "TXCLKN",
+     "role": "other"
+    },
+    "26": {
+     "name": "TXCLKP",
+     "role": "other"
+    },
+    "27": {
+     "name": "TXDN",
+     "role": "other"
+    },
+    "28": {
+     "name": "TXDP",
+     "role": "other"
+    },
+    "29": {
+     "name": "DEVDD",
+     "role": "power"
+    },
+    "30": {
+     "name": "RXDN09",
+     "role": "other"
+    },
+    "31": {
+     "name": "RXDP09",
+     "role": "other"
+    },
+    "32": {
+     "name": "DVSS",
+     "role": "return"
+    },
+    "33": {
+     "name": "RXCLKN",
+     "role": "other"
+    },
+    "34": {
+     "name": "RXCLKP",
+     "role": "other"
+    },
+    "35": {
+     "name": "RXDN24",
+     "role": "other"
+    },
+    "36": {
+     "name": "RXDP24",
+     "role": "other"
+    },
+    "37": {
+     "name": "DVDD",
+     "role": "power"
+    },
+    "38": {
+     "name": "DVSS",
+     "role": "return"
+    },
+    "39": {
+     "name": "DEVDD",
+     "role": "power"
+    },
+    "40": {
+     "name": "IRQ",
+     "role": "other"
+    },
+    "41": {
+     "name": "SCLK",
+     "role": "other"
+    },
+    "42": {
+     "name": "~{SELN}",
+     "role": "other"
+    },
+    "43": {
+     "name": "MOSI",
+     "role": "other"
+    },
+    "44": {
+     "name": "MISO",
+     "role": "other"
+    },
+    "45": {
+     "name": "AVSS",
+     "role": "return"
+    },
+    "46": {
+     "name": "EVDD",
+     "role": "power"
+    },
+    "47": {
+     "name": "AVDD1",
+     "role": "power"
+    },
+    "48": {
+     "name": "AVSS",
+     "role": "return"
+    },
+    "49": {
+     "name": "AVSS",
+     "role": "return"
+    }
+   }
+  }
+ },
+ "circuit_decisions": [
+  {
+   "decision": "add",
+   "id": "RF-U1",
+   "type": "RF",
+   "members": [
+    "U1",
+    "T1",
+    "T2",
+    "D1",
+    "D2",
+    "J2",
+    "J3",
+    "L1",
+    "C2",
+    "C4",
+    "C5",
+    "C6",
+    "C7",
+    "C8",
+    "C9",
+    "C10",
+    "C11",
+    "C12",
+    "C13",
+    "C14"
+   ],
+   "via": {
+    "U1": "+3V3",
+    "T1": "GND",
+    "T2": "/RF09_N",
+    "D1": "/RF24",
+    "D2": "/RF09",
+    "J2": "/RF24",
+    "J3": "/RF09",
+    "L1": "Net-(T1-PR1)",
+    "C2": "+3V3",
+    "C4": "GND",
+    "C5": "GND",
+    "C6": "GND",
+    "C7": "/RF24_N",
+    "C8": "/RF24_P",
+    "C9": "/RF24",
+    "C10": "/RF09",
+    "C11": "+3V3",
+    "C12": "+3V3",
+    "C13": "+3V3",
+    "C14": "+3V3"
+   },
+   "states": [
+    "receive",
+    "transmit",
+    "sleep"
+   ],
+   "citation": "推断：原图p1 U1双频RF前端；Atmel-42415E p3 §1.1、p9 §2.2.1、p75 Table6-34；receive/transmit/sleep为手册能力，不是受控产品工况。"
+  },
+  {
+   "decision": "add",
+   "id": "CLOCK-U2",
+   "type": "CLOCK",
+   "members": [
+    "U2",
+    "R19",
+    "R2",
+    "C1"
+   ],
+   "via": {
+    "U2": "+3V3",
+    "R19": "Net-(U1-TCXO)",
+    "R2": "GND",
+    "C1": "+3V3"
+   },
+   "states": [
+    "run"
+   ],
+   "citation": "原图p1 U2.OUT经R19=0到U1.TCXO、XTAL2经R2=0接地；Atmel-42415E p68 §6.4.3；run仅代表本图供电运行，U2准确手册未得。"
+  },
+  {
+   "decision": "add",
+   "id": "IQ-J1",
+   "type": "HSSERIAL",
+   "members": [
+    "J1",
+    "R7",
+    "R10",
+    "R13",
+    "R16"
+   ],
+   "via": {
+    "J1": "+3V3",
+    "R7": "/TXCLK_N",
+    "R10": "/TXCLK_P",
+    "R13": "/TXD_N",
+    "R16": "/TXD_P"
+   },
+   "states": [
+    "run"
+   ],
+   "citation": "原图p1 J1 RXCLK/RXD09/RXD24、TXCLK/TXD到U1差分接口；Atmel-42415E p22 §4.6和p205-207的LVDS接口；run按芯片接口能力推断。"
+  },
+  {
+   "decision": "reject",
+   "ref": "H1",
+   "reason": "NOT_A_CIRCUIT",
+   "citation": "原理图p1 H1单焊盘安装孔，Mechanical:MountingHole_Pad，无有源输入功能。"
+  },
+  {
+   "decision": "reject",
+   "ref": "H2",
+   "reason": "NOT_A_CIRCUIT",
+   "citation": "原理图p1 H2单焊盘安装孔，Mechanical:MountingHole_Pad，无有源输入功能。"
+  }
+ ],
+ "decoupling": {
+  "schema_version": 4,
+  "components": {
+   "C1": {
+    "kind": "capacitor",
+    "citation": "原图p1 C1无极性电容符号及原生装配属性"
+   },
+   "C2": {
+    "kind": "capacitor",
+    "citation": "原图p1 C2无极性电容符号及原生装配属性"
+   },
+   "C3": {
+    "kind": "capacitor",
+    "citation": "原图p1 C3无极性电容符号及原生装配属性"
+   },
+   "C4": {
+    "kind": "capacitor",
+    "citation": "原图p1 C4无极性电容符号及原生装配属性"
+   },
+   "C5": {
+    "kind": "capacitor",
+    "citation": "原图p1 C5无极性电容符号及原生装配属性"
+   },
+   "C6": {
+    "kind": "capacitor",
+    "citation": "原图p1 C6无极性电容符号及原生装配属性"
+   },
+   "C7": {
+    "kind": "capacitor",
+    "citation": "原图p1 C7无极性电容符号及原生装配属性"
+   },
+   "C8": {
+    "kind": "capacitor",
+    "citation": "原图p1 C8无极性电容符号及原生装配属性"
+   },
+   "C9": {
+    "kind": "capacitor",
+    "citation": "原图p1 C9无极性电容符号及原生装配属性"
+   },
+   "C10": {
+    "kind": "capacitor",
+    "citation": "原图p1 C10无极性电容符号及原生装配属性"
+   },
+   "C11": {
+    "kind": "capacitor",
+    "citation": "原图p1 C11无极性电容符号及原生装配属性"
+   },
+   "C12": {
+    "kind": "capacitor",
+    "citation": "原图p1 C12无极性电容符号及原生装配属性"
+   },
+   "C13": {
+    "kind": "capacitor",
+    "citation": "原图p1 C13无极性电容符号及原生装配属性"
+   },
+   "C14": {
+    "kind": "capacitor",
+    "citation": "原图p1 C14无极性电容符号及原生装配属性"
+   }
+  },
+  "groups": [
+   {
+    "ref": "U1",
+    "net": "+3V3",
+    "purpose": "bypass",
+    "requirements": [
+     {
+      "kind": "connection",
+      "criterion": "EVDD/DEVDD同电位且各供电脚本地旁路到地。",
+      "citation": "Atmel-42415E pp9,11,75 §§2.2.2–4/Figure3-1/§6.6"
+     },
+     {
+      "kind": "capacitance",
+      "criterion": "Figure3-1每供电点Cdec，未在此给外部供电旁路强制总容量；不以同网标称总量证明PCB布局。",
+      "citation": "Atmel-42415E p11 Figure3-1"
+     }
+    ]
+   },
+   {
+    "ref": "U1",
+    "net": "Net-(U1-AVDD0)",
+    "purpose": "regulator_output",
+    "requirements": [
+     {
+      "kind": "connection",
+      "criterion": "AVDD0/AVDD1/DVDD彼此独立，各自电容接地，不作外供电源。",
+      "citation": "Atmel-42415E pp9,11,75 §§2.2.2–4/Figure3-1/§6.6"
+     },
+     {
+      "kind": "capacitance",
+      "criterion": "100nF≤Cdec≤10000nF；有效值需计公差/DC偏压。",
+      "citation": "Atmel-42415E p188 Table10-4"
+     }
+    ]
+   },
+   {
+    "ref": "U1",
+    "net": "Net-(U1-AVDD1)",
+    "purpose": "regulator_output",
+    "requirements": [
+     {
+      "kind": "connection",
+      "criterion": "AVDD0/AVDD1/DVDD彼此独立，各自电容接地，不作外供电源。",
+      "citation": "Atmel-42415E pp9,11,75 §§2.2.2–4/Figure3-1/§6.6"
+     },
+     {
+      "kind": "capacitance",
+      "criterion": "100nF≤Cdec≤10000nF；有效值需计公差/DC偏压。",
+      "citation": "Atmel-42415E p188 Table10-4"
+     }
+    ]
+   },
+   {
+    "ref": "U1",
+    "net": "Net-(U1-DVDD)",
+    "purpose": "regulator_output",
+    "requirements": [
+     {
+      "kind": "connection",
+      "criterion": "AVDD0/AVDD1/DVDD彼此独立，各自电容接地，不作外供电源。",
+      "citation": "Atmel-42415E pp9,11,75 §§2.2.2–4/Figure3-1/§6.6"
+     },
+     {
+      "kind": "capacitance",
+      "criterion": "100nF≤Cdec≤10000nF；有效值需计公差/DC偏压。",
+      "citation": "Atmel-42415E p188 Table10-4"
+     }
+    ]
+   }
+  ]
+ },
+ "circuits": [
+  {
+   "id": "RF-U1",
+   "type": "RF",
+   "refs": [
+    "C10",
+    "C11",
+    "C12",
+    "C13",
+    "C14",
+    "C2",
+    "C4",
+    "C5",
+    "C6",
+    "C7",
+    "C8",
+    "C9",
+    "D1",
+    "D2",
+    "J2",
+    "J3",
+    "L1",
+    "T1",
+    "T2",
+    "U1"
+   ],
+   "nets": [],
+   "states": [
+    "receive",
+    "transmit",
+    "sleep"
+   ],
+   "citation": "推断：原图p1 U1双频RF前端；Atmel-42415E p3 §1.1、p9 §2.2.1、p75 Table6-34；receive/transmit/sleep为手册能力，不是受控产品工况。",
+   "candidate_ids": [],
+   "cross_cutting": false,
+   "anchors": [],
+   "owned": [
+    "C10",
+    "C11",
+    "C12",
+    "C13",
+    "C14",
+    "C2",
+    "C4",
+    "C5",
+    "C6",
+    "C7",
+    "C8",
+    "C9",
+    "D1",
+    "D2",
+    "J2",
+    "J3",
+    "L1",
+    "T1",
+    "T2",
+    "U1"
+   ]
+  },
+  {
+   "id": "CLOCK-U2",
+   "type": "CLOCK",
+   "refs": [
+    "C1",
+    "R19",
+    "R2",
+    "U2"
+   ],
+   "nets": [],
+   "states": [
+    "run"
+   ],
+   "citation": "原图p1 U2.OUT经R19=0到U1.TCXO、XTAL2经R2=0接地；Atmel-42415E p68 §6.4.3；run仅代表本图供电运行，U2准确手册未得。",
+   "candidate_ids": [],
+   "cross_cutting": false,
+   "anchors": [],
+   "owned": [
+    "C1",
+    "R19",
+    "R2",
+    "U2"
+   ]
+  },
+  {
+   "id": "IQ-J1",
+   "type": "HSSERIAL",
+   "refs": [
+    "J1",
+    "R10",
+    "R13",
+    "R16",
+    "R7"
+   ],
+   "nets": [],
+   "states": [
+    "run"
+   ],
+   "citation": "原图p1 J1 RXCLK/RXD09/RXD24、TXCLK/TXD到U1差分接口；Atmel-42415E p22 §4.6和p205-207的LVDS接口；run按芯片接口能力推断。",
+   "candidate_ids": [],
+   "cross_cutting": false,
+   "anchors": [],
+   "owned": [
+    "J1",
+    "R10",
+    "R13",
+    "R16",
+    "R7"
+   ]
+  }
+ ],
+ "circuit_candidates_sha256": "0cdd737889109f41c0a339329a8dccc6c39af298eb194bad048a1936f1a75efc"
+}
