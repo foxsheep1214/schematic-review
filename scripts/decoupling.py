@@ -370,11 +370,25 @@ class Inventory:
                 if self.role(node) == 'power':
                     by_net[self.pin2net.get(node) or 'UNCONNECTED:' + node].append(node)
             returns = sorted(n for n in nodes if self.role(n) == 'return')
+            sides = self.isolation_sides(ref)
             for net, supplies in sorted(by_net.items()):
+                own = returns
+                side = [set(s) for s in sides if any(n.partition('.')[2] in s for n in supplies)]
+                if len(side) == 1:   # an isolator's supply pairs with its own side's return (VCCA/GNDA), never across
+                    own = [n for n in returns if n.partition('.')[2] in side[0]]
                 groups.append({'id': 'candidate:' + ref + ':' + net, 'ref': ref,
-                               'supply_nodes': supplies, 'return_nodes': returns,
+                               'supply_nodes': supplies, 'return_nodes': own,
                                'origin': 'candidate', 'requirements': []})
         return groups
+
+    def isolation_sides(self, ref):
+        """Physical pin sets of a resolved two-sided isolating part (checkers/isolation_sides), else []."""
+        from checkers import isolation_sides
+        from checkers.netgraph import NetGraph
+        if not hasattr(self, '_graph'):
+            self._graph = NetGraph(self.db)
+        model = isolation_sides.model(self._graph, ref)
+        return [s['pins'] for s in model['sides']] if model and model.get('resolved') else []
 
     def device_inventory(self):
         output = []

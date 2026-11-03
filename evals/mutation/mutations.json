@@ -6921,5 +6921,19 @@
   "file": "scripts/plan_review.py",
   "old": "        if stale:\n            raise ValueError(",
   "new": "        if stale and False:\n            raise ValueError("
+ },
+ {
+  "id": "M1128",
+  "name": "an isolator supply group takes both sides' returns",
+  "file": "scripts/decoupling.py",
+  "old": "                if len(side) == 1:   # an isolator's supply pairs with its own side's return (VCCA/GNDA), never across\n",
+  "new": "                if False:\n"
+ },
+ {
+  "id": "M1129",
+  "name": "MAX14850 is not recognised as a digital isolator",
+  "file": "scripts/checkers/isolation_sides.py",
+  "old": "|CA-IS\\d|MAX1485\\d)', mpn)",
+  "new": "|CA-IS\\d)', mpn)"
  }
 ]

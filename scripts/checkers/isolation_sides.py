@@ -102,7 +102,7 @@ def model(graph, ref, intent=None):
             secondary = [p for p in actual if re.match(r'^(SEC|SECONDARY)', names[p], re.I)]
             if primary and secondary:
                 groups = (primary, secondary)
-    elif groups is None and (graph.role_kind(ref) == 'isolator' or re.match(r'^(ADUM\d|ISO\d|SI8[46]\d|CA-IS\d)', mpn)):
+    elif groups is None and (graph.role_kind(ref) == 'isolator' or re.match(r'^(ADUM\d|ISO\d|SI8[46]\d|CA-IS\d|MAX1485\d)', mpn)):
         mechanism = 'digital_isolator'
         # Side letters on the supplies (VCCA/GNDA, VCCB/GNDB: MAX14850) name the sides; the trailing channel digit of
         # INA1/OUTB2 is a channel, not a side (boards-merge4). Otherwise VDD1/GND1 digits name the sides (ADuM).

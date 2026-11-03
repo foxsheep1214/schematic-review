@@ -1283,7 +1283,7 @@
    "known_deviations": {}
   },
   "rf1-c2000-float-flyback": {
-   "verification": "连通性独立核对：在原始 KiCad 文件上按引脚坐标、导线、标签、层次图脚和电源符号（KiCad 8+ 按 Value 连接）自算连通，与导出网表的引脚分组逐网相同。 85 器件/51 网/4 张子图+空根页（DOC-V01 5 项）。独立 XML 扫描：无缺名功能脚；21 个去耦候选组与电容归属逐组一致（ISO7710/AMC03xx 的 GND1/GND2 两个返回网 → need-one-explicit-return-net；Reg1 LM317M 无地脚同理；U12 VS 脚在 VOUT_N 自成候选组）。检查数 286 逐规则核对：DEV-D01/DEV-C05 12 项 = U1/U3/U5/U7/U8/U9/U10/U11/U12 + 按原生电源脚识别的 Reg1–Reg3；电源轨 8 条（3V3_CTRL、HV_BIAS、HV80_IN、RAIL_3V3_PRI/SEC、RAIL_8V25、VIN、VOUT_P；VOUT_N 为回流，VOUT_FBACK/SENSE 为反馈检测线）；PRO-C02 6 项 = D1(SW_PRI–GND)、D3(HV_BIAS–GND)、D4(SW_SEC–VOUT_N) 各两侧；ANA-C04 1 项 = TH1 检测端 TEMP 上的 U8.2(INP)；连接器 5 个（In1/Out1/J1/CpuIn1/CpuOut1）各 DEV-D03/DEV-E01/PRO-D03。冷跑无 intent，NA=0。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 12（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）5 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +4；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 2 个、电源轨 8 条：PWR-T06 1 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +1；系统功能框架 FN-SYS-GROUND、FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。 规则库 1.2.0 增量（2026-11-01）：共加 3 项：全板 REQ-D05、PRO-D05、PRO-D06 三项，其余是本板 I²C 总线段的 SIG-C13、SIG-C15。; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints；（boards-merge4-v1）rf1 的 HV_BIAS 只经 R10/R9 100k 接到 VOUT_N 的绕组来源：kΩ 级偏置供电是合法弱驱动，PWR-A01 由疑似无驱动 FINDING 改为带 R 值的 INFO，计划少一行（368→367，frames 393→392）及对应框架成员；不表示该偏置的压降或电气合格。",
+   "verification": "连通性独立核对：在原始 KiCad 文件上按引脚坐标、导线、标签、层次图脚和电源符号（KiCad 8+ 按 Value 连接）自算连通，与导出网表的引脚分组逐网相同。 85 器件/51 网/4 张子图+空根页（DOC-V01 5 项）。独立 XML 扫描：无缺名功能脚；21 个去耦候选组与电容归属逐组一致（ISO7710/AMC03xx 的 GND1/GND2 两个返回网 → need-one-explicit-return-net；Reg1 LM317M 无地脚同理；U12 VS 脚在 VOUT_N 自成候选组）。检查数 286 逐规则核对：DEV-D01/DEV-C05 12 项 = U1/U3/U5/U7/U8/U9/U10/U11/U12 + 按原生电源脚识别的 Reg1–Reg3；电源轨 8 条（3V3_CTRL、HV_BIAS、HV80_IN、RAIL_3V3_PRI/SEC、RAIL_8V25、VIN、VOUT_P；VOUT_N 为回流，VOUT_FBACK/SENSE 为反馈检测线）；PRO-C02 6 项 = D1(SW_PRI–GND)、D3(HV_BIAS–GND)、D4(SW_SEC–VOUT_N) 各两侧；ANA-C04 1 项 = TH1 检测端 TEMP 上的 U8.2(INP)；连接器 5 个（In1/Out1/J1/CpuIn1/CpuOut1）各 DEV-D03/DEV-E01/PRO-D03。冷跑无 intent，NA=0。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 12（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）5 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +4；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 2 个、电源轨 8 条：PWR-T06 1 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +1；系统功能框架 FN-SYS-GROUND、FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。 规则库 1.2.0 增量（2026-11-01）：共加 3 项：全板 REQ-D05、PRO-D05、PRO-D06 三项，其余是本板 I²C 总线段的 SIG-C13、SIG-C15。; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints；（boards-merge4-v1）rf1 的 HV_BIAS 只经 R10/R9 100k 接到 VOUT_N 的绕组来源：kΩ 级偏置供电是合法弱驱动，PWR-A01 由疑似无驱动 FINDING 改为带 R 值的 INFO，计划少一行（368→367，frames 393→392）及对应框架成员；不表示该偏置的压降或电气合格。；（boards-merge4-v1）rf1 的 U3/U10（ISO7710/AMC03xx 类两侧隔离器）去耦候选组只取本侧返回脚（GND1 或 GND2），need-one-explicit-return-net 缺口消失、改为列出本侧电容的装配缺口；检查数不变，不表示去耦已核。",
    "fields": {
     "parse.strict_exit": 0,
     "parse.strict_db_written": true,
@@ -1382,14 +1382,24 @@
      ],
      "UNSPECIFIED/candidate:U10:3V3_CTRL": [
       "confirm-group-and-return:candidate:U10:3V3_CTRL",
-      "need-one-explicit-return-net",
       "official-full-pinout:U10",
+      "population:C15",
+      "population:C26",
+      "population:C28",
+      "population:C32",
+      "population:C34",
+      "population:C39",
       "population:U10"
      ],
      "UNSPECIFIED/candidate:U10:RAIL_3V3_PRI": [
       "confirm-group-and-return:candidate:U10:RAIL_3V3_PRI",
-      "need-one-explicit-return-net",
       "official-full-pinout:U10",
+      "population:C14",
+      "population:C16",
+      "population:C25",
+      "population:C31",
+      "population:C35",
+      "population:C38",
       "population:U10"
      ],
      "UNSPECIFIED/candidate:U11:3V3_CTRL": [
@@ -1418,14 +1428,24 @@
      ],
      "UNSPECIFIED/candidate:U3:3V3_CTRL": [
       "confirm-group-and-return:candidate:U3:3V3_CTRL",
-      "need-one-explicit-return-net",
       "official-full-pinout:U3",
+      "population:C15",
+      "population:C26",
+      "population:C28",
+      "population:C32",
+      "population:C34",
+      "population:C39",
       "population:U3"
      ],
      "UNSPECIFIED/candidate:U3:RAIL_3V3_PRI": [
       "confirm-group-and-return:candidate:U3:RAIL_3V3_PRI",
-      "need-one-explicit-return-net",
       "official-full-pinout:U3",
+      "population:C14",
+      "population:C16",
+      "population:C25",
+      "population:C31",
+      "population:C35",
+      "population:C38",
       "population:U3"
      ],
      "UNSPECIFIED/candidate:U7:3V3_CTRL": [
@@ -1541,7 +1561,7 @@
    "known_deviations": {}
   },
   "rf1-c2000-float-flyback-intent": {
-   "verification": "同 rf1 冷跑夹具与 intent（schema 3，input_sha256 绑定本夹具）。intent 只引用上游原理图/生成脚本：T1 绕组 1(点)-3/2(点)-4（作者注明 L2 同名端按对称推定、待实物核对）、Q1 源极经 R19(7m5) 回 GND、Q2 由 U12 UCC24612 同步整流（只给 controller_ref/channel/citation）。检查数仍 286：T1 的 DRV-T01/DRV-C01 由 UNRESOLVED 改为按开关节点 SW_PRI 绑定（行数不变）；去耦组同冷跑，只是状态名为 run 且声明全贴装后去掉 population 缺口；组键与电容归属经独立脚本逐组一致。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 12（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）5 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +4；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 2 个、电源轨 8 条：PWR-T06 1 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +1；系统功能框架 FN-SYS-GROUND、FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。 规则库 1.2.0 增量（2026-11-01）：共加 3 项：全板 REQ-D05、PRO-D05、PRO-D06 三项，其余是本板 I²C 总线段的 SIG-C13、SIG-C15。; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints；（boards-merge4-v1）rf1 的 HV_BIAS 只经 R10/R9 100k 接到 VOUT_N 的绕组来源：kΩ 级偏置供电是合法弱驱动，PWR-A01 由疑似无驱动 FINDING 改为带 R 值的 INFO，计划少一行（368→367，frames 393→392）及对应框架成员；不表示该偏置的压降或电气合格。",
+   "verification": "同 rf1 冷跑夹具与 intent（schema 3，input_sha256 绑定本夹具）。intent 只引用上游原理图/生成脚本：T1 绕组 1(点)-3/2(点)-4（作者注明 L2 同名端按对称推定、待实物核对）、Q1 源极经 R19(7m5) 回 GND、Q2 由 U12 UCC24612 同步整流（只给 controller_ref/channel/citation）。检查数仍 286：T1 的 DRV-T01/DRV-C01 由 UNRESOLVED 改为按开关节点 SW_PRI 绑定（行数不变）；去耦组同冷跑，只是状态名为 run 且声明全贴装后去掉 population 缺口；组键与电容归属经独立脚本逐组一致。（lint-checks-v1）冷检 FINDING/CANDIDATE 各成一项计划检查，检查数增加 12（等于 lint.json 中无 check_id 的 FINDING/CANDIDATE 条数，检查 id 互不重复）；其余字段不变。（interface-rows-v1）5 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +4；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 2 个、电源轨 8 条：PWR-T06 1 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 3 行（DEV-C01@BOARD、DEV-C02@BOARD、DEV-C03@BOARD），检查数 +1；系统功能框架 FN-SYS-GROUND、FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。 规则库 1.2.0 增量（2026-11-01）：共加 3 项：全板 REQ-D05、PRO-D05、PRO-D06 三项，其余是本板 I²C 总线段的 SIG-C13、SIG-C15。; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints；（boards-merge4-v1）rf1 的 HV_BIAS 只经 R10/R9 100k 接到 VOUT_N 的绕组来源：kΩ 级偏置供电是合法弱驱动，PWR-A01 由疑似无驱动 FINDING 改为带 R 值的 INFO，计划少一行（368→367，frames 393→392）及对应框架成员；不表示该偏置的压降或电气合格。；（boards-merge4-v1）rf1 的 U3/U10（ISO7710/AMC03xx 类两侧隔离器）去耦候选组只取本侧返回脚（GND1 或 GND2），need-one-explicit-return-net 缺口消失、改为列出本侧电容的装配缺口；检查数不变，不表示去耦已核。",
    "fields": {
     "parse.strict_exit": 0,
     "parse.strict_db_written": true,
@@ -1613,12 +1633,10 @@
      ],
      "run/candidate:U10:3V3_CTRL": [
       "confirm-group-and-return:candidate:U10:3V3_CTRL",
-      "need-one-explicit-return-net",
       "official-full-pinout:U10"
      ],
      "run/candidate:U10:RAIL_3V3_PRI": [
       "confirm-group-and-return:candidate:U10:RAIL_3V3_PRI",
-      "need-one-explicit-return-net",
       "official-full-pinout:U10"
      ],
      "run/candidate:U11:3V3_CTRL": [
@@ -1643,12 +1661,10 @@
      ],
      "run/candidate:U3:3V3_CTRL": [
       "confirm-group-and-return:candidate:U3:3V3_CTRL",
-      "need-one-explicit-return-net",
       "official-full-pinout:U3"
      ],
      "run/candidate:U3:RAIL_3V3_PRI": [
       "confirm-group-and-return:candidate:U3:RAIL_3V3_PRI",
-      "need-one-explicit-return-net",
       "official-full-pinout:U3"
      ],
      "run/candidate:U7:3V3_CTRL": [
@@ -1838,7 +1854,7 @@
    "known_deviations": {}
   },
   "rf1-c2000-float-flyback-frames": {
-   "verification": "同 rf1-intent 的夹具与 intent，再声明 3 个电路。检查数 298→326：每个电路按功能包成员规则×状态展开，POWER_CONVERTER 5 条×2 态=10、POWER_PROTECTION 6 条×2 态=12、ANALOG 6 条×1 态=6，合计 28，按 check-catalog.md 的包成员表手算；三个功能包在父用例里已有 REQ-Q07 汇总行，所以汇总行数不变。plan.functions 每电路一个框架，成员数等于上述乘积，状态照 intent。其余字段（解析、冷检、DOC-Q01、去耦）与 rf1-intent 逐字段相同。（function-frames-v1）（state-invariant-v1）PWR-T05 与工作态无关，HV-CLAMP 的 run/surge 两行并成一行 PWR-T05.HV-CLAMP.D1：检查数 326→325，FN-HV-CLAMP 成员 12→11；PRI-FLYBACK、TEMP 的成员规则里没有状态无关项（ANA-D01 在 TEMP 只有一个状态），不变。（circuit-candidates-v1）电路来自候选与决定：生成器在无已核实 IC 类别的夹具上给出 5 个候选，决定合并 Q1/Q2 为 PRI-FLYBACK（27 件，startup/run/fault）、Out1 走线判为其重复、Q3/Q4 判为非电路；HV-CLAMP 与 TEMP 不再手画（D1/D3/D4 的 TVS 行仍由 PRO-C02 覆盖，TH1 由 ANA-C04 覆盖）。检查数 298 + 5×3 = 313，FN-PRI-FLYBACK 成员 15 = 5 条规则 × 3 态；其余字段与 rf1-intent 逐字段相同。（interface-rows-v1）5 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +4；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 2 个、电源轨 8 条：PWR-T06 1 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 6 行（DEV-C01@BOARD、DEV-C01@PRI-FLYBACK、DEV-C02@BOARD、DEV-C02@PRI-FLYBACK、DEV-C03@BOARD、DEV-C03@PRI-FLYBACK），检查数 +4；系统功能框架 FN-SYS-GROUND、FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。（active-part-decisions-v1）intent 夹具换为补了 10 条器件决定的副本（U1/U12 add 进 PRI-FLYBACK，8 颗 reject）：未归属有源件必须决定，否则校验拒收；电路成员 27→29 不改任何观测字段（框架成员按规则×状态数），检查数仍 348。（unknown-kind-decisions-v1）intent 夹具再补 Reg1–Reg3 三条器件级 reject（类别读不出、三个以上网的未归属器件也须决定）；观测字段不变。（owned-rows-in-frames-v1）电路拥有的器件行预绑到电路框架：FN-PRI-FLYBACK 成员 15→98（15 条电路行 + 83 条该电路拥有的器件/扫描行，按计划 owner 为 PRI-FLYBACK 且原无 function_id 的行数独立重算相等），其余框架不变。 规则库 1.2.0 增量（2026-11-01）：共加 3 项：全板 REQ-D05、PRO-D05、PRO-D06 三项，其余是本板 I²C 总线段的 SIG-C13、SIG-C15。; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints；（boards-merge4-v1）rf1 的 HV_BIAS 只经 R10/R9 100k 接到 VOUT_N 的绕组来源：kΩ 级偏置供电是合法弱驱动，PWR-A01 由疑似无驱动 FINDING 改为带 R 值的 INFO，计划少一行（368→367，frames 393→392）及对应框架成员；不表示该偏置的压降或电气合格。",
+   "verification": "同 rf1-intent 的夹具与 intent，再声明 3 个电路。检查数 298→326：每个电路按功能包成员规则×状态展开，POWER_CONVERTER 5 条×2 态=10、POWER_PROTECTION 6 条×2 态=12、ANALOG 6 条×1 态=6，合计 28，按 check-catalog.md 的包成员表手算；三个功能包在父用例里已有 REQ-Q07 汇总行，所以汇总行数不变。plan.functions 每电路一个框架，成员数等于上述乘积，状态照 intent。其余字段（解析、冷检、DOC-Q01、去耦）与 rf1-intent 逐字段相同。（function-frames-v1）（state-invariant-v1）PWR-T05 与工作态无关，HV-CLAMP 的 run/surge 两行并成一行 PWR-T05.HV-CLAMP.D1：检查数 326→325，FN-HV-CLAMP 成员 12→11；PRI-FLYBACK、TEMP 的成员规则里没有状态无关项（ANA-D01 在 TEMP 只有一个状态），不变。（circuit-candidates-v1）电路来自候选与决定：生成器在无已核实 IC 类别的夹具上给出 5 个候选，决定合并 Q1/Q2 为 PRI-FLYBACK（27 件，startup/run/fault）、Out1 走线判为其重复、Q3/Q4 判为非电路；HV-CLAMP 与 TEMP 不再手画（D1/D3/D4 的 TVS 行仍由 PRO-C02 覆盖，TH1 由 ANA-C04 覆盖）。检查数 298 + 5×3 = 313，FN-PRI-FLYBACK 成员 15 = 5 条规则 × 3 态；其余字段与 rf1-intent 逐字段相同。（interface-rows-v1）5 个连接器各得 DEV-C04 一行并去掉全板 DEV-C04，检查数 +4；每个连接器一个接口框架（DEV-D03/DEV-C04/PRO-D03 三个成员），其余字段不变。（system-functions-v1）地网 2 个、电源轨 8 条：PWR-T06 1 行、RST-T03 1 行、SIG-D13 1 行，DEV-C01/C02/C03 全板与电路行 6 行（DEV-C01@BOARD、DEV-C01@PRI-FLYBACK、DEV-C02@BOARD、DEV-C02@PRI-FLYBACK、DEV-C03@BOARD、DEV-C03@PRI-FLYBACK），检查数 +4；系统功能框架 FN-SYS-GROUND、FN-SYS-MONITOR、FN-SYS-PINMAP、FN-SYS-POWER、FN-SYS-SEQUENCE，其余字段不变。（active-part-decisions-v1）intent 夹具换为补了 10 条器件决定的副本（U1/U12 add 进 PRI-FLYBACK，8 颗 reject）：未归属有源件必须决定，否则校验拒收；电路成员 27→29 不改任何观测字段（框架成员按规则×状态数），检查数仍 348。（unknown-kind-decisions-v1）intent 夹具再补 Reg1–Reg3 三条器件级 reject（类别读不出、三个以上网的未归属器件也须决定）；观测字段不变。（owned-rows-in-frames-v1）电路拥有的器件行预绑到电路框架：FN-PRI-FLYBACK 成员 15→98（15 条电路行 + 83 条该电路拥有的器件/扫描行，按计划 owner 为 PRI-FLYBACK 且原无 function_id 的行数独立重算相等），其余框架不变。 规则库 1.2.0 增量（2026-11-01）：共加 3 项：全板 REQ-D05、PRO-D05、PRO-D06 三项，其余是本板 I²C 总线段的 SIG-C13、SIG-C15。; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints; merge2b: native passive contacts/mechanical symbols have no IC bypass obligation; interface coverage enumerates real signal/power endpoints；（boards-merge4-v1）rf1 的 HV_BIAS 只经 R10/R9 100k 接到 VOUT_N 的绕组来源：kΩ 级偏置供电是合法弱驱动，PWR-A01 由疑似无驱动 FINDING 改为带 R 值的 INFO，计划少一行（368→367，frames 393→392）及对应框架成员；不表示该偏置的压降或电气合格。；（boards-merge4-v1）rf1 的 U3/U10（ISO7710/AMC03xx 类两侧隔离器）去耦候选组只取本侧返回脚（GND1 或 GND2），need-one-explicit-return-net 缺口消失、改为列出本侧电容的装配缺口；检查数不变，不表示去耦已核。",
    "fields": {
     "parse.strict_exit": 0,
     "parse.strict_db_written": true,
@@ -1910,12 +1926,10 @@
      ],
      "run/candidate:U10:3V3_CTRL": [
       "confirm-group-and-return:candidate:U10:3V3_CTRL",
-      "need-one-explicit-return-net",
       "official-full-pinout:U10"
      ],
      "run/candidate:U10:RAIL_3V3_PRI": [
       "confirm-group-and-return:candidate:U10:RAIL_3V3_PRI",
-      "need-one-explicit-return-net",
       "official-full-pinout:U10"
      ],
      "run/candidate:U11:3V3_CTRL": [
@@ -1940,12 +1954,10 @@
      ],
      "run/candidate:U3:3V3_CTRL": [
       "confirm-group-and-return:candidate:U3:3V3_CTRL",
-      "need-one-explicit-return-net",
       "official-full-pinout:U3"
      ],
      "run/candidate:U3:RAIL_3V3_PRI": [
       "confirm-group-and-return:candidate:U3:RAIL_3V3_PRI",
-      "need-one-explicit-return-net",
       "official-full-pinout:U3"
      ],
      "run/candidate:U7:3V3_CTRL": [

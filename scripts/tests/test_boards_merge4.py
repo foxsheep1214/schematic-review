@@ -361,3 +361,28 @@ def test_carried_function_binding_is_rebuilt_as_a_member_and_a_dangling_one_is_a
     assert len(planner.functions[0]['members']) == 1
     with pytest.raises(ValueError, match='internal error'):
         planner.bind_owned_rows([dict(row, id='PRO-E02.D2-1', function_id='FN-GONE')])
+
+
+def test_isolator_supply_pairs_with_its_own_side_return():
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    from plan_review import build_review_plan
+    db = empty()
+    add(db, 'U103', 'MAX14850', [('1', 'VCCA', '3V3'), ('8', 'GNDA', 'GND'), ('2', 'INA1', 'M-CLK'),
+                                 ('16', 'VCCB', 'VEE'), ('9', 'GNDB', 'AGND'), ('15', 'OUTB1', 'B1')])
+    db['native_pintype'] = {'U103.1': 'power_in', 'U103.8': 'power_in', 'U103.16': 'power_in', 'U103.9': 'power_in'}
+    add(db, 'C1', '100nF', [('1', '', '3V3'), ('2', '', 'GND')])
+    add(db, 'C2', '100nF', [('1', '', 'VEE'), ('2', '', 'AGND')])
+    rows = [c for c in build_review_plan(db)['checks'] if c['rule'] == 'PWR-T03' and 'U103' in str(c['object'])]
+    returns = {tuple(c['object']['nets']): c['object']['return_nets'] for c in rows}
+    assert returns[('3V3',)] == ['GND'] and returns[('VEE',)] == ['AGND']
+
+
+def test_max14850_is_a_two_sided_isolator_by_identity():
+    from test_boards_merge2b_roles import empty
+    from test_inductive_load import add
+    from checkers.netgraph import NetGraph
+    from checkers import isolation_sides
+    db = empty()
+    add(db, 'U103', 'MAX14850', [('1', 'VCCA', '3V3'), ('8', 'GNDA', 'GND'), ('16', 'VCCB', 'VEE'), ('9', 'GNDB', 'AGND')])
+    assert isolation_sides.model(NetGraph(db), 'U103')['resolved']
