@@ -1,0 +1,1176 @@
+{
+  "board": "loredati-svg--tpa3116d2-class-d-amplifier",
+  "source": {
+    "repo": "Loredati-svg/TPA3116D2-Class-D-Amplifier",
+    "commit": "916c1696c967864a303baea76b7474cd7fa3ded0",
+    "schematic": "KiCad_Project/Audio_Amp_BT/Audio_Amp_v1.kicad_sch",
+    "license": "CERN-OHL-P-2.0"
+  },
+  "types": [
+    "AV",
+    "ANALOG",
+    "POWER_CONVERTER",
+    "UART",
+    "DC_24V",
+    "RF"
+  ],
+  "run": {
+    "db_sha256": "a0cfe25c3b49866486815661ec25869c4e07d627053e3b22a7d34daaf791ce07",
+    "plan_items": 268,
+    "findings_total": 24,
+    "results_judged": 62,
+    "gate": "FAIL",
+    "sr_commit": "2115623f4e426a77eb00262f2769c3c9bb54956d",
+    "native_findings": 2,
+    "results_needs_human": 206,
+    "functions": 18,
+    "note": "DEBUG只是测点候选，协议不适用；RF在BM64模组内，模型缺口F12。62项局部已判=44 PASS+15 NA+3 FAIL（共享2个缺陷）；206项needs_human。原生schema15不能合法闭合未定合同/部分功能，且部分功能条款链未完整，421条校验错误保留，报告valid=false仅诊断，不准出/不打包。",
+    "native_gate_valid": false,
+    "native_release": "NO_GO",
+    "native_gate_errors": 421,
+    "report_sha256": "8b65cfd93d5439fa5927536a42e1e82fb11814a2e953b434e1ed875410551e0a",
+    "plan_digest": "b00509d47c1f15075afda2cb43bc5178cd6e328bcc564529ca1b4025ef403c9d"
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "sr_rule": "DEV-D04",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "IC4"
+      ],
+      "nets": [
+        "+3.3V",
+        "Net-(IC4-SW)"
+      ],
+      "sr_text": "IC4实际实例的A/B订货字段冲突",
+      "verdict": "true_defect",
+      "evidence": "原生IC4 Value=LMR33630ADDA，而Manufacturer_Part_Number与Mouser字段=LMR33630BDDA；SNVSAN3F p3 Device Information表A=400kHz/B=1400kHz。源实例真实字段矛盾，不是仅库缓存名不同；尚未证明实物安装错误。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-MPN-FREQUENCY-MISMATCH",
+        "mutation": "保持IC4 Value=LMR33630ADDA，令Manufacturer_Part_Number与采购订货字段为LMR33630BDDA，保留6.8uH和100k/43.2k；预期检出身份冲突，电气分析保留A/B分支。",
+        "target_rule": "DEV-D04"
+      }
+    },
+    {
+      "id": "F02",
+      "sr_rule": "DOC-V02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [],
+      "nets": [],
+      "sr_text": "五页原生图的最后两页编号为6/5、7/5",
+      "verdict": "true_defect",
+      "evidence": "固定根图递归5页，原生PDF p4功放页脚Id:6/5、p5连接器Id:7/5；XML原生sheet inventory为5。是图纸编号矛盾，未声称电气缺页或元器件损坏。",
+      "proposed_fix": null,
+      "seed": {
+        "kind": "D-DRAWING-SHEET-INDEX",
+        "mutation": "图面夹具：保持根图仅五个实际页，将末两实例page属性改为6/7后由KiCad导出，使页脚为6/5、7/5；需要原生图/PDF夹具，不能假装纯db检出。",
+        "target_rule": "DOC-V02"
+      }
+    },
+    {
+      "id": "F03",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "IC4",
+        "L5",
+        "IC3"
+      ],
+      "nets": [
+        "+3.3V",
+        "Net-(IC4-SW)"
+      ],
+      "sr_text": "+3.3V电源轨疑似无驱动",
+      "verdict": "false_alarm",
+      "evidence": "网表IC4.8 SW→L5.1→L5.2 +3.3V→IC3.22 BAT_IN；SNVSAN3F p4 Table6-1将8脚定义为变换器开关输出。最终仍有PWR-A01.3-3V疑似，原生自定义库脚均UNSPEC不能当实际无供源。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint.power_path / scripts/checkers/powertree.py:PowerTree.source_of",
+        "what": "按已核regulator角色+官方SW端口及已贴L5追出同步buck供源；支持IC前缀，保留未知角色/断开电感的告警，不以+3.3V名字单独豁免。依据SNVSAN3F p4。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F04",
+      "sr_rule": "PWR-A01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "IC4",
+        "C43"
+      ],
+      "nets": [
+        "Net-(IC4-VCC)",
+        "GNDA"
+      ],
+      "sr_text": "Net-(IC4-VCC)电源轨疑似无驱动",
+      "verdict": "false_alarm",
+      "evidence": "IC4.6仅接C43=1uF至GNDA；SNVSAN3F p4 VCC是本芯片LDO输出，p7=4.75..5.25V（VIN6..36V）。最终第二条无驱动为该网；供电方向须按手册端口语义，不能把VCC一律当输入。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/lint.py:Lint._local_regulator_node / scripts/checkers/powertree.py:PowerTree.source_of",
+        "what": "让已核内部regulator-output用途和物理端口身份贯通源追踪，核IC4.6/C43真实同网；仅有VCC字样、输出还挂外载或身份未核时保留待核。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F05",
+      "sr_rule": "RST-E02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "IC4",
+        "C44"
+      ],
+      "nets": [
+        "Net-(IC4-BOOT)",
+        "Net-(IC4-SW)"
+      ],
+      "sr_text": "IC4.7 BOOT被展开为strap强制态",
+      "verdict": "false_alarm",
+      "evidence": "RST-E02.IC4-7要求数字strap表，但原生BOOT7→C44=100nF→SW8；SNVSAN3F p4、p22为bootstrap供电。该跨接正确，相关电容/应力仍由PWR/DEV问。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:CircuitPlanning.plan_concrete_checks",
+        "what": "STRAP_RE命中BOOT后，结合已核regulator/gate-driver角色与BOOT-SW飞跨电容排除数字strap；MCU真正BOOT脚照问；依据SNVSAN3F p4/p22。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F06",
+      "sr_rule": "PRO-C02",
+      "criteria": [
+        "G05-036",
+        "G05-037"
+      ],
+      "severity": "P2",
+      "refs": [
+        "IC2",
+        "R4"
+      ],
+      "nets": [
+        "Net-(IC2-FAULTZ)"
+      ],
+      "sr_text": "IC2.3 FAULTZ被展开为TRIP/NOTRIP阈值窗口",
+      "verdict": "false_alarm",
+      "evidence": "IC2.3为开漏故障状态输出，2SDZ同网经100k上拉24V；SLOS708G p4定义DO，p5还给26V/100k时VOL<=0.8V。不是外接UV/OV检测门限，PRO-C02.TRIP/NOTRIP错误对象应NA；自动恢复和受保护负载仍需审。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:CircuitPlanning.plan_threshold_checks",
+        "what": "PROTECT_PIN_RE命中FAULT后先用官方DO/open-drain角色分流，只有真正检测输入/门限/能量钳位才出双侧窗口；FAULT输出去故障动作与接口电平项。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F07",
+      "sr_rule": "SIG-D06",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "TP1",
+        "TP2",
+        "TP3",
+        "TP4"
+      ],
+      "nets": [
+        "/02_Bluetooth_Receiver/SYS_PWR",
+        "/02_Bluetooth_Receiver/RST_N",
+        "+3.3V",
+        "+24V"
+      ],
+      "sr_text": "TP1至TP4被识别为DEBUG协议电路",
+      "verdict": "false_alarm",
+      "evidence": "DEBUG-BOARD仅四个单针测点：TP1 SYS_PWR、TP2 RST_N、TP3 3.3V、TP4 24V，没有JTAG/SWD/时钟数据协议；真实UART在J1。测试接触与电气预留仍归DOC-D02，不凭测点名字索取调试协议。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:build (DEBUG candidate generation)",
+        "what": "区分单节点测试接触与真实可编程/调试接口；只给测试点生成测试性检查，含实际TCK/TMS/SWDIO等端点才建DEBUG。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F08",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "IC2"
+      ],
+      "nets": [],
+      "sr_text": "TPA3116D2手册标题被误读为oscillator并阻断功放角色",
+      "verdict": "false_alarm",
+      "evidence": "首次audit对p13 Class D audio amplifier声明给TITLE_MISMATCH:title oscillator；实际SLOS708G p1标题Class-D Stereo Amplifier，p13定义audio amplifier。通过kind_reason指回外部功率音频功能后VERIFIED；标题提取混入功能说明的振荡器措辞，不是IC2本体为时钟器件。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/datasheet_kinds.py:semantic_identity_text / title_check",
+        "what": "区分文档正式标题与Description中列举的内部功能；优先标题的Stereo Amplifier外部角色，补同义cue而不靠包含oscillator的说明覆盖功放身份。保留真正时钟发生器的声明核验。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F09",
+      "sr_rule": "REQ-Q07",
+      "criteria": [
+        "G02-002"
+      ],
+      "severity": "P2",
+      "refs": [
+        "IC3"
+      ],
+      "nets": [
+        "unconnected-(IC3-SCLK0-Pad3)"
+      ],
+      "sr_text": "未连接的I2S SCLK0触发SPI候选",
+      "verdict": "false_alarm",
+      "evidence": "REQ-Q07.SPI仅因IC3.3 SCLK0命中；DS60001403F p12 Table1-3此脚为I2S bit clock，原生1..4均NC。本板无SPI外设总线，模组内部功能不代表载板外接口。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:_feature_hits / plan_circuit_types",
+        "what": "按实际已连接端口与官方总线角色识别SPI；SCLK0已核I2S并原生NC时排除SPI父项，未核角色只保留候选，不声称缺SPI硬件。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F10",
+      "sr_rule": "REQ-Q07",
+      "criteria": [
+        "G02-002"
+      ],
+      "severity": "P2",
+      "refs": [
+        "IC3"
+      ],
+      "nets": [
+        "unconnected-(IC3-SCLK0-Pad3)"
+      ],
+      "sr_text": "未连接的I2S SCLK0触发CLOCK功能父项",
+      "verdict": "false_alarm",
+      "evidence": "REQ-Q07.CLOCK同样只由IC3.3未接I2S时钟命中；DS60001403F p4模组有晶体，p12给SCLK0角色；载板没有外部晶体/时钟分配。不能按CLOCK关键词要求本板晶体负载/起振闭环。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/plan_circuits.py:_feature_hits / plan_circuit_types",
+        "what": "过滤已核不外接的模块数字I2S时钟名称，区分模组内部时钟与载板实际CLOCK对象；仍保留外部时钟连接未知时的候选。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F11",
+      "sr_rule": "SIG-C07",
+      "criteria": [
+        "G02-023",
+        "G04-003",
+        "G04-004",
+        "G04-016"
+      ],
+      "severity": "P2",
+      "refs": [
+        "IC2",
+        "IC3",
+        "C1",
+        "C2",
+        "C4",
+        "C5"
+      ],
+      "nets": [
+        "IN_COM",
+        "IN_P_LEFT",
+        "IN_P_RIGHT"
+      ],
+      "sr_text": "模拟音频AOHPR/AOHPM/AOHPL接口被问数字逻辑电平",
+      "verdict": "false_alarm",
+      "evidence": "IF-ANALOG-IC2-BT-AUDIO含BM64模拟耳机输出，经四只1uF到功放模拟输入；DS60001403F p18 Fig2-7与SLOS708G p4（功放输入偏置3V）证明是模拟幅度/共模问题。数字VIH/VIL应NA；ANA-C01及补问C08仍未闭合。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:Deriver.role / derive；scripts/plan_circuits.py:interface subject selection",
+        "what": "让官方模拟输出/输入角色选择ANA幅度与共模判据；数字C07不套模拟波形，跨电源模拟接口仍必须出C08，不因C07 NA丢掉断电注入。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F12",
+      "sr_rule": "DEV-D02",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "IC3"
+      ],
+      "nets": [
+        "IN_COM",
+        "IN_P_LEFT",
+        "IN_P_RIGHT"
+      ],
+      "sr_text": "BM64 Stereo Audio Module缺少功能角色模型",
+      "verdict": "knowledge_gap",
+      "evidence": "准确DS60001403F已本地取得并核43脚，但标题Bluetooth Stereo Audio Module在角色表只可归ic，候选不作核心。本轮用add补AV，UART另加J1；源供电/时序/RF启动库存尚无完整模块模型。应收集典型电路与音频/RF模组外部端口角色，不能用裸MCU或裸片射频引脚套模组。",
+      "proposed_fix": {
+        "owner": "typical_circuit",
+        "where": "scripts/catalog.py:DEVICE_ROLES 与 references/typical-circuits/",
+        "what": "合并步增加音频无线模组外部端口/启动/电源/天线边界模型，以DS60001403F p12-13,p25-34,p43为首个样本。"
+      },
+      "seed": null
+    },
+    {
+      "id": "F13",
+      "sr_rule": "PWR-C03",
+      "criteria": [
+        "G03-020"
+      ],
+      "severity": "P2",
+      "refs": [
+        "L5",
+        "IC4"
+      ],
+      "nets": [
+        "Net-(IC4-SW)",
+        "+3.3V"
+      ],
+      "sr_text": "L5饱和与温升表只有典型条件，不能当全温保证",
+      "verdict": "knowledge_gap",
+      "evidence": "Vishay34362 Rev01-Oct-2026 p1，6.8uH±20%、DCRmax57.6mohm，升温40K/降L20%均typ4.4A；p4为典型曲线。A/B名义ΔIL约1.05/0.30A并不能与尚未受控的负载/限流/温度闭合。没有因4.4A小于某限流上界就判实物失效。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F14",
+      "sr_rule": "DEV-C05",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "D1",
+        "R16",
+        "IC3"
+      ],
+      "nets": [
+        "Net-(D1-A)",
+        "Net-(D1-K)",
+        "/02_Bluetooth_Receiver/SYS_PWR"
+      ],
+      "sr_text": "D1准确LED资料未锁，不能用GPIO绝限代替LED驱动工作窗",
+      "verdict": "knowledge_gap",
+      "evidence": "图D1=LED/LCSC C19171391（检索线索YONGYUTAI YLED0805R）；准确厂家PDF未取得并绑定。BM64 DS60001403F p52 LED为0..5.25mA恒流开漏而非普通12mA GPIO；R16=330ohm存在，不能报无限流。只能独立确认拓扑与片内电流档，实际LED身份/Vf/反向应力仍待准确信息。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F15",
+      "sr_rule": "DEV-C02",
+      "criteria": [
+        "G03-010",
+        "G03-039"
+      ],
+      "severity": "P2",
+      "refs": [
+        "C10",
+        "C17"
+      ],
+      "nets": [
+        "+24V",
+        "GNDA"
+      ],
+      "sr_text": "C10与C17储能电容准确MPN及寿命条件未闭合",
+      "verdict": "knowledge_gap",
+      "evidence": "两颗原图各220uF/描述50V，正极1=+24V、负极2=GNDA；LCSC C116211尚未绑定厂家手册，Footprint名字EEHZT1E561UV不独自等于实际采购MPN。不能因名字像560u/25V就认硬件装错；纹波/寿命只能按准确器件和任务剖面继续核。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F16",
+      "sr_rule": "PWR-D04",
+      "criteria": [
+        "G01-017",
+        "G01-051"
+      ],
+      "severity": "P2",
+      "refs": [
+        "J4",
+        "IC2",
+        "IC4"
+      ],
+      "nets": [
+        "+24V"
+      ],
+      "sr_text": "24V输入窗、源阻与非正常输入合同未受控",
+      "verdict": "needs_human",
+      "evidence": "J4.1直供IC2的PVCC/AVCC、IC4.VIN/EN，且入口450.432uF名义无串开关。PJ-102AH p1额定24V/5A，TPA p5推荐4.5..26V、绝限30V；只有+24V标签不证明公差/浪涌/反接/热插拔/短路源能力。PWR-C13/18/27、PRO-C04与反接项已有，待原设计者明确场景，不能套USB电容限值或任意工业窗。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F17",
+      "sr_rule": "RST-A03",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "IC4",
+        "J4"
+      ],
+      "nets": [
+        "+24V"
+      ],
+      "sr_text": "IC4使能直连输入轨无外部UVLO/延时是待核候选",
+      "verdict": "needs_human",
+      "evidence": "最终RST-A03是CANDIDATE；IC4.3/2同24V，SNVSAN3F p4允许EN接VIN且有内部UVLO/软启动。缺实际供源慢爬升/棕断边界与上游重试条件，不能因无外部RC/分压判真缺陷，也不能把未知应用窗口写false_alarm。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F18",
+      "sr_rule": "PWR-T04",
+      "criteria": [
+        "G03-025"
+      ],
+      "severity": "P2",
+      "refs": [
+        "IC3",
+        "R10",
+        "C64"
+      ],
+      "nets": [
+        "+3.3V",
+        "/02_Bluetooth_Receiver/RST_N"
+      ],
+      "sr_text": "BM64外部供电的棕断复位处置待定",
+      "verdict": "needs_human",
+      "evidence": "R10=10k/C64=100n名义RC1ms；DS60001403F p32内部POR，p30 Fig5-8推荐外部供电用supervisor并要求到2.7V前RST_N拉低。RC在准静态下随BAT_IN，不能保证所需棕断阈值；尚未给实际电源掉电/重试保证，须原设计者确认或增加有界复位方案。未把未实测失效写成已证实。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F19",
+      "sr_rule": "RST-T04",
+      "criteria": [
+        "G04-010"
+      ],
+      "severity": "P2",
+      "refs": [
+        "IC2",
+        "IC3",
+        "R3",
+        "R4",
+        "R11",
+        "R12",
+        "R13"
+      ],
+      "nets": [
+        "Net-(IC2-MUTE)",
+        "Net-(IC2-FAULTZ)",
+        "Net-(IC3-MFB)",
+        "Net-(IC3-EAN)",
+        "Net-(IC3-P2_0)"
+      ],
+      "sr_text": "功放与模组启动控制、允许爆音及自动上电意图待确认",
+      "verdict": "needs_human",
+      "evidence": "R3=100k下拉MUTE、R4=100k上拉FAULTZ/SDZ，模组MFB经R11=10k到SYS_PWR，EAN低/P2_0高为Flash Application（DS p34）。图的Anti POP注释不能保证上电静音时间；需固件模式/用户开关行为与允许终态。未断言固定MFB必锁死，也未用典型时序关闭所有启动状态。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F20",
+      "sr_rule": "SIG-C08",
+      "criteria": [
+        "G01-014",
+        "G04-005",
+        "G04-007",
+        "G04-008",
+        "G04-009",
+        "G04-021"
+      ],
+      "severity": "P2",
+      "refs": [
+        "IC3",
+        "J1"
+      ],
+      "nets": [
+        "UART_RX",
+        "UART_TX",
+        "GNDA"
+      ],
+      "sr_text": "UART服务口的对端电平与先供电合同未定",
+      "verdict": "needs_human",
+      "evidence": "J1.01到IC3.19 HCI_RXD、J1.02到20 HCI_TXD，J1.03地；DS60001403F p51逻辑输入高2.0..3.6V、VDD_IO3.0..3.6V。未给外接适配器是3.3V/5V、是否目标断电仍驱动及线长/ESD场景；SIG-C08.EXT-J1两项已生成，非漏报。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F21",
+      "sr_rule": "PRO-D04",
+      "criteria": [
+        "G01-014",
+        "G01-015",
+        "G01-016",
+        "G04-006",
+        "G04-007",
+        "G04-060",
+        "G04-074",
+        "G05-007",
+        "G05-054"
+      ],
+      "severity": "P2",
+      "refs": [
+        "IC2",
+        "L1",
+        "L2",
+        "L3",
+        "L4",
+        "J2",
+        "J3"
+      ],
+      "nets": [
+        "OUT_N_RIGHT",
+        "OUT_P_RIGHT",
+        "OUT_N_LEFT",
+        "OUT_P_LEFT"
+      ],
+      "sr_text": "扬声器负载、短路与倒灌场景未定",
+      "verdict": "needs_human",
+      "evidence": "原生四个10uH/680nF滤波输出到J2/J3 BTL，负极不是GNDA；图内4R符号仅作推断。SLOS708G p5 BTL负载下限3.2ohm且短路时L>=1uH；芯片内保护需计入，但实际功率/温度/线缆/对地短路与另一功放外接的容错边界未给。已有PRO-D04/SIG-C08端口项，未重复计漏报。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F22",
+      "sr_rule": "DOC-T01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "IC3",
+        "IC4",
+        "R17",
+        "R20",
+        "C1",
+        "C2",
+        "C4",
+        "C5"
+      ],
+      "nets": [
+        "+3.3V"
+      ],
+      "sr_text": "BT版采购装配BOM缺失，USB目录CSV已隔离",
+      "verdict": "needs_human",
+      "evidence": "同提交CSV在Audio_Amp_v1非Audio_Amp_BT。read_bom.py对副本读入120件，64共位号/23原始值字符串差异，其中C1等3u3对本图1u、R17/R20=47k/10k对100k/43.2k；缺本图IC3/IC4/J4等9件。没有把不适用CSV并入db或据它指控BT图错误；需原设计者指定适用装配表。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F23",
+      "sr_rule": "RST-D01",
+      "criteria": [],
+      "severity": "P2",
+      "refs": [
+        "IC3",
+        "J1",
+        "R11",
+        "R12",
+        "R13",
+        "TP2"
+      ],
+      "nets": [
+        "UART_RX",
+        "UART_TX",
+        "Net-(IC3-EAN)",
+        "Net-(IC3-P2_0)",
+        "/02_Bluetooth_Receiver/RST_N"
+      ],
+      "sr_text": "模组配置与救援通道的实际使用要求待确认",
+      "verdict": "needs_human",
+      "evidence": "DS60001403F p30、p33-34：UART DFU需P2_0/EAN与RST_N/MFB相应转换。本图仅三针UART，EAN/P2_0由10k固定、RST_N有TP2，不能直接宣称量产在线救援可达；也未给必须在线升级要求，留确认而非判定缺陷。",
+      "proposed_fix": null,
+      "seed": null
+    },
+    {
+      "id": "F24",
+      "sr_rule": "REQ-Q03",
+      "criteria": [
+        "G01-009",
+        "G02-021"
+      ],
+      "severity": "P2",
+      "refs": [],
+      "nets": [],
+      "sr_text": "未定工程合同与部分已审功能尚不能形成有效原生台账",
+      "verdict": "needs_human",
+      "evidence": "本轮268项逐ID记录：62项局部已判、206项needs_human，18功能框架保留未闭合范围；schema15仅有VENDOR_DATUM/REVIEW_INCOMPLETE开项，未定用户合同不属于厂家数据，不为else PASS强改功能结论。逐ID证据：/Users/skyfend/.cache/sr-boards/loredati-svg--tpa3116d2-class-d-amplifier/review/review-assessments.json；Top50：/Users/skyfend/.cache/sr-boards/loredati-svg--tpa3116d2-class-d-amplifier/review/top50-audit.json。门禁FAIL/NO_GO，原生资料不足0不代表206项完成，生成报告只是诊断，不打包准出。",
+      "proposed_fix": null,
+      "seed": null
+    }
+  ],
+  "misses": [
+    {
+      "id": "M01",
+      "criterion": "G04-010",
+      "sr_rule": "RST-T04",
+      "refs": [
+        "IC2",
+        "R3",
+        "R4"
+      ],
+      "nets": [
+        "Net-(IC2-MUTE)",
+        "Net-(IC2-FAULTZ)"
+      ],
+      "why_expected": "功放SDZ/MUTE是启动与复位默认控制输出路径；原计划没有RST-T04，STARTUP反而只在IC4 BOOT名称上待定。本轮rule_gap DEFAULT-AMP补回，不表示已经证明硬件失败。",
+      "evidence": "原生IC2.12经R3=100k至GNDA；2/3经R4=100k至24V；SLOS708G p4-5定义MUTE/SDZ，p24故障恢复。Top50#29。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/circuit_candidates.py:startup candidate discovery / scripts/plan_circuits.py:subject_precondition",
+        "what": "对已核audio amplifier的MUTE/SDZ/SHDN实际控制脚建立默认态检查，固定上/下拉也需问；非数字BOOT飞跨排除。"
+      },
+      "seed": {
+        "kind": "D-AUDIO-MUTE-HELD-HIGH",
+        "mutation": "将R3接GNDA的一端迁至GVDD，使MUTE固定为高而功放预期输出；保留其他连接，测试RST-T04计划与判据能发现输出永久Hi-Z的错误状态。",
+        "target_rule": "RST-T04"
+      }
+    },
+    {
+      "id": "M02",
+      "criterion": "G04-010",
+      "sr_rule": "RST-T04",
+      "refs": [
+        "IC3",
+        "R11",
+        "R12",
+        "R13"
+      ],
+      "nets": [
+        "Net-(IC3-MFB)",
+        "Net-(IC3-EAN)",
+        "Net-(IC3-P2_0)",
+        "/02_Bluetooth_Receiver/SYS_PWR"
+      ],
+      "why_expected": "模组虽generic ic，其MFB和Flash Application strap决定上电行为；原计划无该模组的RST-T04。本轮DEFAULT-BT补回，模组自带内部上下拉须计入。",
+      "evidence": "DS60001403F p12-13 MFB/EAN/P2_0角色，p34 Flash Application=EAN低/P2_0高，原生R12=10k下拉、R13=10k上拉、R11=10k至SYS_PWR；Top50#29。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/catalog.py:DEVICE_ROLES；scripts/circuit_candidates.py:startup candidate discovery",
+        "what": "为无线音频模组定义外部启动端口，核过MFB/EAN/P2_0即能生成默认态问题；不能因generic ic漏掉，不能假定移除R13就悬空（手册有内部上拉）。"
+      },
+      "seed": {
+        "kind": "D-BM64-WRONG-APPLICATION-STRAP",
+        "mutation": "将R13上端从+3.3V迁至GNDA，保持EAN下拉，得到P2_0低/EAN低的Flash IBDK而非本图注明的Flash Application；按DS Table5-1检查，不以删除外部上拉忽略内部偏置。",
+        "target_rule": "RST-T04"
+      }
+    },
+    {
+      "id": "M03",
+      "criterion": "G04-007",
+      "criteria": [
+        "G04-005",
+        "G04-007",
+        "G04-009"
+      ],
+      "sr_rule": "SIG-C08",
+      "refs": [
+        "IC2",
+        "IC3",
+        "C1",
+        "C2",
+        "C4",
+        "C5"
+      ],
+      "nets": [
+        "IN_COM",
+        "IN_P_LEFT",
+        "IN_P_RIGHT"
+      ],
+      "why_expected": "内部模拟IF只展开方向与逻辑C07，没有跨电源C08。24V功放与3.3V模组即使共地且有派生关系，也可能不同时间上/掉电；四只耦合电容会传递偏置阶跃。原有J2/J3扬声器端C08不覆盖功放音频输入。本轮ANALOG-POWEROFF补回，尚缺时序边界不是已证损坏。",
+      "evidence": "IC3.5/.6/.7→C1/C2/C4/C5各1u→IC2.4/.5/.10/.11；SLOS708G p4偏置3V，p5输入-0.3..6.3V；DS60001403F p18模拟公共输出。Top50#26-28。",
+      "proposed_fix": {
+        "owner": "checker",
+        "where": "scripts/interfaces.py:Deriver.supply / cross_supply / derive",
+        "what": "让IC前缀和已核BAT_IN/AVCC/PVCC端口参与电源域判断；按两端实际电源与AC耦合状态选出C08，不将共地或同源派生视为同时断电。"
+      },
+      "seed": {
+        "kind": "D-ACCOUPLED-CROSS-SUPPLY-PLAN",
+        "mutation": "在保留四个1uF及模拟端点的db夹具中，将IC3.22移到声明可独立关断的BT_PWR；绑定BT_PWR=0且24V有效状态。预期强制生成SIG-C08计划；这是覆盖位点，不凭这个变异单独断言必然损坏。",
+        "target_rule": "SIG-C08"
+      }
+    }
+  ],
+  "summary": {
+    "true_defect": 2,
+    "false_alarm": 9,
+    "criterion_issue": 0,
+    "knowledge_gap": 4,
+    "needs_human": 9,
+    "misses": 3
+  },
+  "top50_audit": [
+    {
+      "number": 1,
+      "criterion": "G01-018",
+      "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "本图是+24V单电源，无-48V/交流入口；J4和IC4实际路径见SUPPLY，不能仅industrial_telecom基线强套ETSI/AC数值。"
+    },
+    {
+      "number": 2,
+      "criterion": "G01-019",
+      "title": "−48 V 输入的工作电压范围与耐受范围",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "本图是+24V单电源，无-48V/交流入口；J4和IC4实际路径见SUPPLY，不能仅industrial_telecom基线强套ETSI/AC数值。"
+    },
+    {
+      "number": 3,
+      "criterion": "G01-020",
+      "title": "−48 V 输入 0.1 s 中断后自恢复",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "本图是+24V单电源，无-48V/交流入口；J4和IC4实际路径见SUPPLY，不能仅industrial_telecom基线强套ETSI/AC数值。"
+    },
+    {
+      "number": 4,
+      "criterion": "G01-021",
+      "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "本图是+24V单电源，无-48V/交流入口；J4和IC4实际路径见SUPPLY，不能仅industrial_telecom基线强套ETSI/AC数值。"
+    },
+    {
+      "number": 5,
+      "criterion": "G01-022",
+      "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "本图是+24V单电源，无-48V/交流入口；J4和IC4实际路径见SUPPLY，不能仅industrial_telecom基线强套ETSI/AC数值。"
+    },
+    {
+      "number": 6,
+      "criterion": "G01-023",
+      "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "本图是+24V单电源，无-48V/交流入口；J4和IC4实际路径见SUPPLY，不能仅industrial_telecom基线强套ETSI/AC数值。"
+    },
+    {
+      "number": 7,
+      "criterion": "G01-024",
+      "title": "交流输入 1 周期 0% 跌落不复位（判据 B）",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "本图是+24V单电源，无-48V/交流入口；J4和IC4实际路径见SUPPLY，不能仅industrial_telecom基线强套ETSI/AC数值。"
+    },
+    {
+      "number": 8,
+      "criterion": "G01-025",
+      "title": "交流输入较长暂降与中断后自恢复（判据 C）",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "本图是+24V单电源，无-48V/交流入口；J4和IC4实际路径见SUPPLY，不能仅industrial_telecom基线强套ETSI/AC数值。"
+    },
+    {
+      "number": 9,
+      "criterion": "G01-026",
+      "title": "USB 供电输入电压窗按 vSafe5V 并计线缆压降",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "指定BT根图无USB连接器/VBUS；IC3.DM/DP原生NC；README的USB版不属于本图。"
+    },
+    {
+      "number": 10,
+      "criterion": "G01-027",
+      "title": "USB 可用电流按实际协商档取",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "指定BT根图无USB连接器/VBUS；IC3.DM/DP原生NC；README的USB版不属于本图。"
+    },
+    {
+      "number": 11,
+      "criterion": "G01-029",
+      "title": "USB Sink 的 VBUS 体电容不超过 100 µF，超出须限流",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "指定BT根图无USB连接器/VBUS；IC3.DM/DP原生NC；README的USB版不属于本图。"
+    },
+    {
+      "number": 12,
+      "criterion": "G01-030",
+      "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "指定BT根图无USB连接器/VBUS；IC3.DM/DP原生NC；README的USB版不属于本图。"
+    },
+    {
+      "number": 13,
+      "criterion": "G01-031",
+      "title": "USB Source 未连接时 VBUS 不带电，电容不超过表 4-2",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "指定BT根图无USB连接器/VBUS；IC3.DM/DP原生NC；README的USB版不属于本图。"
+    },
+    {
+      "number": 14,
+      "criterion": "G03-003",
+      "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "PWR-C04",
+        "PWR-C09",
+        "PWR-C15"
+      ],
+      "evidence": "IC4输出89.1uF名义，C3/C43内部稳压输出条件亦已有PWR-C04去耦项；有效值/动态需选型与应用边界，不把示例4x22/1210当硬最大。"
+    },
+    {
+      "number": 15,
+      "criterion": "G03-004",
+      "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "PWR-C04",
+        "PWR-C09",
+        "PWR-C15"
+      ],
+      "evidence": "IC4输出89.1uF名义，C3/C43内部稳压输出条件亦已有PWR-C04去耦项；有效值/动态需选型与应用边界，不把示例4x22/1210当硬最大。"
+    },
+    {
+      "number": 16,
+      "criterion": "G03-016",
+      "title": "正常启动时通路 MOSFET 在降额后的 SOA 内",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无分立通路MOSFET/防反MOS，芯片内部MOS不要求一张外部通路SOA图；IC4/IC2本体极限与故障另有检查。"
+    },
+    {
+      "number": 17,
+      "criterion": "G03-018",
+      "title": "变换器 UVLO 开启点低于输入窗下限",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "PWR-C06",
+        "PWR-D03",
+        "PWR-C05",
+        "PWR-C24"
+      ],
+      "evidence": "IC4 EN=VIN有内部UVLO/软启动；PWR-C06/C24、PWR-D03（含预偏置/软启动）、PWR-C05均已问，实际源窗/重试/负载缺合同；未重复报计划漏项。"
+    },
+    {
+      "number": 18,
+      "criterion": "G03-019",
+      "title": "满载电流在源阻抗上的压降小于 UVLO 滞回",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "PWR-C06",
+        "PWR-D03",
+        "PWR-C05",
+        "PWR-C24"
+      ],
+      "evidence": "IC4 EN=VIN有内部UVLO/软启动；PWR-C06/C24、PWR-D03（含预偏置/软启动）、PWR-C05均已问，实际源窗/重试/负载缺合同；未重复报计划漏项。"
+    },
+    {
+      "number": 19,
+      "criterion": "G03-021",
+      "title": "软启动充电电流加启动期负载低于器件限流下限",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "PWR-C06",
+        "PWR-D03",
+        "PWR-C05",
+        "PWR-C24"
+      ],
+      "evidence": "IC4 EN=VIN有内部UVLO/软启动；PWR-C06/C24、PWR-D03（含预偏置/软启动）、PWR-C05均已问，实际源窗/重试/负载缺合同；未重复报计划漏项。"
+    },
+    {
+      "number": 20,
+      "criterion": "G03-025",
+      "title": "复位门限高于各负载最低工作电压，掉电先复位",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "PWR-T04"
+      ],
+      "evidence": "系统PWR-T04已经问监控；IC3 10k/100n复位与Fig5-8的2.93/2.7V条件须处置，不以图中有内部POR就关闭。"
+    },
+    {
+      "number": 21,
+      "criterion": "G03-028",
+      "title": "上电时序在极值时间下满足约束",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "PWR-C06",
+        "PWR-D03",
+        "PWR-C05",
+        "PWR-C24"
+      ],
+      "evidence": "IC4 EN=VIN有内部UVLO/软启动；PWR-C06/C24、PWR-D03（含预偏置/软启动）、PWR-C05均已问，实际源窗/重试/负载缺合同；未重复报计划漏项。"
+    },
+    {
+      "number": 22,
+      "criterion": "G03-032",
+      "title": "稳压器反向电流在手册允许内或已阻断",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "PWR-C06",
+        "PWR-D03",
+        "PWR-C05",
+        "PWR-C24"
+      ],
+      "evidence": "IC4 EN=VIN有内部UVLO/软启动；PWR-C06/C24、PWR-D03（含预偏置/软启动）、PWR-C05均已问，实际源窗/重试/负载缺合同；未重复报计划漏项。"
+    },
+    {
+      "number": 23,
+      "criterion": "G03-037",
+      "title": "电解与钽电容不承受反压",
+      "status": "CHECKED_LOCAL",
+      "rules": [
+        "DEV-C01"
+      ],
+      "evidence": "C10/C17正1=24V、负2=GNDA，无反接；动态故障额定未知另列，不把局部极性判断扩成全应力PASS。"
+    },
+    {
+      "number": 24,
+      "criterion": "G03-038",
+      "title": "电解与钽电容的直流加纹波峰值在降额内",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "DEV-C01",
+        "DEV-C02"
+      ],
+      "evidence": "C10/C17标220u/描述50V，原理图正接；源上限/纹波/准确厂家数据与寿命剖面未锁，未证超额定。"
+    },
+    {
+      "number": 25,
+      "criterion": "G03-040",
+      "title": "串联使用的电解电容有均压措施",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "仅两只并联到24V/GNDA的电解，无串联电解堆叠；普通耦合/自举MLCC不是均压对象。"
+    },
+    {
+      "number": 26,
+      "criterion": "G04-005",
+      "title": "输入信号不超接收端绝对最大值",
+      "status": "MISS_RECOVERED",
+      "rules": [
+        "SIG-C08"
+      ],
+      "evidence": "对外J1/J2/J3已有C08，内部模拟IC3→IC2链却仅C07/T04，M03经rule_gap补回；两轨先后与耦合注入未闭合。"
+    },
+    {
+      "number": 27,
+      "criterion": "G04-007",
+      "title": "未上电接口承受正常或故障信号不损坏",
+      "status": "MISS_RECOVERED",
+      "rules": [
+        "SIG-C08"
+      ],
+      "evidence": "对外J1/J2/J3已有C08，内部模拟IC3→IC2链却仅C07/T04，M03经rule_gap补回；两轨先后与耦合注入未闭合。"
+    },
+    {
+      "number": 28,
+      "criterion": "G04-009",
+      "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定",
+      "status": "MISS_RECOVERED",
+      "rules": [
+        "SIG-C08"
+      ],
+      "evidence": "对外J1/J2/J3已有C08，内部模拟IC3→IC2链却仅C07/T04，M03经rule_gap补回；两轨先后与耦合注入未闭合。"
+    },
+    {
+      "number": 29,
+      "criterion": "G04-010",
+      "title": "上电和复位期间关键输出有确定状态",
+      "status": "MISS_RECOVERED",
+      "rules": [
+        "RST-T04"
+      ],
+      "evidence": "M01/M02两处独立启动对象漏RST-T04，已由两个rule_gap补回；默认电平与应用可接受状态分开判。"
+    },
+    {
+      "number": 30,
+      "criterion": "G04-017",
+      "title": "I²C 上拉电阻不超上升时间决定的上限",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无板外I2C、CAN、隔离域；IC3内部EEPROM脚P1_2/3未外接，只有GNDA。"
+    },
+    {
+      "number": 31,
+      "criterion": "G04-018",
+      "title": "I²C 上拉电阻不低于灌电流决定的下限",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无板外I2C、CAN、隔离域；IC3内部EEPROM脚P1_2/3未外接，只有GNDA。"
+    },
+    {
+      "number": 32,
+      "criterion": "G04-032",
+      "title": "CAN 总线两端端接，总阻约 60 Ω",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无板外I2C、CAN、隔离域；IC3内部EEPROM脚P1_2/3未外接，只有GNDA。"
+    },
+    {
+      "number": 33,
+      "criterion": "G04-040",
+      "title": "隔离接口两侧的供电和地不被无意短接",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无板外I2C、CAN、隔离域；IC3内部EEPROM脚P1_2/3未外接，只有GNDA。"
+    },
+    {
+      "number": 34,
+      "criterion": "G04-041",
+      "title": "运放两个输入在最坏工况下不超共模范围",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "ANA-C01"
+      ],
+      "evidence": "IC2四输入由1uF偏置到内部3V，BM64的AOHPM不是地；ANA-C01已问摆幅/共模，不应以数字C07关闭。"
+    },
+    {
+      "number": 35,
+      "criterion": "G04-054",
+      "title": "ADC 输入不超满量程和绝对最大值",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无外部ADC测量输入；IC3充电温度脚AMB_DET未用且不充电；不强造测量通道。"
+    },
+    {
+      "number": 36,
+      "criterion": "G04-078",
+      "title": "晶振负载电容与晶振规定 CL 相符",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "载板无无源晶体；BM64模组封装内已有时钟，IC3.SCLK0未接是I2S而非外部晶体。"
+    },
+    {
+      "number": 37,
+      "criterion": "G04-079",
+      "title": "振荡器增益裕量足够起振",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "载板无无源晶体；BM64模组封装内已有时钟，IC3.SCLK0未接是I2S而非外部晶体。"
+    },
+    {
+      "number": 38,
+      "criterion": "G04-082",
+      "title": "一颗晶振只驱动一个器件",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "载板无无源晶体；BM64模组封装内已有时钟，IC3.SCLK0未接是I2S而非外部晶体。"
+    },
+    {
+      "number": 39,
+      "criterion": "G05-019",
+      "title": "每条配电支路在源侧有保护",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "PRO-C04",
+        "DEV-C01",
+        "DEV-C04",
+        "PRO-C01"
+      ],
+      "evidence": "输入PRO-C04在J4.1已存在；各支路由上游保护与片内保护实际覆盖边界待合同，连接器DEV-C01/C04、PRO-C01有问故障额定/时序。不将无F标号当漏审或确有缺陷。"
+    },
+    {
+      "number": 40,
+      "criterion": "G05-022",
+      "title": "过流动作点上限下通路器件与连接器不超额定",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "PRO-C04",
+        "DEV-C01",
+        "DEV-C04",
+        "PRO-C01"
+      ],
+      "evidence": "输入PRO-C04在J4.1已存在；各支路由上游保护与片内保护实际覆盖边界待合同，连接器DEV-C01/C04、PRO-C01有问故障额定/时序。不将无F标号当漏审或确有缺陷。"
+    },
+    {
+      "number": 41,
+      "criterion": "G05-025",
+      "title": "故障电流下的动作时间短于被保护对象的耐受时间",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "PRO-C04",
+        "DEV-C01",
+        "DEV-C04",
+        "PRO-C01"
+      ],
+      "evidence": "输入PRO-C04在J4.1已存在；各支路由上游保护与片内保护实际覆盖边界待合同，连接器DEV-C01/C04、PRO-C01有问故障额定/时序。不将无F标号当漏审或确有缺陷。"
+    },
+    {
+      "number": 42,
+      "criterion": "G05-030",
+      "title": "TVS 工作电压不低于被钳节点最高工作电压",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无板上TVS/齐纳，D1为LED且有串阻+恒流输出；不能按型号空缺强当TVS。入口保护是否需要在PRO-C04/PRO-D04核。"
+    },
+    {
+      "number": 43,
+      "criterion": "G05-031",
+      "title": "TVS 钳位电压不超被保护器件绝对最大值",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无板上TVS/齐纳，D1为LED且有串阻+恒流输出；不能按型号空缺强当TVS。入口保护是否需要在PRO-C04/PRO-D04核。"
+    },
+    {
+      "number": 44,
+      "criterion": "G05-032",
+      "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无板上TVS/齐纳，D1为LED且有串阻+恒流输出；不能按型号空缺强当TVS。入口保护是否需要在PRO-C04/PRO-D04核。"
+    },
+    {
+      "number": 45,
+      "criterion": "G05-040",
+      "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无分立通路MOSFET/防反MOS，芯片内部MOS不要求一张外部通路SOA图；IC4/IC2本体极限与故障另有检查。"
+    },
+    {
+      "number": 46,
+      "criterion": "G05-041",
+      "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无分立通路MOSFET/防反MOS，芯片内部MOS不要求一张外部通路SOA图；IC4/IC2本体极限与故障另有检查。"
+    },
+    {
+      "number": 47,
+      "criterion": "G05-048",
+      "title": "熔断器分断能力不小于预期短路电流",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无板上熔断器，未定义上游熔断器额定；J4供源保护合同由已有PRO-C04核，不编造分断能力。"
+    },
+    {
+      "number": 48,
+      "criterion": "G05-054",
+      "title": "每个对外电源接口的反接有明确处置",
+      "status": "PLANNED_NEEDS_HUMAN",
+      "rules": [
+        "PWR-T05",
+        "PRO-D04"
+      ],
+      "evidence": "J4直接24V、没有防反串联元件；PWR-T05/PRO-D04已问误接，是否需承受反接与上游防呆条件未给；不因保护缺省就宣称已烧毁。"
+    },
+    {
+      "number": 49,
+      "criterion": "G05-057",
+      "title": "反接阻断之前没有单向 TVS 造成源短路",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无板上TVS/齐纳，D1为LED且有串阻+恒流输出；不能按型号空缺强当TVS。入口保护是否需要在PRO-C04/PRO-D04核。"
+    },
+    {
+      "number": 50,
+      "criterion": "G05-087",
+      "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通",
+      "status": "NOT_APPLICABLE",
+      "rules": [],
+      "evidence": "无分立通路MOSFET/防反MOS，芯片内部MOS不要求一张外部通路SOA图；IC4/IC2本体极限与故障另有检查。"
+    }
+  ],
+  "evidence_root": "/Users/skyfend/.cache/sr-boards/loredati-svg--tpa3116d2-class-d-amplifier/review/evidence",
+  "assessment_ledger": "/Users/skyfend/.cache/sr-boards/loredati-svg--tpa3116d2-class-d-amplifier/review/review-assessments.json",
+  "review_workspace": "/Users/skyfend/.cache/sr-boards/loredati-svg--tpa3116d2-class-d-amplifier/review",
+  "interpretation": "发现24条包括2处数据问题、误触发、知识及人工边界；不等于24处电气缺陷。Top50的3处miss均为已补回的计划漏问；0处新增已证明硬件漏检。"
+}

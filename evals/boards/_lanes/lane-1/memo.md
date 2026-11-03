@@ -135,3 +135,9 @@
 - C3007519是TCXO采购身份而Y1画无源晶体；C2858491是ESP32-C3FH4含flash，别误报六SPI脚NC；USB_DN/DP网名反语义但物理GPIO19/18接线正确。Q1用逻辑1G/2S/3Tab，非厂家物理3脚。
 - BQ76952 p75/BQ76942 p74-75允许未用REGIN/BREG接地、DSG/FUSE悬空；D1栅源钳位不是对地TVS，C49/C50串联100n也不是电解均压对象。未定U5变体、D1稳压值、TH1曲线不要填假参数。
 - add不能抢STARTUP候选已持有的U3，且派生nets/anchors为空；自供电USB VBUS检测、后级EN循环属自动诊断缺口，J6经R22供BAT属源侧逐支路计划缺口；schema15不支持needs_human，保留逐IDpending与FAIL，资料不足0不代表审完。
+
+- loredati-svg--tpa3116d2-class-d-amplifier：BT根图73件/75网/223端点/5页，strict；268=265+3补问，62局部判/206逐ID待核，24归因=2数据真+9误+4知识+9人工，3计划漏问，FAIL/NO_GO。
+- IC4 SW8→L5→3.3V、VCC6→1u为真实输出，原生UNSPEC/IC前缀会误报无源；BOOT7是100n跨SW而非strap，FAULTZ3是开漏状态输出非检测门限；TP测点和未用I2S SCLK0不当DEBUG/SPI/CLOCK协议。
+- BM64 VDD_IO21明确不外接，EAN内有4.7k下拉、P2_0内上拉要计入；R10/C64复位1ms不证明棕断满足Fig5-8，MFB/SYS_PWR启动意图另核。四只1u音频AC耦合须独立C08，不能以共地/派生电源关闭。
+- IC4实例Value A/采购B频率400/1400k冲突已证；另一目录USB BOM120件、64共号/23原始字符串差异不可混入BT，read_bom不保留Value须对源CSV；C10/17 footprint名不单独证实际MPN，Vishay4.4A是typ升温/降L条件。
+- schema15保留206 pending与18框架范围，421条校验错误、报告仅诊断；资料不足0不等于审完。Top50三处补问并留seed，现有入口PRO-C04/棕断PWR-T04/外部C08别重复算漏报；临时预览/CSV均放/tmp/codex-work/tpa3116d2-lane1。
