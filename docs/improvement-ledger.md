@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 准则库 1.7.1：G04-091 的 WCH 出处核过原件 (2026-11-02)
+
+`docs/proposals/g06-g07-registry-draft-2026-11-02.md` 第七节的核对结果入库：G04-091 第二条出处的 `edition` 由"版次未核"改为 `openwch/ch32v307 EVT V3.0（仓库提交 bb6ee13，2026-04-16）`，page 改 `9（ETH 区）`，条目版本不变，G04 登记文件 1.3，共用层重建为 1.7.1（353 条），ASG 同字节。G06/G07 登记表草案（29 条）仍是草案，待用户确认。
+
+- Event: user:2026-11-02 (再帮我执行"已识别但没做的改进")
+- Causes: knowledge_missing 1
+- Changed: references/shared/guideline-criteria.json, docs/improvement-ledger.md
+- Gates: pytest 2731; mutation 无代码改动
+
 ## G06/G07 准则登记表草案、WCH 出处核对、86 块板待采集资料表 (2026-11-02)
 
 G06 安全与绝缘 18 条、G07 EMC 与端口防护 11 条登记表草案（全部 draft、closing_stage schematic），按 G05 字段写，出处 52 条全部对 raw/Standard、raw/Applicationnote 原件核到实页（扫描件渲染原页读条号与页脚）；与 G01–G05 重叠处只写 relations；PCB、结构、试验列下游约束不入条；缺词 8 项列出未自造（gdt、digital_isolator、isolated_power、safety_capacitor、POWER_OUTPUT、CHASSIS_PE、模拟现场 I/O、产品类别）。G01–G05 副本加两份草案汇编为 1.8.0-draft（382 条）到临时目录，check 通过。WCH CH32V30xSCH.pdf 从 openwch/ch32v307 取得：第 9 页 HR911105A 中心抽头 4/5 共接 3V3、C14 = 0.1 µF 属实，版次为仓库 V3.0（提交 bb6ee13，2026-04-16），建议值写在草案第七节。datasheets_to_collect 31 项整理成 ASG 清单格式。未改 references/shared/、HardwareWiki、scripts/、SKILL.md。
