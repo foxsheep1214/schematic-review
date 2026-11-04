@@ -3,14 +3,14 @@
 自动层为本次离线运行；历史清单为来源记载的当时结果，未重审。
 
 准则 354 条；有规则 354 条。
-按准则归属计数：正例 614，命中 560，漏报 23，未知 31，运行错误 0，误报 11；负例通过 159，未分类 0。
+按准则归属计数：正例 616，命中 562，漏报 23，未知 31，运行错误 0，误报 11；负例通过 159，未分类 0。
 
 **归属计数不是独立缺陷数，也不是逐条准则已验证的证明。** BASIS 是规则的粗映射；一条规则核多条准则，同一用例可出现在多行。典型 expected 含正确线索，不能合称真缺陷。
 
 | 来源 | 唯一正例/缺陷 | 命中 | 漏报 | 未知 | 错误 | 误报 | 负例通过 | 未分类 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | seeded | 247 | 221 | 26 | 0 | 0 | 0 | 0 | 0 |
-| typical | 216 | 216 | 0 | 0 | 0 | 7 | 197 | 0 |
+| typical | 217 | 217 | 0 | 0 | 0 | 7 | 197 | 0 |
 | history | 55 | 4 | 4 | 47 | 0 | 0 | 0 | 0 |
 
 ## 有已知缺陷或正例的准则
@@ -76,7 +76,7 @@
 | G05-034 | TVS 漏电与电容在被保护电路允许内 | 1 | 43 | 43 | 0 | 0 | 0 | 0 | 0/0/0 |
 | G05-098 | 外部锁存判据在正常动作与允许负载下不成立 | 2 | 2 | 0 | 2 | 0 | 0 | 0 | 0/2/0 |
 
-## 没有任何已知缺陷或正例：300 条（检出力完全未知）
+## 没有任何已知缺陷或正例：298 条（检出力完全未知）
 
 | 准则 | 标题 | SR规则数 | 已知缺陷/正例 | 命中 | 漏报 | 误报 |
 |---|---|---:|---:|---:|---:|---:|
@@ -456,15 +456,15 @@
 
 | 输入 | SHA256 |
 |---|---|
-| seeded results.json | `e16bebac3b6e778ad0031fe0167738fa825152e0ced6b4cad03944758377506b` |
-| typical results.json | `075a5d9177878c7ca4858671f1dc9de9d20a71926b1f17df64931340d33ed066` |
-| KiCad replay results.json | `10e15b009c84406f7e39ce385194ea41a49c74c219f7c04d0c24bdef045cd5d3` |
+| seeded results.json | `a8c63f7c164de82bb8124d6f396baea4d7c5c6e645a004a1293cb4ec9fa72039` |
+| typical results.json | `6d3bebdec0ec17b3ff419608892f219bf92b2cbb172b28bed59a73d7152672c0` |
+| KiCad replay results.json | `997e5378fca9827450df370ec80ecb847ade7355c82f9aab6d1a446d89c34016` |
 | known_defects.json | `93e111cdc87eed7d2664a419849dea7113de07feb3aa9d76a664d1a03003a144` |
-| catalog.py | `cef9a8b62d8c74f68d7201c1e0bd95b6f45f5e3506666e82a31a72298b1a2396` |
+| catalog.py | `63ab543644b0101b3df576e836f0bebecf347589b732ee5b6fafbdbe197d3f57` |
 | guideline-criteria.json | `6345d60065a04d6e776219e0f5824b323c7b4364ecaf7fb754e06935b97804b4` |
 | seeded corpus.json | `191a704ebd11e0e16da56c8cafb8fd4f66ba933b05a80453ef1dd1814661a532` |
-| typical cases.json | `aac7e7ee7907d12afaacee77a828f88e2f6548bfa3c2a18b0e78f3c61ea7c669` |
-| improvement-ledger.md | `a3d04d5f42f70772e653faef7ed58dfd24695d7c74dc90cff7b5946c554e2d72` |
+| typical cases.json | `3180e6ed0c618747065f32a6cd4e72fdaeca338f00707a0b99119f00110474db` |
+| improvement-ledger.md | `13665cff69ae8720cce584ec18e7e09cc16375d739921e9c6cac81ddb44608ff` |
 | docs/audits/2026-10-07-module-scope-replay.md | `6c8f91297d55555a484838931f91eefdc1af094f3efc277babac3b214dfe85f0` |
 | docs/audits/2026-10-07-review-charter.md | `7ae76d400315188e0a2d94a7cef8b69076f2e813715cb4020132b00697d14574` |
 
