@@ -16,7 +16,7 @@ sr-tools 把以 ID 结尾的表头都当编号列后，Matrix 工程规格附录
 - Event: user:2026-11-04 (你用新修改的SR技能跑一遍修改好的R2…总结问题，发现SR技能的不足)
 - Causes: rule_not_enforced 1
 - Changed: scripts/requirements_extract.py, scripts/tests/test_sr_tools_r2.py, docs/improvement-ledger.md
-- Gates: 见下一次全量门禁
+- Gates: pytest 2866 passed；mutation --changed b32da73 --tier unit 555/555 killed；kicad_replay 195/195；detection RESULTS.md 重生成；check_ledger PASS（2026-11-04，main 0253da7 + latch_criteria 入环）
 
 ## Matrix R2 首审的工具与交接问题：多文档需求、资料链接、ASG 规格列、诊断去重、引文豁免、批注位号、同料号请求、对账清单 (2026-11-04)
 

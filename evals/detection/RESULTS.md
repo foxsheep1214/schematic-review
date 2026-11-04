@@ -456,15 +456,15 @@
 
 | 输入 | SHA256 |
 |---|---|
-| seeded results.json | `f32323e4c9dacb34ebea1e76c017c0bb1be2438af64a2393385274c110de2791` |
-| typical results.json | `075a5d9177878c7ca4858671f1dc9de9d20a71926b1f17df64931340d33ed066` |
-| KiCad replay results.json | `c51903fc7ff5db11c490c02ac965d6fe085419cbf79d9c6c2af9a5c470276d68` |
-| known_defects.json | `35c824bfdcb2f967bba1ee843d94969c53c153ad1ad2434cdf345405e6c90452` |
-| catalog.py | `08aaf61a9210c0ca66940ec07c4724c6a6f5b1dbafc5b3bd99961b2e0facc232` |
-| guideline-criteria.json | `1bbdb368ef5baf75765e2eb220ccf2da987b524c1f49570ea4bd2d0406c5917e` |
+| seeded results.json | `c18d09b63cf6289a5981dfd927270f7f01ea4f2a4dec6adaa172867e887e0e9d` |
+| typical results.json | `6d3bebdec0ec17b3ff419608892f219bf92b2cbb172b28bed59a73d7152672c0` |
+| KiCad replay results.json | `447e5d03913a04ab62310828d51684751427a50f7164cbb4c5e23f4f60810c97` |
+| known_defects.json | `93e111cdc87eed7d2664a419849dea7113de07feb3aa9d76a664d1a03003a144` |
+| catalog.py | `3b9f80b1457a8a1244c683eb4e408d1dbf1cc20057c6fbb9aa6b81a3decd14b7` |
+| guideline-criteria.json | `6345d60065a04d6e776219e0f5824b323c7b4364ecaf7fb754e06935b97804b4` |
 | seeded corpus.json | `191a704ebd11e0e16da56c8cafb8fd4f66ba933b05a80453ef1dd1814661a532` |
-| typical cases.json | `aac7e7ee7907d12afaacee77a828f88e2f6548bfa3c2a18b0e78f3c61ea7c669` |
-| improvement-ledger.md | `689649459b02d3ae411ee94cdbbe8877d9b8d817784cade3ba84c8fafe9e788b` |
+| typical cases.json | `3180e6ed0c618747065f32a6cd4e72fdaeca338f00707a0b99119f00110474db` |
+| improvement-ledger.md | `51a4c9bcc073992486e72fc99bda992f89de03b5cfa90e5ea2f237481b110706` |
 | docs/audits/2026-10-07-module-scope-replay.md | `6c8f91297d55555a484838931f91eefdc1af094f3efc277babac3b214dfe85f0` |
 | docs/audits/2026-10-07-review-charter.md | `7ae76d400315188e0a2d94a7cef8b69076f2e813715cb4020132b00697d14574` |
 
