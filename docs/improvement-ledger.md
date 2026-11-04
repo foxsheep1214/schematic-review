@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 准则库 1.7.3：G03-023、G05-090 适用类型加 HOLD_UP (2026-11-03)
+
+用户 2026-11-03 定：G03-023 与 G05-090 的 `applies_when.circuit_types` 各加 `HOLD_UP`（条目 1.0→1.1，HardwareWiki 登记文件 G03 1.6、G05 1.3），共用层重建为 1.7.3（353 条，指纹 d4c79a47c214），ASG 同字节。SR 代码不变；HOLD_UP 候选现在能选出这两条准则。
+
+- Event: user:2026-11-03 (这两件事也做了)
+- Causes: rule_missing 2
+- Changed: references/shared/guideline-criteria.json, references/architecture.md, scripts/tests/test_boards_merge7.py, docs/improvement-ledger.md
+- Gates: pytest 2797（合并步 7 的测试原把准则库版本钉死在 1.7.2，改为不低于 1.7.2）; mutation 无代码改动
+
 ## 合并步 7：HOLD_UP 与 SIGNAL_PROTECTION 电路类型、叶名词边界、穿串联电阻找被保护脚（2026-11-03）
 
 用户 2026-11-03 “按建议执行”，落实合并步 6 第六节 1–5 点。

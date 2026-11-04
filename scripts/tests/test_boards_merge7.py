@@ -14,7 +14,9 @@ def test_new_types_sit_between_isolation_and_debug_in_vocabulary_and_catalog():
     at = names.index('ISOLATION')
     assert names[at + 1:at + 4] == ['HOLD_UP', 'SIGNAL_PROTECTION', 'DEBUG']
     assert [t.name for t in catalog.CIRCUIT_TYPES][at + 1:at + 4] == ['HOLD_UP', 'SIGNAL_PROTECTION', 'DEBUG']
-    assert guideline_criteria.load(guideline_criteria.BUNDLE_PATH)['library_version'] == '1.7.2'
+    # the two types arrived with 1.7.2; later libraries keep them (1.7.3 added HOLD_UP to G03-023/G05-090)
+    version = guideline_criteria.load(guideline_criteria.BUNDLE_PATH)['library_version']
+    assert tuple(int(x) for x in version.split('.')) >= (1, 7, 2), version
 
 
 def test_hold_up_and_signal_protection_ask_existing_circuit_checks():
