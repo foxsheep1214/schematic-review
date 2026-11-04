@@ -295,7 +295,13 @@ class PowerUpChecker(Checker):
                          % (load['ref'], state['id'], load['node'], load['net']),
                          load['ref'], kind='CANDIDATE')
             for item in state['regulators']:
-                if item['enable_source'] == 'unknown':
+                defined = (lint.open_pin_state(item['enable_node']) if item['enable_source'] == 'unknown'
+                           and len(lint.nets.get(item['enable_net'], [])) < 2 else None)
+                if defined:   # Matrix R2 F11: an open SHDN whose open-circuit voltage is above its rising threshold
+                    lint.add('RST-A04', self.cold_rules['RST-A04'],
+                             '%s（状态 %s）：使能脚 %s 悬空，开路状态有依据——%s' % (
+                                 item['ref'], state['id'], item['enable_node'], defined), item['ref'], kind='INFO')
+                elif item['enable_source'] == 'unknown':
                     lint.add('RST-A04', self.cold_rules['RST-A04'],
                              '%s（状态 %s）：使能脚 %s 所在网 %s 上未找到驱动源、UVLO 分压、'
                              'RC 或任何上/下拉；悬空或来源不明时开启行为不确定'

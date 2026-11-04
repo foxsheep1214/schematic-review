@@ -432,6 +432,11 @@ def floating_inputs(lint):
         if permission:
             lint.add('NET-A07', '手册允许未用输入开路', f'{node}: {permission}', ref, kind='INFO')
             continue
+        alone = net is None or declared_nc or len(lint.nets.get(net, [])) < 2
+        defined = lint.open_pin_state(node) if alone else None
+        if defined:   # Matrix R2 F10: the datasheet (or the user) says what this pin does when open
+            lint.add('NET-A07', '手册定义了开路状态', f'{node}: {defined}', ref, kind='INFO')
+            continue
         # A datasheet NC pin typed input has no input to bias.
         from lint import DATASHEET_NC_PIN_RE
         if DATASHEET_NC_PIN_RE.match(lint.pinname.get(node, '')):
@@ -467,6 +472,110 @@ def floating_inputs(lint):
             lint.add('NET-A07', '声明输入脚悬空', f'{node} -> {net}: 输入脚所在网只有该节点', ref)
 
 
+# NET-A08（Matrix R2 F03，2026-11-04）：图上注释或接口表说“另一端在别的页/板”的网，必须有全局或层次标签才离得开本设计。
+BOUNDARY_PHRASE_RE = re.compile(r'另一端|对端在|板外|off[- ]?board|other end|other board', re.I)
+SCH_TEXT_RE = re.compile(r'\((?:text|text_box) "((?:[^"\\]|\\.)*)"')
+SCH_SHEETFILE_RE = re.compile(r'\(property "Sheetfile" "([^"]+)"')
+SCH_PORT_LABEL_RE = re.compile(r'\((?:global_label|hierarchical_label) "((?:[^"\\]|\\.)*)"')
+DOC_PATH_RE = re.compile(r'[^\s，,；;（）()“”]+\.md')
+NET_RANGE_RE = re.compile(r'([A-Z][A-Z0-9_]*?)(\d+)\s*[～~]\s*(?:\1)?(\d+)')
+NET_WILDCARD_RE = re.compile(r'([A-Z][A-Z0-9_]*)\*')
+NET_WORD_RE = re.compile(r'(?<![A-Za-z0-9_])[A-Z][A-Z0-9_]*[A-Z0-9](?![A-Za-z0-9_*])')
+
+
+def _net_patterns(text):
+    """(exact names, prefixes) a declaration names: EN_N1～EN_N8 and CLR_REQ1～8 expand, ADC* is a prefix."""
+    exact, prefixes = set(), set()
+    for stem, first, last in NET_RANGE_RE.findall(text):
+        if int(last) - int(first) < 64:
+            exact.update(stem + str(i) for i in range(int(first), int(last) + 1))
+    prefixes.update(NET_WILDCARD_RE.findall(text))
+    exact.update(NET_WORD_RE.findall(NET_RANGE_RE.sub(' ', text)))
+    return exact, prefixes
+
+
+def _schematic_files(root):
+    """The root .kicad_sch and every sheet file it reaches, as {path: text}; {} when the root is unreadable."""
+    import os
+    found, todo = {}, [root]
+    while todo:
+        path = todo.pop()
+        if path in found or not os.path.isfile(path):
+            continue
+        try:
+            with open(path, encoding='utf-8', errors='replace') as stream:
+                found[path] = stream.read()
+        except OSError:
+            continue
+        todo.extend(os.path.join(os.path.dirname(path), name) for name in SCH_SHEETFILE_RE.findall(found[path]))
+    return found
+
+
+def boundary_declarations(lint):
+    """[(source, exact, prefixes)]: intent.boundary_nets, root-sheet notes saying the other end is elsewhere, and the
+    tables of the documents such a note names (first cell of each row)."""
+    import os
+    out = []
+    declared = [d.get('net') for d in lint.intent.get('boundary_nets') or [] if isinstance(d, dict) and d.get('net')]
+    if declared:
+        out.append(('intent.boundary_nets', set(declared), set()))
+    root = str((lint.db.get('export_meta') or {}).get('source') or '')
+    if not root.lower().endswith('.kicad_sch') or not os.path.isfile(root):
+        return out, None
+    files = _schematic_files(root)
+    for note in SCH_TEXT_RE.findall(files.get(root, '')):
+        note = note.replace('\\n', ' ')
+        if not BOUNDARY_PHRASE_RE.search(note):
+            continue
+        exact, prefixes = _net_patterns(note)
+        out.append(('根图注释“%s”' % note[:60], exact, prefixes))
+        for name in DOC_PATH_RE.findall(note):
+            base = os.path.dirname(root)
+            for path in (os.path.join(base, name), os.path.join(os.path.dirname(base), name)):
+                if os.path.isfile(path):
+                    with open(path, encoding='utf-8', errors='replace') as stream:
+                        cells = [line.split('|')[1] for line in stream if line.lstrip().startswith('|')
+                                 and line.count('|') > 2]
+                    exact, prefixes = _net_patterns(' '.join(cells))
+                    out.append(('接口表 %s' % name, exact, prefixes))
+                    break
+    ports = {name for text in files.values() for name in SCH_PORT_LABEL_RE.findall(text)}
+    return out, ports
+
+
+def boundary_labels(lint):
+    """NET-A08：声明另一端在别的页/板的网只有页内局部标签（网名带页路径前缀、没有全局或层次标签）。"""
+    declarations, ports = boundary_declarations(lint)
+    if not declarations:
+        return
+    by_sheet = {}
+    for net, nodes in sorted(lint.nets.items()):
+        leaf = net.rsplit('/', 1)[-1]
+        sources = [source for source, exact, prefixes in declarations
+                   if leaf in exact or any(leaf.startswith(prefix) for prefix in prefixes)]
+        if (not sources or not net.startswith('/') or leaf in (ports or ())
+                or any(lint.graph.kind(node.partition('.')[0]) == CONNECTOR for node in nodes)):
+            continue
+        by_sheet.setdefault(net.rsplit('/', 1)[0] + '/', []).append((leaf, sources[0], nodes))
+    for sheet, items in sorted(by_sheet.items()):
+        ref = items[0][2][0].partition('.')[0]
+        lint.add('NET-A08', '离开本设计的网只有页内标签',
+                 '%s：%s 按 %s 另一端在别的页或板，本图只有页内局部标签（网名带页路径前缀，无全局/层次标签），'
+                 '离不开本页；改全局标签或层次端口并列入接口表' % (
+                     sheet, '、'.join(leaf for leaf, _, _ in items), '；'.join(sorted({s for _, s, _ in items}))), ref)
+
+
+def footprint_fields(lint):
+    """DEV-D01（Matrix R2 F04）：全部已装配器件的封装字段都为空。"""
+    fitted = [ref for ref in sorted(lint.parts) if lint.graph.is_fitted(ref)]
+    # only a source that carries the field (KiCad <footprint>, parse_kicad 'jedec'); a db without the key says nothing
+    if (fitted and all('jedec' in lint.parts[ref] for ref in fitted)
+            and not any(str(lint.parts[ref]['jedec'] or '').strip() for ref in fitted)):
+        lint.add('DEV-D01', '全部器件封装字段为空',
+                 '%d 个已装配器件的 Footprint 都为空（如 %s）：交付标准差异——原理图阶段 ASG 允许空封装，进 PCB 前须按料号补齐；'
+                 '不是电气缺陷，按文档一致性定级（无电气后果为 P3）' % (len(fitted), '、'.join(fitted[:5])), fitted[0])
+
+
 def refdes_annotation(lint):
     """DOC-A04：位号未标注或格式无法定位。"""
     for ref in sorted(lint.parts):
@@ -489,3 +598,5 @@ def run(lint):
     crystal_load(lint)
     crystal_shared(lint)
     floating_inputs(lint)
+    boundary_labels(lint)
+    footprint_fields(lint)

@@ -20,6 +20,7 @@ DNP 选项、被删外设的引出脚、工具伪网络）由执行 agent 逐条
 import argparse
 import board_scans
 import catalog
+import datasheet_kinds
 import difflib
 import io
 import json
@@ -90,6 +91,10 @@ NC_OPEN_PINTYPES = {'output', 'bidirectional', 'tri_state', 'open_collector', 'o
 KICAD_AUTO_NET_RE = re.compile(r'(^|/)(Net|unconnected)-\(')   # 工具按引脚生成的网名，不是手写拼写
 NET_TIE_RE = re.compile(r'NET_?TIE', re.I)
 ISOLATOR_RE = re.compile(r'ISOLAT|\bISO\d|ISOW|ADUM|SI8[46]\d|NSI\d|CA-IS|隔离', re.I)
+# PWR-A03（Matrix R2 F07，2026-11-04）：理想二极管/反接保护控制器的 VSS 按手册经电阻接主地（LTC4359 Rev F 图 4：
+# 输入反接时 VSS 随之变负，电阻限流），不是地孤岛。器件身份读声明或审计的手册标题原句，不按型号猜。
+REVERSE_CONTROLLER_RE = re.compile(
+    r'ideal[\s-]*diode|reverse[\s-]*(?:input|polarity|voltage|battery|current|supply)[\s-]*protect', re.I)
 
 
 # NET-A02：命名惯例里成对/成组出现的网名不是拼写分裂。
@@ -477,6 +482,46 @@ class Lint:
                 basis = 'keyword'
         return basis if relay_seen else False
 
+    def open_pin_state(self, node):
+        """Why an input left open has a defined state, or None: a user-confirmed `intent.open_pins` entry, or the
+        line of the part's verified datasheet that defines the pin when open (datasheet_kinds.open_input_clause)."""
+        for item in self.intent.get('open_pins') or []:
+            if isinstance(item, dict) and item.get('node') == node:
+                return 'intent.open_pins 登记：%s（%s）' % (item.get('state'), item.get('citation'))
+        ref, _, pin = node.partition('.')
+        for material in (self.datasheet_audit or {}).get('materials') or []:
+            document = material.get('document') or {}
+            if (ref in (material.get('refdes') or []) and material.get('status') == 'AVAILABLE'
+                    and document.get('identity_verified') and document.get('path')):
+                clause = datasheet_kinds.open_input_clause(document['path'], pw.pin_aliases(self.pinname.get(node), pin))
+                if clause:
+                    return '%s：%s' % (document.get('document_version') or os.path.basename(document['path']), clause)
+        return None
+
+    def _complementary_outputs(self, a, b):
+        """两网分别由同一器件的一对互补输出脚驱动（触发器 1Q 与 ~{1Q}、Q 与 QN）。"""
+        def negated_base(name):   # the pin name with its low-active mark removed; None when it has none
+            match = (re.fullmatch(r'~\{(.+)\}', name) or re.fullmatch(r'[~#!/](.+)', name)
+                     or re.fullmatch(r'(.+?)(?:_?N|_?B|BAR)', name))
+            return match.group(1) if match else None
+        for x in self.nets.get(a, []):
+            for y in self.nets.get(b, []):
+                if x.partition('.')[0] != y.partition('.')[0]:
+                    continue
+                if _pin_class(self.pintype.get(x)) != 'OUT' or _pin_class(self.pintype.get(y)) != 'OUT':
+                    continue
+                nx, ny = pw.normalize(self.pinname.get(x)), pw.normalize(self.pinname.get(y))
+                if nx and ny and (negated_base(nx) == ny or negated_base(ny) == nx):
+                    return True
+        return False
+
+    def _reverse_controller(self, ref):
+        """手册标题（intent 或资料审计里的器件类别原句）说它是理想二极管或反接保护控制器。"""
+        quotes = [str(((source or {}).get(ref) or {}).get('quote') or '')
+                  for source in (self.intent.get('device_kinds'), (self.datasheet_audit or {}).get('device_kinds'))
+                  if isinstance((source or {}).get(ref), dict)]
+        return any(REVERSE_CONTROLLER_RE.search(q) for q in quotes)
+
     def _ground_islands(self):
         """PWR-A03 地名网孤岛：IC 地脚所在的地名网经已装配的直流连接件到不了主地（节点最多的地名网组）。
 
@@ -554,6 +599,13 @@ class Lint:
                 continue
             detail = (f'{"/".join(sorted(island))} {nodes[:8]} 经已装配直流连接件到不了主地 '
                       f'{"/".join(sorted(main))}；孤岛上 IC 地脚 {pins[:6]}，无连接器、无已知隔离器件')
+            owners = sorted({x.split('.')[0] for x in pins})
+            bonds = sorted({link for n in island for link, other in g.neighbors(n, {pw.RESISTOR}) if other in main})
+            if bonds and all(self._reverse_controller(ref) for ref in owners):
+                self.add('PWR-A03', '反接/理想二极管控制器地脚经电阻接地',
+                         detail + f'；{owners} 的手册标题为理想二极管/反接保护控制器，地脚经 {bonds} 接主地是手册接法'
+                         '（反接时地脚随输入变负、电阻限流），电阻值与功耗按手册核', owners[0], kind='INFO')
+                continue
             conditional = sorted({ref for ref in refs if g.kind(ref) in (pw.DIODE, pw.BRIDGE_RECTIFIER)
                                   and len(g.nets_of(ref)) >= 2}
                                  | {ref for ref in refs if g.kind(ref) not in TWO_TERMINAL
@@ -625,6 +677,8 @@ class Lint:
             base = a[:-3] if a.endswith('_IN') else b[:-3] if b.endswith('_IN') else None
             if base and {a, b} == {base + '_IN', base + '_N'} and base + '_P' in nets:
                 continue  # single-ended input beside an existing differential P/N pair
+            if self._complementary_outputs(a, b):
+                continue  # Q and Q̄ of one flip-flop (Matrix R2 F08): two nets by design
             self.add('NET-A02', '疑似网络名分裂',
                      f'{a}({len(nets[a])}节点) <-> {b}({len(nets[b])}节点)')
 

@@ -9,6 +9,24 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Matrix R2 扫描修正：6 类误报、2 处漏扫（2026-11-04）
+
+Matrix 电源与保护 R2 首审（record/sr-review/SR技能不足.md 1.1–1.6、2.3、2.4）。复现输入 `~/.cache/sr-boards/matrix--power-protection-r2/` 复制到草稿目录重跑，前后对比。
+
+- 1.1 PWR-A03（F07）：孤岛上的 IC 地脚全属手册标题为理想二极管/反接保护控制器的器件（intent 或资料审计的类别原句），且经电阻接主地时记 INFO；其他器件照报。R2 U201 LTC4359 VSS 经 R203：FINDING→INFO。
+- 1.2 NET-A02（F08）：两网分别由同一器件的一对互补输出脚驱动（1Q/~{1Q}、Q/QN），不算分裂。SC_LOCK_ORIN/SC_LOCKN_ORIN 不再报。
+- 1.3 RST-A06（F09）：触发器 CLR/PRE 算复位输入；单输入逻辑通道（nA→nY，无 nB：缓冲、施密特、开漏驱动）最多追 3 级，到复位输入算送达，到再无负载的复位名网记 INFO。U601 不再报，U602/U603 经 U604→U605 到 SW_RESET_N/PHY_RESET_N 记 INFO。
+- 1.4/1.5 NET-A07、RST-A04（F10/F11）：`datasheet_kinds.open_input_clause` 读已核实身份的手册文本，脚名自己的开路条款（`MODE = Open`、`leave X floating`、开路电压最小值高于同脚上升门限最大值）成立时记 INFO；测试条件表头不算。intent 新增可选 `open_pins`（用户确认的悬空接法），照 `derating` 先例不升格式版本。R2 9 条 NET-A07、1 条 RST-A04 都转 INFO（TPS2663 SLVSE94G：MODE = Open→Latch；SHDN 开路 2.48 V > 上升门限 2 V）。
+- 1.6 PWR-A06（F12）：接出的 PG/PGD/PGOOD 脚看本器件 OUT/VOUT/VOS 轨及 FB/PGTH 分压所接轨；UVLO/OVLO/OVP 门限脚看其分压所接轨；器件自身偏置输出只供自己的记 internal-bias。R2 24V_BUS、VAUX、BUCK_12V、VIN_P、VCC_12、VDDA_12 全有监测，PWR-A06 不再报。
+- 2.3 新规则 NET-A08（F03）：根图注释（另一端/对端在/板外）、注释点名的 .md 接口表首列、intent 新增可选 `boundary_nets`（照抄 ASG 设计网表）声明离开本设计的网，网名带页路径前缀、无同名全局/层次标签、不经连接器出板时按页出 FINDING。R2 只读根图注释 28 个网 6 条；接口表在旁时 58 个网 7 条。登记 catalog、BASIS→G01-013、规则合同、COLD_RULE_INDEXES。准则库 1.8.0 的 G05-098 与本条无关，未映射。
+- 2.4 DEV-D01（F04）：源格式带封装字段且全部已装配器件都空时出一条 FINDING，写明交付标准差异、不是电气缺陷、无电气后果按 P3。R2、校准板、典型电路 cmoy、回放 r05 各报一条。
+
+R2 冷扫（带候选）：非 INFO 33→24（F07–F12 的 16 行转 INFO 或消失，新增 NET-A08 6 行、DEV-D01 1 行），计划 2029→2020。85 块公开板（mlab-batdatunit01、neumi-fastlogic 在 main 上 intent 就无效，未计）：冷扫非 INFO 2890→2890，误报归因行 726→726，计划 45518→45518，真缺陷定位 191/191、自动检出 43→43。校准板（设计记录目录已不存在，无 intent 冷扫）：非 INFO 19→20，多出的是 DEV-D01，PRO-E02 19 条不变。典型电路 cmoy 的 DEV-D01 归 expected；回放新约定 sr-scan-v1，只改 r05 checks_total 80→81。检测基准：典型正例 216→217，漏报 20、误报 11 不变。阅读字节棘轮 ① 172983（+276）、② 159969（+803）、③ 225529（+569）。没做：NET-A08、DEV-D01 的种子位点（seeded_bench）未加。
+
+- Event: user:2026-11-04 (你用新修改的SR技能跑一遍修改好的R2…总结问题，发现SR技能的不足)
+- Causes: knowledge_missing 3, rule_missing 2, rule_not_enforced 3
+- Changed: scripts/lint.py, scripts/board_scans.py, scripts/datasheet_kinds.py, scripts/checkers/power_up.py, scripts/checkers/supervision.py, scripts/catalog.py, scripts/plan_board.py, scripts/plan_review.py, scripts/tests/test_sr_scan_r2.py, scripts/tests/test_reading_path.py, references/automation.md, references/scans-and-tools.md, references/intent-format.md, references/check-catalog.md, evals/rule_contracts/boards/NET-A08.json, evals/typical_circuits/cases.json, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/sr-scan-v1/, evals/detection/RESULTS.md, docs/improvement-ledger.md
+- Gates: pytest 2818 passed、1 failed（test_asg_holds_the_same_shared_layer：ASG main 已是准则库 1.8.0、本树 1.7.4，预期失败；SR_ASG_SHARED_ROOT 指向本树时同一用例通过）; mutation --changed main --tier unit 211 全杀; kicad_replay 195/195（sr-scan-v1）; detection 正例 611→613、命中 560→562、漏报 20、误报 11 不变; check_ledger PASS; 不 push
 ## 准则库 1.8.0：G05-098 外部锁存判据在正常动作下不成立、G03-017 加热插入负载 (2026-11-04)
 
 SR 首审 Matrix 电源与保护 R2 的两处 P1（F-001 命令关断误置短路锁、F-002 热插入电容负载误锁）没有条款承接（`SR技能不足.md` 5.1、5.3）。用户 2026-11-04 批准写入：新增 G05-098（POWER_PROTECTION，method，来源 TPS2663 SLVSE94G 与 ECSS 方法延伸），G03-017 1.1→1.2 加热插入允许负载工况；登记文件 G03 1.8、G05 1.4，共用层 1.8.0（354 条，指纹 ea8f1a727df3 → 9208f5369375），ASG 同字节。SR 代码不变；新规则（sr-rules 分支）落地后映射到 G05-098。
