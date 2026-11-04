@@ -160,7 +160,7 @@
 | POWER_SEQUENCE 上电与掉电顺序 | 类别选中 | 需求的供电建立顺序、掉电顺序与恢复由使能、监控或时序链保证 | RST-T03 | 电路 STARTUP；系统功能 SYS-SEQUENCE |
 | STARTUP_TIMING 启动、复位与保持时间 | 原文有 startup_time / hold_up_time / reset_time | 启动时间、复位脉宽与掉电保持时间按元件值与器件参数算得在需求窗口内 | RST-C02 | 电路 STARTUP；系统功能 SYS-SEQUENCE |
 | FAULT_DETECTION 检测通路存在 | 类别选中 | 需求的每种故障有检测通路接到能动作的器件 | ANA-T01、ANA-C04、PWR-T04 | 电路 POWER_PROTECTION、POWER_CONVERTER、ANALOG；系统功能 SYS-MONITOR、SYS-SEQUENCE |
-| FAULT_THRESHOLD 动作门限 | 原文有 trip_current / trip_voltage / surge_voltage / esd_voltage | 检测门限按元件值与器件阈值算得落在需求窗口内，正常工作范围内不误动作 | PWR-C06、PRO-C02 | 电路 POWER_PROTECTION、POWER_CONVERTER、ANALOG；系统功能 SYS-MONITOR、SYS-SEQUENCE |
+| FAULT_THRESHOLD 动作门限 | 原文有 trip_current / trip_voltage / surge_voltage / esd_voltage / load_capacitance | 检测门限按元件值与器件阈值算得落在需求窗口内，正常工作范围内不误动作 | PWR-C06、PRO-C02 | 电路 POWER_PROTECTION、POWER_CONVERTER、ANALOG；系统功能 SYS-MONITOR、SYS-SEQUENCE |
 | FAULT_RESPONSE 动作后状态与恢复 | 类别选中 | 故障动作后的输出状态、锁定或自动恢复方式与需求一致 | PRO-C01、PRO-D03、RST-T03 | 电路 POWER_PROTECTION、POWER_CONVERTER、ANALOG；系统功能 SYS-MONITOR、SYS-SEQUENCE |
 | MEASUREMENT_CHAIN 检测链完整 | 类别选中 | 需求的每个被测量有取样、返回地与判决链，取样点与被测量一致 | ANA-T01 | 电路 ANALOG；系统功能 SYS-MONITOR |
 | MEASUREMENT_ACCURACY 测量精度 | 原文有 measurement_accuracy | 测量误差按传感器、偏置、采样链与 ADC 的误差和温漂合计在需求窗口内 | ANA-C01 | 电路 ANALOG；系统功能 SYS-MONITOR |
@@ -203,6 +203,7 @@
 | lifetime | 设计寿命 | 年 | 年、year、h | LIFETIME_BASIS、MISSION_PROFILE |
 | trip_current | 保护动作电流 | A | A、mA | FAULT_THRESHOLD |
 | trip_voltage | 保护动作电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC | FAULT_THRESHOLD |
+| load_capacitance | 允许负载电容 | F | F、mF、µF、uF | FAULT_THRESHOLD |
 | isolation_voltage | 绝缘电压 | V | V、mV、kV、Vac、VAC、Vdc、VDC、Vrms、kVrms | ISOLATION_PARTS |
 | startup_time | 启动时间 | s | s、ms、µs、us | STARTUP_TIMING |
 | hold_up_time | 掉电保持时间 | s | s、ms、µs、us | STARTUP_TIMING |

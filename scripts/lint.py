@@ -343,6 +343,36 @@ class Lint:
                 line for _, line in behind) + rest
         return '同网没有 IC 脚；' + rest
 
+    def _clamp_exposure(self, net):
+        """SR 不足 4.1: the surge that reaches a clamp by the declared exposure of the ports on its net."""
+        ports = protective_clamps.port_connectors(self.graph, net)
+        declared = {ref: (item or {}).get('exposure') for ref, item in ((self.intent or {}).get('interfaces') or {}).items()
+                    if isinstance(item, dict)}
+        return protective_clamps.exposure_text(ports, declared, protective_clamps.surge_cases(self.intent))
+
+    def _clamp_initial(self, clamp, part, nets, out_cases):
+        """SR 不足 4.2: the initial-calculation table of a clamp whose datasheet points are tabled."""
+        data = protective_clamps.clamp_data(part)
+        if not data:
+            return ''
+        rail = nets[0]
+        window = ((self.intent or {}).get('power_rails') or {}).get(rail) or {}
+        volts = window.get('voltage_v') if isinstance(window, dict) else None
+        if isinstance(volts, dict) and isinstance(volts.get('max'), (int, float)):
+            net_max = (float(volts['max']), 'intent.power_rails')
+        else:
+            net_max = (_volt(rail), '按网名推定，标称') if _volt(rail) else None
+        pins = []
+        for net in nets:
+            for node in self.graph.nodes_on(net):
+                ref = node.partition('.')[0]
+                if self.graph.kind(ref) != IC or not self.graph.is_fitted(ref):
+                    continue
+                found = protective_clamps.pin_maximum(self.parts.get(ref, {}), pw.pin_aliases(self.graph.pinname.get(node), node.partition('.')[2]))
+                if found:
+                    pins.append((f'{node}({self.graph.pinname.get(node) or "?"})', found[0]))
+        return protective_clamps.initial_table(data, net_max, pins, out_cases)
+
     def _pins_behind_limiter(self, net, clamp=None):
         """boards-merge7 F11: IC pins one series resistor or PTC from the clamp's net, past forward series diodes
         (the DI input D621 → R611 → IP0), never through a second limiter. Each comes as (pin text, check line); the line
@@ -925,14 +955,19 @@ class Lint:
                 detailed = len(channels) > 1 or len(channel['pins']) > 1 or not any(ng.is_ground(n) for n in channel['return_nets'])
                 channel_text = (f"通道 {channel['channel']} 物理脚={channel['pins']} 网络={channel['nets']}，返回={channel['return_nets']}；依据 {channel['citation']}；"
                                 if detailed else '')
+                exposure, out_cases, undeclared = self._clamp_exposure(rail)
+                table = self._clamp_initial(ref, value, channel['nets'], out_cases)
+                extra = {'clamp_channel': channel} if detailed else {}
+                if undeclared:
+                    extra['needs_human'] = ['port_exposure']
                 self.add('PRO-E02', '防护器件工作/击穿/钳位窗口待复核',
                          f'{ref} ({blob.strip()}) 跨 {rail}；{channel_text}轨名提示={_fmt_v(_volt(rail))}，'
                          f'型号提示={_fmt_v(clamp_volt(blob))}。' + ''.join(self._protected_pins_text(n, ref) for n in channel['nets']) +
                          'VRWM（齐纳取 VZ 下限）对该网持续最高工作电压（含公差与纹波，不含瞬态）；'
-                         f'{protective_clamps.transient_source_text(self.graph, rail)}'
+                         f'{protective_clamps.transient_source_text(self.graph, rail)}{exposure}'
                          '该瞬态下的钳位电压对同网最低耐受，高于 IC 脚绝限即 FAIL，除非串联阻抗下注入电流在芯片允许范围内；'
-                         '该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。',
-                         ref, kind='CANDIDATE', **({'clamp_channel': channel} if detailed else {}))
+                         '该波形的脉冲能量对器件额定（按本板环境温度降额），温度等级覆盖本板环境；型号不能证明导通或烧毁。' + table,
+                         ref, kind='CANDIDATE', **extra)
 
         # DOC-A01/DOC-A02 导出日志：错误中止与 No_connect 被忽略 —— 免费证据，别丢。
         # 提供了日志即执行扫描；kicad-cli 导出成功时日志本来就是空的，空日志表示零命中而不是未提供。

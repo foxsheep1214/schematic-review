@@ -8,6 +8,7 @@
 """
 import re
 
+import latch_criteria
 from checkers.netgraph import is_ground, is_rail, rail_voltage
 from decoupling import parse_capacitance
 from part_words import CAPACITOR, CONNECTOR, CRYSTAL, FERRITE, IC, INDUCTOR, JUMPER, LED_RE, RESISTOR, SWITCH, TESTPOINT, pin_aliases
@@ -595,6 +596,7 @@ def run(lint):
     ldo_output_capacitor(lint)
     can_bus_short(lint)
     isolator_ground_bridge(lint)
+    latch_criteria.scan(lint)
     crystal_load(lint)
     crystal_shared(lint)
     floating_inputs(lint)
