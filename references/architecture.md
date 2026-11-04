@@ -39,8 +39,8 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 步骤 | 入口 | 工具 | 库 |
 |---|---|---|---|
 | ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`device_kinds.py`（器件类别登记表）、`part_words.py`（器件身份、PCB 铜与有出处的精确型号脚方向）、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
-| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定，钳位初算与端口暴露等级）、`latch_criteria.py`（状态脚驱动外部锁存的判据树与逐动作核，PRO-A06、PWR-A08）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`（原生事实不变，给 NetGraph 附完整有出处脚表的缺名解析与冲突）、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`guideline_criteria.py`、`stress_check.py`（共用应力核对：降额限值、应力判法、挑规则）（共用设计准则库：校验、选用、覆盖；与 ASG 同字节）、`checkers/` |
-| ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
+| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`（原生事实不变，给 NetGraph 附完整有出处脚表的缺名解析与冲突）、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`guideline_criteria.py`、`stress_check.py`（共用应力核对：降额限值、应力判法、挑规则）（共用设计准则库：校验、选用、覆盖；与 ASG 同字节）、`checkers/` |
+| ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py`、`design_checklist.py`（ASG 设计记录的对账清单：只取对象与计算名） | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
 | ④ 校验 | `validate_review.py` | `migrate_results.py` | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`validate_remediation.py`、`review_engine.py` |
 | ⑤ 出报告 | `render_report.py`、`pack_review.py` | — | `report_html.py` |
 | 复审 | `diff_netlists.py` | — | `revision_impact.py` |
@@ -48,6 +48,8 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 
 `catalog.py` 是规则的唯一登记处，既被出计划导入，维护时也用它重写规则总表。
 `independence.py` 在出计划时拒收引用设计方文档的声明，在校验时拒收这样的证据，两步共用。
+`design_checklist.py` 从 ASG 的 `design-closure.json`、`reference-input.json` 只读出对象、计算种类和去掉数值的计算名，作为审查员的待核清单；
+不读数值与结论，清单和这两份文件都由 `independence.py` 拒收为引用或证据，独立性边界不变（线索，不是输入）。
 
 ## 三、历次架构决定
 
@@ -142,10 +144,6 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | 2026-11-02 | 设计准则库 1.6.0（344 条）：新增 G01-051～054，由 `DC_24V` 触发；只有 G01-054（GB/T 17799.2 表 2、表 3）带数值，电压窗、反接、中断都要求项目写明，不设默认值；新增检查项 `PWR-C27`，核器件范围覆盖已声明的 24 V 输入窗，`BASIS` 把 G01-051 映射到 `PWR-D04` 与 `PWR-C27`，G01-052、053、054 分别映射到 `PWR-T05`、`PWR-C18`、`PRO-C01` | 用户 2026-11-02“按建议全部入库”。IEC 61131-2 与 IEC 61000-4-29 未取得原文，延续 2026-10-31 的决定不写 24 V 电压窗与 PS1/PS2；现有 `PWR-C17`、`PWR-C21` 写死了 −48 V 和军车 28 V 的数值，核不了项目声明的窗 |
 | 2026-11-02 | 设计准则库 1.6.1（344 条）：G01-053 按 GB/T 17626.29-2006 修订，要求项目写明选定的暂降与中断组合，中断分高阻抗和低阻抗，仍不设默认等级；`PWR-C18` 增加 24 V 的组合、低阻抗反灌与恢复过压核对 | 用户 2026-11-02“入库并修订”。该标准 §1 把严酷度留给技术委员会、用户或制造商，只能提供可选等级；`PWR-T01` 按电源轨生成，不能挂到 `DC_24V` 的检查项 |
 | 2026-11-02 | 设计准则库 1.7.0（353 条）：86 块开源板归因后新增 G02-036～039（器件身份、文档一致、占位值、推荐工作条件）、G03-059（前馈电容窗）、G04-101～104（官方脚表、未用脚处置、USB 外围、Type-C CC），修订 12 条（USB 四条限定到 Type-C/PD，G04-036/037/039 隔离类型不展开到磁珠，G04-091 改厂家建议，G05-030/031 逐通道并追到滤波后器件）；`BASIS` 把新条目挂到 `DEV-D01/D02/D04/D05`、`DOC-D01/Q01`、`NET-A01/A07`、`DEV-C01`、`PWR-C15`、`SIG-C05` | 用户 2026-11-02“按草案入库”。草案与 14 条裁决见 `docs/proposals/criteria-from-boards-2026-11-02.md`；没有新建检查项，新准则先由已有检查项承接 |
-<<<<<<< HEAD
-=======
-
->>>>>>> boards-program
 
 ## 四、规则维护
 

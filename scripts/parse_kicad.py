@@ -96,8 +96,8 @@ def _pin_function(function, declared, pin):
     return function
 
 
-def export_netlist(schematic, target, executable=None):
-    """调用 kicad-cli 导出 kicadxml；失败时把 kicad-cli 的原文抛出来。"""
+def export_netlist(schematic, target, executable=None, warnings=None):
+    """调用 kicad-cli 导出 kicadxml；失败时把 kicad-cli 的原文抛出来。批注告警行收进 `warnings`（给了列表时）。"""
     tool = executable or os.environ.get('KICAD_CLI') or shutil.which('kicad-cli')
     if not tool:
         raise RuntimeError(
@@ -108,8 +108,76 @@ def export_netlist(schematic, target, executable=None):
     if done.returncode != 0 or not os.path.isfile(target):
         raise RuntimeError('kicad-cli 导出失败: '
                            + (done.stderr or done.stdout or '无输出').strip())
+    if warnings is not None:
+        warnings.extend(line.strip() for line in (done.stderr or '').splitlines() if ANNOTATION_WARNING_RE.search(line))
     return [line.strip() for line in (done.stderr or '').splitlines()
             if re.search(r'\berror\b|\bfailed\b|\bcannot\b', line, re.I)]
+
+
+ANNOTATION_WARNING_RE = re.compile(r'annotation error|not (?:fully )?annotated|批注错误|标注错误|未(?:完全)?标注', re.I)
+REFERENCE_NUMBER_RE = re.compile(r'^(.*?)(\d+)$')
+
+
+def _children(node, tag):
+    return [c for c in node[1:] if isinstance(c, list) and c and c[0] == tag]
+
+
+def annotation_issues(schematic):
+    """What kicad-cli's "schematic has annotation errors" (原理图存在批注错误) is about, per symbol, since kicad-cli names
+    none (Matrix R2 3.9: 19 PWR_FLAG symbols #FLG1820243c…aa4 whose reference ends in a letter, so KiCad reads them as
+    not annotated; the netlist leaves power symbols out). Walks the root sheet and its sheet files:
+    [{ref, sheet, issue: unannotated|no_number|duplicate, power}] in sheet order; [] when nothing is found or the
+    files cannot be read."""
+    root = os.path.abspath(schematic)
+    found, seen, queue, done = [], {}, [root], set()
+    while queue:
+        path = queue.pop(0)
+        if path in done or not os.path.isfile(path):
+            continue
+        done.add(path)
+        try:
+            with io.open(path, encoding='utf-8', errors='replace') as stream:
+                tree = _sexpr(stream.read())
+        except (OSError, ValueError):
+            continue
+        for sheet in _children(tree, 'sheet'):
+            props = {p[1]: p[2] for p in _children(sheet, 'property') if len(p) > 2}
+            if props.get('Sheetfile'):
+                queue.append(os.path.join(os.path.dirname(path), props['Sheetfile']))
+        for symbol in _children(tree, 'symbol'):
+            props = {p[1]: p[2] for p in _children(symbol, 'property') if len(p) > 2}
+            refs = [r[1] for i in _children(symbol, 'instances') for pr in _children(i, 'project')
+                    for pa in _children(pr, 'path') for r in _children(pa, 'reference') if len(r) > 1]
+            unit = next((u[1] for u in _children(symbol, 'unit') if len(u) > 1), '1')
+            for ref in sorted(set(refs) or {props.get('Reference', '')}):
+                entry = {'ref': ref, 'sheet': os.path.basename(path), 'power': ref.startswith('#')}
+                if not ref or ref.endswith('?'):
+                    found.append(dict(entry, issue='unannotated'))
+                elif not REFERENCE_NUMBER_RE.match(ref):
+                    found.append(dict(entry, issue='no_number'))
+                elif (ref, unit) in seen:
+                    found.append(dict(entry, issue='duplicate', also=seen[(ref, unit)]))
+                else:
+                    seen[(ref, unit)] = os.path.basename(path)
+    return found
+
+
+ANNOTATION_WORDS = {'unannotated': '未标注（以 ? 结尾）', 'no_number': '位号不以数字结尾，KiCad 视为未标注',
+                    'duplicate': '位号与单元重复'}
+
+
+def annotation_lines(issues, shown=8):
+    """The annotation issues as printable lines; one line saying none were found at reference level when empty."""
+    if not issues:
+        return ['kicad-cli 只报“存在批注错误”、不给位号；SR 按 KiCad 的位号规则扫描各页，没有找到位号级问题（未标注、无编号、重复）']
+    out = []
+    for issue in sorted({i['issue'] for i in issues}):
+        group = [i for i in issues if i['issue'] == issue]
+        names = ['%s（%s）' % (i['ref'], i['sheet']) for i in group[:shown]]
+        power = all(i['power'] for i in group)
+        out.append('%s：%d 个%s：%s%s' % (ANNOTATION_WORDS[issue], len(group), '电源/标志符号（不进网表）' if power else '符号',
+                                         '、'.join(names), ' 等' if len(group) > shown else ''))
+    return out
 
 
 def _libparts(root):
@@ -438,7 +506,12 @@ def build(path, executable=None):
     if path.lower().endswith('.kicad_sch'):
         with tempfile.TemporaryDirectory() as directory:
             target = os.path.join(directory, 'netlist.xml')
-            errors = export_netlist(path, target, executable)
+            warnings = []
+            errors = export_netlist(path, target, executable, warnings)
+            for line in warnings:   # kicad-cli names no reference; say which symbols it is about
+                print('  [导出告警] %s' % line)
+                for detail in annotation_lines(annotation_issues(path)):
+                    print('    ' + detail)
             with io.open(target, encoding='utf-8', errors='replace') as stream:
                 return parse(stream.read(), errors)
     with io.open(path, encoding='utf-8', errors='replace') as stream:

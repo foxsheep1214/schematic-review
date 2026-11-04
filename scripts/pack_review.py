@@ -29,7 +29,8 @@ REPORT_HTML = '审查报告.html'
 RECORD = 'record'
 import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from render_report import COUNTS_TITLE, SR_SECTION, UnfinishedReview, jargon_in, notes_errors, render, sr_feedback_errors  # noqa: E402
+from render_report import (COUNTS_TITLE, SR_SECTION, UnfinishedReview, guideline_quotes, jargon_in, notes_errors, render,  # noqa: E402
+                           sr_feedback_errors, without_quotes)
 from report_html import to_html
 import circuit_decisions
 import results_model
@@ -73,15 +74,16 @@ def input_pdfs(declared):
 
 def plain_language_errors(report):
     """Text written for the designer must be plain: everything except the folded count table (labels fixed by
-    render_report) and what follows the SR section (SR feedback, index)."""
+    render_report), what follows the SR section (SR feedback, index) and the shared rule library's own text the report
+    quotes (render_report.guideline_quotes)."""
     body = report.split('\n' + SR_SECTION)[0].split('\n## 索引')[0]
     counts = '<summary>%s</summary>' % COUNTS_TITLE
     if counts in body:
         head, rest = body.split(counts, 1)
         body = head + rest.split('</details>', 1)[-1]
-    errors = []
+    errors, quotes = [], guideline_quotes()
     for number, line in enumerate(body.splitlines()[1:], 2):
-        words = jargon_in(line)
+        words = jargon_in(without_quotes(line, quotes))   # a quotation of the shared rule library is not our wording
         if words:
             errors.append('%s line %d uses %s; rewrite the record text or notes in plain words and re-render: %s'
                           % (REPORT, number, '/'.join(words), line.strip()[:80]))

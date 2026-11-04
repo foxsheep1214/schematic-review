@@ -55,6 +55,32 @@ def bom_fields(columns):
     return out
 
 
+# ASG's BOM states what a part bought by specification must meet, one requirement per `|`-separated item:
+# `rated_voltage要求: rated_voltage>=50 V @ 温度=85 ℃ 额定` (RequirementSpec), and what the selection gives (SelectedSpec).
+# These are design results (SKILL.md: a rating the BOM states is used); the values are minimums or maximums the part
+# must meet, so the weakest compliant part sits on the bound (Matrix R2 6.1, 2026-11-04).
+SPEC_COLUMNS = ('requirementspec', 'selectedspec')
+SPEC_ITEM_RE = re.compile(r'^(?:[^:：|]*[:：])?\s*(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*(?P<op>>=|<=|≥|≤|=)\s*'
+                          r'(?P<value>[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)\s*(?P<unit>[^\s@|]*)\s*(?:@\s*(?P<condition>.*))?$')
+OPS = {'≥': '>=', '≤': '<='}
+
+
+def spec_constraints(columns):
+    """[{column, name, op, value, unit, condition}] read from a part's RequirementSpec/SelectedSpec columns; an item not
+    written as name op value unit is left out (the column text stays in the BOM fields as written)."""
+    out = []
+    for column, text in (columns or {}).items():
+        if column.strip().lower() not in SPEC_COLUMNS or not isinstance(text, str):
+            continue
+        for item in text.split('|'):
+            m = SPEC_ITEM_RE.match(item.strip())
+            if m:
+                out.append({'column': column, 'name': m.group('name'), 'op': OPS.get(m.group('op'), m.group('op')),
+                            'value': float(m.group('value')), 'unit': m.group('unit'),
+                            'condition': (m.group('condition') or '').strip()})
+    return out
+
+
 def bom_conflicts(columns, kind):
     """What one part's BOM line says twice and differently: [{field, says, against}]."""
     fields = bom_fields(columns)

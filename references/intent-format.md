@@ -108,7 +108,7 @@
   `count` 是设计寿命内的总次数，`refs` 只给点名的器件；每个 `citation` 须是所引需求原文里的一段。规则见
   [寿命与耗损件](commodity-floors.md#寿命与耗损件)。
 - 需求不手抄：`python3 scripts/requirements_extract.py 需求.md --json record/requirements.json` 逐字抄录需求表
-  （首列表头为 ID/编号/需求编号/工程ID 的表格行——首格可以是"编号 标题"，编号取第一个词、标题留作该列的文字——或 `- <编号>：<文字>` 列表项，
+  （几份文档一次给全、合并抄录并输出 `requirement_source` 列表；首列表头为 ID/编号/需求编号/工程ID 或以 ID 结尾的表格行——首格可以是"编号 标题"，编号取第一个词、标题留作该列的文字——或 `- <编号>：<文字>` 列表项，
   `A.2.2.1/A.2.3：…` 这样斜杠连的编号各算一条、同一段文字；表头不是编号列的表（议题、版本……）不是需求表），每条各列分开、带所在章节与 `文件:行号`，并给文件 sha256。
   `requirement_source` 写文件路径和这个 sha256（任务书给了几份需求文档就写几项，列表 `[{path, sha256}, …]`，逐文件抄录，
   REQ ID 跨文件唯一，两份文档给同一个 id 拒绝；`locator` 带各自的文件名），`requirements[]` 每项只写 `id`、`categories`、`interpretation`

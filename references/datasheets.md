@@ -37,6 +37,10 @@ datasheet-audit.json 和 datasheet-resolution.json 闭环。
      文件格式标记不证明原厂身份或内容有效，不能把文本改名为 PDF 来冒充原件；图形、曲线、极性/封装视图
      的结论仍需可定位的原始图形证据，文本 AVAILABLE 不支持这些结论。
 
+   - Datasheet 字段或 BOM 列给了文件（绝对路径或 `HARDWARE_WIKI` 相对路径）、各位号同一份、正文写出该型号的，审计直接记
+     AVAILABLE（`resolved_by: design_link`），不用手写；只差字母开头的短后缀出 `DATASHEET_ORDERING_SUFFIX`，核是包装后缀；
+     正文没有型号的只作候选。手写 resolution 优先。
+
 3. Agent 把结果写入 datasheet-resolution.json，再次运行审计（带 `--intent` 才核验 `intent.device_kinds`）：
 
        python3 scripts/audit_datasheets.py db.json \

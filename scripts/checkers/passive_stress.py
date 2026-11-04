@@ -18,6 +18,7 @@ from solve_dividers import parse_resistor, parse_resistor_noted
 from . import inventory as inv
 from . import netgraph as ng
 import part_words as pw
+import read_bom
 from .base import Checker
 
 # 常规件最弱档从共用层读（references/shared/commodity-floors.json，2026-11-02；commodity-floors.md 的表与它逐项对应）：
@@ -621,13 +622,16 @@ def _proposal(entry):
     if farads is None:
         return None, {'v_across_max': v}, '容值不可解析'
     if entry.get('package_assumed'):   # no footprint: only a voltage written in the value bounds it
-        written = rated_voltage(entry['value']) or (entry.get('bom_ratings') or {}).get('voltage_v')
+        written = rated_voltage(entry['value'])
+        where = '值里'
+        if written is None and (entry.get('bom_ratings') or {}).get('voltage_v') is not None:
+            written, where = entry['bom_ratings']['voltage_v'], 'BOM 规格'
         calc = {'v_across_max': v, 'capacitance_f': farads, 'written_v': written}
         if written is None:
             return None, calc, '没有封装也没写耐压：耐压 ≥%gV 写进 BOM 约束（DEV-D04），由审查者按 commodity-floors 判定' % v
         if v <= written:
-            return 'PASS', calc, '两端电压 ≤ 值里所写耐压 %gV' % written
-        return None, calc, '两端电压超过值里所写耐压 %gV，由审查者判定' % written
+            return 'PASS', calc, '两端电压 ≤ %s所写耐压 %gV' % (where, written)
+        return None, calc, '两端电压超过%s所写耐压 %gV，由审查者判定' % (where, written)
     tiers = [t for t in MLCC_ORDERABLE if t[0] == entry['package'] and farads <= t[1] * (1 + 1e-9)]
     best = max(tiers, key=lambda t: t[2], default=None)
     calc = {'v_across_max': v, 'capacitance_f': farads,
@@ -680,9 +684,14 @@ FRACTION_W_RE = re.compile(r'(?<![\d.])(\d+)\s*/\s*(\d+)\s*(m?W)\b', re.I)
 HALF_READ_W_RE = re.compile(r'\d\s*/\s*\d+(?:\.\d+)?\s*m?W\b', re.I)
 
 
+SPEC_VOLTAGE_NAMES = ('rated_voltage', 'working_voltage', 'voltage')
+SPEC_POWER_NAMES = ('power', 'rated_power')
+
+
 def bom_ratings(fields):
     """Ratings the BOM writes as segments of their own (`…/160V/…`, `…，2W，…`, `1/16W 5%`); a voltage or power written
-    twice, or inside a sentence, is not read. A power written as a fraction that cannot be read whole (0.1/16W, 1/0W)
+    twice, or inside a sentence, is not read; a minimum an ASG specification column states (`rated_voltage>=50 V`) is read
+    as the rating (the weakest part meeting it). A power written as a fraction that cannot be read whole (0.1/16W, 1/0W)
     is `power_unread`: no power floor is taken from it and the pre-judgement gives no PASS (boards-merge4, pslab
     1/16W read as 16 W)."""
     found = {'voltage_v': set(), 'power_w': set()}
@@ -704,6 +713,14 @@ def bom_ratings(fields):
                 found['voltage_v'].add(float(v.group(1)))
             if w and not half_read:
                 found['power_w'].add(float(w.group(1)))
+    for spec in read_bom.spec_constraints(fields):   # ASG RequirementSpec/SelectedSpec: `rated_voltage>=50 V`
+        if spec['op'] != '>=':
+            continue
+        scale = {'V': 1.0, 'kV': 1000.0, 'W': 1.0, 'mW': 0.001}.get(spec['unit'])
+        if scale and spec['name'] in SPEC_VOLTAGE_NAMES and spec['unit'] in ('V', 'kV'):
+            found['voltage_v'].add(spec['value'] * scale)
+        elif scale and spec['name'] in SPEC_POWER_NAMES and spec['unit'] in ('W', 'mW'):
+            found['power_w'].add(spec['value'] * scale)
     ratings = {k: next(iter(vals)) for k, vals in found.items() if len(vals) == 1}
     if unread:
         ratings.pop('power_w', None)

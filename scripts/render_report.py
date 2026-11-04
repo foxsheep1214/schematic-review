@@ -135,6 +135,31 @@ def jargon_in(text):
     return found
 
 
+def guideline_quotes():
+    """Texts the report quotes verbatim from the shared rule library (titles, asg_action, sr_check, the cited sources'
+    document, edition and clause), as cells render
+    them: a quotation is not the report's own wording, so the plain-language check skips it (Matrix R2 3.8: G04-100,
+    G05-023, G05-028, G05-039 titles say 下游; the library is shared and not edited from SR)."""
+    out = set()
+    for card in guideline_criteria.load()['criteria']:
+        for field in ('title', 'asg_action', 'sr_check'):
+            if isinstance(card.get(field), str) and card[field].strip():
+                out.add(cell(card[field]))
+        for source in card.get('source') or []:   # the cited document's own title and clause
+            for field in ('document', 'edition', 'clause'):
+                if isinstance(source, dict) and isinstance(source.get(field), str) and source[field].strip():
+                    out.add(cell(source[field]))
+    return sorted(out, key=len, reverse=True)
+
+
+def without_quotes(line, quotes):
+    """The line with every quoted library text removed (longest first)."""
+    for quote in quotes:
+        if quote in line:
+            line = line.replace(quote, ' ')
+    return line
+
+
 def item_kind(rows):
     """FAIL names the item; otherwise the gap cause its checks carry (only missing data reaches a report)."""
     fails = [r.get('id', '') for r in rows if r.get('review_result') == 'FAIL']
@@ -751,7 +776,8 @@ def render_guidelines(plan):
            '没有对应检查项的 %d 条列在“对 SR 的反馈”，是 SR 待补的规则，不是设计缺陷。'
            % (guideline_criteria.shared_label(), section['baseline'], len(applicable), len(section.get('not_triggered') or {}),
               len(section.get('uncovered') or [])), '',
-           '| 设计准则 | 内容 | 出处 | 本次由哪些检查核对 | 关闭阶段 |', '|---|---|---|---|---|']
+           '“内容”列是准则库条款标题的原文引文，照录不改写。', '',
+           '| 设计准则 | 内容（准则库原文） | 出处 | 本次由哪些检查核对 | 关闭阶段 |', '|---|---|---|---|---|']
     if not section.get('external_interfaces'):   # 2026-11-01 (user decision 1): the interface rules never rest on a net name alone
         out[2:2] = ['未声明对外接口：网名没有识别到、intent 也没有声明 %s，这些接口的设计准则没有选中。板上有的话写进 `intent.circuits` 后重新生成计划。'
                     % '、'.join(t.title for t in catalog.CIRCUIT_TYPES if t.name in catalog.EXTERNAL_INTERFACE_TYPES), '']
@@ -1297,7 +1323,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
     if uncovered:   # an applicable guideline rule no planned SR rule maps to (catalog.BASIS): SR's to add
         sr += ['### 适用但还没有检查的共用设计准则', '',
                '下面 %d 条设计准则本板适用，SR 规则总表里还没有检查映射到它们（catalog.BASIS），本次审查没有核对；'
-               '逐条补规则后记进改进台账。' % len(uncovered), '', '| 设计准则 | 内容 | 设计准则里的检查方法 |', '|---|---|---|']
+               '逐条补规则后记进改进台账。' % len(uncovered), '', '| 设计准则 | 内容（准则库原文） | 设计准则里的检查方法（准则库原文） |', '|---|---|---|']
         sr += ['| %s | %s | %s |' % (c['id'], cell(c['title']), cell(c['sr_check'])) for c in uncovered]
         sr.append('')
     sr += render_sr_feedback(notes.get('sr_feedback'))
