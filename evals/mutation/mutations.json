@@ -836,7 +836,7 @@
   "id": "M132",
   "name": "a table not keyed by id is read as requirements",
   "file": "scripts/requirements_extract.py",
-  "old": "header = cells if cells and cells[0].strip().lower() in ID_HEADERS else []",
+  "old": "header = cells if cells and is_id_header(_plain_id(cells[0])) else []",
   "new": "header = cells"
  },
  {
@@ -1438,8 +1438,8 @@
   "id": "M218",
   "name": "the designer calculation results are not a designer document",
   "file": "scripts/independence.py",
-  "old": "|record/calculations/', re.I)",
-  "new": "', re.I)"
+  "old": "|record/calculations/|'",
+  "new": "|'"
  },
  {
   "id": "M219",
@@ -1501,8 +1501,8 @@
   "id": "M227",
   "name": "C1: a capacitor voltage the BOM writes is ignored",
   "file": "scripts/checkers/passive_stress.py",
-  "old": "written = rated_voltage(entry['value']) or (entry.get('bom_ratings') or {}).get('voltage_v')",
-  "new": "written = rated_voltage(entry['value'])"
+  "old": "            written, where = entry['bom_ratings']['voltage_v'], 'BOM 规格'",
+  "new": "            written, where = None, 'BOM 规格'"
  },
  {
   "id": "M228",
@@ -3750,13 +3750,6 @@
   "file": "scripts/plan_review.py",
   "old": "            if frame is None or check.get('function_id') or check.get('applicability') == 'NOT_APPLICABLE':",
   "new": "            if True:"
- },
- {
-  "id": "M591",
-  "name": "the 工程ID header is not a requirement table",
-  "file": "scripts/requirements_extract.py",
-  "old": "ID_HEADERS = {'id', '编号', '需求编号', 'req', '需求 id', '需求id', '工程id', '工程 id', '要求编号'}",
-  "new": "ID_HEADERS = {'id', '编号', '需求编号', 'req', '需求 id', '需求id'}"
  },
  {
   "id": "M592",
@@ -7481,5 +7474,110 @@
   "file": "scripts/catalog.py",
   "old": "_LEAF = r'(^|[:_-]|^NET:.*/(?=[^/]*$))'",
   "new": "_LEAF = r'(^|[:_-])'"
+ },
+ {
+  "id": "M1500",
+  "name": "a header ending in ID is no id column again",
+  "file": "scripts/requirements_extract.py",
+  "old": "    return name in ID_HEADERS or bool(ID_SUFFIX_RE.match(name))",
+  "new": "    return name in ID_HEADERS"
+ },
+ {
+  "id": "M1501",
+  "name": "several documents are not merged into one source list",
+  "file": "scripts/requirements_extract.py",
+  "old": "        out['requirement_source'] = sources   # what intent.requirement_source lists, document by document",
+  "new": "        out['requirement_source'] = sources[:1]"
+ },
+ {
+  "id": "M1502",
+  "name": "the design datasheet link is not used",
+  "file": "scripts/audit_datasheets.py",
+  "old": "            outcome = _linked_outcome(db, material, base_dir, diagnostics)",
+  "new": "            outcome = None"
+ },
+ {
+  "id": "M1503",
+  "name": "a variant digit counts as an ordering suffix",
+  "file": "scripts/audit_datasheets.py",
+  "old": "        if len(stem) >= 6 and suffix[0].isalpha() and stem in text:",
+  "new": "        if len(stem) >= 6 and stem in text:"
+ },
+ {
+  "id": "M1504",
+  "name": "two parts linking different files resolve anyway",
+  "file": "scripts/audit_datasheets.py",
+  "old": "    return found.pop() if len(found) == 1 else None",
+  "new": "    return found.pop() if found else None"
+ },
+ {
+  "id": "M1505",
+  "name": "an ASG rated_voltage minimum is not a rating",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if scale and spec['name'] in SPEC_VOLTAGE_NAMES and spec['unit'] in ('V', 'kV'):",
+  "new": "        if False:"
+ },
+ {
+  "id": "M1506",
+  "name": "a maximum is read as a rating",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "        if spec['op'] != '>=':\n            continue",
+  "new": "        if spec['op'] == '=':\n            continue"
+ },
+ {
+  "id": "M1507",
+  "name": "owners outside candidates are one line per aspect again",
+  "file": "scripts/requirement_bindings.py",
+  "old": "            entry = found.setdefault(rid, {'aspects': [], 'owners': [], 'candidates': set()})",
+  "new": "            entry = found.setdefault((rid, row['object']['aspect']), {'aspects': [], 'owners': [], 'candidates': set()})"
+ },
+ {
+  "id": "M1508",
+  "name": "errors of one open item are not merged",
+  "file": "scripts/validate_review.py",
+  "old": "        if isinstance(slot, tuple) and len(keys) > 1:",
+  "new": "        if False:"
+ },
+ {
+  "id": "M1509",
+  "name": "a quoted rule library title is checked as wording",
+  "file": "scripts/pack_review.py",
+  "old": "        words = jargon_in(without_quotes(line, quotes))   # a quotation of the shared rule library is not our wording",
+  "new": "        words = jargon_in(line)"
+ },
+ {
+  "id": "M1510",
+  "name": "a reference ending in a letter is annotated",
+  "file": "scripts/parse_kicad.py",
+  "old": "                elif not REFERENCE_NUMBER_RE.match(ref):",
+  "new": "                elif False:"
+ },
+ {
+  "id": "M1511",
+  "name": "one part number is a request per part again",
+  "file": "scripts/gap_inventory.py",
+  "old": "        return ('identity', identity) if identity else ('part', entry['refs'][0])",
+  "new": "        return ('part', entry['refs'][0])"
+ },
+ {
+  "id": "M1512",
+  "name": "the reconciliation list keeps the numbers",
+  "file": "scripts/design_checklist.py",
+  "old": "                    'checks': [unvalued(c.get('name')) for c in calc.get('checks') or []",
+  "new": "                    'checks': [str(c.get('name')) for c in calc.get('checks') or []"
+ },
+ {
+  "id": "M1513",
+  "name": "ASG design-closure is citable",
+  "file": "scripts/independence.py",
+  "old": "    r'design[_-]closure|reference[_-]input|design[_-]checklist', re.I)",
+  "new": "    r'design[_-]checklist', re.I)"
+ },
+ {
+  "id": "M1514",
+  "name": "the lint annotation candidate names no symbol",
+  "file": "scripts/lint.py",
+  "old": "        return parse_kicad.annotation_lines(parse_kicad.annotation_issues(source))",
+  "new": "        return []"
  }
 ]

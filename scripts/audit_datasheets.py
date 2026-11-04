@@ -464,6 +464,72 @@ def _material_groups(db, required_refs=None, heuristic=None):
     return [groups[key] for key in sorted(groups)], diagnostics
 
 
+WIKI_ROOT = os.environ.get('HARDWARE_WIKI') or os.path.join(os.path.expanduser('~'), 'Documents', '知识库', 'HardwareWiki')
+ORDERING_SUFFIX_MAX = 5   # IPT015N10N5 + ATMA1, PSMN1R4-100ASE + J: a reel or packing code the datasheet need not list
+
+
+def linked_path(db, refs, base_dir=None, wiki_root=None):
+    """The one datasheet file the design links to every part of a material: the part's Datasheet field (KiCad) or the
+    BOM's Datasheet column, an absolute path or one relative to the HardwareWiki root (or to base_dir). None when a part
+    links none, two parts link different files, or the file is not there (Matrix R2 3.3/6.2, 2026-11-04)."""
+    found = set()
+    for ref in refs:
+        part = (db.get('parts') or {}).get(ref) or {}
+        bom = ((db.get('bom') or {}).get('parts') or {}).get(ref) or {}
+        link = str(part.get('datasheet') or '').strip() or next(
+            (str(v).strip() for k, v in bom.items() if k.strip().lower() == 'datasheet' and str(v).strip()), '')
+        if not link or link == '~' or re.match(r'^[a-z][a-z0-9+.-]*://', link, re.I):
+            return None
+        if os.path.isabs(link):
+            path = link
+        else:
+            path = next((os.path.join(root, link) for root in (wiki_root or WIKI_ROOT, base_dir) if root
+                         and os.path.isfile(os.path.join(root, link))), None)
+        if not path or not os.path.isfile(path):
+            return None
+        found.add(os.path.abspath(path))
+    return found.pop() if len(found) == 1 else None
+
+
+def identity_in_document(identity, path):
+    """(model the document names, 'exact'|'ordering_suffix') when the document text names the identity, or names all of it
+    but a short ordering suffix that starts with a letter; None otherwise (a variant digit is not a suffix)."""
+    target = normalize_identity(identity)
+    text = re.sub(r'[^A-Z0-9]+', '', (datasheet_kinds.document_text(path) or '').upper())
+    if not target or not text:
+        return None
+    if target in text:
+        return identity, 'exact'
+    for cut in range(1, ORDERING_SUFFIX_MAX + 1):
+        stem, suffix = target[:-cut], target[-cut:]
+        if len(stem) >= 6 and suffix[0].isalpha() and stem in text:
+            return stem, 'ordering_suffix'
+    return None
+
+
+def _linked_outcome(db, material, base_dir, diagnostics):
+    """A FOUND outcome from the design's datasheet link when the linked document names the identity; a link whose
+    document does not name it is only a local candidate for the reviewer to verify."""
+    path = linked_path(db, material['refdes'], base_dir)
+    if path is None:
+        return None
+    named = identity_in_document(material['identity'], path)
+    if named is None:
+        diagnostics.append({'code': 'DATASHEET_LINK_UNVERIFIED', 'identity': material['identity'], 'path': path,
+                            'message': '%s 链接的资料正文里找不到这个型号，按待核候选处理（手写 resolution 确认或换资料）'
+                                       % material['identity']})
+        material.setdefault('linked_candidates', []).append(path)
+        return None
+    model, match = named
+    if match == 'ordering_suffix':
+        diagnostics.append({'code': 'DATASHEET_ORDERING_SUFFIX', 'identity': material['identity'], 'path': path,
+                            'message': '%s 的资料只列到 %s，后缀 %s 未在资料里出现：核它是卷带/包装后缀而非电气档位'
+                                       % (material['identity'], model, normalize_identity(material['identity'])[len(model):])})
+    return {'status': 'FOUND', 'identity_verified': True, 'source_kind': 'package', 'path': path,
+            'document_model': model, 'document_version': os.path.splitext(os.path.basename(path))[0],
+            'resolved_by': 'design_link', 'identity_match': match}
+
+
 def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
                           resolution_base=None, required_refs=None, device_kinds=None):
     files, missing_paths = _collect_pdf_files(datasheet_dirs or [])
@@ -494,13 +560,15 @@ def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
         key = normalize_identity(identity)
         candidates = _local_candidates(identity, files)
         outcome = resolved.get(key)
+        if outcome is None:   # a hand-written resolution comes first; else the design's own datasheet link
+            outcome = _linked_outcome(db, material, base_dir, diagnostics)
         message = _failure_message(identity, material['refdes'])
         if outcome and outcome.get('status') == 'FOUND':
             material['status'] = 'AVAILABLE'
             material['document'] = {
                 field: outcome.get(field) for field in (
                     'identity_verified', 'source_kind', 'path', 'source_url',
-                    'document_model', 'document_version', 'retrieved_at')
+                    'document_model', 'document_version', 'retrieved_at', 'resolved_by', 'identity_match')
                 if outcome.get(field) is not None
             }
             material['document']['document_format'] = document_format(outcome.get('path'))
@@ -538,7 +606,8 @@ def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
                 'refdes': material['refdes'],
                 'message': message,
             })
-        elif candidates:
+        elif candidates or material.get('linked_candidates'):
+            candidates = sorted(set(candidates) | set(material.pop('linked_candidates', [])))
             material['status'] = 'NEEDS_VERIFICATION'
             material['local_candidates'] = candidates
             requests.append({

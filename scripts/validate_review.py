@@ -669,6 +669,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 "plan guidelines were built on another shared rule library (or none): regenerate the plan")
         require(isinstance(guidelines, dict) and guidelines.get("shared_sha256") == guideline_criteria.shared_digest(),
                 "plan guidelines were built on another shared layer (references/shared): regenerate the plan")
+    errors[:] = collapse_open_cascade(errors, checks)   # same count of validity, one line per open item instead of per row
     release = release_for(errors, blockers, accepted)
     if "release" in report:
         require(report["release"] == release, f"claimed release differs from computed {release}")
@@ -704,6 +705,34 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 "strategy": revision['strategy'] if revision else None},
             "binding_validation": {"enforced": bool(bindings), "bound_checks": bound_count},
             "remediation_validation": {"enforced": actionable, "by_readiness": repair_counts}}
+
+
+CASCADE_SHOWN = 3
+
+
+def collapse_open_cascade(errors, checks):
+    """Rows derived from one open item repeat the item's own fault (a kind the format does not have, a missing severity)
+    once per row: Matrix R2 gave 1283 rows × 4 lines for 96 items. Errors a row shares with the other rows of its
+    open item are said once, on the item, with the row count; an error only one row has stays as it was."""
+    groups, order = {}, []
+    for message in errors:
+        key, sep, rest = message.partition(': ')
+        ref = (checks.get(key) or {}).get('open_ref') if sep and isinstance(checks.get(key), dict) else None
+        slot = (ref, rest) if isinstance(ref, str) else message
+        if slot not in groups:
+            groups[slot] = []
+            order.append(slot)
+        groups[slot].append(key)
+    out = []
+    for slot in order:
+        keys = groups[slot]
+        if isinstance(slot, tuple) and len(keys) > 1:
+            out.append('%s（%d 条检查项同错，如 %s）: %s' % (slot[0], len(keys), '、'.join(keys[:CASCADE_SHOWN]), slot[1]))
+        elif isinstance(slot, tuple):
+            out.append('%s: %s' % (keys[0], slot[1]))
+        else:
+            out.extend([slot] * len(keys))
+    return out
 
 
 def extension_signals(report, db, datasheet_audit=None):

@@ -9,6 +9,25 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## Matrix R2 首审的工具与交接问题：多文档需求、资料链接、ASG 规格列、诊断去重、引文豁免、批注位号、同料号请求、对账清单 (2026-11-04)
+
+`SR技能不足.md` 3.1–3.3、3.6–3.9、4.3、6.1、6.2、6.4，复现输入 `~/.cache/sr-boards/matrix--power-protection-r2/`（草稿副本上前后对比）：
+
+- 3.1/3.2：`requirements_extract.py` 一次收多份文档（输出可粘贴的 `requirement_source` 列表），首列表头以 ID 结尾（用户需求 ID、决定 ID）也是编号列。R2 两份文档 79→245 条：REQ 62、D 65 新抽到；工程规格的“规则 ID”降额表 39 行（RES/CAP/MOS/IC/DIO/CONN）也被抽到，审查员须逐条声明；“原件批注 ID”表编号是纯数字，不抽。
+- 3.3/6.2：`audit_datasheets.py` 先用符号 Datasheet 字段或 BOM Datasheet 列（绝对路径或 HARDWARE_WIKI 相对路径）解析，各位号同一份文件且正文写出型号才 AVAILABLE（`resolved_by: design_link`）；只差字母开头 ≤5 字符后缀记 `ordering_suffix` 并出诊断；手写 resolution 优先。R2 不带 resolution：30/30 AVAILABLE（3 份后缀：IPT015N10N5ATMA1、ISC032N12LM6ATMA1、PSMN1R4-100ASEJ），器件类型核验 104 VERIFIED，与手写 31 条时相同。
+- 6.1：`read_bom.spec_constraints` 读 ASG RequirementSpec/SelectedSpec（`rated_voltage>=50 V @ …`），`passive_stress.bom_ratings` 把额定电压/功率下限当额定。R2 阻容预判 PASS 116→122（C305、C711–C714、C805 按 BOM 规格耐压通过；C302/C1301 写 ≥16 V 而上界 25.2/50.4 V，留审查者判）。本板装配状态未核，计划里仍不出预判结果。
+- 3.6：承接电路不在候选里的诊断按需求合并、候选列表截到 6 个。R2 77 条→38 条，冷扫输出 60 KB→24 KB。
+- 3.7：门禁把同一开放项派生的同一错误合并成一行。R2 5802→949 行（其中引擎指纹变化等复现差异若干），校准板 3095→357 行；有效性不变，二者仍 invalid。开放项种类（NEEDS_HUMAN）与“首审深度可出报告”未做：加种类要升结果格式版本、放开 REVIEW_INCOMPLETE 出报告要推翻 2026-10-27 用户决定，按“改架构先问人”待用户定。
+- 3.8：`pack_review.py` 写法检查剔除准则库原文（标题、asg_action、sr_check、出处文献名/版次/条款），报告准则表列名标“准则库原文”。R2 旧报告 13 条→2 条（剩下两条是审查员自己写的“下游”）。
+- 3.9：kicad-cli 只报“原理图存在批注错误”；`parse_kicad.annotation_issues` 按 KiCad 位号规则扫各页，lint 的 DOC-A01 候选带出位号。R2 原因是 6 个 PWR_FLAG 位号以字母结尾（#FLG4a5f…57c 等），改成数字结尾后告警消失（草稿副本验证）。
+- 4.3：`gap_inventory.py` 同料号（MPN）合并成一项（取计划旁同指纹的 db.json 或 `--db`）。R2 器件资料 158→74 项，A2012WR-S-4P-LCP 8 只连接器一项。
+- 6.4：新工具 `design_checklist.py`：从 ASG `design-closure.json`、`reference-input.json` 只取计算 id/种类/位号/需求/去数值的计算名、脚表位号/型号/脚号作待核清单，`--results` 列台账没提到的位号；`independence.py` 把这两份文件和清单列为设计方记录拒收引用。R2：25 项计算、64 份脚表，2 项计算有台账未提到的位号。
+
+- Event: user:2026-11-04 (你用新修改的SR技能跑一遍修改好的R2…总结问题，发现SR技能的不足)
+- Causes: rule_not_enforced 9, knowledge_missing 1, judgment 1
+- Changed: scripts/requirements_extract.py, scripts/audit_datasheets.py, scripts/read_bom.py, scripts/checkers/passive_stress.py, scripts/requirement_bindings.py, scripts/validate_review.py, scripts/render_report.py, scripts/pack_review.py, scripts/parse_kicad.py, scripts/lint.py, scripts/gap_inventory.py, scripts/independence.py, scripts/design_checklist.py, scripts/tests/test_sr_tools_r2.py, scripts/tests/test_reading_path.py, evals/mutation/mutations.json, references/architecture.md, references/datasheets.md, references/gate-and-rerun.md, references/input-parsing.md, references/intent-format.md, references/scans-and-tools.md, references/workflow-handoff.md, docs/improvement-ledger.md
+- Gates: pytest 2812 passed（SR_ASG_SHARED_ROOT 指向 ASG befe983 的 1.7.4 快照；直接对真实 ASG 跑时 test_asg_holds_the_same_shared_layer 失败，ASG 已是 1.8.0，本分支不动共用层）; mutation --changed 4f80c43 --tier unit 203 全杀（新增 M1500–M1514；M132、M218、M227 重锚；M591 退役：工程ID 现由 …ID 后缀规则覆盖，成等价变异）; kicad_replay 195/195; detection 计数与 RESULTS.md 相同（只输入哈希不同，未重写）; check_ledger PASS; 不 push
+
 ## 准则库 1.7.4：G03-025 适用类型加 STARTUP (2026-11-04)
 
 ASG 补写 Matrix 电源与保护 R2 的典型电路 multi-domain-reset（电路类型 STARTUP）时，复位门限高于负载最低工作电压（G03-025，R2 CALC-RESET 做了）因适用类型只有 POWER_CONVERTER/POWER_PROTECTION 不能引用。用户 2026-11-04 定（修改 ASG 问题）：G03-025 的 `applies_when.circuit_types` 加 `STARTUP`（条目 1.0→1.1，HardwareWiki 登记文件 G03 1.7），共用层重建为 1.7.4（353 条，指纹 ea8f1a727df3），ASG 同字节。SR 代码不变；STARTUP 候选现在能选出 G03-025。

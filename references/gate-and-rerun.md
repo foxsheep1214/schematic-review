@@ -19,6 +19,8 @@
   唯一任务、必需移交及其状态）、`insufficient_by_cause`、`requirement_clarification_summary`、`workflow`、
   `release`/`blockers`、`remediation_validation`、`binding_validation`；`parameter_sheet`（器件参数表：条款 `refs` 点名的每只器件
   引了哪些参数、出处与页、保证值 / 典型值 / 强制条款各几条、用在哪条余量或判断；`--detail full` 的报告据此出“器件参数表”）。
+- 同一开放项派生的检查项同错（如开放项写了没有的 `kind: NEEDS_HUMAN`）按开放项合并成一行，注明条数。
+  没算完的计算记 REVIEW_INCOMPLETE：门禁照常列阻断，报告不出、不打包（2026-10-27 用户决定）。
 - **quality_screening** 提示理由/影响跨范围复用、位号与声明范围不相交，以及补证对象和接口模式错配。
   影响描述逐字段核对，不以正确的理由或证据位置替代因果核验；原样回显绑定对象/判据不能证明分析成立。
   PWR-C10 的 `qualification_refs` 指向实际已贴电容，连接器身份不能替代电容额定证明；USB 方向分析不能只复用 UART/SPI 的角色。

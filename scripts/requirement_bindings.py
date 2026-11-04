@@ -93,19 +93,33 @@ def missing_owner_errors(checks):
     return out
 
 
+OUTSIDE_SHOWN = 6   # candidates named in a printed line; the rest are counted (R2 3.6: 40 interface ids on every line)
+
+
 def outside_candidates(checks):
-    """Diagnostics: requirement rows whose owners are not among their candidates (allowed; the reviewer may know better)."""
-    out = []
+    """Diagnostics: requirements whose owners are not among their candidates (allowed; the reviewer may know better),
+    one per requirement over all its aspects, the candidate list cut to OUTSIDE_SHOWN in the printed detail."""
+    found = {}
     for row in checks:
         if row.get('rule') != 'REQ-D01' or not row.get('requirement_owners') or not row.get('owner_candidates'):
             continue
         ids = {c['id'] for c in row['owner_candidates']}
         outside = [o for o in row['requirement_owners'] if o not in ids]
         if outside:
-            out.append({'code': 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES', 'requirement': row['object']['requirement_id'],
-                        'aspect': row['object']['aspect'], 'owners': outside, 'candidates': sorted(ids),
-                        'detail': '需求 %s 的方面 %s 的承接电路 %s 不在计划找到的可承接电路里（%s）；确认它们确实承接这条需求' % (
-                            row['object']['requirement_id'], row['object']['aspect'], '、'.join(outside), '、'.join(sorted(ids)))})
+            rid = row['object']['requirement_id']
+            entry = found.setdefault(rid, {'aspects': [], 'owners': [], 'candidates': set()})
+            entry['aspects'].append(row['object']['aspect'])
+            entry['owners'] += [o for o in outside if o not in entry['owners']]
+            entry['candidates'] |= ids
+    out = []
+    for rid, entry in sorted(found.items()):
+        candidates = sorted(entry['candidates'])
+        shown = '、'.join(candidates[:OUTSIDE_SHOWN]) + (
+            ' 等 %d 个' % len(candidates) if len(candidates) > OUTSIDE_SHOWN else '')
+        out.append({'code': 'REQUIREMENT_OWNER_OUTSIDE_CANDIDATES', 'requirement': rid,
+                    'aspect': '/'.join(entry['aspects']), 'owners': entry['owners'], 'candidates': candidates,
+                    'detail': '需求 %s（方面 %s）的承接电路 %s 不在计划找到的可承接电路里（%s）；确认它们确实承接这条需求' % (
+                        rid, '/'.join(entry['aspects']), '、'.join(entry['owners']), shown)})
     return out
 
 

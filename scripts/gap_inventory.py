@@ -10,7 +10,8 @@ exact part numbers), requirements, drawings, or the reviewer's own tracing.
 Each request names the parts it concerns and how many checks it unblocks, so
 the designer can send the few documents that open most of the review instead
 of the review ending with dozens of INSUFFICIENT rows for the same missing file.
-This is a work list, never a verdict.
+Parts that share a part number (MPN field or part) are one request: one datasheet answers all ten connectors
+(db.json beside the plan, when it is the plan's own db, or --db). This is a work list, never a verdict.
 """
 import argparse
 from collections import OrderedDict, defaultdict
@@ -66,12 +67,16 @@ def refs_in(key):
     return sorted(found)
 
 
-def group_key(entry):
+def group_key(entry, identities=None):
     """One request per thing the supplier sends: one BOM answers every population gap,
-    one datasheet answers a part's pinout, kind and ratings."""
+    one datasheet answers a part's pinout, kind and ratings, for every part of that part number."""
     head = entry['input'].split(':', 1)[0].strip()
     if entry['owner'] == 'part_data' and len(entry['refs']) == 1:
-        return ('part', entry['refs'][0])
+        identity = (identities or {}).get(entry['refs'][0])
+        return ('identity', identity) if identity else ('part', entry['refs'][0])
+    named = entry['input'].split(':', 1)[1].strip() if head == 'datasheet' and ':' in entry['input'] else None
+    if entry['owner'] == 'part_data' and named in set((identities or {}).values()):   # datasheet:A2012WR-S-4P-LCP
+        return ('identity', named)
     if entry['owner'] == REVIEWER[0] and head in ('datasheet', 'datasheets', 'datasheet-audit') and commodity(entry['refs']):
         return ('commodity',)
     if entry['owner'] in ('assembly', REVIEWER[0]) and entry['refs']:
@@ -82,10 +87,10 @@ def group_key(entry):
     return ('input', entry['input'])
 
 
-def group(entries):
+def group(entries, identities=None):
     merged = OrderedDict()
     for entry in entries:
-        key = group_key(entry)
+        key = group_key(entry, identities)
         target = merged.setdefault(key, {'owner': entry['owner'], 'inputs': [], 'refs': set(), 'checks': [],
                                          'rules': set()})
         target['inputs'].append(entry['input'])
@@ -95,6 +100,8 @@ def group(entries):
         if entry.get('status'):
             target['status'] = entry['status']
         if key[0] == 'part':
+            target['input'] = '%s 的器件资料' % key[1]
+        elif key[0] == 'identity':
             target['input'] = '%s 的器件资料' % key[1]
         elif key[0] == 'commodity':
             target['input'] = COMMODITY_INPUT
@@ -110,7 +117,38 @@ def finish(entry):
                 checks=sorted({c for c in entry['checks'] if c}), unblocks=len({c for c in entry['checks'] if c}))
 
 
-def build(plan, audit=None):
+def shared_identities(db):
+    """{ref: part number} for parts whose explicit part number (MPN field or part) another part shares: one datasheet
+    request covers them all (Matrix R2 4.3: ten connectors of one part number were ten requests). A value without a part
+    number (Conn_01x02) groups nothing."""
+    if not isinstance(db, dict):
+        return {}
+    from audit_datasheets import _identity_for, normalize_identity
+    named = {}
+    for ref, part in (db.get('parts') or {}).items():
+        if isinstance(part, dict):
+            identity, source = _identity_for(ref, part)
+            if source == 'part':
+                named[ref] = (normalize_identity(identity), identity)
+    counts = defaultdict(int)
+    for key, _ in named.values():
+        counts[key] += 1
+    return {ref: identity for ref, (key, identity) in named.items() if counts[key] > 1}
+
+
+def beside_db(plan_path, plan):
+    """db.json next to the plan when it is the db the plan was built from (same fingerprint), else None."""
+    import os
+    from electrical_contract import db_fingerprint
+    path = os.path.join(os.path.dirname(os.path.abspath(plan_path)), 'db.json')
+    try:
+        db = load_json(path)
+    except (OSError, ValueError):
+        return None
+    return db if isinstance(db, dict) and db_fingerprint(db) == plan.get('db_sha256') else None
+
+
+def build(plan, audit=None, db=None):
     requests = OrderedDict()
     for check in plan.get('checks') or []:
         if not isinstance(check, dict) or check.get('readiness') != 'WAITING_EVIDENCE':
@@ -129,7 +167,8 @@ def build(plan, audit=None):
             entry = requests.setdefault(key, {'input': key, 'owner': REVIEWER[0] if commodity(refs) else 'part_data',
                                               'refs': refs, 'checks': [], 'rules': set()})
             entry['status'] = material.get('status')
-    rows = sorted((finish(e) for e in group(requests.values())), key=lambda e: (-e['unblocks'], e['input']))
+    rows = sorted((finish(e) for e in group(requests.values(), shared_identities(db))),
+                  key=lambda e: (-e['unblocks'], e['input']))
     by_owner = OrderedDict((owner, []) for owner in list(OWNERS) + [REVIEWER[0]])
     for row in rows:
         by_owner[row['owner']].append(row)
@@ -180,19 +219,22 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('plan')
     parser.add_argument('--datasheet-audit')
+    parser.add_argument('--db', help='db.json, to merge parts of one part number; default: db.json beside the plan '
+                                     'when the plan was built from it')
     parser.add_argument('--json')
     parser.add_argument('--md')
     args = parser.parse_args(argv)
     try:
         plan = load_json(args.plan)
         audit = load_json(args.datasheet_audit) if args.datasheet_audit else None
+        db = load_json(args.db) if args.db else None
     except (OSError, ValueError) as error:
         print('ERROR:', error)
         return 2
     if not isinstance(plan, dict) or not isinstance(plan.get('checks'), list):
         print('ERROR: plan must be a review plan with checks')
         return 2
-    inventory = build(plan, audit)
+    inventory = build(plan, audit, db if db is not None else beside_db(args.plan, plan))
     if args.json:
         with open(args.json, 'w', encoding='utf-8') as handle:
             json.dump(inventory, handle, ensure_ascii=False, indent=2)

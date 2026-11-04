@@ -40,7 +40,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 |---|---|---|---|
 | ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`device_kinds.py`（器件类别登记表）、`part_words.py`（器件身份、PCB 铜与有出处的精确型号脚方向）、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
 | ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`（原生事实不变，给 NetGraph 附完整有出处脚表的缺名解析与冲突）、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`guideline_criteria.py`、`stress_check.py`（共用应力核对：降额限值、应力判法、挑规则）（共用设计准则库：校验、选用、覆盖；与 ASG 同字节）、`checkers/` |
-| ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
+| ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py`、`design_checklist.py`（ASG 设计记录的对账清单：只取对象与计算名） | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
 | ④ 校验 | `validate_review.py` | `migrate_results.py` | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`validate_remediation.py`、`review_engine.py` |
 | ⑤ 出报告 | `render_report.py`、`pack_review.py` | — | `report_html.py` |
 | 复审 | `diff_netlists.py` | — | `revision_impact.py` |
@@ -48,6 +48,8 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 
 `catalog.py` 是规则的唯一登记处，既被出计划导入，维护时也用它重写规则总表。
 `independence.py` 在出计划时拒收引用设计方文档的声明，在校验时拒收这样的证据，两步共用。
+`design_checklist.py` 从 ASG 的 `design-closure.json`、`reference-input.json` 只读出对象、计算种类和去掉数值的计算名，作为审查员的待核清单；
+不读数值与结论，清单和这两份文件都由 `independence.py` 拒收为引用或证据，独立性边界不变（线索，不是输入）。
 
 ## 三、历次架构决定
 

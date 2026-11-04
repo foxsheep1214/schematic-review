@@ -12,6 +12,10 @@ reviewer never retypes a requirement: the intent names the source (`requirement_
 reviewer decides about each id. Nothing here judges a requirement.
 
     python3 scripts/requirements_extract.py 需求.md --json record/requirements.json
+    python3 scripts/requirements_extract.py 用户需求.md 工程规格.md --json record/requirements.json   # 几份一次合并
+
+A header cell ending in ID (用户需求 ID, 决定 ID) is an id column too. Several documents are merged as `load` merges
+intent.requirement_source's list; the output then carries that list (`requirement_source`) to paste into the intent.
 """
 import argparse
 import hashlib
@@ -22,6 +26,9 @@ from pathlib import Path
 
 SCHEMA_VERSION = 1
 ID_HEADERS = {'id', '编号', '需求编号', 'req', '需求 id', '需求id', '工程id', '工程 id', '要求编号'}
+# `用户需求 ID`, `决定 ID`: a header naming what kind of id it is (Matrix R2 3.2, 2026-11-04); its rows still need an id
+# with a separator (ID_RE), so a table numbering its rows 19, 20 … gives none.
+ID_SUFFIX_RE = re.compile(r'^\S.*?\s*id$', re.I)
 ID_RE = re.compile(r'^[A-Za-z][A-Za-z0-9]*(?:[-_.][A-Za-z0-9]+)+$')
 LIST_RE = re.compile(r'^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*|`)?([A-Za-z][A-Za-z0-9]*(?:[-_.][A-Za-z0-9]+)+(?:/[^\s:：*`]+)*)(?:\*\*|`)?\s*[:：]\s*(.+?)\s*$')
 HEADING_RE = re.compile(r'^\s*#{1,6}\s+(.+?)\s*#*\s*$')
@@ -36,6 +43,11 @@ def _cells(line):
     if body.endswith('|'):
         body = body[:-1]
     return [c.strip() for c in body.split('|')]
+
+
+def is_id_header(cell):
+    name = cell.strip().lower()
+    return name in ID_HEADERS or bool(ID_SUFFIX_RE.match(name))
 
 
 def _plain_id(cell):
@@ -57,7 +69,7 @@ def extract(path):
         elif line.strip().startswith('|'):
             cells = _cells(line)
             if header is None and i + 1 < len(lines) and SEPARATOR_RE.match(lines[i + 1]):
-                header = cells if cells and cells[0].strip().lower() in ID_HEADERS else []
+                header = cells if cells and is_id_header(_plain_id(cells[0])) else []
                 i += 2
                 continue
             if header:
@@ -140,15 +152,26 @@ def load(source):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('document')
+    parser.add_argument('documents', nargs='+', help='one or more requirement documents, transcribed together')
     parser.add_argument('--json', help='write the transcription here')
     args = parser.parse_args()
-    out = extract(args.document)
+    if len(args.documents) == 1:
+        out = extract(args.documents[0])
+        errors = out['errors']
+    else:
+        sources = [{'path': str(Path(p)), 'sha256': hashlib.sha256(Path(p).read_bytes()).hexdigest()}
+                   for p in args.documents]
+        out, errors = load(sources)
+        out = out or {'schema_version': SCHEMA_VERSION, 'documents': [], 'items': [], 'errors': errors}
+        out['requirement_source'] = sources   # what intent.requirement_source lists, document by document
     if args.json:
         Path(args.json).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding='utf-8')
-    print('%d requirements, sha256=%s%s' % (len(out['items']), out['sha256'],
-          ''.join('\nERROR ' + e for e in out['errors'])))
-    return 1 if out['errors'] else 0
+    for document in out.get('documents') or []:
+        print('%s: %d requirements, sha256=%s' % (document['path'], sum(
+            1 for i in out['items'] if i['locator'].rsplit(':', 1)[0] == document['path']), document['sha256']))
+    print('%d requirements, sha256=%s%s' % (len(out['items']), out.get('sha256'),
+          ''.join('\nERROR ' + e for e in errors)))
+    return 1 if errors else 0
 
 
 if __name__ == '__main__':

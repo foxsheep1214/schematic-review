@@ -315,6 +315,15 @@ class Lint:
             return [found['source']] + found['path']
         return ['via:' + found['source']]
 
+    def _annotation_detail(self):
+        """kicad-cli's annotation warning names no symbol: scan the schematic the netlist came from (export_meta.source)
+        for the references KiCad reads as not annotated or duplicated (Matrix R2 3.9)."""
+        import parse_kicad
+        source = str((self.db.get('export_meta') or {}).get('source') or '')
+        if not source.lower().endswith('.kicad_sch') or not os.path.isfile(source):
+            return []   # the log line as it is: no schematic to scan
+        return parse_kicad.annotation_lines(parse_kicad.annotation_issues(source))
+
     def _protected_pins_text(self, net, clamp=None):
         """The IC pins the clamp protects: on the clamp's own net (no series impedance between them) or one resistor away
         (R7 acceptance 2026-10-25, user: B3 a — the clamp voltage is compared with these pins' absolute maximum); and
@@ -889,7 +898,7 @@ class Lint:
                     self.add('DOC-A01', '网表导出错误/中止，核实是否为本次有效导出', line)
                 elif kind == 'CANDIDATE':
                     self.add('DOC-A01', '导出时报批注（位号）错误，网表已写出但位号可能重复或未定',
-                             line, kind='CANDIDATE')
+                             '；'.join([line] + self._annotation_detail()), kind='CANDIDATE')
                 elif kind == 'INFO':
                     self.add('DOC-A01', '导出日志中的其他告警，逐条确认不影响本次网表', line, kind='INFO')
             ig = re.findall(
