@@ -1195,7 +1195,13 @@
    "id": "cmoy-headphone-amp",
    "category": "Headphone amp (op-amp CMoy)",
    "fixture": "fixtures/cmoy-headphone-amp.xml",
-   "expected": [],
+   "expected": [
+    {
+     "rule": "DEV-D01",
+     "match": "23 个已装配器件的 Footprint 都为空",
+     "why": "源网表 23 个器件都没有 footprint 元素（2026-11-04 审读）：封装未定，交付标准差异，不是电气缺陷"
+    }
+   ],
    "known_false_alarms": [],
    "fixed_false_alarms": [],
    "note": "修复前 SR 无法解析本板（多单元运放共享电源脚被判重复归网）"

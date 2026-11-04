@@ -1,0 +1,23 @@
+{
+ "revision": "sr-scan-v1",
+ "field_changes": {
+  "r05-lipo-charger.plan.checks_total": {
+   "before": 80,
+   "after": 81
+  }
+ },
+ "scope": [
+  "Matrix R2 扫描修正（用户 2026-11-04）：全部已装配器件封装字段都空时 DEV-D01 冷扫出一条 FINDING（交付标准差异，不是电气缺陷）；r05 ASG 第 05 轮交付 12 个器件都没有 footprint，多一项 DEV-D01 计划检查，80→81；其余字段不变。"
+ ],
+ "parents": {
+  "revisions/boards-merge7-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/boards-merge7-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/boards-merge7-v1/expected.json": "d556be72780db54bce10a756769cf60f4b1bda0b70d307829cc95e06745b06a7",
+  "revisions/boards-merge7-v1/manifest.json": "3b216a562aeccc6d52f70971195a3f95ff5feeffb6a6f20051c311a2c9d3f4f9"
+ },
+ "derived_files": {
+  "revisions/sr-scan-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+  "revisions/sr-scan-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+  "revisions/sr-scan-v1/expected.json": "08ce3751c5cdc5328454a01051a7ce67a68b63ece9153d33005b2e0df71962cf"
+ }
+}

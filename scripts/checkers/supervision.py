@@ -32,6 +32,16 @@ RESET_OUT_RE = re.compile(r'^(N?RESET\w*|N?RST\w*|WDO|POR|PFO|RESETB|RESET_N)$',
 RESET_IN_RE = re.compile(r'^(N?RESET\w*|N?RST\w*|MR|POR|XRES|RESETN|NRST)$', re.I)
 SENSE_RE = re.compile(r'^(SENSE\d*|VMON\d*|VSENSE\d*|PFI|IN\d*_MON|MON\d*)$', re.I)
 MANUAL_RESET_RE = re.compile(r'^(MR|MRESET|PB_RST)$', re.I)
+# Matrix R2 F09 (2026-11-04): a flip-flop's asynchronous clear/preset is a reset input; a single-input logic channel
+# (buffer, Schmitt, inverter, open-drain driver: nA in, nY out, no nB) passes the reset on to its own output net.
+CLEAR_PRESET_RE = re.compile(r'^\d?(CLR|CLEAR|PRE|PRESET)\d?$', re.I)
+RESET_NET_RE = re.compile(r'(^|[/_])N?(RESET|RST)(_?N|_?B)?($|[_\d])', re.I)
+FOLLOW_DEPTH = 3
+# Matrix R2 F12 (2026-11-04): a power-good output that is wired out watches its own device's output rail (OUT/VOUT/VOS
+# pin, or the rail its FB/PGTH divider taps); a UV/OV threshold input watches the rail its divider taps.
+GOOD_PIN_RE = re.compile(r'^(PG|PGD|PGOOD|POK|PWRGD|PWR_GOOD|PGOOD\d)$', re.I)
+WATCHED_OUTPUT_PIN_RE = re.compile(r'^(V?OUT\d*|VOS|FB\d*|VFB|PGTH)$', re.I)
+THRESHOLD_PIN_RE = re.compile(r'^(UVLO|OVLO|UV|OV|OVP)$', re.I)
 SUPPLY_PIN_RE = re.compile(r'^(VDD\w*|VCC\w*|AVDD\w*|AVCC\w*|DVDD\w*|VIN\d*|PVIN\d*|VBAT)$', re.I)
 OUT_PINTYPES = {'OUT', 'OUTPUT', 'TRISTATE', '3STATE', 'BI', 'BIDI', 'BIDIR', 'IO', 'I/O'}
 MAX_RAILS = 64
@@ -650,15 +660,46 @@ class _Scan:
         self.grounds = {net for net in self.graph.nets if ng.is_ground(net)}
         self.tree = powertree.PowerTree(self.graph)
 
-    def _reset_destinations(self, net, source_ref):
+    def _buffer_output(self, node):
+        """Output net of the single-input channel whose input is `node` (1A -> 1Y with no 1B), else None."""
+        ref, _, pin = node.partition('.')
+        match = re.fullmatch(r'(\d*)A', pw.normalize(self.graph.pinname.get(node)))
+        if not match:
+            return None
+        names = {pw.normalize(self.graph.pinname.get(ref + '.' + p)): n for p, n in self.graph.pins_of(ref).items()}
+        channel = match.group(1)
+        if channel + 'B' in names:
+            return None
+        out = names.get(channel + 'Y')
+        return out if out and out != self.graph.pin2net.get(node) else None
+
+    def _followed(self, node, seen, depth):
+        """Through buffer channels from `node`: ('reset-input', node) at a reset input, ('reset-net', net) at a net
+        named as a reset with no further logic load (it leaves the drawing), else None."""
+        out = self._buffer_output(node)
+        if not out or out in seen or depth >= FOLLOW_DEPTH:
+            return None
+        seen.add(out)
+        named = RESET_NET_RE.search(out.rsplit('/', 1)[-1])
+        items = self._reset_destinations(out, node.partition('.')[0], seen, depth + 1)
+        for role in ('reset-input', 'reset-net'):
+            for item in items:
+                if item['role'] == role:
+                    return role, item.get('target', item['node'])
+        loads = [item for item in items if item['role'] in ('other-pin', 'control-input', 'control-stage', 'external')]
+        return ('reset-net', out) if named and not loads else None
+
+    def _reset_destinations(self, net, source_ref, seen=None, depth=0):
         found = []
+        seen = {net} if seen is None else seen
         for node in self.graph.nodes_on(net):
             ref = node.partition('.')[0]
             if ref == source_ref or not self.graph.is_fitted(ref):
                 continue
             kind = self.graph.kind(ref)
             pin = node.partition('.')[2]
-            named_reset = pw.name_matches(RESET_IN_RE, self.graph.pinname.get(node), pin)
+            named_reset = (pw.name_matches(RESET_IN_RE, self.graph.pinname.get(node), pin)
+                           or pw.name_matches(CLEAR_PRESET_RE, self.graph.pinname.get(node), pin))
             model_reset = (_exact_model(self.graph.parts[ref], MODEL_RESET_RECEIVER)
                            and _physical_pin(self.graph, ref, '8', {'EN'}, {'input'})
                            and pin == '8')
@@ -669,6 +710,9 @@ class _Scan:
                 found.append({'node': node, 'role': 'control-input'})
             elif kind in (pw.MOSFET, pw.BJT) and self.graph.role(node) == 'gate':
                 found.append({'node': node, 'role': 'control-stage'})
+            elif kind == pw.IC and (followed := self._followed(node, seen, depth)):
+                role, target = followed
+                found.append({'node': node, 'role': role, 'target': target})
             elif kind == pw.IC:
                 found.append({'node': node, 'role': 'other-pin'})
             elif kind == pw.CONNECTOR:
@@ -736,11 +780,33 @@ class _Scan:
             })
         return sorted(found, key=lambda item: item['id'])
 
+    def _watched(self):
+        """{rail net: monitor} seen by power-good outputs and UV/OV threshold inputs of fitted ICs."""
+        graph, out = self.graph, {}
+        for ref in sorted(graph.parts):
+            if not graph.is_fitted(ref) or graph.kind(ref) != pw.IC:
+                continue
+            pins = graph.pins_of(ref)
+            names = {pin: graph.pinname.get(ref + '.' + pin) for pin in pins}
+            good = any(pw.name_matches(GOOD_PIN_RE, names[pin], pin) and len(graph.nodes_on(net)) > 1
+                       for pin, net in pins.items())
+            for pin, net in pins.items():
+                if good and pw.name_matches(WATCHED_OUTPUT_PIN_RE, names[pin], pin):
+                    monitor = 'power-good:' + ref
+                elif pw.name_matches(THRESHOLD_PIN_RE, names[pin], pin):
+                    monitor = 'uv-ov:' + ref + '.' + pin
+                else:
+                    continue
+                for watched in [net] + [other for _, other in graph.neighbors(net, {pw.RESISTOR})]:
+                    out.setdefault(watched, monitor)
+        return out
+
     def rails(self, supervisors):
         """给 IC 供电的电源轨及其监测覆盖；哪些必须监测由需求裁定。"""
         graph = self.graph
         sensed = {net for item in supervisors for net in item['monitored_nets']}
         supplied = {net for item in supervisors for net in item['supply_nets']}
+        watched = self._watched()
         found = []
         for net in sorted(graph.nets):
             basis = self.tree.rail_basis(net)
@@ -753,9 +819,15 @@ class _Scan:
                 continue
             divided = [other for _, other in graph.neighbors(net, {pw.RESISTOR})
                        if other in sensed]
+            source = self.tree.source_of(net) or {}
+            own = source.get('source', '').partition('.')[0]
             monitor = ('sense-pin' if net in sensed else
                        'divider' if divided else
-                       'supervisor-supply' if net in supplied else None)
+                       'supervisor-supply' if net in supplied else
+                       # an IC's own bias output (LM70880 VCC/VDDA): no load but the IC itself, watched by its UVLO
+                       'internal-bias:' + own if own and not source.get('path')
+                       and {node.partition('.')[0] for node in loads} == {own} else
+                       watched.get(net))
             found.append({'net': net, 'basis': basis, 'monitor': monitor,
                           'loads': sorted({node.partition('.')[0] for node in loads}),
                           'gaps': ([] if basis != powertree.NAME_HINT
@@ -914,6 +986,13 @@ class SupervisionChecker(Checker):
                         continue
                     detail = (head + '：复位/看门狗输出 ' + output['node'] + ' 所在网 '
                               + output['net'] + ' 未接到任何复位输入')
+                    sent = [x for x in output['destinations'] if x['role'] == 'reset-net']
+                    if sent:
+                        lint.add('RST-A06', self.cold_rules['RST-A06'],
+                                 head + '：复位输出经缓冲/驱动级送出复位网 '
+                                 + '、'.join('%s→%s' % (x['node'], x['target']) for x in sent)
+                                 + '，负载不在本图；对端复位脚与逐级极性由接口和 RST-C02 核', item['ref'], kind='INFO')
+                        continue
                     if any(x['role'] in ('control-input', 'control-stage') for x in output['destinations']):
                         lint.add('RST-A06', self.cold_rules['RST-A06'],
                                  head + '：复位输出经控制端/开关级作用，核控制目的、逐级极性与时序；路径 '

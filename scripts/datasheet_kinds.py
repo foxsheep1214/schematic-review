@@ -409,3 +409,49 @@ def kind_conflicts(materials, heuristic, read_page=None):
             if conflict:
                 out[ref] = conflict
     return out
+
+
+# An input the manufacturer defines when open (Matrix R2 F10/F11, 2026-11-04): TPS2663 SLVSE94G p8 "MODE = Open … Latch",
+# p7 V(SHDN) open-circuit voltage 2.48 V min above the 2 V max rising threshold. Only the pin's own name counts.
+_OPEN = r'(?:open|float(?:ing)?|unconnected)'
+TRAILING_NUMBERS_RE = re.compile(r'((?:-?\d+(?:\.\d+)?\s+){0,2}-?\d+(?:\.\d+)?)\s*V\s*$')
+
+
+def _trailing_numbers(line):
+    match = TRAILING_NUMBERS_RE.search(line)
+    return [float(x) for x in match.group(1).split()] if match else []
+
+
+def open_input_clause(path, names):
+    """The datasheet line that defines this input when left open, or None.
+
+    `names` are the pin's own names (pin_aliases); a clause counts when it names the pin and either says what open
+    selects (`MODE = Open`, `leave EN floating`, `EN can be left open`) or gives an open-circuit voltage whose minimum
+    is above the same pin's rising threshold maximum (the pin floats into its active-high state)."""
+    text = document_text(path)
+    if not text:
+        return None
+    lines = text.splitlines()
+    for name in names:
+        if not re.fullmatch(r'[A-Z][A-Z0-9_]+', name or ''):
+            continue
+        pin = re.escape(name)
+        says_open = (rf'\b{pin}\s*(?:pin\s*)?=\s*{_OPEN}\b',
+                     rf'\b{pin}\b(?:\s+pin)?\s+(?:can|may)\s+be\s+(?:left\s+)?{_OPEN}\b',
+                     rf'\b(?:leave|leaving|float)\s+(?:the\s+)?{pin}\b(?:\s+pin)?(?:\s+{_OPEN})?\s*(?:to\b|$|[.,;])')
+        for line in lines:
+            if line.count('=') > 2:
+                continue   # a test-condition header ("IMON = PGOOD = FLT = OPEN") is not a permission
+            if any(re.search(p, line, re.I) for p in says_open):
+                return ' '.join(line.split())
+        for i, line in enumerate(lines):
+            if not (re.search(rf'V\(\s*{pin}\s*\)', line) and re.search(r'open[\s-]*circuit\s+voltage', line, re.I)):
+                continue
+            opened = _trailing_numbers(line)
+            for other in lines[i + 1:i + 8]:
+                if re.search(rf'\b{pin}\b', other) and re.search(r'rising', other, re.I) and _trailing_numbers(other):
+                    if opened and min(opened) > max(_trailing_numbers(other)):
+                        return '%s；%s（开路电压最小 %g V 高于上升门限最大 %g V）' % (
+                            ' '.join(line.split()), ' '.join(other.split()), min(opened), max(_trailing_numbers(other)))
+                    break
+    return None

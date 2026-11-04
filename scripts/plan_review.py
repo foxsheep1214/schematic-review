@@ -51,7 +51,7 @@ INTENT_FIELDS = {'schema_version', 'review_mode', 'review_phase', 'input_sha256'
                  'requirement_source', 'requirements', 'clarifications', 'circuit_decisions', 'circuits', 'circuit_candidates_sha256',
                  'expect', 'features', 'materials', 'rail_exclusions', 'rule_gaps', 'power_rails', 'power_sources',
                  'power_paths', 'active_state', 'mission_profile', 'review_sources', 'review_dependencies', 'derating',
-                 'guideline_baseline'} | {
+                 'guideline_baseline', 'open_pins', 'boundary_nets'} | {
     checker.intent_key for checker in REGISTRY if checker.intent_key}
 APPLICABILITY = ('APPLICABLE', 'NOT_APPLICABLE', 'UNDETERMINED')
 READINESS = ('READY', 'WAITING_EVIDENCE', 'NOT_SCHEDULED')
@@ -99,6 +99,40 @@ def _rail_errors(intent, db):
     return errors
 
 
+# Optional declarations read by the netlist scans (Matrix R2, 2026-11-04); like `derating` they bump no schema version.
+# open_pins: a physically open input whose open state the user confirmed (NET-A07/RST-A04 go to INFO);
+# boundary_nets: a net whose other end is on another board, copied from ASG's design netlist (NET-A08 checks its label).
+DECLARED_LISTS = {'open_pins': ('node', 'state', 'citation'), 'boundary_nets': ('net', 'to', 'contract')}
+
+
+def declared_list_errors(intent, db=None):
+    errors = []
+    for key, fields in DECLARED_LISTS.items():
+        if key not in intent:
+            continue
+        items = intent[key]
+        if not isinstance(items, list):
+            errors.append('%s 必须为列表，每项 {%s}' % (key, ', '.join(fields)))
+            continue
+        seen = set()
+        for i, item in enumerate(items):
+            if not isinstance(item, dict) or set(item) != set(fields) or not all(_text(item.get(f)) for f in fields):
+                errors.append('%s[%d] 须恰好写 %s，都不能为空' % (key, i, '、'.join(fields)))
+                continue
+            name = item[fields[0]]
+            if name in seen:
+                errors.append('%s[%d]：%s 重复声明' % (key, i, name))
+            seen.add(name)
+            if db is None:
+                continue
+            if key == 'open_pins' and name not in (db.get('pin2net') or {}) and name not in (db.get('pinname') or {}):
+                errors.append('open_pins[%d]：%s 不是网表里的引脚' % (i, name))
+            if key == 'boundary_nets' and not any(net == name or net.rsplit('/', 1)[-1] == name
+                                                  for net in db.get('nets') or {}):
+                errors.append('boundary_nets[%d]：网表里没有名为 %s 的网' % (i, name))
+    return errors
+
+
 def validate_intent(intent, db=None, candidates=None, require_candidates=False):
     """验证 intent；给出 db 时同时核对网表绑定。"""
     if intent is None:
@@ -112,6 +146,7 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
         near = difflib.get_close_matches(str(key), sorted(INTENT_FIELDS), n=1)
         errors.append('intent.%s 不是 intent 的字段%s' % (key, '（是不是 %s？）' % near[0] if near else ''))
     errors.extend(derating.intent_errors(intent))
+    errors.extend(declared_list_errors(intent, db))
     baselines = guideline_criteria.load()['vocabulary']['baselines']
     if 'guideline_baseline' in intent and intent['guideline_baseline'] not in baselines:
         errors.append('guideline_baseline 必须为 ' + '/'.join(baselines))

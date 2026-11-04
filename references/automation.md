@@ -376,7 +376,8 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 
 自动扫描：`RST-A02` 器件的使能/复位输入与其自身供电脚同网（稳压器自身的直连由 RST-A03 覆盖，不重复
 登记）；`RST-A03` 稳压器使能直连输入网且无分压/RC（CANDIDATE）；`RST-A04` 使能网上既无驱动源也无
-分压/RC/上下拉——悬空或来源不明（CANDIDATE；器件内部上/下拉需资料证据）。
+分压/RC/上下拉——悬空或来源不明（CANDIDATE；器件内部上/下拉需资料证据）。悬空使能脚的开路状态有手册条款
+（开路电压最小值高于上升门限最大值）或 `intent.open_pins` 登记时记 INFO。
 
 保证值核对 `PWR-E02`：V<sub>IN,min</sub> − V<sub>dropout,max</sub>(声明温度与负载范围)
 ≥ 负载要求的 V<sub>OUT,min</sub>。PASS 不覆盖负载瞬态、启动过程与热关断。
@@ -407,11 +408,13 @@ ESP32-C3-MINI-1-N4 的 EN8 是复位接收输入（模组 datasheet v2.2，Table
 - 喂狗输入状态：`tied`（直接坐在电源/地上）、`driven`（有其他 IC/连接器脚驱动）、
   `pulled-only`（仅有上/下拉）、`floating`。
 - 轨的监测覆盖分 `sense-pin`、`divider`（经电阻到 sense 网）、`supervisor-supply`（仅供电给监控器，
-  是否等于被监测需资料证据）与未监测。轨本身按电源树识别（见共用约定），逐条记 `basis`；
+  是否等于被监测需资料证据）、`internal-bias`（器件偏置输出只供自己）、
+  `power-good`（PG 脚接出的器件的 OUT/VOUT/VOS 轨或 FB/PGTH 分压所接轨）、`uv-ov`（UVLO/OVLO/OVP 脚或其分压所接轨）与未监测。轨本身按电源树识别（见共用约定），逐条记 `basis`；
   只靠轨名认出的轨另记 `rail-identity` 缺口。
 
 自动扫描：`RST-A05` 喂狗输入悬空或固定电平（CANDIDATE）；`RST-A06` 复位/看门狗输出未到任何复位输入
-（网上无其他器件=FINDING，只接到其他脚=CANDIDATE）；`PWR-A06` 在已识别监控器的前提下列出未被
+（网上无其他器件=FINDING，只接到其他脚=CANDIDATE）。触发器 CLR/PRE 算复位输入；经单输入逻辑通道（nA→nY，无 nB）最多追 3 级，
+到复位输入算送达，到再无负载的复位名网（出本图）记 INFO；`PWR-A06` 在已识别监控器的前提下列出未被
 监测的轨（CANDIDATE）。**没有任何监控器时不报 PWR-A06**：全板是否需要监控属需求问题，由计划中的
 逐电源域覆盖项（PWR-T04）承接。
 

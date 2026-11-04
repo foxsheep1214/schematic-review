@@ -1,0 +1,185 @@
+{
+ "rule": "NET-A08",
+ "runner": "cold",
+ "note": "net declared off-board in intent.boundary_nets: sheet-local name /CH1/EN_N1 vs global label EN_N1",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "MCU_IF",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "EN",
+      "/CH1/EN_N1"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "/CH1/EN_N1"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "U9",
+    "value": "LDO",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "VOUT",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "pintype": {
+   "U1.3": "IN"
+  },
+  "intent": {
+   "boundary_nets": [
+    {
+     "net": "EN_N1",
+     "to": "MCU 板",
+     "contract": "接口表.md"
+    }
+   ]
+  }
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "MCU_IF",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ],
+     [
+      "3",
+      "EN",
+      "EN_N1"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "10K",
+    "pins": [
+     [
+      "1",
+      "1",
+      "EN_N1"
+     ],
+     [
+      "2",
+      "2",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "U9",
+    "value": "LDO",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "VOUT",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "J1",
+    "value": "CONN",
+    "pins": [
+     [
+      "1",
+      "1",
+      "VIN_5V"
+     ],
+     [
+      "2",
+      "2",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "pintype": {
+   "U1.3": "IN"
+  },
+  "intent": {
+   "boundary_nets": [
+    {
+     "net": "EN_N1",
+     "to": "MCU 板",
+     "contract": "接口表.md"
+    }
+   ]
+  }
+ }
+}
