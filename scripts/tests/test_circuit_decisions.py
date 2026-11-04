@@ -77,11 +77,18 @@ class DeriveTests(unittest.TestCase):
         _, errors = cd.derive(self.candidates, accept_all(self.candidates, **{'STARTUP-U1.HV': unlocated, 'POWER_PROTECTION-U1.FAULT': None}))
         self.assertTrue(any('citation' in e and 'START' in e for e in errors), errors)
 
-    def test_merge_refuses_a_circuit_candidate_with_a_cross_cutting_one(self):
+    def test_a_chain_merges_only_into_the_circuit_of_its_own_core_device(self):
+        # p24 (Matrix R2 3.4): U901 and its FLT pull-up chain are one channel; a chain of another device stays its own
         merge = {'candidate': ['POWER_CONVERTER-U1', 'STARTUP-U1.HV'], 'decision': 'merge', 'id': 'FLY',
                  'citation': 'U1 datasheet p12 §7.3'}
-        _, errors = cd.derive(self.candidates, accept_all(self.candidates, **{'POWER_CONVERTER-U1': merge, 'STARTUP-U1.HV': None}))
-        self.assertTrue(any('cross-cutting' in e for e in errors), errors)
+        circuits, errors = cd.derive(self.candidates, accept_all(self.candidates, **{'POWER_CONVERTER-U1': merge, 'STARTUP-U1.HV': None}))
+        self.assertEqual(errors, [])
+        fly = next(c for c in circuits if c['id'] == 'FLY')
+        self.assertEqual((fly['type'], fly['states'], fly['cross_cutting']), ('POWER_CONVERTER', ['startup', 'run', 'fault'], False))
+        self.assertIn('R41', fly['refs'])
+        foreign = dict(merge, candidate=['POWER_CONVERTER-U7', 'STARTUP-U1.HV'], id='BUCK')
+        _, errors = cd.derive(self.candidates, accept_all(self.candidates, **{'POWER_CONVERTER-U7': foreign, 'STARTUP-U1.HV': None}))
+        self.assertTrue(any('cross-cutting' in e and 'STARTUP-U1.HV' in e for e in errors), errors)
 
     def test_split_needs_every_member_placed_and_each_part_anchored(self):
         split = {'candidate': 'POWER_CONVERTER-U1', 'decision': 'split', 'citation': 'schematic p4 04_Flyback: aux rectifier drawn as its own block',
@@ -142,12 +149,23 @@ class DeriveTests(unittest.TestCase):
         # a part an add decision placed is no longer asked about
         self.assertNotIn('R99', cd.discovery_refs(self.candidates, accept_all(self.candidates) + [add]))
         self.assertIn('R99', cd.discovery_refs(self.candidates, accept_all(self.candidates)))
+        # p24 (Matrix R2 3.5): a held part is not taken; the add goes on and says where the part stays
         held = dict(add, members=['R99', 'C7'], via={'R99': 'V5', 'C7': 'VBUS'})
-        _, errors = cd.derive(self.candidates, accept_all(self.candidates) + [held])
-        self.assertTrue(any('C7' in e and 'USB-J2' in e for e in errors), errors)
+        notices = []
+        circuits, errors = cd.derive(self.candidates, accept_all(self.candidates) + [held], None, notices)
+        self.assertEqual(errors, [])
+        self.assertEqual(next(c for c in circuits if c['id'] == 'BLEEDER')['refs'], ['R99'])
+        self.assertTrue(any('C7' in n and 'USB-J2' in n for n in notices), notices)
+        only_held = dict(add, members=['C7'], via={})
+        _, errors = cd.derive(self.candidates, accept_all(self.candidates) + [only_held])
+        self.assertTrue(any('every add member is held' in e for e in errors), errors)
         blind = dict(add, via={'R99': 'somewhere'})
         _, errors = cd.derive(self.candidates, accept_all(self.candidates) + [blind])
         self.assertTrue(any('via' in e and 'R99' in e for e in errors), errors)
+        # no via: the part's own non-ground net stands for it
+        implied = {k: v for k, v in add.items() if k != 'via'}
+        _, errors = cd.derive(self.candidates, accept_all(self.candidates) + [implied])
+        self.assertEqual(errors, [])
 
     def test_every_candidate_needs_exactly_one_decision(self):
         decisions = accept_all(self.candidates)[1:]
@@ -184,6 +202,16 @@ class DeriveTests(unittest.TestCase):
         twice = [dict(add), dict(add, id='Y')]
         _, errors = cd.derive(self.candidates, accept_all(self.candidates) + twice)
         self.assertTrue(any('R99' in e and 'claimed equally' in e for e in errors), errors)
+        # p24 (Matrix R2 3.5): a tie between candidates' circuits comes with a pasteable own decision
+        merge = {'candidate': ['STARTUP-U1.HV', 'POWER_PROTECTION-U1.FAULT'], 'decision': 'merge', 'id': 'START', 'citation': 'p4'}
+        tie = accept_all(self.candidates, **{'STARTUP-U1.HV': merge, 'POWER_PROTECTION-U1.FAULT': None,
+                                             'ANALOG-U5': {'candidate': 'ANALOG-U5', 'decision': 'accept'}})
+        tie += [dict(add, id='START', type='STARTUP'), dict(add, id='ANALOG-U5')]
+        _, errors = cd.derive(self.candidates, tie)
+        message = next(e for e in errors if 'R99' in e and 'claimed equally' in e)
+        pasted = json.loads(message.split('：', 1)[1].split(' 或 ')[0])
+        self.assertEqual((pasted['decision'], pasted['ref'], pasted['candidate']), ('own', 'R99', 'STARTUP-U1.HV'))
+        self.assertEqual(cd.derive(self.candidates, tie + [pasted])[1], [])
         _, errors = cd.derive(self.candidates, accept_all(self.candidates) + twice + [dict(add, id='Z')])
         self.assertTrue(any('R99' in e and 'at most two' in e for e in errors), errors)
 

@@ -9,6 +9,27 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## p24：审查计划的对象与条件错误（Matrix 电源与保护 R2 误报群，2026-11-04）
+
+R2 首审 `SR技能不足.md` 1.7–1.12、3.4、3.5、6.3 与级联误问。没有新增规则，也没有改准则映射（`catalog.BASIS` 不变）；改的是计划对象、三条规则的网表前提、器件角色线索、候选走线与决定接口。
+
+- 1.7/1.12 对象：前提选中的器件先取本电路成员（`plan_circuits.subject_ref`）。CH1/CH2/ORIN-OUT 的 PWR-C13 由 J1001 改为 J901/J941/J801；FAULT-CMP、RESET 的 ANA-T01 由 U402 改为 U1305/U601。MAIN-HSW、AUX-EFUSE 自己没有连接器，仍取走到的第一只（J1001），未改。
+- 1.8 PWR-C23（POWER_PROTECTION）加前提 SECOND_SOURCE：两只二极管把不同电源 OR 到同一网、栅极接另一电源的电源路径 MOSFET、双输入切换脚或电池/适配器脚、电池。
+- 1.9 PRO-C08（POWER_PROTECTION）前提改 FUSE_PART，只认两端的保险丝/PPTC（文字带 EFUSE 的 IC 不算）。
+- 1.10 ANA-D01 前提改 TEMP_SENSOR：被 IC 读的 NTC（含按位号认出的 TH）、温度传感器型号、温度/热敏脚。
+- 1.11 load_switch 角色加手册标题线索 protectioncontroller、surgestopper：LTC4367 按负载开关核验，上电清单不再排 PWR-E02。ASG `schematic_layout/part_classes.py` 的 IC_ROLE_CUES 还没有这两个词，两边不一致，ASG 只读，待 ASG 侧补。
+- 3.4 merge：跨电路候选可并入核心器件所在的电路候选，取电路候选的类型和工作态；别的器件的链仍拒。
+- 3.5 add：via 不写时取器件的非地网；已被保留候选持有的成员不收入，打印提示；全部被持有才报错。打平报错附可粘贴的 own JSON。
+- 6.3 候选：符号 `Circuit` 字段标成另一颗核心器件所在电路的器件，电路候选走线不收也不穿；跨电路链和没有该字段的板不变。R2 上 R203 离开 ANALOG-U1305，C1301/C302/D1301/R1301 不再打平，4 条 own 不再需要。
+
+R2 复现（缓存输入复制到草稿目录，审查员决定按新接口重写：CHn/ORIN/AUX/MAIN 的链并入本电路，U801 声明 load_switch）：电路 32→20，计划 2029→1695。PWR-C23 69→0、PRO-C08 23→0、ANA-D01 2→0、PWR-E02 1→0；-FLT/OVLO/UVLO/OVP 这类只有上拉或分压的功能 12 个、232 项消失（ANA-T01 70→37、PRO-C01 69→36、PWR-C06 81→48、PWR-C26 23→12 等是同一来源）；SIG-C07/SIG-T04/SIG-C08 减少是同一对电路的接口合并。冷扫非 INFO 33→33。F01（PRO-C09.CH1、PRO-C09.ORIN-OUT）、F02（PWR-C13.CH1 现为 J901）、F03（REQ-D01 204 行）、F04（DEV-D01 78 行）仍在。
+
+87 块公开板（evals/boards，不含校准板）：冷扫非 INFO 1560→1560，冷计划 23765→23765；两边都出完整计划的 17 块候选计划 4415→4398（PWR-C23 12→0、ANA-D01 3→0、PRO-C08 2→0），这些板按规则在候选计划里的真缺陷行 19/37→19/37，没有丢；teapot POWERPATH（VBUS 二极管加 +BATT PMOS）、singularity ORING-1V25 仍问 PWR-C23。对象变化 16 行（flatmcu ANA-D01 U4→TH1、singularity ANALOG-U9 U1→U9 等）。决定校验新通过 2 块（a2r crazyflie、klippertoolboard：add 里已被持有的成员改为提示）。校准板（设计记录已移到 ~/Desktop/ASG-calibration/industrial-io-rs485-can/，intent-merge7-frozen 的路径按此改写后两边全流程跑通）：候选不变，冷扫与合并非 INFO 19→19，计划 826→813：PWR-C23 9→0、PRO-C08 3→0（原对象是 TVS）、ANA-D01 1→0；DI-FIELD-PWR、DO-HS 的 PWR-C13 对象由 J101/J301 改为本电路的 J601/J701。
+
+- Event: user:2026-11-04 (你用新修改的SR技能跑一遍修改好的R2…总结问题，发现SR技能的不足)
+- Causes: rule_not_enforced 5, knowledge_wrong 1, judgment 4
+- Changed: scripts/plan_circuits.py, scripts/catalog.py, scripts/circuit_candidates.py, scripts/circuit_decisions.py, scripts/tests/test_p24_plan_objects.py, scripts/tests/test_circuit_decisions.py, scripts/tests/test_subject_requires.py, scripts/tests/test_catalog.py, scripts/tests/test_reading_path.py, references/check-catalog.md, references/review-vocabulary.md, references/intent-format.md, references/checker-conventions.md, evals/mutation/mutations.json, evals/detection/RESULTS.md, docs/improvement-ledger.md
+- Gates: pytest 2809 全过（SR_ASG_SHARED_ROOT 指向本树共用层快照；对真实 ASG〔已升 1.8.0〕跑 test_asg_holds_the_same_shared_layer 1 条预期失败，本分支不动共用层）; mutation --changed main --tier unit 193 全杀（新增 M1432–M1439，重锚 M56、M76、M352、M1312、M1400）; kicad_replay 195/195; detection 正例 611/命中 560/漏报 20/误报 11 不变; check_ledger PASS; 不 push
 ## 外部锁存判据、热插入状态脚、端口暴露等级与钳位初算（2026-11-04）
 
 Matrix 电源与保护 R2 首审的 `SR技能不足.md` 2.1、2.2、4.1、4.2。

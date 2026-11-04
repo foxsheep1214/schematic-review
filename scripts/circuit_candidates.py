@@ -7,7 +7,8 @@
 推导。走线停在截止网络（地、IC 输出脚驱动的网、两个以上核心器件到达的声明轨或实际供电轨、该变换器电感负载的输入/输出网）、
 别的核心器件、跨域器件（变压器、光耦、Y 电容、隔离器：隔离候选的成员，别的候选不穿过）。
 
-页面与名字只作展示，不决定归属。两个候选在同一距离走到的器件两边都列；走线更短的候选赢得器件。
+页面与名字只作展示，不决定归属；符号的 `Circuit` 字段（ASG 写的典型电路 ID）是例外：标成另一颗核心器件所在电路的器件，
+电路候选的走线不收也不穿过（跨电路链不受此限）。两个候选在同一距离走到的器件两边都列；走线更短的候选赢得器件。
 每颗被持有的器件恰好由一个候选拥有（成员的 `owned`），其余持有它的候选只引用它：电路的核心器件 > 电路成员 >
 电路里的端点类角色 > 链路成员 > 隔离带 > 链路的核心器件与端点（`claim_rank`）。同一级打平的器件谁也不拥有，
 记入 shared，由审查员的 own 决定裁定。没有候选走到的器件列在 unassigned（REQ-Q08 的复核对象），没有核验角色的
@@ -31,7 +32,7 @@ from board_scans import OSCILLATOR_PIN_RE
 import requirement_clarifications
 
 SCHEMA_VERSION = 2
-RULES_VERSION = '2026-11-03.7a'   # boards-merge7: HOLD_UP and SIGNAL_PROTECTION candidates
+RULES_VERSION = '2026-11-04.p24'   # p24: a part labelled as another circuit's (symbol Circuit field) is not walked
 MAX_HOPS = 4
 ANALOG_HOPS = 2
 INPUT_HOPS = 6
@@ -126,6 +127,7 @@ class Generator:
         self.loads = self._first_state(checkers['inductive_load'].build(analysis_db, self.kind_intent), 'loads')
         self.winding_nets = {net for load in self.loads for net in self.graph.nets_of(load['ref'])}
         self.anchors = dict(self.domains['anchors'])
+        self.anchor_areas = {self.area(ref) for ref in self.anchors} - {None}
         self.barriers = {b['ref'] for b in self.domains['barriers']}
         self.grounds = set(self.domains['grounds'])
         self.stops = set(self.domains['rail_stops'])
@@ -159,6 +161,24 @@ class Generator:
         found = sorted({self.domains['nets'].get(n) for n in self.graph.nets_of(ref)} - {None})
         return found[0] if len(found) == 1 else ('/'.join(found) if found else None)
 
+    def area(self, ref):
+        """The symbol's `Circuit` field (ASG writes the typical circuit, i.e. the page id, a part belongs to), or None."""
+        fields = ((self.db.get('parts') or {}).get(ref) or {}).get('fields') or {}
+        value = fields.get('Circuit')
+        return value.strip() if isinstance(value, str) and value.strip() else None
+
+    def foreign(self, cid, ref):
+        """p24 (Matrix R2 6.3): a part the schematic labels as another circuit's — its `Circuit` field differs from the
+        circuit candidate's core device and names a circuit with a core device of its own (R203, U201's VSS resistor on
+        02_Input, is not the 13_FaultMain comparator's). Boards without the field, parts on a page without a core device
+        (a connector page) and cross-cutting chains (an enable or startup chain runs between circuits) are walked as
+        before."""
+        candidate = self.candidates[cid]
+        if candidate.get('cross_cutting'):
+            return False
+        mine, theirs = self.area(candidate['anchor']), self.area(ref)
+        return bool(mine and theirs and mine != theirs and theirs in self.anchor_areas)
+
     def ground_caps(self, net):
         """Capacitors between a net and any ground."""
         return sorted(ref for ref in self.graph.refs_on(net)
@@ -170,6 +190,8 @@ class Generator:
         members = self.candidates[cid]['members']
         if ref in members and members[ref]['hops'] <= hops:
             return
+        if hops and self.foreign(cid, ref):
+            return   # p24: reached by a walk, labelled as another circuit's
         if role == pw.CAPACITOR and any(n in self.grounds for n in self.graph.nets_of(ref)) and any(
                 n in self.supplies for n in self.graph.nets_of(ref)):
             role = 'decoupling'   # a ground bypass on an actual supply, regardless of which walk reached it
@@ -195,7 +217,7 @@ class Generator:
             if halt or hops >= max_hops:
                 continue
             for ref in self.graph.refs_on(net):
-                if ref == owner or ref in blocked or ref in self.anchors or ref in self.barriers:
+                if ref == owner or ref in blocked or ref in self.anchors or ref in self.barriers or self.foreign(cid, ref):
                     continue
                 if not self.two_terminal(ref):
                     drain = self.driven_switch(ref, net)

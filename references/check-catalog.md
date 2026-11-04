@@ -693,7 +693,7 @@
 | VEHICLE_28V | 军车 28 V 输入 | PWR | PWR-C21、PRO-C01、PWR-T05 | requirements、datasheets | `(^\|[:_-]\|^NET:.*/(?=[^/]*$))(28V\|VEH_?28)([:_-]\|$)` |
 | SHIP_AC | 舰船交流输入 | PWR | PWR-C22、PRO-C01 | requirements、datasheets | `(^\|[:_-]\|^NET:.*/(?=[^/]*$))SHIP_?AC([:_-]\|$)` |
 
-下表的电路检查项只在网表上有它问的机制时生成，检查项对象取前提找到的器件；前提不成立的规则记在功能框架的 `not_asked`，报告在功能下列“未问”。网表说不清（器件类别未知、IC 没有脚名）时照问；漏问的可经 `intent.rule_gaps` 补回。
+下表的电路检查项只在网表上有它问的机制时生成，检查项对象取前提找到的器件（先取本电路的成员）；前提不成立的规则记在功能框架的 `not_asked`，报告在功能下列“未问”。网表说不清（器件类别未知、IC 没有脚名）时照问；漏问的可经 `intent.rule_gaps` 补回。
 
 | 功能电路 | 电路检查项 | 前提 | 不成立时 |
 |---|---|---|---|
@@ -710,7 +710,8 @@
 | POWER_PROTECTION | PWR-T05 | SUPPLY_SWITCH | 电路里没有 D、S 都不接地的 MOSFET |
 | POWER_PROTECTION | PRO-C05 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |
 | POWER_PROTECTION | PRO-C06 | SUPPLY_SWITCH | 电路里没有 D、S 都不接地的 MOSFET |
-| POWER_PROTECTION | PRO-C08 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |
+| POWER_PROTECTION | PRO-C08 | FUSE_PART | 电路里没有保险丝或 PPTC |
+| POWER_PROTECTION | PWR-C23 | SECOND_SOURCE | 电路里没有第二个电源：没有两只二极管把不同电源 OR 到同一电源网，没有双输入电源切换脚，也没有电池 |
 | POWER_PROTECTION | PRO-C09 | PROTECTION_PART | 电路里没有保险、压敏电阻、NTC、TVS、稳压管，也没有带 UV/OV/ILIM/EN 脚的 IC |
 | SIGNAL_PROTECTION | PRO-C08 | FUSE_PART | 电路里没有保险丝或 PPTC |
 | ANALOG | ANA-C05 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
@@ -720,7 +721,7 @@
 | ANALOG | ANA-C02 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
 | ANALOG | ANA-C03 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
 | ANALOG | ANA-T01 | SENSE_ELEMENT | 电路里没有采样电阻（<1 Ω）、NTC 或接到 IC 检测脚的分压 |
-| ANALOG | ANA-D01 | ANALOG_PIN | 电路里没有放大器、ADC 或温度传感器的脚 |
+| ANALOG | ANA-D01 | TEMP_SENSOR | 电路里没有温度传感器：没有被 IC 读取的 NTC、温度传感器器件或温度/热敏输入脚 |
 | STARTUP | RST-C01 | START_PIN | 电路里没有带复位、使能、禁止或启动配置脚（RESET、EN、DIS、UVLO、BOOT、strap）的 IC |
 | STARTUP | RST-C02 | START_PIN | 电路里没有带复位、使能、禁止或启动配置脚（RESET、EN、DIS、UVLO、BOOT、strap）的 IC |
 | STARTUP | RST-T04 | START_PIN | 电路里没有带复位、使能、禁止或启动配置脚（RESET、EN、DIS、UVLO、BOOT、strap）的 IC |
@@ -743,7 +744,7 @@
 | `mcu` | 微控制器与处理器 | microcontroller、microprocessor、systemonchip、mcu | ANALOG | 检测脚 |
 | `transceiver` | 总线收发器与 PHY | transceiver、ethernetphy、linedriver、busdriver | ANALOG、CAN、RS485、UART、ETHERNET、HSSERIAL | 检测脚 |
 | `isolator` | 数字隔离器 | digitalisolator、isolatedgatedriver、isolator | 不作核心器件 | — |
-| `load_switch` | 负载开关与热插拔保护 | loadswitch、hotswap、efuse、idealdiode、powerdistributionswitch、currentlimitswitch、highsideswitch、highsidesmartpower | POWER_PROTECTION | — |
+| `load_switch` | 负载开关与热插拔保护 | loadswitch、hotswap、efuse、idealdiode、powerdistributionswitch、currentlimitswitch、highsideswitch、highsidesmartpower、protectioncontroller、surgestopper | POWER_PROTECTION | — |
 | `charger` | 电池充电器 | batterycharger、chargecontroller、chargemanagement、switchingcharger、linearcharger、chargeric | POWER_CONVERTER | — |
 | `adc_dac` | ADC 与 DAC | analogtodigital、digitaltoanalog、bitadc、bitdac、channeladc、channeldac、audiodac、audioadc、sigmadeltaadc、deltasigmaadc | ANALOG | 全部信号脚 |
 | `oscillator` | 时钟源 | crystaloscillator、clockgenerator、clockbuffer、clocksynthesizer、jittercleaner、oscillator、clockdistribution、realtimeclock、clockmultiplier | CLOCK | — |

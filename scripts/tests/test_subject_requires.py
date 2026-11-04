@@ -277,8 +277,9 @@ class SenseAndAnalogTests(unittest.TestCase):
         add(db, 'U1', 'OPAMP', [('1', 'IN+', 'INP'), ('2', 'IN-', 'INN'), ('3', 'OUT', 'AOUT'), ('4', 'V+', 'V5'),
                                 ('5', 'V-', 'GND')])
         plan = plan_of(db, 'ANALOG', ['U1'])
-        for rule in ('ANA-C01', 'ANA-C02', 'ANA-C03', 'ANA-D01'):
+        for rule in ('ANA-C01', 'ANA-C02', 'ANA-C03'):
             self.assertEqual([r['object']['ref'] for r in asked(plan, rule)], ['U1'], rule)
+        self.assertEqual(not_asked(plan)['ANA-D01'], 'TEMP_SENSOR')   # p24 (Matrix R2 1.10): an amplifier is no sensor
 
 
 class StartupPinTests(unittest.TestCase):
