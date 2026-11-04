@@ -97,6 +97,7 @@
   接在源跟随器栅极与地之间的齐纳是偏置基准、正常就导通，不派 PRO-C02 两侧窗口，由器件检查项和电路判定核。
 - `derating`：项目降额等级 `{level: I/II/III, source: req:<需求编号> 或 clarification:<已答复的澄清编号>}`，需求没写时按需求澄清问用户；
   计划照抄，点名降额规则的应力余量按它核（[器件应力规范](shared/stress-spec.md)）。
+- `interfaces`（可选）：对外连接器的暴露等级 `{"J801": {"exposure": "via_box_connector", "citation": "E-IF-01 接口表"}}`，`exposure` 取 `in_box`（箱内）、`via_box_connector`（经航插出箱）、`exposed`（直接暴露），`citation` 引需求或接口表。PRO-E02 按它取浪涌：箱内的不取外部浪涌需求；出箱的按需求 `surge_voltage` 参数的幅值与耦合方式取源阻抗（差模 2 Ω、共模 12 Ω），钳位件入表时给 IPP 与钳位电压初算；钳位网上的连接器没声明时照原逻辑，计划行标“需人判：端口暴露等级”。需求给了允许热插入的负载电容时写 `load_capacitance` 参数，PWR-A08 用它代替示例值。
 - `guideline_baseline`：产品基线，默认工业/通信板卡不写；需求写明航天、军用时写 `aerospace`/`military`。
 - `mission_profile`：所有寿命检查项共用的一份任务剖面
   `{requirement, phases[{name, share, load, ambient_c, citation[, requirement]}], events[{event, count, citation[, refs, requirement]}]}`。

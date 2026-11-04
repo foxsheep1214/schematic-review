@@ -9,6 +9,22 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 外部锁存判据、热插入状态脚、端口暴露等级与钳位初算（2026-11-04）
+
+Matrix 电源与保护 R2 首审的 `SR技能不足.md` 2.1、2.2、4.1、4.2。
+
+- 2.1 新 A 规则 PRO-A06（G05-098）：`scripts/latch_criteria.py` 把保护 IC（入表或角色 load_switch）的 PG/FLT/IMON 经已知逻辑族（74 系列 00/02/08/10/11/14/17/27/32/04/07、74 触发器）追到触发器异步端，建判据树；逐动作代入：命令关断（入表的关断门限、关管延时、PG 消抖，判据网经二极管放电到使能脚时按 BAS21 曲线加压降，对门输入 VT− 的保证值，放电时间常数对 PG 变低时间）、MCU 复位（命令输入取上下拉默认态）、上电默认态、过流重试（判据延时对 dVdT 斜坡加 tPGOODR）。入表：TPS2663x、TPS25981x、SN74HCS00/02/74、BAS21。G05-098 从 PRO-C09 的临时映射移到 PRO-A06。
+- 2.2 新 A 规则 PWR-A08（G03-017、G05-098）：同一判据树，已开通道热插入负载的分电荷跌落、按限流上限充回 PG 门限的时间对 PG 消抖；需求没给允许负载电容（新参数 `load_capacitance`）时记需求缺口并给临界电容与 10/47/100 µF 示例。PWR-C13 判据与问题加“浪涌期间状态脚是否触发外部锁存”。
+- 4.1 intent 加可选字段 `interfaces`（`in_box` / `via_box_connector` / `exposed`，带 citation），按 `derating` 先例不升格式版本；PRO-E02 出箱口按需求 `surge_voltage` 取幅值、差模 2 Ω / 共模 12 Ω；钳位网上的连接器没声明时照原逻辑，计划行 `object.needs_human` 标“端口暴露等级”。
+- 4.2 PRO-E02 初算：`protective_clamps.CLAMP_DATA`（30KPA28CA、SMBJ15A/28A/58A、SM15T33A、TVS3300）与 `PIN_MAXIMA`（TPS2663x、TPS25981x、LTC4359、LM5069、LM70880、LMR6043x）入表，行尾给 VRWM 对网持续最高电压、额定点 VC@IPP 对同网最低脚绝限、出箱口的 IPP 与线性外推钳位电压。
+
+R2 复现输入（`~/.cache/sr-boards/matrix--power-protection-r2/review`）冷扫非 INFO 33→50：PRO-A06 9 条 FINDING（8 路 24 V 加 Orin：CH EN_DLY 关管时 1.51–2.76 V、高温曲线下限 1.32 V，对 HCS00 VT− 0.96–1.07 V 仍判高，放电 220 µs 对 PG 5.5 µs；Orin EN_DLY_ORIN 1.60–1.64 V、PG 14 µs），PWR-A08 8 条 FINDING（PG 门限对应输出 5.36–5.66 V，临界负载电容 3.24–3.48 µF，限流 1.82–2.14 A，47 µF 充回约 116 µs 对消抖 4 µs），与审查报告 F-001/F-002 一致；PRO-E02 14 行全部带初算，D801 额定点 24.4 V 已超 U802 OUT 20 V，J801 声明出箱时差模 IPP 约 438 A。计划 2029→2046。校准板 PRO-A06/PWR-A08 零命中。规则合同 PRO-A06（近似板：判据加 SHDN_G 门控）、PWR-A08（近似板：需求允许负载 2.2 µF）；`evals/detection/known_defects.json` 加 R2-F01、R2-F02（历史 caught=false）。
+
+- Event: user:2026-11-04 (你用新修改的SR技能跑一遍修改好的R2…总结问题，发现SR技能的不足)
+- Causes: rule_missing 3, knowledge_missing 1
+- Changed: scripts/latch_criteria.py, scripts/protective_clamps.py, scripts/lint.py, scripts/board_scans.py, scripts/catalog.py, scripts/plan_board.py, scripts/plan_review.py, scripts/tests/test_latch_criteria.py, scripts/tests/test_catalog.py, scripts/tests/test_reading_path.py, references/check-catalog.md, references/review-vocabulary.md, references/intent-format.md, references/scans-and-tools.md, references/architecture.md, evals/rule_contracts/boards/PRO-A06.json, evals/rule_contracts/boards/PWR-A08.json, evals/mutation/mutations.json, evals/detection/known_defects.json, evals/detection/RESULTS.md, docs/improvement-ledger.md
+- Gates: pytest 2816; mutation --changed main --tier unit 199/199 全杀（新增 M1440–M1448）; rule_contracts PRO-A06、PWR-A08 ok，--gaps none; kicad_replay 随 pytest 通过; detection 命中 560→560、误报 11→11、负例通过 159→159，漏报 20→23 只因 known_defects 新加 R2 两条历史漏报（G03-017 1、G05-098 2）; 板子冷扫前后对比 87/88 块（mlab batdatunit01 缓存 intent 前后都过不了校验；33 块缓存 intent 的 /tmp/codex-work 资料路径已不在，两边同样剔除）：非 INFO 2958→2958、计划 46243→46243、真缺陷定位 197/197→197/197，规则计数逐板不变；校准板（缓存 intent-merge7-frozen.json，需求按用户移到的 ~/Desktop/ASG-calibration/industrial-io-rs485-can 读，整条链）冷扫与合并非 INFO 19→19、最终计划 826→826、PRO-A06/PWR-A08 0; check_ledger PASS; 不 push
+
 ## 准则库 1.8.0：G05-098 外部锁存判据在正常动作下不成立、G03-017 加热插入负载 (2026-11-04)
 
 SR 首审 Matrix 电源与保护 R2 的两处 P1（F-001 命令关断误置短路锁、F-002 热插入电容负载误锁）没有条款承接（`SR技能不足.md` 5.1、5.3）。用户 2026-11-04 批准写入：新增 G05-098（POWER_PROTECTION，method，来源 TPS2663 SLVSE94G 与 ECSS 方法延伸），G03-017 1.1→1.2 加热插入允许负载工况；登记文件 G03 1.8、G05 1.4，共用层 1.8.0（354 条，指纹 ea8f1a727df3 → 9208f5369375），ASG 同字节。SR 代码不变；新规则（sr-rules 分支）落地后映射到 G05-098。

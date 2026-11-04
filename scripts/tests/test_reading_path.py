@@ -47,7 +47,7 @@ READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审
 # ① +136 B, ② +415 B 2026-11-03 boards-merge7: checker-conventions names the HOLD_UP and SIGNAL_PROTECTION candidate rules; the vocabulary drops the two F20 preconditions.
 # ① +161 B, ② +161 B 2026-11-03 boards-merge7 F11: checker-conventions says PRO-E02 walks through forward diodes and one resistor/PTC to the protected pin.
 # ① +336 B 2026-11-03 boards-merge7: the vocabulary prints the name-cue patterns with the hierarchical-net leaf boundary.
-STEP_MAX_BYTES = {'①': 172707, '②': 159166, '③': 224_960, '④': 124_430, '⑤': 37_800}   # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。 2026-11-02 合并步 5：④ +430（verdicts-and-release.md 文档/订货一致性按有无电气后果定级）。
+STEP_MAX_BYTES = {'①': 173533, '②': 159889, '③': 225_472, '④': 124_430, '⑤': 37_800}   # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。 2026-11-02 合并步 5：④ +430（verdicts-and-release.md 文档/订货一致性按有无电气后果定级）。 2026-11-04 SR 不足 4.1：① +826、② +723（intent-format.md 的 interfaces 暴露等级与 load_capacitance，词表多一个参数），③ +512（scans-and-tools.md 加 PRO-A06、PWR-A08 两行）。
 
 
 def section(text, title):

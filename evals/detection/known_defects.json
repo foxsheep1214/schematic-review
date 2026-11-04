@@ -633,5 +633,32 @@
     "caught": "unknown",
     "note": "例5：典型55 µA线性外推27 µA > 18 µA预算，只是桌面疑点，不能判 FAIL；回放非独立模型评测。",
     "kind": "rule_audit"
+  },
+  {
+    "id": "R2-F01-latch-preset",
+    "source": "docs/improvement-ledger.md :: 外部锁存判据、热插入状态脚、端口暴露等级与钳位初算（2026-11-04）",
+    "criteria": [
+      "G05-098"
+    ],
+    "sr_rules": [
+      "PRO-A06"
+    ],
+    "caught": false,
+    "note": "Matrix 电源与保护 R2 首审 F-001（P1）：命令关断、MCU 复位与重试时 PG 先变低而 EN_DLY 仍判高，短路锁被误置；首审规则未问到（SR技能不足 2.1）。本改单起 PRO-A06 冷扫在 9 路报出。",
+    "kind": "electrical"
+  },
+  {
+    "id": "R2-F02-hot-insert",
+    "source": "docs/improvement-ledger.md :: 外部锁存判据、热插入状态脚、端口暴露等级与钳位初算（2026-11-04）",
+    "criteria": [
+      "G03-017",
+      "G05-098"
+    ],
+    "sr_rules": [
+      "PWR-A08"
+    ],
+    "caught": false,
+    "note": "R2 首审 F-002（P1）：已开通道热插入 >3.4 µF 负载时 PG 低约 0.12 ms（47 µF）远超 4 µs 消抖，短路锁被误置；PWR-C13 未问状态脚（SR技能不足 2.2）。本改单起 PWR-A08 冷扫在 8 路报出。",
+    "kind": "electrical"
   }
 ]

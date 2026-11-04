@@ -13,6 +13,7 @@ import board_intent
 import catalog
 import derating
 import guideline_criteria
+import protective_clamps
 from electrical_contract import (LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, PLAN_SCHEMA_VERSION, db_fingerprint, bounded, engine_identity, finite,
                                  squeeze_words)
 from page_inventory import inventory as document_inventory
@@ -51,7 +52,7 @@ INTENT_FIELDS = {'schema_version', 'review_mode', 'review_phase', 'input_sha256'
                  'requirement_source', 'requirements', 'clarifications', 'circuit_decisions', 'circuits', 'circuit_candidates_sha256',
                  'expect', 'features', 'materials', 'rail_exclusions', 'rule_gaps', 'power_rails', 'power_sources',
                  'power_paths', 'active_state', 'mission_profile', 'review_sources', 'review_dependencies', 'derating',
-                 'guideline_baseline'} | {
+                 'guideline_baseline', 'interfaces'} | {
     checker.intent_key for checker in REGISTRY if checker.intent_key}
 APPLICABILITY = ('APPLICABLE', 'NOT_APPLICABLE', 'UNDETERMINED')
 READINESS = ('READY', 'WAITING_EVIDENCE', 'NOT_SCHEDULED')
@@ -115,6 +116,15 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
     baselines = guideline_criteria.load()['vocabulary']['baselines']
     if 'guideline_baseline' in intent and intent['guideline_baseline'] not in baselines:
         errors.append('guideline_baseline 必须为 ' + '/'.join(baselines))
+    interfaces = intent.get('interfaces', {})
+    if not isinstance(interfaces, dict):
+        errors.append('interfaces 必须为 object（连接器位号 -> {exposure, citation}）')
+    else:
+        for ref, item in interfaces.items():
+            if not isinstance(item, dict) or item.get('exposure') not in protective_clamps.EXPOSURES:
+                errors.append('interfaces.%s.exposure 必须为 %s' % (ref, '/'.join(protective_clamps.EXPOSURES)))
+            elif not _text(item.get('citation')):
+                errors.append('interfaces.%s 须写 citation（需求或接口表出处）' % ref)
     if intent.get('review_mode') not in (None, 'first', 'revision'):
         errors.append('review_mode 必须为 first/revision')
     if 'review_phase' in intent and intent['review_phase'] not in PHASES:
@@ -800,6 +810,8 @@ def lint_check(finding):
         obj.update(channel=channel['channel'], nodes=[finding['ref'] + '.' + p for p in channel['pins']],
                    nets=channel['nets'], return_nodes=[finding['ref'] + '.' + p for p in channel['return_pins']],
                    return_nets=channel['return_nets'], pinout_citation=channel['citation'])
+    if finding.get('needs_human'):   # SR 不足 4.1: a port exposure nobody declared is a human decision, named on the row
+        obj['needs_human'] = [{'port_exposure': '端口暴露等级'}.get(x, x) for x in finding['needs_human']]
     return {'id': lint_check_id(finding), 'rule': rule, 'method': catalog.method_of(rule),
             'domain': catalog.domain_of(rule), 'object': obj,
             'criterion': '%s：%s' % (finding.get('name') or catalog.title(rule), finding.get('detail') or ''),

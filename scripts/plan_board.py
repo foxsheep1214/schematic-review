@@ -35,6 +35,8 @@ COLD_RULE_INDEXES = {
     'CLK-A02': ['nets', 'parts', 'pinname'],
     'CLK-A01': ['nets', 'parts'],
     'PRO-A05': ['nets', 'parts'],
+    'PRO-A06': ['nets', 'parts', 'pinname'],
+    'PWR-A08': ['nets', 'parts', 'pinname'],
     'SIG-A06': ['nets', 'parts'],
     'SIG-A04': ['nets', 'parts'],
     'PWR-A07': ['nets', 'parts'],

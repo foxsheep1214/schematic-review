@@ -19,7 +19,7 @@ from test_checkers_framework import whole_board
 
 RULE_TOKEN = re.compile(r'(?<![A-Za-z0-9])[A-Z]{3}-[AETCDVQH]\d{2}(?![0-9])')
 SOURCE_FILES = {
-    'lint': ['lint.py', 'board_scans.py'],
+    'lint': ['lint.py', 'board_scans.py', 'latch_criteria.py'],
     'plan': ['plan_review.py', 'plan_circuits.py', 'plan_board.py', 'catalog.py'],
     'revision': ['revision_impact.py', 'diff_netlists.py', 'plan_review.py'],
     'interface': ['interfaces.py', 'plan_circuits.py', 'catalog.py'],

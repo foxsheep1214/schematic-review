@@ -77,6 +77,120 @@ PIN_LIMITS = (
 )
 
 
+# 2026-11-04 (SR 不足 4.2): datasheet points of the clamps the initial-calculation table uses. Each part: stand-off
+# VRWM, breakdown (min, max), rated points (waveform, IPP [A], VC max [V]); a linear clamp VC(I) = VBR max + Rd·I with Rd
+# from the shortest-waveform point is the estimate the table extrapolates with.
+CLAMP_DATA = (
+    (r'30KPA28C?A', 28.0, (31.28, 34.41), (('10/1000 µs', 606.0, 50.0),),
+     'Littelfuse 30KPA Rev GD 2026-06-10 p2 电气特性表'),
+    (r'SMBJ15C?A', 15.0, (16.7, 18.5), (('10/1000 µs', 24.6, 24.4),), 'Vishay SMBJ 88392 2024-01-09 p2'),
+    (r'SMBJ28C?A', 28.0, (31.1, 34.4), (('10/1000 µs', 13.2, 45.4),), 'Vishay SMBJ 88392 2024-01-09 p2'),
+    (r'SMBJ58C?A', 58.0, (64.4, 71.2), (('10/1000 µs', 6.4, 93.6),), 'Vishay SMBJ 88392 2024-01-09 p2'),
+    (r'SM15T33C?A', 28.2, (31.4, 34.7), (('10/1000 µs', 33.0, 45.7), ('8/20 µs', 169.0, 59.0)),
+     'ST SM15T DS0683 Rev 8 p3 Table 2'),
+    (r'TVS3300\w*', 33.0, (34.0, 39.0), (('8/20 µs', 35.0, 40.0),),
+     'TI TVS3300 SLVSDO2C p5 §7.1 IPP 35 A（8/20 µs）；p6 §7.5 VBR、VCLAMP'),
+)
+# Voltage-only absolute maxima of IC pins the initial-calculation table compares (no input-current clause).
+PIN_MAXIMA = (
+    (r'TPS2663[0-7]\w*', r'IN_SYS|IN|OUT|PGTH', 67.0, 'TI TPS2663x SLVSE94G p5 §7.1 IN_SYS/IN/OUT 67 V'),
+    (r'TPS25981\w*', r'IN|OUT', 20.0, 'TI TPS25981x SLVSGG6D p6 §7.1 IN 20 V，OUT ≤ VIN + 0.3 V'),
+    (r'LTC4359\w*(?:#\w+)?', r'IN|SOURCE|SHDN', 100.0, 'ADI LTC4359 Rev F p2 IN、SOURCE、SHDN 100 V'),
+    (r'LM5069\w*(?:-\d)?', r'VIN|OUT|SENSE|PGD', 100.0, 'TI LM5069 SNVS452G p4 §6.1 VIN/OUT 100 V'),
+    (r'LM70880\w*', r'VIN\d*', 87.5, 'TI LM70880-Q1 SNVSBX7A p5 §6.1 VIN 87.5 V'),
+    (r'LMR6043\w*', r'VIN', 42.0, 'TI LMR60430-Q1 SNAS875B p5 §6.1 VIN 42 V'),
+)
+# IEC 61000-4-5 / GB/T 17626.5 combination-wave effective source impedance: line–line 2 Ω, line–earth 12 Ω.
+SURGE_IMPEDANCE = ((r'差模|线.?线|line.?(?:to.?)?line|differential|\bDM\b', 2.0), (r'共模|线.?地|line.?(?:to.?)?(?:earth|ground)|common|\bCM\b', 12.0))
+EXPOSURES = {'in_box': '箱内', 'via_box_connector': '经航插出箱', 'exposed': '直接暴露'}
+
+
+def clamp_data(part):
+    identities = [str(part.get(k) or '') for k in ('part', 'value')]
+    return next((row for row in CLAMP_DATA if any(re.fullmatch(row[0], i, re.I) for i in identities)), None)
+
+
+def pin_maximum(part, pin_names):
+    identities = [str(part.get(k) or '') for k in ('part', 'value')]
+    for row in PIN_MAXIMA:
+        if any(re.fullmatch(row[0], i, re.I) for i in identities) and any(re.fullmatch(row[1], n or '', re.I) for n in pin_names):
+            return row[2], row[3]
+    return None
+
+
+def surge_cases(intent):
+    """[(requirement id, condition, open-circuit volts, source ohms)] from CONFIRMED surge_voltage parameters."""
+    cases = []
+    for req in (intent or {}).get('requirements') or []:
+        if req.get('status', 'CONFIRMED') != 'CONFIRMED':
+            continue
+        for p in req.get('parameters') or []:
+            if p.get('name') != 'surge_voltage':
+                continue
+            scale = {'V': 1.0, 'kV': 1e3, 'mV': 1e-3}.get(p.get('unit'))
+            peak = max((abs(p[k]) for k in ('min', 'max', 'value') if isinstance(p.get(k), (int, float))), default=None)
+            if not scale or not peak:
+                continue
+            text = str(p.get('condition') or '')
+            ohm = next((z for pattern, z in SURGE_IMPEDANCE if re.search(pattern, text, re.I)), None)
+            cases.append((req.get('id', '?'), text or '未写耦合方式', peak * scale, ohm))
+    return cases
+
+
+def exposure_text(ports, exposures, cases):
+    """Which surge reaches the clamp by the declared port exposure (SR 不足 4.1): (words, out-of-box cases,
+    undeclared ports). An undeclared port keeps the original wording and is named for a human decision."""
+    words, out, undeclared = [], [], []
+    for port in ports:
+        level = exposures.get(port)
+        if level is None:
+            undeclared.append(port)
+        elif level == 'in_box':
+            words.append('%s 声明箱内：外部浪涌需求不到达，按板内互连能到达的瞬态' % port)
+        elif not cases:
+            words.append('%s 声明%s，需求没有浪涌参数（surge_voltage），记需求缺口' % (port, EXPOSURES[level]))
+        else:
+            for rid, cond, voc, ohm in cases:
+                out.append((port, level, rid, cond, voc, ohm))
+                words.append('%s 声明%s：%s %s %g V，源阻抗 %s' % (
+                    port, EXPOSURES[level], rid, cond, voc, '%g Ω' % ohm if ohm is not None else '未写耦合方式，按 2 Ω'))
+    if undeclared:
+        words.append('需人判：端口暴露等级（intent.interfaces 未声明 %s，按需求波形取）' % '、'.join(undeclared))
+    return ('；'.join(words) + '；') if words else '', out, undeclared
+
+
+def initial_table(data, net_max, pins, out_cases):
+    """The initial-calculation words of one tabled clamp (SR 不足 4.2): working voltage, rated point against the
+    lowest protected-pin maximum, and per out-of-box surge case the current and clamp voltage on the linear model.
+    A table for the reviewer to check, never a verdict."""
+    _, vrwm, (vbr_lo, vbr_hi), points, cite = data
+    out = []
+    if net_max:
+        v, how = net_max
+        out.append('VRWM %g V 对该网持续最高 %g V（%s）%s' % (vrwm, v, how, '' if vrwm >= v else '：低于，正常工作即导通'))
+    else:
+        out.append('VRWM %g V，该网持续最高电压未声明' % vrwm)
+    lowest = min(pins, key=lambda x: x[1]) if pins else None
+    wave, ipp, vcl = sorted(points, key=lambda x: x[1])[-1]
+    rd = (vcl - vbr_hi) / ipp
+    rated = 'VBR %g–%g V，VC %g V @ IPP %g A（%s）' % (vbr_lo, vbr_hi, vcl, ipp, wave)
+    if lowest:
+        rated += ' 对 %s 绝限 %g V%s' % (lowest[0], lowest[1], '：已超' if vcl > lowest[1] else '')
+    out.append(rated)
+    for port, level, rid, cond, voc, ohm in out_cases:
+        z = ohm if ohm is not None else 2.0
+        i = max(voc - vbr_hi, 0.0) / (z + rd)
+        vc = vbr_hi + rd * i
+        text = '%s %g V / %g Ω：IPP 约 %.0f A，钳位约 %.1f V（线性外推）' % (rid, voc, z, i, vc)
+        if i > ipp:
+            text += '，超过 %s 额定 %g A%s' % (wave, ipp, '（手册只给 10/1000 µs，8/20 µs 允许值读脉宽曲线）'
+                                              if wave.startswith('10/1000') else '')
+        if lowest and vc > lowest[1]:
+            text += '，高于 %s 绝限 %g V' % (lowest[0], lowest[1])
+        out.append(text)
+    return '初算（%s）：%s；' % (cite, '；'.join(out))
+
+
 def clamp_rating(part):
     """(VCL max, IPP, waveform, citation) of an exactly tabled clamp, else None."""
     identities = [str(part.get(k) or '') for k in ('part', 'value')]

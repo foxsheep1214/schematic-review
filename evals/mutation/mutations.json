@@ -7481,5 +7481,68 @@
   "file": "scripts/catalog.py",
   "old": "_LEAF = r'(^|[:_-]|^NET:.*/(?=[^/]*$))'",
   "new": "_LEAF = r'(^|[:_-])'"
+ },
+ {
+  "id": "M1440",
+  "name": "p26 TPS2663 shutdown is taken to assert FLT (command-off row loses its FLT level)",
+  "file": "scripts/latch_criteria.py",
+  "old": "'flt': r'FLT', 'flt_on_enable': False,\n        'pgth'",
+  "new": "'flt': r'FLT', 'flt_on_enable': True,\n        'pgth'"
+ },
+ {
+  "id": "M1441",
+  "name": "p26 NAND/AND with a 0 input no longer forces the output",
+  "file": "scripts/latch_criteria.py",
+  "old": "out = 0 if 0 in ins else",
+  "new": "out = None if 0 in ins else"
+ },
+ {
+  "id": "M1442",
+  "name": "p26 the criterion net is never read high at turn-off",
+  "file": "scripts/latch_criteria.py",
+  "old": "    if floor > vtm_hi:",
+  "new": "    if floor > vtm_hi + 1.0:"
+ },
+ {
+  "id": "M1443",
+  "name": "p26 hot-insert recharge time uses the lower current limit",
+  "file": "scripts/latch_criteria.py",
+  "old": "t = (cout + cl) * (vth[1] - shared) / ilim[1]",
+  "new": "t = (cout + cl) * (vth[1] - shared) / ilim[0]"
+ },
+ {
+  "id": "M1444",
+  "name": "p26 PG falling deglitch read 100x too long",
+  "file": "scripts/latch_criteria.py",
+  "old": "'pg_fall': (1.3e-6, 4e-6)",
+  "new": "'pg_fall': (1.3e-6, 400e-6)"
+ },
+ {
+  "id": "M1445",
+  "name": "p26 the enable driver is traced through instead of read as the command",
+  "file": "scripts/latch_criteria.py",
+  "old": "        if tree[0] == 'LEAF' or tree[1] in stop:",
+  "new": "        if tree[0] == 'LEAF':"
+ },
+ {
+  "id": "M1446",
+  "name": "p26 an in-box port is treated as exposed",
+  "file": "scripts/protective_clamps.py",
+  "old": "        elif level == 'in_box':\n            words.append",
+  "new": "        elif level == 'exposed':\n            words.append"
+ },
+ {
+  "id": "M1447",
+  "name": "p26 differential surge takes the common-mode 12 Ω",
+  "file": "scripts/protective_clamps.py",
+  "old": "differential|\\bDM\\b', 2.0)",
+  "new": "differential|\\bDM\\b', 12.0)"
+ },
+ {
+  "id": "M1448",
+  "name": "p26 the undeclared port exposure is dropped from the plan row",
+  "file": "scripts/plan_review.py",
+  "old": "    if finding.get('needs_human'):",
+  "new": "    if False and finding.get('needs_human'):"
  }
 ]
