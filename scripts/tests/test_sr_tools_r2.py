@@ -286,3 +286,11 @@ def test_a_capacitor_without_footprint_passes_on_the_voltage_the_bom_specificati
     assert _proposal(entry)[0] is None
     entry.pop('bom_ratings')
     assert '没有封装也没写耐压' in _proposal(entry)[2]
+
+
+def test_a_rule_id_header_is_not_an_id_column():
+    # 2026-11-04: 工程规格 附录 A 的降额表以“规则 ID”开头，它的 39 行是审查要套用的规则，不是需求
+    assert not requirements_extract.is_id_header('规则 ID')
+    assert not requirements_extract.is_id_header('Rule ID')
+    assert requirements_extract.is_id_header('用户需求 ID')
+

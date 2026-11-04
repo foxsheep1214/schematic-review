@@ -29,6 +29,9 @@ ID_HEADERS = {'id', '编号', '需求编号', 'req', '需求 id', '需求id', '�
 # `用户需求 ID`, `决定 ID`: a header naming what kind of id it is (Matrix R2 3.2, 2026-11-04); its rows still need an id
 # with a separator (ID_RE), so a table numbering its rows 19, 20 … gives none.
 ID_SUFFIX_RE = re.compile(r'^\S.*?\s*id$', re.I)
+# `规则 ID` heads a derating-rule table (工程规格 附录 A), not requirements: its rows are rule references the review applies,
+# so they are not extracted (user decision 2026-11-04 after Matrix R2 3.2 pulled 39 derating rows into the requirement list).
+RULE_ID_HEADER_RE = re.compile(r'^(?:规则|准则|条款|rule|criterion)\s*id$', re.I)
 ID_RE = re.compile(r'^[A-Za-z][A-Za-z0-9]*(?:[-_.][A-Za-z0-9]+)+$')
 LIST_RE = re.compile(r'^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*|`)?([A-Za-z][A-Za-z0-9]*(?:[-_.][A-Za-z0-9]+)+(?:/[^\s:：*`]+)*)(?:\*\*|`)?\s*[:：]\s*(.+?)\s*$')
 HEADING_RE = re.compile(r'^\s*#{1,6}\s+(.+?)\s*#*\s*$')
@@ -47,6 +50,8 @@ def _cells(line):
 
 def is_id_header(cell):
     name = cell.strip().lower()
+    if RULE_ID_HEADER_RE.match(name):
+        return False
     return name in ID_HEADERS or bool(ID_SUFFIX_RE.match(name))
 
 

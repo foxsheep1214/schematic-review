@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 需求抽取：“规则 ID”表头不算编号列 (2026-11-04)
+
+sr-tools 把以 ID 结尾的表头都当编号列后，Matrix 工程规格附录 A 的降额表（“规则 ID”，39 行 RES/CAP/MOS…）也被抽成需求，审查员要逐条声明。降额规则是审查套用的规则，不是需求：`规则/准则/条款/rule/criterion + ID` 的表头不算编号列。
+
+- Event: user:2026-11-04 (你用新修改的SR技能跑一遍修改好的R2…总结问题，发现SR技能的不足)
+- Causes: rule_not_enforced 1
+- Changed: scripts/requirements_extract.py, scripts/tests/test_sr_tools_r2.py, docs/improvement-ledger.md
+- Gates: 见下一次全量门禁
+
 ## Matrix R2 首审的工具与交接问题：多文档需求、资料链接、ASG 规格列、诊断去重、引文豁免、批注位号、同料号请求、对账清单 (2026-11-04)
 
 `SR技能不足.md` 3.1–3.3、3.6–3.9、4.3、6.1、6.2、6.4，复现输入 `~/.cache/sr-boards/matrix--power-protection-r2/`（草稿副本上前后对比）：
