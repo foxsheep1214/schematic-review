@@ -1076,7 +1076,8 @@ DEVICE_ROLES = OrderedDict([
     # 2026-10-24 第一批补充：规则表里有检查项却没有角色能靶到的电路类型。
     ('load_switch', DeviceRole('负载开关与热插拔保护', (
         'loadswitch', 'hotswap', 'efuse', 'idealdiode', 'powerdistributionswitch', 'currentlimitswitch', 'highsideswitch',
-        'highsidesmartpower'),
+        'highsidesmartpower',
+        'protectioncontroller', 'surgestopper'),   # p24 (Matrix R2 1.11): LTC4367 "... Protection Controller" drives a series FET
         ('POWER_PROTECTION',))),
     ('charger', DeviceRole('电池充电器', ('batterycharger', 'chargecontroller', 'chargemanagement', 'switchingcharger', 'linearcharger', 'chargeric'),
                            ('POWER_CONVERTER',))),
@@ -1174,7 +1175,7 @@ WEAROUT_CLASSES = OrderedDict([
 
 
 # 电路规则的对象前提（一致性方案第 2 条，计划格式 7）：（类型，规则）→ 前提，由 plan_circuits 按网表判断；不成立不派这一项，
-# 功能框架记 not_asked，报告列“未问”；成立时检查项对象取前提找到的器件。没列的组合对该类型的每块电路都问。
+# 功能框架记 not_asked，报告列“未问”；成立时检查项对象取前提找到的器件，先取本电路的成员（plan_circuits.subject_ref）。没列的组合对该类型的每块电路都问。
 # 前提只去掉电路里不存在的机制的检查项；网表说不清（器件类别未知、IC 没有脚名）时照问。
 SUBJECT_PRECONDITIONS = {
     'POWER_SWITCH': '电路里没有 MOSFET 或 BJT',
@@ -1192,6 +1193,8 @@ SUBJECT_PRECONDITIONS = {
     'START_PIN': '电路里没有带复位、使能、禁止或启动配置脚（RESET、EN、DIS、UVLO、BOOT、strap）的 IC',
     'RESCUE_PIN': '电路里没有 MCU，也没有带启动配置脚（BOOT、strap、MODE）的 IC：没有可烧录、可救援的器件',
     'FUSE_PART': '电路里没有保险丝或 PPTC',
+    'SECOND_SOURCE': '电路里没有第二个电源：没有两只二极管把不同电源 OR 到同一电源网，没有双输入电源切换脚，也没有电池',
+    'TEMP_SENSOR': '电路里没有温度传感器：没有被 IC 读取的 NTC、温度传感器器件或温度/热敏输入脚',
 }
 # 只在某个产品基线才问的规则（共用规范的航天专用规则）：基线不符时不派、不算未问。
 BASELINE_RULES = {'REQ-C02': 'aerospace', 'PWR-C25': 'aerospace', 'SIG-C18': 'aerospace', 'PRO-C10': 'aerospace',
@@ -1211,7 +1214,8 @@ SUBJECT_REQUIRES = {
     ('POWER_PROTECTION', 'PWR-T05'): 'SUPPLY_SWITCH',
     ('POWER_PROTECTION', 'PRO-C05'): 'PROTECTION_PART',
     ('POWER_PROTECTION', 'PRO-C06'): 'SUPPLY_SWITCH',
-    ('POWER_PROTECTION', 'PRO-C08'): 'PROTECTION_PART',
+    ('POWER_PROTECTION', 'PRO-C08'): 'FUSE_PART',   # p24 (Matrix R2 1.9): an eFuse channel has no fuse to rate
+    ('POWER_PROTECTION', 'PWR-C23'): 'SECOND_SOURCE',   # p24 (Matrix R2 1.8): switching between two sources needs two
     ('POWER_PROTECTION', 'PRO-C09'): 'PROTECTION_PART',
     ('SIGNAL_PROTECTION', 'PRO-C08'): 'FUSE_PART',
     ('ANALOG', 'ANA-C05'): 'ANALOG_PIN',
@@ -1221,7 +1225,7 @@ SUBJECT_REQUIRES = {
     ('ANALOG', 'ANA-C02'): 'ANALOG_PIN',
     ('ANALOG', 'ANA-C03'): 'ANALOG_PIN',
     ('ANALOG', 'ANA-T01'): 'SENSE_ELEMENT',
-    ('ANALOG', 'ANA-D01'): 'ANALOG_PIN',
+    ('ANALOG', 'ANA-D01'): 'TEMP_SENSOR',   # p24 (Matrix R2 1.10): a comparator is no temperature sensor
     ('STARTUP', 'RST-C01'): 'START_PIN',
     ('STARTUP', 'RST-C02'): 'START_PIN',
     ('STARTUP', 'RST-T04'): 'START_PIN',
@@ -2624,7 +2628,7 @@ def _vocabulary_lines():
     for p in CIRCUIT_TYPES:
         lines.append('| %s | %s | %s | %s | %s | `%s` |' % (
             p.name, p.title, p.domain, '、'.join(p.subjects), '、'.join(p.materials), _cell(p.pattern)))
-    lines += ['', '下表的电路检查项只在网表上有它问的机制时生成，检查项对象取前提找到的器件；前提不成立的规则记在功能框架的 '
+    lines += ['', '下表的电路检查项只在网表上有它问的机制时生成，检查项对象取前提找到的器件（先取本电路的成员）；前提不成立的规则记在功能框架的 '
               '`not_asked`，报告在功能下列“未问”。网表说不清（器件类别未知、IC 没有脚名）时照问；漏问的可经 '
               '`intent.rule_gaps` 补回。', '',
               '| 功能电路 | 电路检查项 | 前提 | 不成立时 |', '|---|---|---|---|']

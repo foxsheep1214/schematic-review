@@ -161,15 +161,15 @@
   - `accept`：原样接受，可给名称 `id`；加工作态写 `states_add`，并在 `state_requirements` 里给每个加的态点名一条需求（`{state: REQ id}`），
     那条需求的原文要说到这个态（待机/空载、掉电、热插拔、短路、突发/轻载……，`catalog.STATE_WORDS`），`citation` 仍要可定位；
     一句泛引文不能给每块电路都加态。候选的态是类型的固定表。
-  - `merge`：`candidate` 列几个候选，`id` 必填，`citation` 引一条把它们描述成一个流程的条款；电路候选不与跨电路候选（ISOLATION、STARTUP、保护链）合并。
+  - `merge`：`candidate` 列几个候选，`id` 必填，`citation` 引一条把它们描述成一个流程的条款；跨电路候选只并入其核心器件所在的电路候选（U901 与 U901.FLT 合成一个通道，取电路候选的类型和态）。
   - `split`：`into: [{id, members}]`，每部分成员是该候选成员的子集，所有成员都要有去处，`citation` 可定位。
   - `reject`：`reason` 为 OUTSIDE_SCOPE / NOT_A_CIRCUIT / DUPLICATE_OF（后者带 `of: <已推出的电路>`，成员须都在它里面），`citation` 可定位；有效决定立即释放该候选的持有，未重归且未被其他电路持有的成员进 REQ-Q08。
     拒绝一颗没有候选的器件写 `{"decision": "reject", "ref", "reason"（OUTSIDE_SCOPE / NOT_A_CIRCUIT）, "citation"}`：它不再进 REQ-Q08 清单，原因随记录。
-  - `add`：生成器没找到的功能，`id`、`type`（规则总表的包名）、`members` 收未被候选持有的器件，或先 reject 已释放的成员；决定按顺序生效。`via` 逐颗点名原网络，`citation` 可定位；其他未拒绝候选仍持有的不能取走。
+  - `add`：生成器没找到的功能，`id`、`type`（规则总表的包名）、`members` 收未被候选持有的器件，或先 reject 已释放的成员；决定按顺序生效。`via` 点名原网络（不写取非地网），`citation` 可定位；其他未拒绝候选仍持有的不收入，只打印提示。
     `id` 若是前面决定已推出的电路，器件并入那块电路（`type` 须一致），不另起电路——驱动变换器开关的门极驱动、使能驱动管都这样归位。
   - 未归属的有源件（候选文件 `unassigned` 里 kind 为 mosfet / bjt / opto / ic 的）必须有 add 或 reject 决定，留在 REQ-Q08 清单上校验不过；两端件照旧留在 REQ-Q08。
     候选走线从电路自己的网走到小信号三极管的门极/基极时把它收进电路并从漏极/集电极继续（成员 role `driven_switch`），所以多数驱动管不会落到未归属。
-  - `own`：`ref`、`candidate`、`citation`（可定位）：同一级认领打平的器件归 `candidate` 所在的电路。只裁定打平，不改已有的归属；每颗至多一条。
+  - `own`：`ref`、`candidate`、`citation`（可定位）：同一级认领打平的器件归 `candidate` 所在的电路。只裁定打平，不改已有的归属；每颗至多一条。打平报错附可粘贴的 own。
   推出的电路带 `id`、`type`、`refs`、`owned`、`nets`、`states`、`citation`、`candidate_ids`、`cross_cutting`、`anchors`。
   `split` 拆出的每块另带 `key`（`候选 id/块 id`），检查项的 `circuit_key` 用它，两块不再共用母候选的键；`nets` 只留含核心器件的那块全部继承，
   其余块只留成员走线点到的候选网络（2026-10-27，R8 拆出的 LDO 继承了 BULK、两块共键重复 18 组）。

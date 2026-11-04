@@ -4,10 +4,12 @@
 
 `intent.circuit_decisions` 每条对一个候选（或一组候选）做四种决定之一，外加一种补充：
 - accept：原样接受，可给名称 `id`，可按手册模式名加工作态（`states_add` + 定位引用）；
-- merge：几个候选合成一个功能（引用一条把它们描述成一个流程的条款）；电路候选不与跨电路候选合并；
+- merge：几个候选合成一个功能（引用一条把它们描述成一个流程的条款）；跨电路候选只能并入其核心器件所在的电路候选
+  （U901 与 U901.FLT 上拉），别的器件的跨电路候选不并；
 - split：把一个候选拆成几部分（每部分成员是该候选成员的子集，所有成员都要有去处）；
 - reject：不审这个候选（OUTSIDE_SCOPE / NOT_A_CIRCUIT / DUPLICATE_OF <电路>），释放该候选的持有；仍被其他保留候选持有的成员不释放，其余可由后续 add 重归或进 REQ-Q08 复核；
-- add：生成器没找到的功能（UNRESOLVED_CANDIDATE）：可收没有保留候选持有的器件（先 reject 后 add，引用与逐成员 via 仍必填），每颗写它所在的网；
+- add：生成器没找到的功能（UNRESOLVED_CANDIDATE）：可收没有保留候选持有的器件（先 reject 后 add，引用必填），via 写它所在的网，
+  不写时取该器件的非地网；已被保留候选持有的器件不收入，打印提示（随该候选的决定走）；
 - own：同一级认领打平的器件（候选文件的 shared，或决定后两块电路打平）归哪一块电路，写 `ref`、`candidate` 和定位引用。
 共享供电电容引用不限、按稳定顺序确定一个记账所有者；功率开关/电感不归两个独立功能，其余成员最多两个电路（核心器件与端点不计）。
 每颗被电路持有的器件恰好由一块电路拥有（`owned`），其余持有它的电路只引用它：归属按 `circuit_candidates.claim_rank`
@@ -21,6 +23,7 @@ import sys
 
 import catalog
 from circuit_candidates import SCHEMA_VERSION, best_claims, claim_rank, shared_supply_refs, settle_supply_claims, EXCLUSIVE_ROLES
+from checkers.netgraph import is_ground as netgraph_ground
 from electrical_contract import LOCATOR_IDS_RE, LOCATOR_WORDS_RE, db_fingerprint, load_json
 
 DECISIONS = ('accept', 'merge', 'split', 'reject', 'add', 'own')
@@ -96,8 +99,9 @@ def _anchors(members):
     return [ref for ref, m in members.items() if m.get('role') in IDENTITY_ROLES]
 
 
-def derive(candidates, decisions, requirement_text=None):
+def derive(candidates, decisions, requirement_text=None, notices=None):
     """(circuits, errors): the circuits the decisions produce, in decision order; errors leave a circuit out.
+    `notices`, a list when given, collects what the decisions did without being wrong (an add member a candidate holds).
     `requirement_text` ({requirement id: original text}, from requirements_extract) lets states_add be checked against
     the requirement each added state names; None skips that reading (the mapping is still required)."""
     by_id = {c['id']: c for c in candidates.get('candidates', [])}
@@ -156,15 +160,24 @@ def derive(candidates, decisions, requirement_text=None):
             if not located(decision.get('citation')):
                 errors.append(f'{cid}: merge needs a citation a reader can open that describes the candidates as one function')
             if len({c['cross_cutting'] for c in cands}) > 1:
-                errors.append(f'{cid}: a circuit candidate does not merge with a cross-cutting one ({", ".join(targets)})')
+                # p24 (Matrix R2 3.4): a chain whose core device is one of the merged circuits' (U901 and U901.FLT's
+                # pull-up) joins that circuit; a chain of another device (a board-wide reset) stays its own function
+                held = {ref for c in cands if not c['cross_cutting'] for ref in members[c['id']]}
+                foreign = [c['id'] for c in cands if c['cross_cutting'] and c.get('anchor') not in held]
+                if foreign:
+                    errors.append(f'{cid}: a cross-cutting candidate merges only into the circuit of its own core device; '
+                                  f'{", ".join(foreign)} anchor on a part none of the circuit candidates holds')
             refs, states, nets, claims = [], [], [], {}
+            circuit_kind = [c for c in cands if not c['cross_cutting']] or cands
             for c in cands:
                 refs += list(members[c['id']])
                 nets += _nets(c)
-                states += [s for s in c['states'] if s not in states]
+                if c in circuit_kind:   # a chain merged into its circuit takes the circuit's states and type
+                    states += [s for s in c['states'] if s not in states]
                 for ref, rank in _claims(c).items():
                     claims[ref] = min(rank, claims.get(ref, rank))
-            circuits.append(_circuit(cid, cands[0]['type'], refs, nets, states, decision.get('citation') or '',
+            circuits.append(_circuit(cid, circuit_kind[0]['type'],
+                                     refs, nets, states, decision.get('citation') or '',
                                      targets, all(c['cross_cutting'] for c in cands),
                                      [a for c in cands for a in _anchors(members[c['id']])], claims))
         elif kind == 'split':
@@ -221,10 +234,16 @@ def derive(candidates, decisions, requirement_text=None):
             via = decision.get('via') if isinstance(decision.get('via'), dict) else {}
             if not refs:
                 errors.append(f'{cid}: add needs members')
+            kept = []
             for ref in refs:
                 owner = next((k for k, m in members.items() if ref in m and decided.get(k) != 'reject'), None)
                 if owner:
-                    errors.append(f'{cid}: {ref} is held by candidate {owner}; split or merge instead of add')
+                    # p24 (Matrix R2 3.5): a part a kept candidate holds follows that candidate's decision; say so and go on
+                    if notices is not None:
+                        notices.append(f'{cid}: add {ref} 未收入——它已由候选 {owner} 持有，随该候选的决定走；'
+                                       f'要归 {cid} 就把 {owner} merge 进来或 split 出它')
+                    continue
+                kept.append(ref)
                 nets = candidates.get('unassigned_nets', {}).get(ref) or _unassigned_nets(candidates, ref)
                 if not nets:
                     nets = []
@@ -232,8 +251,16 @@ def derive(candidates, decisions, requirement_text=None):
                     walks = [m['via'] for c in by_id.values() for m in c['members'] if m['ref'] == ref]
                     nets += [n for c in by_id.values() for m in c['members'] if m['ref'] == ref for n in m.get('nets', [])]
                     nets += [w.split(' -> ')[-2].strip() for w in walks if ' -> ' in w]
-                if not _text(via.get(ref)) or not any(net in via[ref] for net in nets):
+                if not _text(via.get(ref)):
+                    # p24 (Matrix R2 3.5): no via given is the part's own non-ground net; only a written via is checked
+                    if not [net for net in nets if not netgraph_ground(net)]:
+                        errors.append(f'{cid}: add member {ref} needs a via naming a net it sits on '
+                                      f'({", ".join(nets) or "none known"}; it has no net but ground)')
+                elif not any(net in via[ref] for net in nets):
                     errors.append(f'{cid}: add member {ref} needs a via naming a net it sits on ({", ".join(nets) or "none known"})')
+            if refs and not kept:
+                errors.append(f'{cid}: every add member is held by a candidate; decide those candidates instead')
+            refs = kept
             if not located(decision.get('citation')):
                 errors.append(f'{cid}: add needs a citation a reader can open')
             existing = next((c for c in circuits if c['id'] == cid), None)
@@ -270,11 +297,21 @@ def derive(candidates, decisions, requirement_text=None):
             errors.append(f'{ref} is an exclusive switch/inductor; belongs to {len(functional)} circuits')
         elif ref not in supplies and len(holders) > 2:
             errors.append(f'{ref} belongs to {len(holders)} circuits ({", ".join(c["id"] for c in holders)}); at most two')
-    errors += _assign_owners(circuits, owns, supplies)
+    errors += _assign_owners(circuits, owns, supplies, by_id)
     return circuits, errors
 
 
-def _assign_owners(circuits, owns, supplies=()):
+def own_suggestion(ref, circuit, by_id=None):
+    """A pasteable own decision giving `ref` to `circuit` (p24, Matrix R2 3.5): its first candidate, located by the ref
+    and, when that candidate sits on one page, the page."""
+    cand = circuit['candidate_ids'][0]
+    pages = ((by_id or {}).get(cand) or {}).get('pages') or []
+    where = f'第 {pages[0]} 页 ' if len(pages) == 1 else ''
+    return json.dumps({'decision': 'own', 'ref': ref, 'candidate': cand,
+                       'citation': f'{where}{ref} 归 {circuit["id"]}'}, ensure_ascii=False)
+
+
+def _assign_owners(circuits, owns, supplies=(), by_id=None):
     """Fill each circuit's `owned`: the best claim among the circuits the decisions kept; a tie is settled by an own
     decision naming a candidate of one of the tied circuits, with a citation a reader can open."""
     errors = []
@@ -303,8 +340,10 @@ def _assign_owners(circuits, owns, supplies=()):
     winners = settle_supply_claims(winners, supplies)
     for ref, tied in sorted(winners.items()):
         if len(tied) > 1:
+            options = [own_suggestion(ref, circuits[i], by_id) for i in tied if circuits[i]['candidate_ids']]
             errors.append(f'{ref} is claimed equally by {", ".join(circuits[i]["id"] for i in tied)}; write an own decision '
-                          '{decision: own, ref, candidate, citation} naming the circuit that owns it')
+                          '{decision: own, ref, candidate, citation} naming the circuit that owns it'
+                          + ('，可粘贴其一（引用按实际补充理由）：' + ' 或 '.join(options) if options else ''))
     for i, circuit in enumerate(circuits):
         circuit['owned'] = sorted(ref for ref, tied in winners.items() if tied == [i])
         del circuit['_claims']
@@ -454,7 +493,10 @@ def main(argv=None):
     intent = load_json(args.intent)
     candidates = load_json(args.candidates)
     db = load_json(args.db) if args.db else None
-    circuits, errors = derive(candidates, intent.get('circuit_decisions') or [], requirement_texts(intent))
+    notices = []
+    circuits, errors = derive(candidates, intent.get('circuit_decisions') or [], requirement_texts(intent), notices)
+    if notices:
+        print('提示:\n  - ' + '\n  - '.join(notices))
     if errors:
         print('决定无效:\n  - ' + '\n  - '.join(errors))
         return 1

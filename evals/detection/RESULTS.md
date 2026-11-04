@@ -455,15 +455,15 @@
 
 | 输入 | SHA256 |
 |---|---|
-| seeded results.json | `9ca31230c9f483be6cce66692d91796c5f43145e2903c85d18886a1b4e4d61bf` |
+| seeded results.json | `f32323e4c9dacb34ebea1e76c017c0bb1be2438af64a2393385274c110de2791` |
 | typical results.json | `075a5d9177878c7ca4858671f1dc9de9d20a71926b1f17df64931340d33ed066` |
-| KiCad replay results.json | `c7cfdd810422969540b65f7ac91d88d115d4e00cc2bd98883ff5d3b8a6e551a5` |
+| KiCad replay results.json | `c51903fc7ff5db11c490c02ac965d6fe085419cbf79d9c6c2af9a5c470276d68` |
 | known_defects.json | `35c824bfdcb2f967bba1ee843d94969c53c153ad1ad2434cdf345405e6c90452` |
-| catalog.py | `50995739d8436c66e2f7f84ce550541a8b54fa276338cbc92561d4ca942a944a` |
-| guideline-criteria.json | `586a98beebd7164438832c3830f83efe1c7ca56a1b19b02683efc1541dadc7c1` |
+| catalog.py | `08aaf61a9210c0ca66940ec07c4724c6a6f5b1dbafc5b3bd99961b2e0facc232` |
+| guideline-criteria.json | `1bbdb368ef5baf75765e2eb220ccf2da987b524c1f49570ea4bd2d0406c5917e` |
 | seeded corpus.json | `191a704ebd11e0e16da56c8cafb8fd4f66ba933b05a80453ef1dd1814661a532` |
 | typical cases.json | `aac7e7ee7907d12afaacee77a828f88e2f6548bfa3c2a18b0e78f3c61ea7c669` |
-| improvement-ledger.md | `13650540c5c3f97a6c3c8a68bcb5cd642b3b9f1262c61c03808ebccdd1ce56d8` |
+| improvement-ledger.md | `689649459b02d3ae411ee94cdbbe8877d9b8d817784cade3ba84c8fafe9e788b` |
 | docs/audits/2026-10-07-module-scope-replay.md | `6c8f91297d55555a484838931f91eefdc1af094f3efc277babac3b214dfe85f0` |
 | docs/audits/2026-10-07-review-charter.md | `7ae76d400315188e0a2d94a7cef8b69076f2e813715cb4020132b00697d14574` |
 

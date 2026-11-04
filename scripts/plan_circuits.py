@@ -209,6 +209,15 @@ START_NAME_RE = re.compile(r'(N?RST\w*|N?RESET\w*|MR|POR\w*|BOOT\w*|STRAP\w*|EN|
                            r'|ENABLE|EN_?UVLO|UVLO|INH|INHIBIT|DIS|DISABLE|SHDN|N?SD)$', re.I)
 RESCUE_NAME_RE = re.compile(r'(BOOT\w*|STRAP\w*|MODE\d*|CFG\w*)$', re.I)
 SENSE_NAME_RE = re.compile(r'(CS\w*|CS[+-]|ISENSE\w*|ISNS\w*|I?SENSE[+-PN]?|VSENSE\w*|IMON\w*|ISET)$', re.I)
+# p24: a power multiplexer's two inputs (TPS2121 IN1/IN2), a charger-path IC's battery and adapter pins
+DUAL_INPUT_PIN_RE = re.compile(r'^(?:V?IN|PR|VS|SRC|SUPPLY)_?[12AB]$', re.I)
+BATTERY_NET_RE = re.compile(r'(?:^|[^A-Z])V?BATT?(?:[^A-Z]|$)', re.I)   # +BATT, BAT+, VBAT
+BATTERY_PIN_RE = re.compile(r'^(?:V?BAT\w*)$', re.I)
+ADAPTER_PIN_RE = re.compile(r'^(?:VBUS|VAC|VDC|V?ADP\w*|VCHG|DCIN)$', re.I)
+TEMP_PIN_RE = re.compile(r'(NTC\w*|THERM\w*|V?TEMP\w*|TS|RTD\w*|DX[PN]|T[+-])$', re.I)
+TEMP_SENSOR_TEXT_RE = re.compile(r'TEMP(?:ERATURE)?[ _-]?SENS|THERMOCOUPLE|THERMISTOR|\bRTD\b|\bPT1000\b|\bPT100\b|\bLM35'
+                                 r'|\bLM7[1356]\b|\bTMP\d{2,3}|DS18[BS]20|MAX6675|MAX318[56]\d|AD849[5-7]|ADT7[0-9]{3}'
+                                 r'|MCP9[78]\d\d|\bSTTS\d|\bSHT[234]\d|\bHDC\d{4}|\bSI70\d\d|\bBME[26]80|\bNCP18', re.I)
 IC_OR_SWITCH = ('POWER_SWITCH', 'SUPPLY_SWITCH', 'FEEDBACK_PIN', 'SWITCH_PIN', 'ANALOG_PIN', 'START_PIN')
 PROTECTION_TEXT_RE = re.compile(r'PTC|SMBJ|SMAJ|SMCJ|TVS', re.I)
 
@@ -340,7 +349,45 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
                   graph.named_pins(r, re.compile(r'^CC[12]$', re.I))]
         unread += [r for r in ports if usb_connector_type(graph.parts[r]) is None]
     elif requires == 'FUSE_PART':   # boards-merge7: PRO-C08 asks of a fuse or PPTC, not of a series resistor
-        found = [ref for ref in fitted if graph.kind(ref) == FUSE or (graph.kind(ref) == RESISTOR and PTC_RE.search(text_of(ref)))]
+        # p24: a two-terminal part; an eFuse IC whose text says EFUSE is no fuse to rate
+        found = [ref for ref in fitted if len(graph.pins_of(ref)) <= 2 and (
+            graph.kind(ref) == FUSE or (graph.kind(ref) == RESISTOR and PTC_RE.search(text_of(ref))))]
+    elif requires == 'SECOND_SOURCE':   # p24 (Matrix R2 1.8): PWR-C23 asks of two sources into one supply
+        def supply_net(net):
+            leaf = str(net).rsplit('/', 1)[-1]
+            return bool(net) and not is_ground(net) and bool(
+                RAIL_RE.match(leaf) or BATTERY_NET_RE.search(leaf) or any(
+                    powertree.SUPPLY_IN_PIN_RE.match(normalize(names.get(node)) or '') for node in graph.nodes_on(net)))
+        found = [ref for ref in fitted if graph.kind(ref) == pw.BATTERY]
+        ors = {}
+        for ref in fitted:
+            if graph.kind(ref) != DIODE:
+                continue
+            anode, cathode = (graph.pin2net.get(graph.node_named(ref, role) or '') for role in ('anode', 'cathode'))
+            if supply_net(anode) and supply_net(cathode):
+                ors.setdefault(cathode, {}).setdefault(anode, []).append(ref)
+        for cathode, anodes in sorted(ors.items()):
+            if len(anodes) >= 2:
+                found += sorted(ref for refs in anodes.values() for ref in refs)
+        for ref in fitted:   # a power path: a MOSFET the other source turns off (gate on VBUS, drain on +BATT)
+            if graph.kind(ref) != MOSFET:
+                continue
+            gate, drain, source = (graph.pin2net.get(graph.node_named(ref, role) or '') for role in ('gate', 'drain', 'source'))
+            if supply_net(gate) and gate not in (drain, source) and (supply_net(drain) or supply_net(source)):
+                found.append(ref)
+        for ref in ics:
+            nets_by_pin = [net for node, net in graph.named_pins(ref, DUAL_INPUT_PIN_RE).items() if supply_net(net)]
+            battery = [net for node, net in graph.named_pins(ref, BATTERY_PIN_RE).items() if supply_net(net)]
+            adapter = [net for node, net in graph.named_pins(ref, ADAPTER_PIN_RE).items() if supply_net(net)]
+            if len(set(nets_by_pin)) >= 2 or (battery and adapter and set(battery) != set(adapter)):
+                found.append(ref)
+        found = list(dict.fromkeys(found))
+    elif requires == 'TEMP_SENSOR':   # p24 (Matrix R2 1.10): ANA-D01 asks of a temperature sensor, not of any analog pin
+        read = {ref for ref in fitted if graph.kind(ref) == NTC and any(   # TH1 'MOS_Temp' (greenmobi F06): kind by prefix
+            graph.kind(node.partition('.')[0]) == IC for net in graph.nets_of(ref) if not is_ground(net)
+            for node in graph.nodes_on(net))}
+        found = sorted(set(sensing_ntcs()) | read | set(with_pin((TEMP_PIN_RE,)))
+                       | {ref for ref in fitted if TEMP_SENSOR_TEXT_RE.search(text_of(ref))})
     elif requires == 'PASSIVE_CRYSTAL':
         found = [r for r in fitted if graph.kind(r) == CRYSTAL]
     elif requires == 'RTC_BACKUP':
@@ -354,6 +401,13 @@ def subject_precondition(graph, names, requires, refs, nets, grounds=()):
     else:
         raise ValueError('unknown precondition ' + requires)
     return found, [ref for ref in unread if ref not in found]
+
+
+def subject_ref(found, unread, refs):
+    """The object of a precondition-gated row: the first part the precondition found (or could not read) that is a
+    member of the circuit, else the first found, else the first unread."""
+    members = set(refs)
+    return next((ref for ref in list(found) + list(unread) if ref in members), (list(found) or list(unread))[0])
 
 
 def bootstrap_cap_pin(db, node):
@@ -521,7 +575,9 @@ class CircuitPlanning:
                 found, unread = subject_precondition(graph, names, requires, refs, circuit.get('nets', []),
                                                      self.domains['grounds'])
                 if found or unread:
-                    asked[rule] = ((found or unread)[0], dict({'id': requires, 'found': found},
+                    # p24 (Matrix R2 1.7/1.12): the object is the circuit's own part when the precondition found one;
+                    # a part outside it (another channel's connector, a converter reading a divider) only when none is
+                    asked[rule] = (subject_ref(found, unread, refs), dict({'id': requires, 'found': found},
                                                               **({'unread': unread} if unread else {})))
                 else:
                     not_asked[circuit['id']].append({'rule': rule, 'aspect': catalog.title(rule), 'requires': requires,

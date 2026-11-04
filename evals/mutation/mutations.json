@@ -304,8 +304,8 @@
   "id": "M56",
   "name": "a candidate walk passes through a barrier part",
   "file": "scripts/circuit_candidates.py",
-  "old": "                if ref == owner or ref in blocked or ref in self.anchors or ref in self.barriers:",
-  "new": "                if ref == owner or ref in blocked or ref in self.anchors:"
+  "old": "ref in self.anchors or ref in self.barriers or self.foreign(cid, ref):",
+  "new": "ref in self.anchors or self.foreign(cid, ref):"
  },
  {
   "id": "M57",
@@ -444,8 +444,8 @@
   "id": "M76",
   "name": "a tie no own decision settles is accepted",
   "file": "scripts/circuit_decisions.py",
-  "old": "        if len(tied) > 1:\n            errors.append(f'{ref} is claimed equally by",
-  "new": "        if False:\n            errors.append(f'{ref} is claimed equally by"
+  "old": "        if len(tied) > 1:\n            options = ",
+  "new": "        if False:\n            options = "
  },
  {
   "id": "M77",
@@ -2320,7 +2320,7 @@
   "id": "M352",
   "name": "the row object stays the circuit's first part",
   "file": "scripts/plan_circuits.py",
-  "old": "asked[rule] = ((found or unread)[0],",
+  "old": "asked[rule] = (subject_ref(found, unread, refs),",
   "new": "asked[rule] = (refs[0],"
  },
  {
@@ -7227,8 +7227,8 @@
   "id": "M1312",
   "name": "a high-side smart power switch title reads as a relay again",
   "file": "scripts/catalog.py",
-  "old": "        'highsidesmartpower'),",
-  "new": "        ),"
+  "old": "        'highsidesmartpower',\n",
+  "new": ""
  },
  {
   "id": "M1313",
@@ -7360,8 +7360,8 @@
   "id": "M1400",
   "name": "the PPTC precondition of SIGNAL_PROTECTION PRO-C08 takes any resistor as a PPTC",
   "file": "scripts/plan_circuits.py",
-  "old": "found = [ref for ref in fitted if graph.kind(ref) == FUSE or (graph.kind(ref) == RESISTOR and PTC_RE.search(text_of(ref)))]",
-  "new": "found = [ref for ref in fitted if graph.kind(ref) in (FUSE, RESISTOR)]"
+  "old": "graph.kind(ref) == FUSE or (graph.kind(ref) == RESISTOR and PTC_RE.search(text_of(ref))))]",
+  "new": "graph.kind(ref) in (FUSE, RESISTOR))]"
  },
  {
   "id": "M1401",
@@ -7481,5 +7481,61 @@
   "file": "scripts/catalog.py",
   "old": "_LEAF = r'(^|[:_-]|^NET:.*/(?=[^/]*$))'",
   "new": "_LEAF = r'(^|[:_-])'"
+ },
+ {
+  "id": "M1432",
+  "name": "the object is the first found part again, not the circuit's own",
+  "file": "scripts/plan_circuits.py",
+  "old": "    return next((ref for ref in list(found) + list(unread) if ref in members), (list(found) or list(unread))[0])",
+  "new": "    return (list(found) or list(unread))[0]"
+ },
+ {
+  "id": "M1433",
+  "name": "two diodes ORing two supplies are no second source",
+  "file": "scripts/plan_circuits.py",
+  "old": "            if len(anodes) >= 2:",
+  "new": "            if len(anodes) >= 3:"
+ },
+ {
+  "id": "M1434",
+  "name": "an eFuse IC whose text says EFUSE is a fuse to rate",
+  "file": "scripts/plan_circuits.py",
+  "old": "found = [ref for ref in fitted if len(graph.pins_of(ref)) <= 2 and (",
+  "new": "found = [ref for ref in fitted if ("
+ },
+ {
+  "id": "M1435",
+  "name": "a protection controller title names no role",
+  "file": "scripts/catalog.py",
+  "old": "        'protectioncontroller', 'surgestopper'),",
+  "new": "        ),"
+ },
+ {
+  "id": "M1436",
+  "name": "the Circuit field of another circuit is walked again",
+  "file": "scripts/circuit_candidates.py",
+  "old": "        return bool(mine and theirs and mine != theirs and theirs in self.anchor_areas)",
+  "new": "        return False"
+ },
+ {
+  "id": "M1437",
+  "name": "a chain of another device merges into a circuit",
+  "file": "scripts/circuit_decisions.py",
+  "old": "                if foreign:\n                    errors.append(f'{cid}: a cross-cutting candidate merges only",
+  "new": "                if False:\n                    errors.append(f'{cid}: a cross-cutting candidate merges only"
+ },
+ {
+  "id": "M1438",
+  "name": "an add member a candidate holds is taken again",
+  "file": "scripts/circuit_decisions.py",
+  "old": "                        notices.append(f'{cid}: add {ref} 未收入",
+  "new": "                        kept.append(ref); notices.append(f'{cid}: add {ref} 未收入"
+ },
+ {
+  "id": "M1439",
+  "name": "a comparator is a temperature sensor again",
+  "file": "scripts/catalog.py",
+  "old": "    ('ANALOG', 'ANA-D01'): 'TEMP_SENSOR',",
+  "new": "    ('ANALOG', 'ANA-D01'): 'ANALOG_PIN',"
  }
 ]

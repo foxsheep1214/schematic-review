@@ -150,7 +150,8 @@ class GeneratedOutputTest(unittest.TestCase):
         from test_inductive_load import add
         add(db, 'Y91', 'Crystal', [('1', '', 'XI91'), ('2', '', 'XO91')])
         add(db, 'U91', 'RTC DS3231', [('1', 'VCC', 'VCC_3V3'), ('2', 'GND', 'GND')])
-        refs = ['U1', 'U2', 'U4', 'Q8', 'D9', 'TH9', 'J9', 'Y91', 'U91']
+        add(db, 'F91', 'Fuse 2A', [('1', '', 'VIN_12'), ('2', '', 'V12_F')])   # PRO-C08 asks of a fuse (p24)
+        refs = ['U1', 'U2', 'U4', 'Q8', 'D9', 'TH9', 'J9', 'Y91', 'U91', 'F91']
         intent = {'schema_version': 5, 'expect': {'SOC': 1}, 'guideline_baseline': 'aerospace',   # asks every baseline rule
                   'device_kinds_verified': {'U4': {'kind': 'mcu', 'citation': 'synthetic'}},   # CFG-D01 asks its groups
                   'features': {'CUSTOM': {'applicability': 'APPLICABLE', 'citation': 'synthetic requirement'}},
