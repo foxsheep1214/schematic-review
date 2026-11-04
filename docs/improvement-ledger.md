@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 准则库 1.8.0：G05-098 外部锁存判据在正常动作下不成立、G03-017 加热插入负载 (2026-11-04)
+
+SR 首审 Matrix 电源与保护 R2 的两处 P1（F-001 命令关断误置短路锁、F-002 热插入电容负载误锁）没有条款承接（`SR技能不足.md` 5.1、5.3）。用户 2026-11-04 批准写入：新增 G05-098（POWER_PROTECTION，method，来源 TPS2663 SLVSE94G 与 ECSS 方法延伸），G03-017 1.1→1.2 加热插入允许负载工况；登记文件 G03 1.8、G05 1.4，共用层 1.8.0（354 条，指纹 ea8f1a727df3 → 9208f5369375），ASG 同字节。SR 代码不变；新规则（sr-rules 分支）落地后映射到 G05-098。
+
+- Event: user:2026-11-04 (写入)
+- Causes: rule_missing 2
+- Changed: references/shared/guideline-criteria.json, scripts/catalog.py, references/architecture.md, docs/improvement-ledger.md
+- Gates: pytest 2797（G05-098 暂由 PRO-C09 持有以满足"每条 active 准则有 SR 检查可达"）; mutation --changed 4f80c43 --tier unit 2 变异全杀
+
 ## 准则库 1.7.4：G03-025 适用类型加 STARTUP (2026-11-04)
 
 ASG 补写 Matrix 电源与保护 R2 的典型电路 multi-domain-reset（电路类型 STARTUP）时，复位门限高于负载最低工作电压（G03-025，R2 CALC-RESET 做了）因适用类型只有 POWER_CONVERTER/POWER_PROTECTION 不能引用。用户 2026-11-04 定（修改 ASG 问题）：G03-025 的 `applies_when.circuit_types` 加 `STARTUP`（条目 1.0→1.1，HardwareWiki 登记文件 G03 1.7），共用层重建为 1.7.4（353 条，指纹 ea8f1a727df3），ASG 同字节。SR 代码不变；STARTUP 候选现在能选出 G03-025。
