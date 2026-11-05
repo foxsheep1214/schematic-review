@@ -9,6 +9,24 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+
+## 关键/特殊器件订货状态风险与库内替换线索（2026-11-05）
+
+ISOW3080 资料可用但预量产状态漏问：先用现有资料审计复现（任务为 0，断言失败），再复用 audit_datasheets 的逐物料绑定、agent_requests 与 DEV-D01。
+ordering_status 库只提取订货行及首面预发布标记、保留路径/PDF页序、以预量产 Material type 优先于 Active；X/P 只给风险线索。
+资料不足不等于量产；已登记投产前换料并有接收方/出处时只标已登记，不重复新问题。接受动作不回显未经核实的设计方候选料号。
+同二级类 + selection 本角色未入选型号只作检索线索，候选必须落到 catalog 的真实文件，再独立核功能/电压/封装等决定性参数；
+建议仅留状态明确的 1–3 项，未知状态排除，非量产状态保留风险；待核建议不构成替代批准。脚本负责线索和库边界，审查员负责原表列归属、取舍与兼容结论。
+实际示例读 SLLSG02A p32/p36，均识别 XISOW3080PDWER 的预量产；读取 W-U401-PRODUCTION 的 owner/投产前换料动作仅用于去重。
+ADM2561E 的手册 p28 无明确状态列，且 28 引脚与原件 16 引脚不同，本轮无状态已核且适合的库内替代，不捏造型号。
+G09-020 尚未入运行包，本项只在 SR 自身 DEV-D01 承接，不改 BASIS 或共用层。brief 中 selection-review.md 在本分支不存在，沿用 datasheets.md。
+① 阅读字节上限 +3511 B 至 178445：新增订货状态、去重、库内候选筛选和人工核验边界，无新增入口、步骤或格式版本。
+
+- Event: user:2026-11-05
+- Causes: knowledge_missing 1, rule_not_enforced 1
+- Changed: scripts/ordering_status.py scripts/audit_datasheets.py scripts/catalog.py scripts/tests/test_ordering_status.py scripts/tests/test_reading_path.py references/architecture.md references/check-catalog.md references/datasheets.md docs/improvement-ledger.md
+- Gates: pytest scripts/tests -q：2983 passed, 2 skipped, 5 warnings in 120.16s (0:02:00)（真实 ASG 共用层对照未覆盖环境变量）；mutation --changed --tier unit：49/49 KILLED，0 存活、0 失效锚点；check_ledger PASS；git diff --check 无输出。实际库/手册示例见指定运行结果 sr-order/example.json、example.txt（run-example.py 可重跑）；不提交。
+
 ## 电路评测集搬到规范目录，本仓库只留运行器 (2026-11-05)
 
 公开板审查记录和已知缺陷搬到 `原理图设计规范/评测集/`，与 ASG 共用；抓板工具留下并改名 `evals/boards_tools/`，新增 `evals/circuit_cases/run.py` 跑评测集自动层。种子基准的 `corpus.json`、`boards-merge*.json` 留在本仓库：`--offline` 和种子测试要用，搬走门禁就跑不全。
