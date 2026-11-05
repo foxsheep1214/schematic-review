@@ -568,6 +568,8 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
   `official-full-pinout`、`rail-requirement`、`level-standard` 开头的缺口是审查者可补的输入，`manual_verification` 覆盖不了；
   其余（拓扑或模型识别不了，如 `pin-role-or-model:`）才算工具限制，报告“对 SR 的反馈”按缺口代码列出。
 
+REQ-Q09 判 PASS 时写 `batch_answers`：`{准则编号: 位置}`，键恰是这一项列的准则；`project_input` 写由需求基线哪项回答或 `TBR`，`handoff` 写列在交接清单哪里。基线没写明又不标 TBR、清单没列的判 FAIL。
+
 ### 示例：设计约束和开放项各决定一项
 
 合成例子：反激变换器的 T1 是定制件，图纸还没出：SR 把它要满足的条件写成设计约束（DESIGN_CONSTRAINT 条款，交给磁件设计），

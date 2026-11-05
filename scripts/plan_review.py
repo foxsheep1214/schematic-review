@@ -353,15 +353,20 @@ def validate_intent(intent, db=None, candidates=None, require_candidates=False):
     return errors
 
 
-def guideline_section(checks, db, kind_intent, intent, library):
-    """共用设计准则的适用与覆盖（references/shared/guideline-criteria.md）：电路类型取计划检查项上的，器件类别取网表已贴器件的，
-    基线取 intent.guideline_baseline（不写取默认）；计划里出现的 SR 规则按 catalog.BASIS 覆盖它映射的设计准则；
-    映射的 SR 规则这次没有展开的记 not_triggered（本板没有它的对象，或电路还没声明），根本没有映射的才是 uncovered。"""
+def guideline_scope_of(checks, db, kind_intent, intent, library):
+    """(基线, 电路类型, 器件类别)：电路类型取计划检查项上的，器件类别取网表已贴器件的，基线取 intent.guideline_baseline（不写取默认）。"""
     graph = NetGraph(board_intent.graph_db(db, kind_intent))
     kinds = sorted({graph.kind(ref) for ref in db.get('parts', {}) if graph.is_fitted(ref)}
                    & set(library['vocabulary']['device_kinds']))
     circuits = sorted({c['circuit_type'] for c in checks if c.get('circuit_type')})
-    baseline = intent.get('guideline_baseline') or library['default_baseline']
+    return intent.get('guideline_baseline') or library['default_baseline'], circuits, kinds
+
+
+def guideline_section(checks, db, kind_intent, intent, library):
+    """共用设计准则的适用与覆盖（references/shared/guideline-criteria.md）：范围见 guideline_scope_of；计划里出现的 SR 规则按
+    catalog.BASIS 覆盖它映射的设计准则；映射的 SR 规则这次没有展开的记 not_triggered（本板没有它的对象，或电路还没声明），
+    根本没有映射的才是 uncovered。coverage 不是 item 的准则单列 project_input、handoff，由 REQ-Q09 核，不算这几类。"""
+    baseline, circuits, kinds = guideline_scope_of(checks, db, kind_intent, intent, library)
     cited = {}
     for rule in sorted({c['rule'] for c in checks}):
         for target in catalog.BASIS.get(rule, ()):
@@ -373,14 +378,20 @@ def guideline_section(checks, db, kind_intent, intent, library):
     for rule, targets in catalog.BASIS.items():
         for target in targets:
             mapped.setdefault(target, []).append(rule)
-    return {'library_version': found['library_version'], 'content_sha256': found['content_sha256'],
-            'shared_sha256': guideline_criteria.shared_digest(),
-            'baseline': baseline, 'circuit_types': circuits, 'device_kinds': kinds,
-            'external_interfaces': sorted(set(circuits) & set(catalog.EXTERNAL_INTERFACE_TYPES)),
-            'applicable': found['applicable'], 'covered': found['covered'],
-            'not_triggered': {gid: sorted(mapped[gid]) for gid in found['uncovered'] if gid in mapped},
-            'uncovered': [gid for gid in found['uncovered'] if gid not in mapped],
-            'downstream': found['downstream']}
+    classes = found.get('by_coverage') or {}
+    batch = set(classes.get('project_input') or ()) | set(classes.get('handoff') or ())
+    open_items = [gid for gid in found['uncovered'] if gid not in batch]
+    section = {'library_version': found['library_version'], 'content_sha256': found['content_sha256'],
+               'shared_sha256': guideline_criteria.shared_digest(),
+               'baseline': baseline, 'circuit_types': circuits, 'device_kinds': kinds,
+               'external_interfaces': sorted(set(circuits) & set(catalog.EXTERNAL_INTERFACE_TYPES)),
+               'applicable': found['applicable'], 'covered': {g: v for g, v in found['covered'].items() if g not in batch},
+               'not_triggered': {gid: sorted(mapped[gid]) for gid in open_items if gid in mapped},
+               'uncovered': [gid for gid in open_items if gid not in mapped],
+               'downstream': found['downstream']}
+    if classes:
+        section.update(project_input=classes['project_input'], handoff=classes['handoff'])
+    return section
 
 
 # Verified kinds whose parts have no supply/return pins: DEVICE_PINS_NO_SUPPLY does not ask about them.
@@ -523,6 +534,18 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         if stale:
             raise ValueError('internal error: rows bound to a function frame this plan does not build (member list would '
                              'be empty): ' + '; '.join(stale[:5]))
+
+    def plan_guideline_batches(self):
+        """REQ-Q09（用户 2026-11-04）：coverage 不是 item 的适用准则按类各一项；没有这类准则就没有这一项。
+        project_input 看需求基线，handoff 看 intent.materials.handoff_list。"""
+        library = guideline_criteria.load()
+        applicable = guideline_criteria.select(library, *guideline_scope_of(self.checks, self.db, self.kind_intent, self.intent, library))
+        for kind, material in (('project_input', 'requirements'), ('handoff', 'handoff_list')):
+            ids = [r['id'] for r in applicable if guideline_criteria.coverage_class(r) == kind]
+            if ids:
+                self._ready_check(catalog.COVERAGE_BATCH_RULE, {'board': 'BOARD', 'coverage': kind, 'criteria': ids},
+                                  self._materials_gap([material]), ['guideline-coverage:' + kind], key=kind,
+                                  criterion=catalog.COVERAGE_BATCH_CRITERIA[kind] + '、'.join(ids))
 
     def _ready_check(self, rule, obj, gaps, trigger, **extra):
         return self.add_check(rule, obj, readiness='WAITING_EVIDENCE' if gaps else 'READY',
@@ -692,6 +715,7 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             self.diagnostics.append(dict(conflict, detail='参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表'))
         for line in requirement_clarifications.pending_errors(self.intent):   # printed by the cold scan of step ①
             self.diagnostics.append({'code': 'CLARIFICATION_PENDING', 'detail': line})
+        self.plan_guideline_batches()
         self.checks.sort(key=lambda x: x['id'])
         self.plan_rules()
         self.rule_plan.sort(key=lambda x: x['rule'])

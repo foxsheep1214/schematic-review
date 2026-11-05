@@ -174,7 +174,8 @@ class GeneratedOutputTest(unittest.TestCase):
             for row in plan['rule_plan']:
                 self.assertTrue(catalog.known(row['rule']), row['rule'])
                 self.assertEqual(row['name'], catalog.title(row['rule']))
-        expected = {r.id for r in catalog.rules() if r.source in ('plan', 'subject', 'board')}
+        # REQ-Q09 needs a library with batch rules (test_guideline_plan); the installed one may have none
+        expected = {r.id for r in catalog.rules() if r.source in ('plan', 'subject', 'board')} - {catalog.COVERAGE_BATCH_RULE}
         self.assertEqual(expected - generated, set())
         custom = next(x for x in plans[0]['checks'] if x['rule'] == 'REQ-Q07' and x['circuit_type'] == 'CUSTOM')
         self.assertIn('自定义功能 CUSTOM', custom['criterion'])

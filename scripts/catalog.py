@@ -759,6 +759,9 @@ RULES = (
     Rule('REQ-Q08', '未检出功能确认',
          '网表未检出的功能电路逐个确认不适用并给出依据；候选没有归属的器件和被拒候选的成员逐颗确认去处'
          '（写 add 决定，或留在清单上写原因）；未检出特征不等于不适用', 'plan', 'board'),
+    Rule('REQ-Q09', '需求基线与交接清单覆盖',
+         '批量覆盖的设计准则按覆盖方式各核一项：project_input 核需求基线是否写明，handoff 核交接清单是否列出；'
+         '不核 PCB、EMC、热设计验收', 'plan', 'board'),
     Rule('REQ-H01', '改版 Diff 与历史意见闭环',
          '按历史意见断言核对新旧器件字段、引脚换网与网络成员变化，防止假闭环', 'revision', 'history'),
     Rule('REQ-H02', '改版删除项复核',
@@ -799,13 +802,21 @@ OBJECTIVE_RULES = {
                  'PRO-C10 PRO-C11 PRO-C12 PRO-C13').split()),
     'G6': tuple('DOC-D02 DOC-V02 RST-D01 SIG-D06'.split()),
     'G7': tuple(('DOC-A01 DOC-A03 DOC-A04 DOC-Q01 DEV-Q01 PWR-D01 '
-                 'REQ-Q01 REQ-Q02 REQ-Q03 REQ-Q04 REQ-Q05 REQ-Q07 REQ-Q08 REQ-H01 REQ-H02').split()),
+                 'REQ-Q01 REQ-Q02 REQ-Q03 REQ-Q04 REQ-Q05 REQ-Q07 REQ-Q08 REQ-Q09 REQ-H01 REQ-H02').split()),
 }
 
 
 # 共用规范依据（2026-10-31，用户：请开始执行这个方案）：SR 规则 → 它核对的共用设计准则（G0x-nnn，references/shared/guideline-criteria.md）。
 # 计划里出现一条 SR 规则，就覆盖了它映射的设计准则。规范编号 G03-005 与上面的审查要点 G1–G7、
 # 定界推法 G1–G6 格式不同，不要混写。
+# 设计准则的 coverage 不是 item 的不进 BASIS（用户 2026-11-04）：REQ-Q09 按类各一项核它们，判据后面列本板适用的准则编号。
+COVERAGE_BATCH_RULE = 'REQ-Q09'
+COVERAGE_BATCH_CRITERIA = {
+    'project_input': '需求基线或需求澄清记录写明这些设计准则要的项目输入，逐条写由哪项回答，没有答复的标 TBR：',
+    'handoff': '下游交接清单列出这些设计准则，逐条写列在哪里；只核列出，不核 PCB、EMC、热设计验收：',
+}
+
+
 def baseline_asks(rule_id, intent):
     """False for a rule that only one product baseline asks (BASELINE_RULES) on a board of another baseline."""
     wanted = BASELINE_RULES.get(rule_id)
@@ -2478,6 +2489,7 @@ EXPLANATIONS = {
     'REQ-Q05': _x('只复验修改点，会漏掉改动对其他电路的连带影响', '改动影响的供电、控制和保护范围都用本轮证据复验即关闭', inputs='REQ-H01 的差异与依赖'),
     'REQ-Q07': _x('整类电路一次性通过可能掩盖某个子电路或状态没查', '功能电路的全部电路检查项逐电路、逐状态完成即关闭'),
     'REQ-Q08': _x('命名或符号不典型的电路可能被自动计划漏掉', '未检出的功能电路都有不适用依据或已补检查，未归属器件都有去处或原因即关闭'),
+    'REQ-Q09': _x('把项目输入或下游工作逐条当原理图问题查，或没人确认基线写了、清单列了', '每条准则都有回答项或标 TBR、都列在交接清单上即关闭；不等于下游已验收'),
     'REQ-H01': _x('只改说明或换位号可能被误当成修复', '历史意见对应的器件字段、换网和网络成员变化都用新版证据核过即关闭', inputs='DOC-Q01 绑定的新旧输入'),
     'REQ-H02': _x('旧检查对象消失可能被误当成问题已关闭', '每个消失项都确认是删除、替代还是遗漏即关闭', inputs='REQ-H01 的差异'),
 }

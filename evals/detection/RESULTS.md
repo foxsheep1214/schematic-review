@@ -441,11 +441,11 @@
 
 | 输入 | SHA256 |
 |---|---|
-| seeded results.json | `d52c4a79e1b637786dc0cd64f7d168d21491df3208945602c335d12fcac30831` |
+| seeded results.json | `01325cd147e3d646a3ce3c9e36e2b01248f7d9e09812cb35ea40f1320245db5d` |
 | typical results.json | `e8dce54928d9ea72a1d965db3fd16e586939a82ebc4a2b0b2cb190205c0a6881` |
-| KiCad replay results.json | `1cff10f1296255ecdd23cc44e2676c194a40db6bf75dc2b4aa549e48a045b51b` |
+| KiCad replay results.json | `e43362109a51ba2ab316ed11585e663abe7fdc8245d4fc6b88dc7a16df2531e1` |
 | known_defects.json | `e098a3ccbcd277598a22517b674fd0485cbe70d31b32be0e4fb0808057b2d7e1` |
-| catalog.py | `87a069b995036840c648882f707e47c5868c393b5254d39da93e6c7a49334a29` |
+| catalog.py | `08043d32dab7f786cc9f43833b200d497cf00b8d3e396ea6be296d1e55820dc3` |
 | guideline-criteria.json | `6345d60065a04d6e776219e0f5824b323c7b4364ecaf7fb754e06935b97804b4` |
 | seeded corpus.json | `191a704ebd11e0e16da56c8cafb8fd4f66ba933b05a80453ef1dd1814661a532` |
 | typical cases.json | `6be32bc4b1b584952c82917cba087a6b347b8aad961e3dd131619debd7107ccf` |

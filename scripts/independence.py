@@ -5,7 +5,9 @@ documents and its own calculations. The designer's own documents (design report,
 electrical intent, requirement trace, device contracts, self-check and delivery records, replies to earlier comments)
 state what the designer meant or believes; taking them as a citation or as row evidence lets them set the review.
 A citation in the review intent or a row evidence that names one is refused. Facts the schematic cannot show go to the
-designer as a handoff and come back as a requirement or an input. ASG's design-closure.json and reference-input.json,
+designer as a handoff and come back as a requirement or an input. The one exception is the downstream handoff list
+(intent.materials.handoff_list, the REQ-Q09 handoff row, user 2026-11-04): it is the designer's by nature, and SR only
+checks that a rule is on it, never takes what it says as true. ASG's design-closure.json and reference-input.json,
 and the reconciliation list design_checklist.py reads out of them (objects and calculation names only), are
 designer records too: the list tells SR what to look at, never what is true.
 """
@@ -20,6 +22,10 @@ DESIGNER_DOCUMENT_RE = re.compile(
     r'design[_-]closure|reference[_-]input|design[_-]checklist', re.I)
 
 
+HANDOFF_LIST_INTENT = 'intent.materials.handoff_list'
+HANDOFF_LIST_ROW = 'REQ-Q09.HANDOFF.'
+
+
 def designer_document(text):
     """The designer-document word `text` names, or None."""
     match = DESIGNER_DOCUMENT_RE.search(text) if isinstance(text, str) else None
@@ -31,7 +37,8 @@ def intent_errors(intent, path='intent'):
     errors = []
     if isinstance(intent, dict):
         for key, value in intent.items():
-            errors.extend(intent_errors(value, '%s.%s' % (path, key)))
+            if '%s.%s' % (path, key) != HANDOFF_LIST_INTENT:
+                errors.extend(intent_errors(value, '%s.%s' % (path, key)))
     elif isinstance(intent, list):
         for index, value in enumerate(intent):
             errors.extend(intent_errors(value, '%s[%d]' % (path, index)))
@@ -45,6 +52,8 @@ def evidence_errors(checks):
     """Every row evidence whose source is a designer document."""
     errors = []
     for check in checks:
+        if isinstance(check, dict) and str(check.get('id')).startswith(HANDOFF_LIST_ROW):
+            continue
         for item in check.get('evidence') or [] if isinstance(check, dict) else []:
             source = item.get('source') if isinstance(item, dict) else None
             if designer_document(source):

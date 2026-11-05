@@ -76,7 +76,7 @@
   也不写 APPLICABLE（候选没检出却要审，就在 `circuit_decisions` 里补电路），只给规则总表有、候选没检出的类别写不适用依据。
 - `materials.<name>` 只写 `path`（文件或目录），文件存在即可用，不写 `available`；路径不存在被拒收。
   需求由 `requirement_source` 推出（不必再写 `materials.requirements`），规格书由逐物料审计（`--datasheet-audit`）推出；
-  没有的资料不写，依赖它的检查项等资料。
+  没有的资料不写，依赖它的检查项等资料。`materials.handoff_list`：设计方的下游交接清单，REQ-Q09 只核是否列出。
 - `rail_exclusions`：网表上像电源（有 IC 从它取电，或 ≥1 µF 电容到地）而名字不像轨的网，每条都要在 `power_rails`
   声明成轨或在这里写它不是轨的依据，否则拒收；只能排除这类网，且不能同时声明。计划的 `rail_candidates` 列出每条这类网
   及其确认方式（`name` 名字像轨、`declared`、`excluded`）。名字像轨的网照旧按名字识别。

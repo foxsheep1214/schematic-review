@@ -758,6 +758,11 @@ INPUT_NOTES = {'RESISTOR_VALUE_UNREAD': '下面这些电阻的值读不出阻值
 STAGE_WORDS = {'schematic': '原理图', 'pcb': 'PCB', 'simulation': '仿真', 'prototype': '样机', 'production': '生产'}
 
 
+# Rules covered in bulk (user 2026-11-04), one table per class; the REQ-Q09 row of the class answers them.
+BATCH_TABLES = {'project_input': ('由需求基线回答的设计准则', '本次只核需求基线或需求澄清记录是否写明；逐条回答在 REQ-Q09 那一项。'),
+                'handoff': ('进下游交接清单的设计准则', '本次只核交接清单是否列出，不核 PCB、EMC、热设计验收；逐条位置在 REQ-Q09 那一项。')}
+
+
 def guideline_cards(plan):
     """The applicable shared guideline rules of the plan, read from the installed library (the gate checked that the
     plan was built on it); empty when the plan has none."""
@@ -771,6 +776,8 @@ def render_guidelines(plan):
     section, applicable = guideline_cards(plan)
     if not applicable:
         return []
+    batches = {kind: [c for c in applicable if c['id'] in (section.get(kind) or ())] for kind in BATCH_TABLES}
+    batched = {c['id'] for cards in batches.values() for c in cards}
     out = ['## 共用设计准则覆盖', '',
            '%s，产品基线 %s。适用的设计准则 %d 条；检查项这次没有展开的 %d 条是本板没有它的对象或电路还没声明；'
            '没有对应检查项的 %d 条列在“对 SR 的反馈”，是 SR 待补的规则，不是设计缺陷。'
@@ -782,12 +789,18 @@ def render_guidelines(plan):
         out[2:2] = ['未声明对外接口：网名没有识别到、intent 也没有声明 %s，这些接口的设计准则没有选中。板上有的话写进 `intent.circuits` 后重新生成计划。'
                     % '、'.join(t.title for t in catalog.CIRCUIT_TYPES if t.name in catalog.EXTERNAL_INTERFACE_TYPES), '']
     for card in applicable:
+        if card['id'] in batched:
+            continue
         source = '；'.join('%s %s %s 第%s页' % (s['document'], s['edition'], s['clause'], s['page']) for s in card['source'])
         waiting = (section.get('not_triggered') or {}).get(card['id'])
         checks = ('、'.join((section.get('covered') or {}).get(card['id']) or [])
                   or ('未展开：' + '、'.join(waiting) if waiting else '未覆盖'))
         out.append('| %s | %s | %s | %s | %s |' % (card['id'], cell(card['title']), cell(source), checks,
                                                     STAGE_WORDS[card['closing_stage']]))
+    for kind, (title, intro) in BATCH_TABLES.items():
+        if batches[kind]:
+            out += ['', '### ' + title, '', intro, '', '| 设计准则 | 内容（准则库原文） | 关闭阶段 |', '|---|---|---|']
+            out += ['| %s | %s | %s |' % (c['id'], cell(c['title']), STAGE_WORDS[c['closing_stage']]) for c in batches[kind]]
     return out + ['']
 
 
