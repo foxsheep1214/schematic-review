@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 电路评测集搬到规范目录，本仓库只留运行器 (2026-11-05)
+
+公开板审查记录和已知缺陷搬到 `原理图设计规范/评测集/`，与 ASG 共用；抓板工具留下并改名 `evals/boards_tools/`，新增 `evals/circuit_cases/run.py` 跑评测集自动层。种子基准的 `corpus.json`、`boards-merge*.json` 留在本仓库：`--offline` 和种子测试要用，搬走门禁就跑不全。
+
+- Event: user:2026-11-05 (能否将这些电路做成给SR和ASG两项技能进行评测和改进的，专门的评测集合？放在电路设计规范里。改现在的SR、ASG的架构)
+- Causes: rule_missing 1（两技能没有共用的电路评测集，案例和路径各管各的）
+- Changed: evals/eval_set.py, evals/circuit_cases/run.py, evals/boards_tools/fetch_board.py, evals/boards_tools/run_lane.sh, evals/boards_tools/board-prompt.md, evals/detection/run.py, evals/detection/README.md, scripts/tests/test_circuit_cases.py, scripts/tests/test_boards_tools.py, scripts/tests/test_detection_bench.py, references/architecture.md, docs/improvement-ledger.md
+- Gates: pytest 2959 passed；评测集不在时相关测试 26 passed、6 skipped；mutation --changed 0 mutations on 413 changed files
+
 ## 设计准则自动扫描覆盖 (2026-11-04)
 
 用户 2026-11-04 要求提高 SR 对设计准则的自动扫描覆盖。先复核“13 条准则映射到 A 类扫描”：按 BASIS 第二段字母 A 统计确为 13（G01 2、G02 0、G03 2、G04 8、G05 1）。354 条准则逐条分类（`docs/proposals/guideline-scan-classes-2026-11-04.json`）：网表、BOM、表格数据可判 52，加意图字段可判 33，只能人判 269。这批新增 24 项扫描（`scripts/guideline_scans.py`），优先 Matrix R2 真实漏检和 G02、G05、G03；另把 7 条已有 A 类的隐藏覆盖补进 BASIS，DEV-A02 扩到两条正电源轨接反（G03-037）。A 类映射的准则从 13 升到 47（G01 3、G02 3、G03 9、G04 23、G05 9）。多数扫描只判必要条件，准则的 C、D 类人工检查不撤。除 ANA-A01 和 SIG-A08 共用 CC 为 FINDING 外都是 CANDIDATE，缺证据就不报。回放约定 `guideline-scans-v1` 只改 r02 391→392、r03 436→438；阅读路径棘轮 ③ 226_267→227_448（`scans-and-tools.md` 五行）。开过 217 块板的语料，按误报收窄判据后，Matrix R2 只新增 PRO-A09 一条（D801 钳位 24.4 V 高于 U802.6 的 20 V，与 R2 F05 同一问题），校准板 0 条。

@@ -172,5 +172,6 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
   `python3 evals/mutation/run.py --changed`，确认改动文件上的现有变异仍被杀死、锚点仍命中；锚点因本次改动失效的就地重锚或删去。
   只有新加的判断逻辑没有直接测试守着时才补变异，不再每次必加。一批改动后或每周跑一次全量 `python3 evals/mutation/run.py`，
   把存活的补测试、失效的重锚或删去，记一条台账。
+- **电路评测集**（2026-11-05，用户：把这些电路做成给 SR 和 ASG 评测和改进的专门评测集，放在电路设计规范里）：电路案例、测试点、公开板审查记录、已知缺陷和运行结果都在 `原理图设计规范/评测集/`（`evals/eval_set.py` 定位，`CIRCUIT_EVAL_SET` 可改），说明见它的 README。本仓库只留运行器和代码门禁固件（规则合同、回放、典型电路、种子基准、变异），评测集不在时门禁里读它的测试跳过。`python3 evals/circuit_cases/run.py auto --out <目录>` 跑自动层，结果连同提交号存进评测集 `运行结果/SR/`。
 - 按需另跑：改导入器时跑 [真实来源导入回归](evals/input_bench/README.md)；看自动层检出率跑 [种子基准](evals/seeded_bench/README.md)；
   `python3 evals/bench_coverage.py --seeded <注入基准 results.json>` 列出每条 A 规则在哪个基准有真实板正例。评测通过不等于任何真实电路审查通过。

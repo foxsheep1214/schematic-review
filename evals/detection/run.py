@@ -15,6 +15,9 @@ sys.path.insert(0, str(ROOT / 'scripts'))
 import catalog  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+import eval_set  # noqa: E402
+KNOWN = eval_set.root() / '已知缺陷' / 'known_defects.json'
 
 
 def read(path):
@@ -201,12 +204,12 @@ def main(argv=None):
             execute('evals/kicad_replay_bench/run.py', ['--out', replay.parent], work)
         library = ROOT / 'references/shared/guideline-criteria.json'
         criteria = {c['id']: c for c in read(library)['criteria']}
-        known = read(HERE / 'known_defects.json')
+        known = read(KNOWN)
         validate_known(known, criteria, [r.id for r in catalog.RULES])
         rows = seeded_rows(read(seeded), catalog.BASIS) + typical_rows(read(typical), catalog.BASIS) + known_rows(known)
         table, unmapped = aggregate(criteria, catalog.BASIS, rows)
         inputs = [('seeded results.json', seeded), ('typical results.json', typical), ('KiCad replay results.json', replay),
-                  ('known_defects.json', HERE / 'known_defects.json'), ('catalog.py', ROOT / 'scripts/catalog.py'),
+                  ('known_defects.json', KNOWN), ('catalog.py', ROOT / 'scripts/catalog.py'),
                   ('guideline-criteria.json', library), ('seeded corpus.json', ROOT / 'evals/seeded_bench/corpus.json'),
                   ('typical cases.json', ROOT / 'evals/typical_circuits/cases.json'),
                   ('improvement-ledger.md', ROOT / 'docs/improvement-ledger.md')]

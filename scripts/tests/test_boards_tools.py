@@ -10,10 +10,14 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
-TOOL = ROOT / 'evals/boards/_tools/fetch_board.py'
+TOOL = ROOT / 'evals/boards_tools/fetch_board.py'
 spec = importlib.util.spec_from_file_location('fetch_board', TOOL)
 fetch = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fetch)
+sys.path.insert(0, str(ROOT / 'evals'))
+import eval_set  # noqa: E402
+BOARDS = eval_set.root() / '公开真实板'
+needs_set = pytest.mark.skipif(not eval_set.available(), reason='电路评测集不在本机')
 
 
 def git(repo, *args):
@@ -140,10 +144,11 @@ def test_incomplete_cached_git_repository_is_refetched(tmp_path, local_board):
     assert 'Incomplete cached checkout' in (src.parent / 'fetch.log').read_text()
 
 
+@needs_set
 def test_catalog_contains_100_distinct_pinned_qualified_boards():
     from collections import Counter
     import re
-    boards = json.loads((ROOT / 'evals/boards/catalog.json').read_text())['boards']
+    boards = json.loads((BOARDS / 'catalog.json').read_text())['boards']
     vocabulary = {t['name'] for t in json.loads((ROOT / 'references/shared/vocabulary.json').read_text())['circuit_types']}
     excluded = {b.get('repo', '').lower() for b in json.loads((ROOT / 'evals/seeded_bench/corpus.json').read_text())['boards']}
     assert len(boards) == len({b['id'] for b in boards}) == len({b['repo'].lower() for b in boards}) == 100
@@ -160,10 +165,11 @@ def test_catalog_contains_100_distinct_pinned_qualified_boards():
             assert board['copyleft'] is True
 
 
+@needs_set
 def test_lanes_partition_catalog_and_spread_types_and_workload():
     from collections import Counter
-    boards = {b['id']: b for b in json.loads((ROOT / 'evals/boards/catalog.json').read_text())['boards']}
-    lanes = [json.loads((ROOT / ('evals/boards/_lanes/lane-%d.json' % i)).read_text()) for i in range(1, 5)]
+    boards = {b['id']: b for b in json.loads((BOARDS / 'catalog.json').read_text())['boards']}
+    lanes = [json.loads((BOARDS / '_lanes' / ('lane-%d.json' % i)).read_text()) for i in range(1, 5)]
     assert [lane['lane'] for lane in lanes] == ['lane-1', 'lane-2', 'lane-3', 'lane-4']
     assert all(len(lane['boards']) == 25 for lane in lanes)
     assigned = [bid for lane in lanes for bid in lane['boards']]
@@ -176,9 +182,10 @@ def test_lanes_partition_catalog_and_spread_types_and_workload():
     assert max(loads) - min(loads) < 100
 
 
+@needs_set
 def test_verification_covers_exact_catalog_pins_and_part_counts():
-    boards = {b['id']: b for b in json.loads((ROOT / 'evals/boards/catalog.json').read_text())['boards']}
-    verified = json.loads((ROOT / 'evals/boards/verification.json').read_text())['boards']
+    boards = {b['id']: b for b in json.loads((BOARDS / 'catalog.json').read_text())['boards']}
+    verified = json.loads((BOARDS / 'verification.json').read_text())['boards']
     assert len(verified) == 100 and {v['id'] for v in verified} == set(boards)
     for result in verified:
         board = boards[result['id']]
