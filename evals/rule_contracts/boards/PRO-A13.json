@@ -1,0 +1,129 @@
+{
+ "rule": "PRO-A13",
+ "runner": "cold",
+ "note": "FLT pulled up from its own output vs from 3V3",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "TPS26630",
+    "pins": [
+     [
+      "1",
+      "IN",
+      "VCC_24V"
+     ],
+     [
+      "2",
+      "OUT",
+      "VOUT"
+     ],
+     [
+      "3",
+      "FLT",
+      "FLT_N"
+     ],
+     [
+      "4",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "10k",
+    "pins": [
+     [
+      "1",
+      "",
+      "FLT_N"
+     ],
+     [
+      "2",
+      "",
+      "VOUT"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "PA0",
+      "FLT_N"
+     ],
+     [
+      "2",
+      "VDD",
+      "VCC_3V3"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "TPS26630",
+    "pins": [
+     [
+      "1",
+      "IN",
+      "VCC_24V"
+     ],
+     [
+      "2",
+      "OUT",
+      "VOUT"
+     ],
+     [
+      "3",
+      "FLT",
+      "FLT_N"
+     ],
+     [
+      "4",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "10k",
+    "pins": [
+     [
+      "1",
+      "",
+      "FLT_N"
+     ],
+     [
+      "2",
+      "",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "PA0",
+      "FLT_N"
+     ],
+     [
+      "2",
+      "VDD",
+      "VCC_3V3"
+     ]
+    ]
+   }
+  ]
+ }
+}

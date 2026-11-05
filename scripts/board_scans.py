@@ -8,6 +8,7 @@
 """
 import re
 
+import guideline_scans
 import latch_criteria
 from checkers.netgraph import is_ground, is_rail, rail_voltage
 from decoupling import parse_capacitance
@@ -49,6 +50,7 @@ def _named_rail(net):
 
 KICAD_POLARIZED_RE = re.compile(r'^Device:(?:C_Polarized|CP)(?:\w*)$', re.I)
 NEGATIVE_NET_RE = re.compile(r'(^-|NEG|VEE|VSS|(?:^|[_/])-?\d+V\d*N\b|[_-]N$)', re.I)
+NEGATIVE_INSIDE_RE = re.compile(r'[_/](?:-|N)\d', re.I)   # VCC_-12V, VCC_N12V: _named_rail reads these as rails
 
 
 def _positive_supply(lint, net):
@@ -109,6 +111,12 @@ def capacitor_polarity(lint):
             lint.add('DEV-A02', '极性电容方向反接',
                      f'{ref}: + 脚 {marked["plus"]} 接 {plus}，- 脚 {marked["minus"]} 接 {minus}',
                      ref)
+        elif _named_rail(plus) and _named_rail(minus) and not NEGATIVE_INSIDE_RE.search(plus + ' ' + minus):
+            high, low = rail_voltage(minus), rail_voltage(plus)
+            if high is not None and low is not None and high > low:   # G03-037: + on the lower rail of two positive rails
+                lint.add('DEV-A02', '极性电容方向反接',
+                         f'{ref}: + 脚 {marked["plus"]} 接 {plus}（{low:g} V），- 脚 {marked["minus"]} 接 {minus}（{high:g} V）',
+                         ref)
 
 
 def led_current_limit(lint):
@@ -602,3 +610,4 @@ def run(lint):
     floating_inputs(lint)
     boundary_labels(lint)
     footprint_fields(lint)
+    guideline_scans.run(lint)

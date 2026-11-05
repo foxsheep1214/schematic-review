@@ -1,0 +1,71 @@
+{
+ "rule": "SIG-A14",
+ "runner": "cold",
+ "note": "a floating centre tap vs one with a capacitor",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "HR911105A",
+    "pins": [
+     [
+      "1",
+      "TD+",
+      "TXP"
+     ],
+     [
+      "2",
+      "TCT",
+      "CT_LONE"
+     ],
+     [
+      "3",
+      "TD-",
+      "TXN"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "HR911105A",
+    "pins": [
+     [
+      "1",
+      "TD+",
+      "TXP"
+     ],
+     [
+      "2",
+      "TCT",
+      "CT1"
+     ],
+     [
+      "3",
+      "TD-",
+      "TXN"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "100n",
+    "pins": [
+     [
+      "1",
+      "",
+      "CT1"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

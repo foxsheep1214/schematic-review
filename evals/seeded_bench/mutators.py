@@ -460,9 +460,110 @@ def crystal_shared(db):
             break
 
 
+def value_placeholder(db):
+    """G02-038: a resistor's value becomes the library default name."""
+    g = graph(db)
+    for ref in sorted(db['parts']):
+        part = db['parts'][ref]
+        if g.kind(ref) == pw.RESISTOR and fitted(db, ref) and not part.get('fields') and part.get('value') != 'R_Small':
+            out = copy.deepcopy(db)
+            out['parts'][ref]['value'] = 'R_Small'
+            yield Mutation('D-VALUE-PLACEHOLDER', ('DEV-A04', 'DOC-D01'), (ref,), (), part.get('value', '') + ' -> R_Small', out)
+
+
+def tvs_low_standoff(db):
+    """G05-030: a clamp on a rail with a readable voltage gets a stand-off below it (SMBJ number = VRWM)."""
+    g = graph(db)
+    for ref in sorted(db['parts']):
+        pins = two_pins(g, ref)
+        if g.kind(ref) != pw.TVS or not fitted(db, ref) or not pins:
+            continue
+        for _, net in pins:
+            volts = ng.rail_voltage(net) if ng.is_rail(net) or ng.is_rail(str(net).lstrip('/').lstrip('+')) else None
+            if volts and volts > 3.3 and any(ng.is_ground(other) for _, other in pins):
+                out = copy.deepcopy(db)
+                out['parts'][ref].update(value='SMBJ3.3A', part='SMBJ3.3A')
+                yield Mutation('D-TVS-VRWM', ('PRO-A07', 'PRO-E02'), (ref,), (net,), 'VRWM 3.3 V on %g V' % volts, out)
+                break
+
+
+def cc_shared(db):
+    """G04-104: CC2 joins CC1 on a resistor-declared Type-C port."""
+    g = graph(db)
+    for ref in sorted(db['parts']):
+        if not fitted(db, ref) or pw.usb_connector_type(db['parts'][ref]) != 'Type-C':
+            continue
+        nodes = {name(db, ref + '.' + p): ref + '.' + p for p in g.pins_of(ref)}
+        if not {'CC1', 'CC2'} <= set(nodes):
+            continue
+        one, other = db['pin2net'][nodes['CC1']], db['pin2net'][nodes['CC2']]
+        if one == other or any(g.kind(n.split('.', 1)[0]) == pw.IC for net in (one, other) for n in db['nets'].get(net, [])):
+            continue
+        yield Mutation('D-CC-SHARED', ('SIG-A08',), (ref,), (one,), 'CC2 moved onto ' + one, moved(db, nodes['CC2'], one))
+
+
+def de_fixed(db):
+    """G04-066: an RS-485 driver enable tied straight to its own supply."""
+    g = graph(db)
+    for ref in sorted(db['parts']):
+        if g.kind(ref) != pw.IC or not fitted(db, ref):
+            continue
+        nodes = {name(db, ref + '.' + p): ref + '.' + p for p in g.pins_of(ref)}
+        supply = db['pin2net'].get(nodes.get('VCC'))
+        if {'A', 'B', 'DE', 'RO', 'DI'} <= set(nodes) and supply and ng.is_rail(supply):
+            yield Mutation('D-DE-FIXED', ('SIG-A09',), (ref,), (supply,), 'DE tied to ' + supply, moved(db, nodes['DE'], supply))
+
+
+def opamp_no_bias(db):
+    """G04-048: the resistor that gives an AC-coupled amplifier input its bias is removed."""
+    g = graph(db)
+    for ref in sorted(db['parts']):
+        if g.kind(ref) != pw.IC or not fitted(db, ref) or not re.search(r'OPA\d|LM358|LM324|TL07|TL08|MCP6|Amplifier_Operational', ' '.join(str(db['parts'][ref].get(k, '')) for k in ('part', 'value', 'prim')), re.I):
+            continue
+        for pin, net in sorted(g.pins_of(ref).items()):
+            if name(db, ref + '.' + pin) not in ('+', 'IN+', '+IN'):
+                continue
+            kinds = {n.split('.', 1)[0]: g.kind(n.split('.', 1)[0]) for n in db['nets'].get(net, []) if n != ref + '.' + pin}
+            resistors = [r for r, k in kinds.items() if k == pw.RESISTOR]
+            if resistors and set(kinds.values()) == {pw.RESISTOR, pw.CAPACITOR}:
+                out = db
+                for resistor in resistors:
+                    out = removed(out, resistor)
+                yield Mutation('D-OPAMP-BIAS', ('ANA-A01', 'ANA-C05'), (ref,), (net,), 'bias resistors removed: ' + ','.join(resistors), out)
+
+
+def opamp_open_loop(db):
+    """G04-049: a voltage follower's inverting input is cut from its output and parked on ground."""
+    g = graph(db)
+    for ref in sorted(db['parts']):
+        if g.kind(ref) != pw.IC or not fitted(db, ref) or not re.search(r'Amplifier_Operational', str(db['parts'][ref].get('prim', '')), re.I):
+            continue
+        pins = g.pins_of(ref)
+        for out_pin, minus in (('1', '2'), ('7', '6')):
+            if len(pins) == 8 and name(db, ref + '.' + minus) == '-' and pins.get(out_pin) == pins.get(minus):
+                yield Mutation('D-OPAMP-OPEN', ('ANA-A02', 'ANA-C05'), (ref,), (pins[minus],), 'pin %s moved to ground' % minus, moved(db, ref + '.' + minus, 'GND'))
+
+
+def ldo_in_out_swapped(db):
+    """G03-034: the input and output of an identified linear regulator trade nets."""
+    g = graph(db)
+    for ref in sorted(db['parts']):
+        identity = ' '.join(str(db['parts'][ref].get(k, '')) for k in ('prim', 'part', 'value'))
+        if g.kind(ref) != pw.IC or not fitted(db, ref) or not re.search(r'AMS1117|LM1117|AP2112|MCP1700|XC6206|Regulator_Linear', identity, re.I):
+            continue
+        nodes = {name(db, ref + '.' + p): ref + '.' + p for p in g.pins_of(ref)}
+        high = next((nodes[k] for k in ('VIN', 'IN', 'VI') if k in nodes), None)
+        low = next((nodes[k] for k in ('VOUT', 'OUT', 'VO') if k in nodes), None)
+        if high and low:
+            volts = [ng.rail_voltage(db['pin2net'][n]) for n in (high, low)]
+            if all(volts) and volts[0] > volts[1]:
+                yield Mutation('D-LDO-SWAP', ('PWR-A09', 'PWR-E02'), (ref,), (db['pin2net'][high], db['pin2net'][low]), 'VIN/VOUT swapped', swapped(db, high, low))
+
+
 OPERATORS = (gnd_pin, rail_split, cap_pol, cap_vr, led_r, tvs_stub, en_float, flyback, opto, i2c_pu,
              ref_anno, bom_ws, i2c_value, usb_bulk, isolation_bridge, crystal_load,
-             regulator_cout, can_termination, crystal_shared)
+             regulator_cout, can_termination, crystal_shared, value_placeholder, tvs_low_standoff, cc_shared, de_fixed,
+             opamp_no_bias, opamp_open_loop, ldo_in_out_swapped)
 
 
 def mutations(db, per_operator=4):

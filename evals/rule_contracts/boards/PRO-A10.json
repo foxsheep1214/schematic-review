@@ -1,0 +1,109 @@
+{
+ "rule": "PRO-A10",
+ "runner": "cold",
+ "note": "unidirectional vs bidirectional TVS ahead of a series diode",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN_2P",
+    "pins": [
+     [
+      "1",
+      "",
+      "VIN"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "D1",
+    "value": "SMBJ24A",
+    "pins": [
+     [
+      "1",
+      "",
+      "VIN"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "D2",
+    "value": "SS34",
+    "pins": [
+     [
+      "1",
+      "A",
+      "VIN"
+     ],
+     [
+      "2",
+      "K",
+      "VOUT"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN_2P",
+    "pins": [
+     [
+      "1",
+      "",
+      "VIN"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "D1",
+    "value": "SMBJ24CA",
+    "pins": [
+     [
+      "1",
+      "",
+      "VIN"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "D2",
+    "value": "SS34",
+    "pins": [
+     [
+      "1",
+      "A",
+      "VIN"
+     ],
+     [
+      "2",
+      "K",
+      "VOUT"
+     ]
+    ]
+   }
+  ]
+ }
+}

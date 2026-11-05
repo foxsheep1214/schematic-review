@@ -1,0 +1,87 @@
+{
+ "rule": "PWR-A09",
+ "runner": "cold",
+ "note": "LDO from 3V3 to 5V vs from 5V to 3V3",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "AMS1117-3.3",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "VOUT",
+      "VCC_5V"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "1u",
+    "pins": [
+     [
+      "1",
+      "",
+      "VCC_5V"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "AMS1117-3.3",
+    "pins": [
+     [
+      "1",
+      "VIN",
+      "VCC_5V"
+     ],
+     [
+      "2",
+      "VOUT",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "1u",
+    "pins": [
+     [
+      "1",
+      "",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

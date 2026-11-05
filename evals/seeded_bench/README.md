@@ -197,3 +197,17 @@ PMIC的11–33µF窗口来自ROHM BD71847AMWV Rev003 p110 Table5-36，原1.22µF
 
 实测：旧 272 位点逐点保留，合计 274 位点/231 自动/0 错误；两个新位点在合并前后都有自动目标（CLK-A01、NET-A01）。
 漏问 M01（DC_24V）、M02（DI 网名）是电路识别缺口，不是网表缺陷，没有落种子。
+
+## 设计准则扫描的种子（2026-11-04）
+
+新增 7 类种子，目标是 `guideline_scans.py` 的 A 规则；离线语料有位点的才计数（D-TVS-VRWM、D-DE-FIXED、D-OPAMP-OPEN 离线语料没有位点，留给全语料）。
+
+| 种子类型 | 新规则 | 植入 |
+|---|---|---|
+| `D-VALUE-PLACEHOLDER` | DEV-A04 | 电阻值改成库默认名 R_Small |
+| `D-TVS-VRWM` | PRO-A07 | 轨上 TVS 改 SMBJ3.3A |
+| `D-CC-SHARED` | SIG-A08 | Type-C 的 CC2 并到 CC1 |
+| `D-DE-FIXED` | SIG-A09 | RS-485 DE 直连电源 |
+| `D-OPAMP-BIAS` | ANA-A01 | 去掉交流耦合运放输入的偏置电阻 |
+| `D-OPAMP-OPEN` | ANA-A02 | 跟随器反相端断开接地 |
+| `D-LDO-SWAP` | PWR-A09 | LDO 输入输出换网 |

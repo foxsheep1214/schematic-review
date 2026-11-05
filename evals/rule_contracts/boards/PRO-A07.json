@@ -1,0 +1,45 @@
+{
+ "rule": "PRO-A07",
+ "runner": "cold",
+ "note": "SMBJ15A vs SMBJ24A on 24V_BUS",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "D1",
+    "value": "SMBJ15A",
+    "pins": [
+     [
+      "1",
+      "",
+      "24V_BUS"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "D1",
+    "value": "SMBJ24A",
+    "pins": [
+     [
+      "1",
+      "",
+      "24V_BUS"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,77 @@
+{
+ "rule": "PRO-A09",
+ "runner": "cold",
+ "note": "SMBJ15A with a 20 V pin vs a 67 V pin on its net",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "D1",
+    "value": "SMBJ15A",
+    "pins": [
+     [
+      "1",
+      "",
+      "VAUX"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "TPS25981A",
+    "pins": [
+     [
+      "6",
+      "IN",
+      "VAUX"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "D1",
+    "value": "SMBJ15A",
+    "pins": [
+     [
+      "1",
+      "",
+      "VAUX"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "TPS26630RGER",
+    "pins": [
+     [
+      "6",
+      "IN",
+      "VAUX"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

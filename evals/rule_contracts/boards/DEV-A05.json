@@ -1,0 +1,45 @@
+{
+ "rule": "DEV-A05",
+ "runner": "cold",
+ "note": "a resistor whose value is 100nF vs 10k",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "100nF",
+    "pins": [
+     [
+      "1",
+      "",
+      "A"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "10k",
+    "pins": [
+     [
+      "1",
+      "",
+      "A"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

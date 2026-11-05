@@ -660,5 +660,18 @@
     "caught": false,
     "note": "R2 首审 F-002（P1）：已开通道热插入 >3.4 µF 负载时 PG 低约 0.12 ms（47 µF）远超 4 µs 消抖，短路锁被误置；PWR-C13 未问状态脚（SR技能不足 2.2）。本改单起 PWR-A08 冷扫在 8 路报出。",
     "kind": "electrical"
+  },
+  {
+    "id": "R2-F05-clamp-pin",
+    "source": "docs/improvement-ledger.md :: 设计准则自动扫描覆盖 (2026-11-04)",
+    "criteria": [
+      "G05-031"
+    ],
+    "sr_rules": [
+      "PRO-A09"
+    ],
+    "caught": false,
+    "note": "Matrix 电源与保护 R2 首审 F05（P1，需人判）：D801 SMBJ15A 额定点钳位 24.4 V 超过同网 U802 IN 绝限 20 V；首审靠审查员发现（SR技能不足 4.1、4.2）。本改单起 PRO-A09 冷扫报出。",
+    "kind": "electrical"
   }
 ]

@@ -1,0 +1,109 @@
+{
+ "rule": "PWR-A10",
+ "runner": "cold",
+ "note": "two series electrolytics without vs with balancing resistors",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "C1",
+    "value": "C_Polarized 100u",
+    "pins": [
+     [
+      "1",
+      "+",
+      "VCC_48V"
+     ],
+     [
+      "2",
+      "-",
+      "MID"
+     ]
+    ]
+   },
+   {
+    "ref": "C2",
+    "value": "C_Polarized 100u",
+    "pins": [
+     [
+      "1",
+      "+",
+      "MID"
+     ],
+     [
+      "2",
+      "-",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "C1",
+    "value": "C_Polarized 100u",
+    "pins": [
+     [
+      "1",
+      "+",
+      "VCC_48V"
+     ],
+     [
+      "2",
+      "-",
+      "MID"
+     ]
+    ]
+   },
+   {
+    "ref": "C2",
+    "value": "C_Polarized 100u",
+    "pins": [
+     [
+      "1",
+      "+",
+      "MID"
+     ],
+     [
+      "2",
+      "-",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "100k",
+    "pins": [
+     [
+      "1",
+      "",
+      "VCC_48V"
+     ],
+     [
+      "2",
+      "",
+      "MID"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "100k",
+    "pins": [
+     [
+      "1",
+      "",
+      "MID"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

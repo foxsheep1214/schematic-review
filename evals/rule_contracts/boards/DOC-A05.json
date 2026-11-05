@@ -1,0 +1,65 @@
+{
+ "rule": "DOC-A05",
+ "runner": "cold",
+ "note": "BOM leaves out fitted R1 vs lists it",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "10k",
+    "pins": [
+     [
+      "1",
+      "",
+      "A"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "bom": {
+   "parts": {
+    "R1": {
+     "Qty": "1"
+    }
+   },
+   "not_in_bom": [
+    "R1"
+   ],
+   "not_in_netlist": []
+  }
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "10k",
+    "pins": [
+     [
+      "1",
+      "",
+      "A"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "bom": {
+   "parts": {
+    "R1": {
+     "Qty": "1"
+    }
+   },
+   "not_in_bom": [],
+   "not_in_netlist": []
+  }
+ }
+}

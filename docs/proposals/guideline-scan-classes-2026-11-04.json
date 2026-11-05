@@ -1,0 +1,2229 @@
+{
+ "note": "SR 2026-11-04 逐条读 sr_check 后的分类（人工判断，不是工具算出）。machine=只靠网表、BOM、入表器件数据能判出至少一种该条点名的不成立；intent=补一个声明字段后可机判；human=要读手册算、方法或记录审查、下游阶段、项目基线。scans=当前映射到它的 A 类扫描；扫描多为必要条件，C/D 检查项仍持有该条。",
+ "library_version": "1.8.0",
+ "criteria": {
+  "G01-001": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "设计输入给出范围或容差，不只给标称值"
+  },
+  "G01-002": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "电源与接口电压写明测量点及线路压降"
+  },
+  "G01-003": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [],
+   "title": "每条需求有唯一编号"
+  },
+  "G01-004": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "每条需求单一、自含"
+  },
+  "G01-005": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [
+    "REQ-A02"
+   ],
+   "title": "需求与设计、验证双向追溯"
+  },
+  "G01-006": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [],
+   "title": "需求中不得出现不可验证的用词"
+  },
+  "G01-007": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "未知输入按 TBR 登记估计值、理由、责任方与关闭条件"
+  },
+  "G01-008": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "设计假设不得当作用户要求"
+  },
+  "G01-009": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "工况矩阵覆盖各寿命阶段与工作模式"
+  },
+  "G01-010": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "每个工作模式给出平均与峰值功耗"
+  },
+  "G01-011": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "每条需求有验证方法与阶段"
+  },
+  "G01-012": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "只靠分析或评审关闭的主要需求列下游验证"
+  },
+  "G01-013": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "NET-A08"
+   ],
+   "title": "对外接口逐针写明电气定义与对端"
+  },
+  "G01-014": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "对外接口写明非正常行为"
+  },
+  "G01-015": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "对外电气接口写明故障耐受"
+  },
+  "G01-016": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "对外电气接口写明故障发射"
+  },
+  "G01-017": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "电源输入接口的工况清单齐全"
+  },
+  "G01-018": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "−48 V 输入的极性与回线接地方式按 ETSI 4.1"
+  },
+  "G01-019": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "−48 V 输入的工作电压范围与耐受范围"
+  },
+  "G01-020": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "−48 V 输入 0.1 s 中断后自恢复"
+  },
+  "G01-021": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "−48 V 输入承受 500 V 1.2/50 µs 浪涌"
+  },
+  "G01-022": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "−48 V 输入在 −40.5 V 下电流不大于 1.5 Im"
+  },
+  "G01-023": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "−48 V 输入的合闸浪涌电流不超过 ETSI 图 4"
+  },
+  "G01-024": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "交流输入 1 周期 0% 跌落不复位（判据 B）"
+  },
+  "G01-025": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "交流输入较长暂降与中断后自恢复（判据 C）"
+  },
+  "G01-026": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "USB Type-C/PD 供电输入电压窗按 vSafe5V 并计线缆压降"
+  },
+  "G01-027": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "USB 可用电流按实际协商档取"
+  },
+  "G01-028": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "USB Sink 承受 24 V VBUS 不损坏"
+  },
+  "G01-029": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A05"
+   ],
+   "title": "USB Type-C/PD Sink 的 VBUS 电容按附着与协商状态分档，协商后超过 100 µF 须限流"
+  },
+  "G01-030": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "USB Sink 断开检测在 40 ms 内、5 V 时门限不高于 3.67 V"
+  },
+  "G01-031": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "USB Type-C Source 未连接时 VBUS 不带电，电容不超过表 4-2"
+  },
+  "G01-032": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "工业 24 V 数字输入写明 IEC 61131-2 输入类型与电流方向"
+  },
+  "G01-033": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "工业数字输入所接传感器与输入类型相符"
+  },
+  "G01-034": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "军车 28 V 输入稳态 20–33 V 并承受 ±2 V 纹波"
+  },
+  "G01-035": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "军车 28 V 输入起动跌落 12 V/1 s、16 V/30 s 不降级"
+  },
+  "G01-036": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "军车 28 V 输入承受 100 V/50 ms 浪涌"
+  },
+  "G01-037": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "军车 28 V 输入承受 ±250 V 尖峰"
+  },
+  "G01-038": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "军车 28 V 输入反接自保护"
+  },
+  "G01-039": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "舰船交流输入稳态偏离范围按 MIL-STD-1399 表 II"
+  },
+  "G01-040": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "舰船交流输入瞬态 ±16%、最坏 ±20% 不损坏"
+  },
+  "G01-041": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "舰船交流输入承受 1.0 kVp 尖峰"
+  },
+  "G01-042": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "舰船交流输入应急条件 −100%～+35% 不损坏"
+  },
+  "G01-043": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PoE PD 输入电压窗按 Type 与功率等级取，含线缆压降"
+  },
+  "G01-044": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PoE PD 分级按负载最大平均功率声明"
+  },
+  "G01-045": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PoE PD 浪涌电流低于 PSE 浪涌限值，上电后 80 ms 内取电不超过 400 mA"
+  },
+  "G01-046": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PoE PD 欠压时取电不超过 60 mA/5 mA"
+  },
+  "G01-047": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PoE PD 获准功率前不超过已分配功率"
+  },
+  "G01-048": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PoE PD 轻载时保持维持功率特征（MPS）"
+  },
+  "G01-049": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PoE 与适配器双源供电时电源切换不超出当前电源能力"
+  },
+  "G01-050": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PoE 适配器输入与其他连接之间的绝缘耐压"
+  },
+  "G01-051": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "正 24 V 输入写明来源、电压窗与上游保护"
+  },
+  "G01-052": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "正 24 V 输入声明反接与误接工况"
+  },
+  "G01-053": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "正 24 V 输入声明中断与暂降，恢复不锁死"
+  },
+  "G01-054": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "正 24 V 端口按归类登记浪涌与快速瞬变工况"
+  },
+  "G02-001": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "凡结论依赖参数变化的需求都映射到最坏工况分析项"
+  },
+  "G02-002": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "相同电路多处使用时只算一处，须写明覆盖清单和该处为何最坏"
+  },
+  "G02-003": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "参数取准确料号的手册保证限值，不用典型值或绝对最大额定"
+  },
+  "G02-004": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "工作条件超出手册测试条件时按定界表推出保证最坏值，推不出时才估算并标“估算”"
+  },
+  "G02-005": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "计入全部变化因素：初始公差（含装焊）、温度、老化、电接口与负载"
+  },
+  "G02-006": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "温度端点：下限取最低环境或冷启动温度，上限取元件实际温度"
+  },
+  "G02-007": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "要做高低温筛选或试验时，电源和故障会致损的电路按试验温度核对不致损坏"
+  },
+  "G02-008": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "有老化数据时按规定外推到设计寿命与工作温度"
+  },
+  "G02-009": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "没有老化数据时按器件类别特点估算并标“估算”，估算值不放行损坏与保护判据"
+  },
+  "G02-010": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "默认用极值法（EVA）：参数按代数和取极值，EVA 通过即结束"
+  },
+  "G02-011": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "确定每个参数的不利方向，非单调时查内部极值"
+  },
+  "G02-012": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "同一分析里同一参数、同一全局条件只取一个值，不用不可能组合"
+  },
+  "G02-013": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "RSS 只在 EVA 不过时使用：偏置项相加、随机项开方，三项及以上，只用在一级"
+  },
+  "G02-014": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "Monte Carlo 写明参数、分布、运行次数依据与直方图"
+  },
+  "G02-015": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "统计法结果的覆盖率达到工程取值"
+  },
+  "G02-016": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "统计法只用于功能、性能、指示类判据，不放行损坏、过热、安全、保护判据"
+  },
+  "G02-017": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "依赖校准、调试或补偿的分析项写明残余变化"
+  },
+  "G02-018": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "依赖校准或选配的电路功能和位号列入报告并交生产/测试"
+  },
+  "G02-019": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "下游电路的供电与接口信号取规格容差与最坏瞬态，不取标称"
+  },
+  "G02-020": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "负载取寿命末期最坏阻抗与电流，计入互连阻抗、负载电容与 ESR"
+  },
+  "G02-021": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "逐一分析全部工作模式与模式转换，只分析最严酷模式须写理由"
+  },
+  "G02-022": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "复位、时钟与同步接口的时序在源和负载同时最坏时仍配合"
+  },
+  "G02-023": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "接口电平按保证值兼容，直流噪声裕量为正"
+  },
+  "G02-024": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "每个分析项给出 min / 典型 / max、判据与裕量"
+  },
+  "G02-025": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "不符合项明确列出并给出改法"
+  },
+  "G02-026": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "分析证据绑定原理图版本，记录假设、方法、参数库与工具版本"
+  },
+  "G02-027": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "稳态（含重复）应力按最不利的可实现条件组合计算，阈值引用降额规范"
+  },
+  "G02-028": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "非周期瞬态应力（通断、阶跃、模式切换）按最不利的可实现条件组合计算"
+  },
+  "G02-029": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "仿真作 WCA 证据时写明模型来源、适用范围并给出验证"
+  },
+  "G02-030": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "只能靠计算或仿真预测的分析项列为下游实测，在三组以上实际工作点验证"
+  },
+  "G02-031": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "需求变严、电路改动或替代料时复核受影响的分析项"
+  },
+  "G02-032": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "复用已有电路时核对原分析在新工况、新需求下仍有效且完整"
+  },
+  "G02-033": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "分析记录可复核：自带假设、来源与推导，审查方独立复算关键边界"
+  },
+  "G02-034": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天项目：有源器件计入总剂量与剂量率漂移，数据裕量按批次关系取"
+  },
+  "G02-035": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天项目：单粒子效应防护电路在正常工作下纳入 WCA"
+  },
+  "G02-036": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "DEV-A05"
+   ],
+   "title": "器件身份唯一：值、料号、厂家、资料与封装指向同一订货型号"
+  },
+  "G02-037": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "DOC-A05"
+   ],
+   "title": "原理图、BOM 与发布图纸同版一致"
+  },
+  "G02-038": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "DEV-A04"
+   ],
+   "title": "交付的器件值不得为占位值或未定档"
+  },
+  "G02-039": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "器件工作在手册推荐工作条件内"
+  },
+  "G03-001": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "电源树各节点的最坏峰值电流不超过手册保证额定"
+  },
+  "G03-002": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "对外电源输入在最低电压下的输入电流不超过 G01 接口限值"
+  },
+  "G03-003": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PWR-A07"
+   ],
+   "title": "内补偿变换器与 LDO 的输出电容有效值在手册允许范围内"
+  },
+  "G03-004": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "内补偿变换器与 LDO 的输出电容 ESR 在手册窗口内"
+  },
+  "G03-005": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "手册给出 LC 与穿越频率关系式的内补偿变换器按式满足"
+  },
+  "G03-006": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "外补偿型式与控制方式匹配"
+  },
+  "G03-007": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "外补偿穿越频率低于开关频率限值与最低 RHP 零点"
+  },
+  "G03-008": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "外补偿环路在最坏组合下相位裕量不低于取值"
+  },
+  "G03-009": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "外补偿环路在最坏组合下增益裕量不低于取值"
+  },
+  "G03-010": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "动态计算用有效电容，按用途取下限或上限"
+  },
+  "G03-011": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "输入滤波器输出阻抗与变换器输入阻抗之比在全频段不低于取值"
+  },
+  "G03-012": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PWR-A05"
+   ],
+   "title": "阻抗比余量不足或算不清时，输入滤波主谐振极点对的阻尼比不低于取值"
+  },
+  "G03-013": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "启动、限流与浪涌模型记录字段齐全（G05 引用同一记录）"
+  },
+  "G03-014": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "功率限工作点的检测电压不低于手册推荐值"
+  },
+  "G03-015": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "启动时间不超过最短故障定时的取值比例"
+  },
+  "G03-016": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "正常启动时通路 MOSFET 在降额后的 SOA 内"
+  },
+  "G03-017": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PWR-A08"
+   ],
+   "title": "启动浪涌不超过 G01 接口限值，且不使上游保护动作"
+  },
+  "G03-018": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "变换器 UVLO 开启点低于输入窗下限"
+  },
+  "G03-019": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "满载电流在源阻抗上的压降小于 UVLO 滞回"
+  },
+  "G03-020": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "折返限流 LDO 的启动期负载电流低于折返允许电流"
+  },
+  "G03-021": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "软启动充电电流加启动期负载低于器件限流下限"
+  },
+  "G03-022": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "RST-A04"
+   ],
+   "title": "EN、PG 门限与上拉在最低输入下有效"
+  },
+  "G03-023": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "须保持的轨在中断期间的保持电容满足保持时间"
+  },
+  "G03-024": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "中断与恢复期间无器件过应力，恢复后自动回到正常"
+  },
+  "G03-025": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "复位门限高于各负载最低工作电压，掉电先复位"
+  },
+  "G03-026": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "负载跃变下输出偏差在负载允许窗内"
+  },
+  "G03-027": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "多电源器件的上电、掉电约束清单齐全"
+  },
+  "G03-028": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "上电时序在极值时间下满足约束"
+  },
+  "G03-029": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "受控掉电时序满足约束"
+  },
+  "G03-030": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "单轨失电与上游输入失电时仍满足约束"
+  },
+  "G03-031": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "反灌与预偏置场景清单齐全"
+  },
+  "G03-032": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "稳压器反向电流在手册允许内或已阻断"
+  },
+  "G03-033": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "在预偏置输出上启动的同步整流变换器支持预偏置启动"
+  },
+  "G03-034": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PWR-A09"
+   ],
+   "title": "LDO 在最低输入下仍在调整区"
+  },
+  "G03-035": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [],
+   "title": "手册要求的电源脚去耦齐全"
+  },
+  "G03-036": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PWR-A11"
+   ],
+   "title": "去耦电容介质与容值符合噪声频段"
+  },
+  "G03-037": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "DEV-A02"
+   ],
+   "title": "电解与钽电容不承受反压"
+  },
+  "G03-038": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "DEV-A01"
+   ],
+   "title": "电解与钽电容的直流加纹波峰值在降额内"
+  },
+  "G03-039": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "电解与钽电容的纹波电流在允许值内"
+  },
+  "G03-040": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PWR-A10"
+   ],
+   "title": "串联使用的电解电容有均压措施"
+  },
+  "G03-041": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "电源动态性能的实测清单列全（下游约束）"
+  },
+  "G03-042": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：功率与能量预算覆盖全部任务阶段"
+  },
+  "G03-043": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：可用功率与能量留不少于 5% 的系统余量"
+  },
+  "G03-044": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：闭环变换器相位裕量不低于 50°（寿命末最坏）"
+  },
+  "G03-045": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：闭环变换器增益裕量不低于 6 dB（寿命末最坏）"
+  },
+  "G03-046": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：电源分系统变换器在任一单故障后仍满足裕量"
+  },
+  "G03-047": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：任意输入斜率下达到正常工作"
+  },
+  "G03-048": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：级联源—负载阻抗稳定判据满足"
+  },
+  "G03-049": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：输入滤波阻尼比飞行条件不低于 0.4、地面不低于 0.3"
+  },
+  "G03-050": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：限流器按实际负载核稳定，并经最坏工况分析与试验"
+  },
+  "G03-051": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "LCL 负载：开机期间除输入滤波充电外不超过等级电流"
+  },
+  "G03-052": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "LCL 负载：达到限流时输入滤波充电时间不超过最短跳闸时间的 80%"
+  },
+  "G03-053": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "LCL 负载：不向母线回灌电流"
+  },
+  "G03-054": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "LCL 负载：含线束与输入滤波的电感不超过 300 µH（HLCL 50 µH）"
+  },
+  "G03-055": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "LCL 负载：输入电容符合原文表 3-1/3-2（HLCL 表 3-3）"
+  },
+  "G03-056": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "LCL 负载：提供 100 Hz–1 MHz 负载阻抗包络"
+  },
+  "G03-057": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "LCL 负载：源—负载阻抗相位差大于 150°、增益差大于 5 dB"
+  },
+  "G03-058": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "LCL 负载：内部限流不超过等级电流"
+  },
+  "G03-059": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "内补偿变换器的外部前馈电容与反馈网络在手册给定窗内"
+  },
+  "G04-001": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "每个接口写明所依据的规范版本与工作模式"
+  },
+  "G04-002": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "接口预算表字段齐全"
+  },
+  "G04-003": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "接口电平按保证值兼容，噪声裕量为正"
+  },
+  "G04-004": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "输出在实际负载电流下仍满足电平"
+  },
+  "G04-005": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A13"
+   ],
+   "title": "输入信号不超接收端绝对最大值"
+  },
+  "G04-006": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "接口耐受同一连接器上可接触到的电压"
+  },
+  "G04-007": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "未上电接口承受正常或故障信号不损坏"
+  },
+  "G04-008": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "已上电侧的未定状态不损坏未上电侧"
+  },
+  "G04-009": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "信号经保护二极管反灌未上电电源轨的电流与后果已判定"
+  },
+  "G04-010": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "DRV-A03"
+   ],
+   "title": "上电和复位期间关键输出有确定状态"
+  },
+  "G04-011": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "同步接口的建立和保持时序按保证值有余量"
+  },
+  "G04-012": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A07"
+   ],
+   "title": "自动方向电平转换器只用于手册允许的驱动类型"
+  },
+  "G04-013": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A07"
+   ],
+   "title": "自动方向电平转换器的负载与上下拉在手册限制内"
+  },
+  "G04-014": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "接口信号完整性约束交下游"
+  },
+  "G04-015": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "用 IBIS 模型仿真时模型与料号、工况相符"
+  },
+  "G04-016": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "I²C 输入门限按所接的上拉电压算"
+  },
+  "G04-017": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A04"
+   ],
+   "title": "I²C 上拉电阻不超上升时间决定的上限"
+  },
+  "G04-018": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A04"
+   ],
+   "title": "I²C 上拉电阻不低于灌电流决定的下限"
+  },
+  "G04-019": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "I²C 总线电容不超所选模式的上限"
+  },
+  "G04-020": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "I²C 总线速度不超最慢器件的能力"
+  },
+  "G04-021": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "I²C 器件失电时不拖住总线"
+  },
+  "G04-022": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "I²C 串联电阻不使下降时间和低电平超限"
+  },
+  "G04-023": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A10"
+   ],
+   "title": "I²C 总线地址不冲突、不用保留地址"
+  },
+  "G04-024": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "I²C 总线卡死有恢复路径"
+  },
+  "G04-025": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A11"
+   ],
+   "title": "RS-485 总线共模电压不超收发器范围"
+  },
+  "G04-026": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "RS-485 总线单位负载合计不超驱动能力"
+  },
+  "G04-027": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "RS-485 终端只在电缆两端且与线缆阻抗匹配"
+  },
+  "G04-028": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "RS-485 总线空闲、开路、短路时接收输出确定"
+  },
+  "G04-029": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "RS-485 信号速率在收发器允许范围内"
+  },
+  "G04-030": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A09"
+   ],
+   "title": "RS-485 上电和复位时不占用总线"
+  },
+  "G04-031": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "CAN 总线共模电压不超收发器范围"
+  },
+  "G04-032": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A06"
+   ],
+   "title": "CAN 总线两端端接，总阻约 60 Ω"
+  },
+  "G04-033": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A13"
+   ],
+   "title": "CAN 收发器逻辑侧电平与控制器匹配"
+  },
+  "G04-034": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "CAN 最低速率满足显性超时限制"
+  },
+  "G04-035": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "CAN 节点失电时不干扰总线"
+  },
+  "G04-036": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "隔离器失电时的默认输出符合系统安全状态"
+  },
+  "G04-037": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "隔离器数据速率不低于接口需要"
+  },
+  "G04-038": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "隔离器传播延迟与通道偏差计入时序预算"
+  },
+  "G04-039": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "隔离器 CMTI 高于两地之间的共模瞬变"
+  },
+  "G04-040": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PRO-A05"
+   ],
+   "title": "隔离接口两侧的供电和地不被无意短接"
+  },
+  "G04-041": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "运放两个输入在最坏工况下不超共模范围"
+  },
+  "G04-042": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "运放输出摆幅在负载和最低电源下满足需要"
+  },
+  "G04-043": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "运放输出电流不超额定"
+  },
+  "G04-044": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "运放闭环带宽满足信号带宽"
+  },
+  "G04-045": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "运放压摆率满足最大幅度和频率"
+  },
+  "G04-046": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "运放容性负载在稳定范围内"
+  },
+  "G04-047": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "非单位增益稳定运放的噪声增益不低于手册最小值"
+  },
+  "G04-048": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "ANA-A01"
+   ],
+   "title": "运放输入偏置电流有直流通路"
+  },
+  "G04-049": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "ANA-A02"
+   ],
+   "title": "运放不用作比较器（确需时按手册限制）"
+  },
+  "G04-050": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "高速运放去耦电容的自谐振频率覆盖工作频带"
+  },
+  "G04-051": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "敏感负载的电源噪声按 PSRR 进入噪声预算"
+  },
+  "G04-052": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "模拟链误差预算覆盖全部来源并满足要求"
+  },
+  "G04-053": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "模拟链总噪声按 RSS 与等效噪声带宽计算并满足预算"
+  },
+  "G04-054": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "ANA-A03"
+   ],
+   "title": "ADC 输入不超满量程和绝对最大值"
+  },
+  "G04-055": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "SAR ADC 采样网络模型参数齐全"
+  },
+  "G04-056": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "SAR ADC 采集时间不小于建立到 1/2 LSB 所需时间"
+  },
+  "G04-057": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "ADC 驱动器能驱动采样网络（理想源假设已复核）"
+  },
+  "G04-058": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：项目内定义标准接口电路并统一使用"
+  },
+  "G04-059": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：重构和高优先级命令线不受虚假激活"
+  },
+  "G04-060": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：未上电接口承受正常或故障信号不损坏"
+  },
+  "G04-061": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "RS-485 只靠内置失效保护时噪声裕量已判定"
+  },
+  "G04-062": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "RS-485 线长与速率组合在曲线范围内"
+  },
+  "G04-063": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "RS-485 分支电长度不超过驱动上升时间的十分之一"
+  },
+  "G04-064": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A12"
+   ],
+   "title": "RS-485 分裂端接的两只电阻匹配"
+  },
+  "G04-065": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "RS-485 节点间距使带载总线阻抗不低于 0.4 Z0"
+  },
+  "G04-066": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A09"
+   ],
+   "title": "RS-485 半双工每个节点的驱动器可被关闭"
+  },
+  "G04-067": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "RS-485 远端地不直接连接"
+  },
+  "G04-068": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [],
+   "title": "RS-485 隔离节点的信号和供电都隔离"
+  },
+  "G04-069": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "RS-485 多隔离节点总线有地参考"
+  },
+  "G04-070": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "CAN 总线长度与速率在建议范围内"
+  },
+  "G04-071": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "CAN 超过 30 节点时有写明的措施"
+  },
+  "G04-072": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "CAN 分支长度不超过临界长度的三分之一"
+  },
+  "G04-073": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "CAN 往返传播延迟在采样点之前"
+  },
+  "G04-074": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "CAN 端接电阻额定覆盖总线对电源短路"
+  },
+  "G04-075": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "CAN 端接不放在可拆卸的节点上"
+  },
+  "G04-076": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A12"
+   ],
+   "title": "CAN 分裂端接的电阻匹配且截止频率与速率相符"
+  },
+  "G04-077": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "CAN 带载总线阻抗不低于 0.71 Z0"
+  },
+  "G04-078": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "CLK-A01"
+   ],
+   "title": "晶振负载电容与晶振规定 CL 相符"
+  },
+  "G04-079": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "振荡器增益裕量足够起振"
+  },
+  "G04-080": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "外接限流电阻计入增益裕量"
+  },
+  "G04-081": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "晶振驱动电平不超过厂家规定最大值"
+  },
+  "G04-082": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "CLK-A02"
+   ],
+   "title": "一颗晶振只驱动一个器件"
+  },
+  "G04-083": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "计时用晶振的频率预算含负载电容牵引"
+  },
+  "G04-084": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "上电时序留够晶振起振时间"
+  },
+  "G04-085": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "样机测量振荡器安全系数"
+  },
+  "G04-086": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "以太网 MDI 隔离满足耐压要求"
+  },
+  "G04-087": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "SIG-A14"
+   ],
+   "title": "以太网线缆侧中心抽头有 Bob Smith 端接"
+  },
+  "G04-088": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [],
+   "title": "以太网 Bob Smith 高压电容耐压不低于隔离要求"
+  },
+  "G04-089": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [],
+   "title": "PoE 铜口 Bob Smith 电阻串隔直电容"
+  },
+  "G04-090": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PHY 侧中心抽头按所选 PHY 手册连接"
+  },
+  "G04-091": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "以太网中心抽头不并联（所选 PHY/磁件原厂未许可时）"
+  },
+  "G04-092": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "新设计的共模扼流圈放线缆侧"
+  },
+  "G04-093": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "千兆以太网变压器指标按 PHY 要求核对"
+  },
+  "G04-094": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "以太网 MDI 端接按所选 PHY 是否集成而定"
+  },
+  "G04-095": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PHY 基准电阻取值和容差按手册"
+  },
+  "G04-096": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "以太网机壳地与信号地的连接方式已写明"
+  },
+  "G04-097": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "以太网 MDI ESD 器件工作电压覆盖信号摆幅"
+  },
+  "G04-098": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "以太网 MDI ESD 器件的位置按所选 PHY 指南"
+  },
+  "G04-099": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "MAC 接口串联端接按所选 PHY 是否集成而定"
+  },
+  "G04-100": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "以太网布局约束交下游"
+  },
+  "G04-101": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "符号脚集合、脚号与电气类型按准确订货封装的官方脚表"
+  },
+  "G04-102": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "NET-A01",
+    "NET-A07",
+    "PWR-A02",
+    "PWR-A03"
+   ],
+   "title": "未用脚、保留脚与专用脚按手册处置"
+  },
+  "G04-103": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "USB 数据线外围按所选控制器手册"
+  },
+  "G04-104": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "NET-A07",
+    "SIG-A08"
+   ],
+   "title": "USB Type-C 端口 CC 按端口角色端接"
+  },
+  "G05-001": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "FMEA 范围与处置判定准则在分析前写定"
+  },
+  "G05-002": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "FMEA 覆盖电源入口、对外接口、保护链与声明的关键功能"
+  },
+  "G05-003": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "FMEA 每条条目字段齐全"
+  },
+  "G05-004": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "接口与保护器件的短路、开路等故障模式都已列出"
+  },
+  "G05-005": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "严重度按不计补偿措施的最坏后果确定"
+  },
+  "G05-006": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "单点失效的关键项进入关键项清单"
+  },
+  "G05-007": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "故障向接口与相邻电路的传播路径已标出并有结论"
+  },
+  "G05-008": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "同一检测手段覆盖多种故障模式时能区分或动作一致"
+  },
+  "G05-009": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "检测加恢复的时间短于造成不可逆后果的时间"
+  },
+  "G05-010": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "无告警的保护失效（潜伏故障）已登记"
+  },
+  "G05-011": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "控制措施与被保护元件的共同原因失效已登记"
+  },
+  "G05-012": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "不以 RPN 数值或门限作为关闭依据"
+  },
+  "G05-013": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "软件参与检测或保护的硬件故障已列软件响应"
+  },
+  "G05-014": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "FMEA 需处置的条目都有处置结论"
+  },
+  "G05-015": {
+   "class": "human",
+   "why": "method_or_record",
+   "scans": [],
+   "title": "保护器件或接口改动后 FMEA 随版本更新"
+  },
+  "G05-016": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "要求分析失效组合时 FTA 顶事件定义明确"
+  },
+  "G05-017": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "FTA 中的共同原因事件被显式标出"
+  },
+  "G05-018": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "依赖动作的保护列出故障注入验证项"
+  },
+  "G05-019": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "每条配电支路在源侧有保护"
+  },
+  "G05-020": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "保护链协调表字段齐全"
+  },
+  "G05-021": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "过流动作点下限高于最大正常电流（含启动与跃变）"
+  },
+  "G05-022": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "过流动作点上限下通路器件与连接器不超额定"
+  },
+  "G05-023": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "走线载流与过流动作点匹配（下游）"
+  },
+  "G05-024": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "最小故障电流足以使保护动作"
+  },
+  "G05-025": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "故障电流下的动作时间短于被保护对象的耐受时间"
+  },
+  "G05-026": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "级联保护中最靠近故障的一级先动作"
+  },
+  "G05-027": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "限流器介入瞬间的电流峰值不超通路器件额定"
+  },
+  "G05-028": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "限流器件失效短路时下游与上游后果已判定"
+  },
+  "G05-029": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "通路开关耗散性失效时周围器件不超额定"
+  },
+  "G05-030": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PRO-A07"
+   ],
+   "title": "TVS 工作电压不低于被钳节点最高工作电压"
+  },
+  "G05-031": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PRO-A09"
+   ],
+   "title": "TVS 钳位电压不超被保护器件绝对最大值"
+  },
+  "G05-032": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "TVS 浪涌能力按波形与温度折算后不小于浪涌电流"
+  },
+  "G05-033": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "TVS 单双向与节点电压范围和误接条件相符"
+  },
+  "G05-034": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "TVS 漏电与电容在被保护电路允许内"
+  },
+  "G05-035": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "钳位器件失效短路时上游能切断或后果可接受"
+  },
+  "G05-036": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "有源过压保护动作点下限高于输入窗上限"
+  },
+  "G05-037": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "有源过压保护动作点上限低于被保护器件绝对最大值"
+  },
+  "G05-038": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "断流时输入电感的正向尖峰不超控制器绝对最大值"
+  },
+  "G05-039": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "断流时输出电感的负向尖峰不超控制器与下游额定"
+  },
+  "G05-040": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "带短路启动时通路 MOSFET 在降额后的 SOA 内"
+  },
+  "G05-041": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "热短路时通路 MOSFET 按开始壳温降额后在 SOA 内"
+  },
+  "G05-042": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "并联 MOSFET 的短路 SOA 按单管核算"
+  },
+  "G05-043": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "自动重试下持续短路的平均发热不超限"
+  },
+  "G05-044": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "集成通路的 eFuse 按手册规定条件核短路行为"
+  },
+  "G05-045": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PRO-A08"
+   ],
+   "title": "熔断器额定电压与类型覆盖最大回路电压"
+  },
+  "G05-046": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "熔断器额定电流按温度折算后满足持续电流"
+  },
+  "G05-047": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "开机浪涌 I²t 不超熔断器熔断积分的降额值"
+  },
+  "G05-048": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "熔断器分断能力不小于预期短路电流"
+  },
+  "G05-049": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PPTC 保持电流按最高环境温度折算后满足工作电流"
+  },
+  "G05-050": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PPTC 动作电流按最低环境温度折算后低于最小故障电流"
+  },
+  "G05-051": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PRO-A08"
+   ],
+   "title": "PPTC 最大电压不低于故障时承受的电压"
+  },
+  "G05-052": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PPTC 最大故障电流不超 Imax"
+  },
+  "G05-053": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PPTC 动作后电阻上升计入压降预算"
+  },
+  "G05-054": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "每个对外电源接口的反接有明确处置"
+  },
+  "G05-055": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "反接阻断器件的反向耐压不低于最大负向电压"
+  },
+  "G05-056": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "反接时阻断器件之后的器件不承受超额反压"
+  },
+  "G05-057": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PRO-A10"
+   ],
+   "title": "反接阻断之前没有单向 TVS 造成源短路"
+  },
+  "G05-058": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "反接时接到输入的上拉或控制脚电流受限"
+  },
+  "G05-059": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "故障后的恢复方式写明并与所选料号变体一致"
+  },
+  "G05-060": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PRO-A12"
+   ],
+   "title": "锁存型保护有写明的复位路径"
+  },
+  "G05-061": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "关键功能的恢复不依赖切断外部供电"
+  },
+  "G05-062": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "欠压过程与恢复时不引发器件损伤"
+  },
+  "G05-063": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "保护恢复后负载进入确定状态"
+  },
+  "G05-064": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PRO-A13"
+   ],
+   "title": "故障指示在故障期间仍然有效"
+  },
+  "G05-065": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "关键功能的保护不与其共用器件、基准或辅助电源"
+  },
+  "G05-066": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：单硬件故障不向相邻电路或接口做不确定传播，并经分析验证"
+  },
+  "G05-067": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：故障的传播不损害对应的保护或冗余"
+  },
+  "G05-068": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：FMEA 严重度分类带 SH、R、SP 后缀"
+  },
+  "G05-069": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：FMEA 产品设计方面含器件位置、一器多用、接地屏蔽绝缘失效"
+  },
+  "G05-070": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：FMEA 与 HSIA 按 DRD 成文"
+  },
+  "G05-071": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：同线束或连接器内的冗余线路经分析证明无单点影响"
+  },
+  "G05-072": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：冗余功能分属不同集成电路"
+  },
+  "G05-073": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：同板冗余功能有物理隔离，偏离进关键项清单"
+  },
+  "G05-074": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：冷备份同时激活不造成永久退化"
+  },
+  "G05-075": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：持续耗散超过 20 W 的设备有温度监视"
+  },
+  "G05-076": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：交叉捆绑接口的单故障不传播到另一侧"
+  },
+  "G05-077": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：热备关键功能不用无自动周期复位的锁存保护"
+  },
+  "G05-078": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：无自动复位的保护锁存可由地面命令复位"
+  },
+  "G05-079": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：关键功能不因集中供电或同步的其他功能单故障而丧失"
+  },
+  "G05-080": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：FCL 供电的关键功能不出现须断外电才恢复的锁死"
+  },
+  "G05-081": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：熔断器保护的母线能承受任一熔断事件"
+  },
+  "G05-082": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：负载短路时主母线熔断器在 45 ms 内熔断"
+  },
+  "G05-083": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：主母线熔断器可更换"
+  },
+  "G05-084": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：无源端保护的独立冗余母线不因单故障丧失一条以上"
+  },
+  "G05-085": {
+   "class": "human",
+   "why": "project_baseline",
+   "scans": [],
+   "title": "航天：最终非关键负载断开链为全硬连线并按需容错"
+  },
+  "G05-086": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "串联二极管防反接的压降和功耗计入预算"
+  },
+  "G05-087": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PRO-A11"
+   ],
+   "title": "MOSFET 防反接的体二极管方向和栅极接法使反接时不导通"
+  },
+  "G05-088": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "防反接 MOSFET 在最低输入下按手册导通电阻条件导通"
+  },
+  "G05-089": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "PMOS 防反接在输入掉电时的回灌已判定"
+  },
+  "G05-090": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "输出可能高于输入的支路有反向电流阻断"
+  },
+  "G05-091": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "分立栅极 RC 软启动在快速重新上电时仍有效"
+  },
+  "G05-092": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "eFuse 过压钳位的持续过压后果已判定"
+  },
+  "G05-093": {
+   "class": "intent",
+   "why": "declared_field_then_machine",
+   "scans": [],
+   "title": "要求确定掉电状态时 eFuse 输出有放电路径"
+  },
+  "G05-094": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "低压回路中熔断器压降和断开电压已核"
+  },
+  "G05-095": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "重复脉冲按寿命次数换算所需熔断积分"
+  },
+  "G05-096": {
+   "class": "human",
+   "why": "datasheet_calculation",
+   "scans": [],
+   "title": "熔断器座的功率接受不小于熔断体持续耗散"
+  },
+  "G05-097": {
+   "class": "human",
+   "why": "downstream_stage",
+   "scans": [],
+   "title": "PPTC 动作后的表面温度不损伤邻近器件"
+  },
+  "G05-098": {
+   "class": "machine",
+   "why": "netlist_bom_or_tabled",
+   "scans": [
+    "PRO-A06",
+    "PWR-A08"
+   ],
+   "title": "外部锁存判据在正常动作与允许负载下不成立"
+  }
+ }
+}

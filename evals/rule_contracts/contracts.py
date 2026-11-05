@@ -46,7 +46,7 @@ def load_contracts():
 def build_db(board):
     db = {'nets': {}, 'parts': {}, 'pin2net': {}, 'pinname': {}, 'pintype': dict(board.get('pintype', {})),
           'ref2page': {}, 'pseudo_nets': list(board.get('pseudo_nets', []))}
-    for key in ('native_pintype', 'device_kinds', 'declared_pinname', 'ref2page'):
+    for key in ('native_pintype', 'device_kinds', 'declared_pinname', 'ref2page', 'bom'):
         if key in board:
             db[key] = copy.deepcopy(board[key])
     for part in board['parts']:

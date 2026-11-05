@@ -1,0 +1,105 @@
+{
+ "rule": "SIG-A13",
+ "runner": "cold",
+ "note": "output of a 5 V IC vs a 3.3 V IC into a 3.3 V input",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "SN74HC04",
+    "pins": [
+     [
+      "1",
+      "Y",
+      "SIG1"
+     ],
+     [
+      "2",
+      "VCC",
+      "VCC_5V"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "SN74LVC1G",
+    "pins": [
+     [
+      "1",
+      "A",
+      "SIG1"
+     ],
+     [
+      "2",
+      "VCC",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "native_pintype": {
+   "U1.1": "output",
+   "U2.1": "input"
+  }
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "SN74HC04",
+    "pins": [
+     [
+      "1",
+      "Y",
+      "SIG1"
+     ],
+     [
+      "2",
+      "VCC",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "SN74LVC1G",
+    "pins": [
+     [
+      "1",
+      "A",
+      "SIG1"
+     ],
+     [
+      "2",
+      "VCC",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ],
+  "native_pintype": {
+   "U1.1": "output",
+   "U2.1": "input"
+  }
+ }
+}
