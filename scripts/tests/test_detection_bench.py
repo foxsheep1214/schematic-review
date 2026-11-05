@@ -65,9 +65,10 @@ def test_historical_miss_and_real_truth_are_distinct_from_process():
     assert table['C']['real']['miss'] == 1
 
 
+@pytest.mark.skipif(not bench.KNOWN.is_file(), reason='电路评测集不在本机')
 def test_committed_known_defects_have_valid_sources_and_identifiers():
     criteria = {c['id']: c for c in bench.read(ROOT / 'references/shared/guideline-criteria.json')['criteria']}
-    bench.validate_known(bench.read(ROOT / 'evals/detection/known_defects.json'), criteria,
+    bench.validate_known(bench.read(bench.KNOWN), criteria,
                          [r.id for r in bench.catalog.RULES])
 
 

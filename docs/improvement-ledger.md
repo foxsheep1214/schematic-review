@@ -20,6 +20,33 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 - Changed: scripts/guideline_criteria.py scripts/catalog.py scripts/plan_review.py scripts/validate_review.py scripts/render_report.py scripts/independence.py scripts/tests/test_guideline_criteria.py scripts/tests/test_guideline_plan.py scripts/tests/test_catalog.py scripts/tests/test_reading_path.py references/shared/guideline-criteria.md references/check-catalog.md references/intent-format.md references/plan-format.md references/results-format.md evals/mutation/mutations.json evals/detection/RESULTS.md docs/improvement-ledger.md
 - Gates: pytest 2966 passed（配对 SR_ASG_SHARED_ROOT=asg-criteria-coverage）；mutation --changed d15cae1 --tier unit 168/168 killed；kicad_replay 195/195；detection RESULTS.md 重生成；check_ledger PASS（2026-11-04，分支 sr-criteria-coverage）
 
+
+## 关键/特殊器件订货状态风险与库内替换线索（2026-11-05）
+
+ISOW3080 资料可用但预量产状态漏问：先用现有资料审计复现（任务为 0，断言失败），再复用 audit_datasheets 的逐物料绑定、agent_requests 与 DEV-D01。
+ordering_status 库只提取订货行及首面预发布标记、保留路径/PDF页序、以预量产 Material type 优先于 Active；X/P 只给风险线索。
+资料不足不等于量产；已登记投产前换料并有接收方/出处时只标已登记，不重复新问题。接受动作不回显未经核实的设计方候选料号。
+同二级类 + selection 本角色未入选型号只作检索线索，候选必须落到 catalog 的真实文件，再独立核功能/电压/封装等决定性参数；
+建议仅留状态明确的 1–3 项，未知状态排除，非量产状态保留风险；待核建议不构成替代批准。脚本负责线索和库边界，审查员负责原表列归属、取舍与兼容结论。
+实际示例读 SLLSG02A p32/p36，均识别 XISOW3080PDWER 的预量产；读取 W-U401-PRODUCTION 的 owner/投产前换料动作仅用于去重。
+ADM2561E 的手册 p28 无明确状态列，且 28 引脚与原件 16 引脚不同，本轮无状态已核且适合的库内替代，不捏造型号。
+G09-020 尚未入运行包，本项只在 SR 自身 DEV-D01 承接，不改 BASIS 或共用层。brief 中 selection-review.md 在本分支不存在，沿用 datasheets.md。
+① 阅读字节上限 +3511 B 至 178445：新增订货状态、去重、库内候选筛选和人工核验边界，无新增入口、步骤或格式版本。
+
+- Event: user:2026-11-05
+- Causes: knowledge_missing 1, rule_not_enforced 1
+- Changed: scripts/ordering_status.py scripts/audit_datasheets.py scripts/catalog.py scripts/tests/test_ordering_status.py scripts/tests/test_reading_path.py references/architecture.md references/check-catalog.md references/datasheets.md docs/improvement-ledger.md
+- Gates: pytest scripts/tests -q：2983 passed, 2 skipped, 5 warnings in 120.16s (0:02:00)（真实 ASG 共用层对照未覆盖环境变量）；mutation --changed --tier unit：49/49 KILLED，0 存活、0 失效锚点；check_ledger PASS；git diff --check 无输出。实际库/手册示例见指定运行结果 sr-order/example.json、example.txt（run-example.py 可重跑）；不提交。
+
+## 电路评测集搬到规范目录，本仓库只留运行器 (2026-11-05)
+
+公开板审查记录和已知缺陷搬到 `原理图设计规范/评测集/`，与 ASG 共用；抓板工具留下并改名 `evals/boards_tools/`，新增 `evals/circuit_cases/run.py` 跑评测集自动层。种子基准的 `corpus.json`、`boards-merge*.json` 留在本仓库：`--offline` 和种子测试要用，搬走门禁就跑不全。
+
+- Event: user:2026-11-05 (能否将这些电路做成给SR和ASG两项技能进行评测和改进的，专门的评测集合？放在电路设计规范里。改现在的SR、ASG的架构)
+- Causes: rule_missing 1（两技能没有共用的电路评测集，案例和路径各管各的）
+- Changed: evals/eval_set.py, evals/circuit_cases/run.py, evals/boards_tools/fetch_board.py, evals/boards_tools/run_lane.sh, evals/boards_tools/board-prompt.md, evals/detection/run.py, evals/detection/README.md, scripts/tests/test_circuit_cases.py, scripts/tests/test_boards_tools.py, scripts/tests/test_detection_bench.py, references/architecture.md, docs/improvement-ledger.md
+- Gates: pytest 2959 passed；评测集不在时相关测试 26 passed、6 skipped；mutation --changed 0 mutations on 413 changed files
+
 ## 设计准则自动扫描覆盖 (2026-11-04)
 
 用户 2026-11-04 要求提高 SR 对设计准则的自动扫描覆盖。先复核“13 条准则映射到 A 类扫描”：按 BASIS 第二段字母 A 统计确为 13（G01 2、G02 0、G03 2、G04 8、G05 1）。354 条准则逐条分类（`docs/proposals/guideline-scan-classes-2026-11-04.json`）：网表、BOM、表格数据可判 52，加意图字段可判 33，只能人判 269。这批新增 24 项扫描（`scripts/guideline_scans.py`），优先 Matrix R2 真实漏检和 G02、G05、G03；另把 7 条已有 A 类的隐藏覆盖补进 BASIS，DEV-A02 扩到两条正电源轨接反（G03-037）。A 类映射的准则从 13 升到 47（G01 3、G02 3、G03 9、G04 23、G05 9）。多数扫描只判必要条件，准则的 C、D 类人工检查不撤。除 ANA-A01 和 SIG-A08 共用 CC 为 FINDING 外都是 CANDIDATE，缺证据就不报。回放约定 `guideline-scans-v1` 只改 r02 391→392、r03 436→438；阅读路径棘轮 ③ 226_267→227_448（`scans-and-tools.md` 五行）。开过 217 块板的语料，按误报收窄判据后，Matrix R2 只新增 PRO-A09 一条（D801 钳位 24.4 V 高于 U802.6 的 20 V，与 R2 F05 同一问题），校准板 0 条。

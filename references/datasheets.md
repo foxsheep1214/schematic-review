@@ -6,6 +6,39 @@
 
 ## 一、资料覆盖审计与补取
 
+### 关键和特殊器件的订货状态（DEV-D01）
+
+有料号的关键、特殊器件逐颗核订货表；常规阻容不逐颗查。`audit_datasheets.py` 复用资料绑定，
+在物料 `ordering` 保留料号、手册路径、PDF 页序（从 1 起）、订货码、原行和状态；非量产或读不到状态时生成
+`REVIEW_ORDERING_STATUS` 任务。资料没找到时保留原补取任务，`ordering` 仍为 INSUFFICIENT。
+资料 AVAILABLE 不等于量产。脚本只给线索：审查员须对照原表图像，核各列、完整后缀及适用版本。
+
+识别 Preview、Pre-Production/Preproduction、ADVANCE INFORMATION、Product Preview、NRND、Not Recommended、
+Obsolete、Discontinued、Last Time Buy/EOL；同一订货行的 Material type 写 Preproduction 时，即使 Status 为 Active
+也报风险。X/P 前缀是预量产线索，不能推定所有厂家同前缀都表示预量产，须核厂家说明。
+整份手册的预发布页眉也要查，不能用订货行 Active 覆盖它；脚本未识别的排版由人补核。
+脚本按同一行提取，跨行表、扫描件、无状态列的订货表一律保留资料不足，不能用“零命中”证明无风险。
+
+非量产状态只写供应/投产风险，不能据此判电路 FAIL。记录料号、订货码、状态、手册路径和页码；
+订货表或手册缺失写具体资料不足，不能写无风险。沿用 DEV-D01 的证据和风险说明，不新增电气错误。
+设计记录已经登记投产前换料、具体接受人及位置的，注明“已登记”并链接既有待办，不重复新问题。
+只取该记录的待办/接受事实，不取设计方的电气结论；记录不作为厂家状态的证据。
+可用 `ordering_status.notice(scan, acceptance)` 去重，acceptance 只含 `identity`、`accepted_by`、`action`、`source`，
+四项都须与本器件对应；不能以空接受人或另一料号的记录关闭风险。资料不足不因接受记录消失。
+
+发现风险必须找替换方案：读取 raw/Datasheet/catalog.json 的同 category + subcategory，以及 selection.json
+本角色被淘汰或 alternate 的候选；selection 只提供型号线索，参数/淘汰理由由 SR 从原厂资料独立复核。
+用 `ordering_status.candidate_pool(identity, catalog_path, selection)` 列出库内真实文件和各自订货状态；
+找不到原器件的二级类时先人工定位，不扩大到全库猜测。每个候选按本器件决定性参数核功能、输入/输出电压、
+隔离/速率等需求、封装及引脚兼容性。记录为什么合适、原厂依据和哪些仍须核（尤其重画图/PCB、引脚不兼容）。
+再用 `recommend_candidates(pool, assessments)` 截取 1–3 个：assessments 以库内 model 为键，包含
+`suitable: true`、`why`（含独立参数依据）、`pending`（待核项列表）。仅状态有明确证据的进入建议，非量产候选仍标风险；
+X/P 前缀单独命中或无状态列均不算已核状态。结果 `tentative: true`，不等于替代批准或电气结论。
+输出为空就明说“库内未找到状态已核且适合的替换型号”，列出被排除原因及待补资料，绝不补造型号。
+
+脚本负责可重复的型号连接、状态线索和候选边界；参数取舍、原表列归属、已接受记录的真实性和兼容结论由审查员判断。
+本项由 SR 承接 G09-020 的订货状态风险意图，G09 尚未进入运行包，不在共用层登记或伪造 BASIS 映射。
+
 scripts/audit_datasheets.py 只做确定性的逐物料覆盖审计，不访问网络。联网检索、
 下载、型号核对和来源判断由执行 agent 完成。脚本与 agent 通过
 datasheet-audit.json 和 datasheet-resolution.json 闭环。

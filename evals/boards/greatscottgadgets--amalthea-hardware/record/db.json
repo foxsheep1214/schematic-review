@@ -1,6 +1,0 @@
-{
-  "format": "external_cache_input_pointer",
-  "note": "这不是网表db；为遵守不复制第三方电路文件，真实db仅保存在下述缓存。未运行pack_review，不能当完整打包输入。",
-  "path": "/Users/skyfend/.cache/sr-boards/greatscottgadgets--amalthea-hardware/db.json",
-  "sha256": "67dcd111fcfc92a2f70abb076770fed8d17dc00dc3b882de77e41e753a0c4ded"
-}
