@@ -241,7 +241,9 @@ class GuidelineRulesTests(unittest.TestCase):
                          'autonomous-schematic-generation checkout without the rule library')
     def test_asg_holds_the_same_shared_layer(self):
         for name in SHARED:
-            self.assertEqual(committed_bytes(ASG, name), (ROOT / name).read_bytes(), name)
+            # An explicit integration pair compares working bytes; default installed checkout retains HEAD isolation.
+            other = (ASG / name).read_bytes() if os.environ.get('SR_ASG_SHARED_ROOT') else committed_bytes(ASG, name)
+            self.assertEqual(other, (ROOT / name).read_bytes(), name)
 
     def test_the_asg_comparison_ignores_an_uncommitted_edit(self):
         with tempfile.TemporaryDirectory() as tmp:

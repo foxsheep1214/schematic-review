@@ -8440,5 +8440,33 @@
   "file": "scripts/render_report.py",
   "old": "        if card['id'] in batched:\n            continue\n",
   "new": ""
+ },
+ {
+  "id": "M1621",
+  "name": "OUT surge loses negative polarity and both switch states",
+  "file": "scripts/catalog.py",
+  "old": "OUT 外部线路逐模式列正负极性浪涌，按输出开、关状态追注入路径，含体二极管回灌母线和负压到输出脚，逐脚比极性与持续时间对应额定；",
+  "new": ""
+ },
+ {
+  "id": "M1622",
+  "name": "field supply treated as signal port and no series surge stress",
+  "file": "scripts/catalog.py",
+  "old": "现场电源口按直流电源口归类，先列耦合模式、波形、源阻抗和正负事件，不能当普通信号口；并联电容放电电流计入钳位前通路，串联元件逐颗核浪涌电压、电流及脉冲能量，追到后级脚；",
+  "new": ""
+ },
+ {
+  "id": "M1623",
+  "name": "generated OUT question omits surge states",
+  "file": "scripts/catalog.py",
+  "old": "OUT 外部线路逐模式正负极性浪涌在输出开、关时的体二极管回灌母线和负压到输出脚路径是否均核；",
+  "new": ""
+ },
+ {
+  "id": "M1624",
+  "name": "generated field power question omits dc surge",
+  "file": "scripts/catalog.py",
+  "old": "现场电源口是否按直流电源口归类，耦合波形、源阻抗、并联电容放电和串联元件浪涌应力是否逐项核；",
+  "new": ""
  }
 ]

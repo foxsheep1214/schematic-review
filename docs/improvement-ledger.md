@@ -9,6 +9,18 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## G01–G09 运行包 1.9.0 与登记只读覆盖层（2026-11-05）
+
+按 integration brief 升级；当前登记 534 条已不含指定排除的五个编号，故运行包为 534 而非 brief 预期 529，不再任意删规则。ASG 覆盖层锁定九份源哈希；G05-031 动作逐字采用批准草案、版本 1.1→1.2；五条 handoff 的关闭阶段按原文交接对象最小修正，正文不动。合入 main 时才把覆盖层写回登记，本次不写登记、不提交。共享层两边同字节。
+
+BASIS 将新增 item 按主题映射到现有审查项；project_input/handoff 沿用 REQ-Q09。只扩展 PRO-D03/04 的两类浪涌检查问题，不新增逐规则检查器。映射和计划覆盖不等于审查已执行。显式 SR_ASG_SHARED_ROOT 配对时比较工作区字节，默认仍比较对方 HEAD，满足不提交的联调约束。两个缺口先复现失败，新增 M1621–M1624，包含实际生成的接口问题。
+
+- Event: user:2026-11-05
+- Causes: rule_not_enforced 2, rule_missing 2
+- Changed: evals/mutation/mutations.json, references/check-catalog.md, references/shared/guideline-criteria.json, references/shared/shared-layer.md, scripts/catalog.py, scripts/tests/test_guideline_criteria.py, scripts/tests/test_registry_integration.py, docs/improvement-ledger.md
+- Gates: 3001 passed, 5 warnings in 122.82s (0:02:02)；check_ledger.py PASS；git diff --check 通过；mutation --changed --tier unit 49/49 KILLED；新增四条仅跑功能测试亦全部杀死；完整日志见指定 integration/实施说明.md。
+
+
 ## 设计准则覆盖方式 coverage：REQ-Q09 按类各核一项 (2026-11-04)
 
 用户原则：ASG 和 SR 只对原理图负责。准则加可选字段 `coverage`（共用脚本与 ASG 同字节），缺省 `item`，行为不变。`project_input`、`handoff` 不要求 `catalog.BASIS` 映射，也不进 `uncovered`；计划的 `guidelines` 单列这两类，各生成一项 REQ-Q09：前者核需求基线是否写明，后者核 `materials.handoff_list` 是否列出，不核 PCB、EMC、热设计验收。库里没有这两类就没有 REQ-Q09，所以现有计划的检查项不变。门禁核这一项列的准则与计划一致、全是该类，PASS 要写 `batch_answers` 且键恰好相符，`handoff` 不能标 TBR；`item` 混入即报错。交接清单是设计方文档，独立性检查只对 `materials.handoff_list` 和 REQ-Q09 的 handoff 项放行，SR 只核列出，不采信其内容。
