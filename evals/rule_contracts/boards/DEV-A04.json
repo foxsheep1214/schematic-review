@@ -1,0 +1,45 @@
+{
+ "rule": "DEV-A04",
+ "runner": "cold",
+ "note": "R_Small as a value vs 10k",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "R_Small",
+    "pins": [
+     [
+      "1",
+      "",
+      "A"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "R1",
+    "value": "10k",
+    "pins": [
+     [
+      "1",
+      "",
+      "A"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

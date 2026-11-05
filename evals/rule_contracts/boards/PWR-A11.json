@@ -1,0 +1,77 @@
+{
+ "rule": "PWR-A11",
+ "runner": "cold",
+ "note": "Y5V vs X7R on an IC supply",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "C1",
+    "value": "100n/Y5V",
+    "pins": [
+     [
+      "1",
+      "",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "C1",
+    "value": "100n/X7R",
+    "pins": [
+     [
+      "1",
+      "",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U1",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "VDD",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

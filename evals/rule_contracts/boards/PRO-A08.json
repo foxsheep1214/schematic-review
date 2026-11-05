@@ -1,0 +1,45 @@
+{
+ "rule": "PRO-A08",
+ "runner": "cold",
+ "note": "32 V vs 63 V fuse on a 48 V rail",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "F1",
+    "value": "Fuse 1A/32V",
+    "pins": [
+     [
+      "1",
+      "",
+      "VCC_48V"
+     ],
+     [
+      "2",
+      "",
+      "VOUT"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "F1",
+    "value": "Fuse 1A/63V",
+    "pins": [
+     [
+      "1",
+      "",
+      "VCC_48V"
+     ],
+     [
+      "2",
+      "",
+      "VOUT"
+     ]
+    ]
+   }
+  ]
+ }
+}

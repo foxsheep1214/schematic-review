@@ -1,0 +1,27 @@
+{
+  "revision": "guideline-scans-v1",
+  "field_changes": {
+    "r02-dasduino-coreplus.plan.checks_total": {
+      "before": 391,
+      "after": 392
+    },
+    "r03-nrf9151-feather.plan.checks_total": {
+      "before": 436,
+      "after": 438
+    }
+  },
+  "scope": [
+    "设计准则自动扫描覆盖（用户 2026-11-04）：DEV-A04（G02-038 占位值）在 r02 多一条（Q1,Q2 值 PMOS），在 r03 多两条（Y1 Crystal_GND24；U12,U2 nRF9151-LAXX），每条多一项计划检查；391→392、436→438；其余字段不变。"
+  ],
+  "parents": {
+    "revisions/sr-scan-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+    "revisions/sr-scan-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+    "revisions/sr-scan-v1/expected.json": "08ce3751c5cdc5328454a01051a7ce67a68b63ece9153d33005b2e0df71962cf",
+    "revisions/sr-scan-v1/manifest.json": "34ab6ca87896d0e87a4f3270f8f6ca73dd1d8efbf8b87b7b1eaac32d392f86e6"
+  },
+  "derived_files": {
+    "revisions/guideline-scans-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+    "revisions/guideline-scans-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480",
+    "revisions/guideline-scans-v1/expected.json": "3a26b716c9151f98005cb09cfb7ecf27941ead1669505884a310d661fdaf9f14"
+  }
+}

@@ -1,0 +1,223 @@
+{
+ "rule": "PRO-A12",
+ "runner": "cold",
+ "note": "clear tied to the rail vs driven by an MCU",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "TPS26630",
+    "pins": [
+     [
+      "1",
+      "IN",
+      "VCC_24V"
+     ],
+     [
+      "2",
+      "OUT",
+      "VOUT"
+     ],
+     [
+      "3",
+      "PG",
+      "PG1"
+     ],
+     [
+      "4",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "SN74HCS00",
+    "pins": [
+     [
+      "1",
+      "1A",
+      "PG1"
+     ],
+     [
+      "2",
+      "1B",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "1Y",
+      "SET_N"
+     ],
+     [
+      "14",
+      "VCC",
+      "VCC_3V3"
+     ],
+     [
+      "7",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U3",
+    "value": "SN74HCS74",
+    "pins": [
+     [
+      "1",
+      "~{1CLR}",
+      "VCC_3V3"
+     ],
+     [
+      "2",
+      "1D",
+      "GND"
+     ],
+     [
+      "3",
+      "1CLK",
+      "GND"
+     ],
+     [
+      "4",
+      "~{1PRE}",
+      "SET_N"
+     ],
+     [
+      "5",
+      "1Q",
+      "LOCK"
+     ],
+     [
+      "14",
+      "VCC",
+      "VCC_3V3"
+     ],
+     [
+      "7",
+      "GND",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "TPS26630",
+    "pins": [
+     [
+      "1",
+      "IN",
+      "VCC_24V"
+     ],
+     [
+      "2",
+      "OUT",
+      "VOUT"
+     ],
+     [
+      "3",
+      "PG",
+      "PG1"
+     ],
+     [
+      "4",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "SN74HCS00",
+    "pins": [
+     [
+      "1",
+      "1A",
+      "PG1"
+     ],
+     [
+      "2",
+      "1B",
+      "VCC_3V3"
+     ],
+     [
+      "3",
+      "1Y",
+      "SET_N"
+     ],
+     [
+      "14",
+      "VCC",
+      "VCC_3V3"
+     ],
+     [
+      "7",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U3",
+    "value": "SN74HCS74",
+    "pins": [
+     [
+      "1",
+      "~{1CLR}",
+      "CLR_N"
+     ],
+     [
+      "2",
+      "1D",
+      "GND"
+     ],
+     [
+      "3",
+      "1CLK",
+      "GND"
+     ],
+     [
+      "4",
+      "~{1PRE}",
+      "SET_N"
+     ],
+     [
+      "5",
+      "1Q",
+      "LOCK"
+     ],
+     [
+      "14",
+      "VCC",
+      "VCC_3V3"
+     ],
+     [
+      "7",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U4",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "PA0",
+      "CLR_N"
+     ]
+    ]
+   }
+  ],
+  "pintype": {
+   "U4.1": "OUT"
+  }
+ }
+}

@@ -1,0 +1,107 @@
+{
+ "rule": "ANA-A02",
+ "runner": "cold",
+ "note": "no feedback vs a resistor back to the inverting input",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "OPA2277",
+    "pins": [
+     [
+      "1",
+      "OUT",
+      "OUT1"
+     ],
+     [
+      "2",
+      "IN-",
+      "REF"
+     ],
+     [
+      "3",
+      "IN+",
+      "SIG"
+     ],
+     [
+      "8",
+      "V+",
+      "VCC_5V"
+     ],
+     [
+      "4",
+      "V-",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "10k",
+    "pins": [
+     [
+      "1",
+      "",
+      "OUT1"
+     ],
+     [
+      "2",
+      "",
+      "LOAD"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "OPA2277",
+    "pins": [
+     [
+      "1",
+      "OUT",
+      "OUT1"
+     ],
+     [
+      "2",
+      "IN-",
+      "FB"
+     ],
+     [
+      "3",
+      "IN+",
+      "SIG"
+     ],
+     [
+      "8",
+      "V+",
+      "VCC_5V"
+     ],
+     [
+      "4",
+      "V-",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "10k",
+    "pins": [
+     [
+      "1",
+      "",
+      "OUT1"
+     ],
+     [
+      "2",
+      "",
+      "FB"
+     ]
+    ]
+   }
+  ]
+ }
+}

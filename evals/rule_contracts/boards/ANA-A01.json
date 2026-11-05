@@ -1,0 +1,123 @@
+{
+ "rule": "ANA-A01",
+ "runner": "cold",
+ "note": "an input behind a capacitor with vs without a resistor to ground",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "OPA2277",
+    "pins": [
+     [
+      "1",
+      "OUT",
+      "OUTN"
+     ],
+     [
+      "2",
+      "IN-",
+      "OUTN"
+     ],
+     [
+      "3",
+      "IN+",
+      "NP"
+     ],
+     [
+      "8",
+      "V+",
+      "VCC_5V"
+     ],
+     [
+      "4",
+      "V-",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "100n",
+    "pins": [
+     [
+      "1",
+      "",
+      "NP"
+     ],
+     [
+      "2",
+      "",
+      "SIG"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "OPA2277",
+    "pins": [
+     [
+      "1",
+      "OUT",
+      "OUTN"
+     ],
+     [
+      "2",
+      "IN-",
+      "OUTN"
+     ],
+     [
+      "3",
+      "IN+",
+      "NP"
+     ],
+     [
+      "8",
+      "V+",
+      "VCC_5V"
+     ],
+     [
+      "4",
+      "V-",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "C1",
+    "value": "100n",
+    "pins": [
+     [
+      "1",
+      "",
+      "NP"
+     ],
+     [
+      "2",
+      "",
+      "SIG"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "100k",
+    "pins": [
+     [
+      "1",
+      "",
+      "NP"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

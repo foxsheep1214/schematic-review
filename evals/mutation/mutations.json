@@ -7698,5 +7698,642 @@
   "file": "scripts/lint.py",
   "old": "        return parse_kicad.annotation_lines(parse_kicad.annotation_issues(source))",
   "new": "        return []"
+ },
+ {
+  "id": "M1515",
+  "name": "a library default name counts even with an ordering code",
+  "file": "scripts/guideline_scans.py",
+  "old": "and value.upper() in DEFAULT_VALUES[kind] and not code:",
+  "new": "and value.upper() in DEFAULT_VALUES[kind]:"
+ },
+ {
+  "id": "M1516",
+  "name": "no library default name is a placeholder",
+  "file": "scripts/guideline_scans.py",
+  "old": "elif kind in DEFAULT_VALUES and value.upper() in DEFAULT_VALUES[kind] and not code:",
+  "new": "elif False:"
+ },
+ {
+  "id": "M1517",
+  "name": "an ordering code in the BOM does not count",
+  "file": "scripts/guideline_scans.py",
+  "old": "code = _ordering_code(part) or _bom_code(lint, ref)",
+  "new": "code = _ordering_code(part)"
+ },
+ {
+  "id": "M1518",
+  "name": "wildcards are not placeholders",
+  "file": "scripts/guideline_scans.py",
+  "old": "elif kind in ACTIVE_KINDS and WILDCARD_RE.search(code or value):",
+  "new": "elif False:"
+ },
+ {
+  "id": "M1519",
+  "name": "an x inside a part number is a wildcard",
+  "file": "scripts/guideline_scans.py",
+  "old": "WILDCARD_RE = re.compile(r'\\?|\\*|[Xx]{2,}|\\dx\\d')",
+  "new": "WILDCARD_RE = re.compile(r'\\?|\\*|[Xx]{2,}|\\d[Xx]\\d')"
+ },
+ {
+  "id": "M1520",
+  "name": "a series name with no grade passes",
+  "file": "scripts/guideline_scans.py",
+  "old": "elif kind == pw.TVS and BARE_SERIES_RE.fullmatch(code or value):",
+  "new": "elif False:"
+ },
+ {
+  "id": "M1521",
+  "name": "undecided words pass",
+  "file": "scripts/guideline_scans.py",
+  "old": "if UNDECIDED_RE.search(value) or UNDECIDED_RE.search(code):",
+  "new": "if False:"
+ },
+ {
+  "id": "M1522",
+  "name": "a capacitor code reads as ohms",
+  "file": "scripts/guideline_scans.py",
+  "old": "RES_WRITTEN_RE = re.compile(r'^\\s*(?!\\d{3}[KMkm])\\d+",
+  "new": "RES_WRITTEN_RE = re.compile(r'^\\s*\\d+"
+ },
+ {
+  "id": "M1523",
+  "name": "a stock number is compared with the value",
+  "file": "scripts/guideline_scans.py",
+  "old": "and not str(key).strip().upper().startswith('LCSC')",
+  "new": ""
+ },
+ {
+  "id": "M1524",
+  "name": "one family with a Q in the name is two models",
+  "file": "scripts/guideline_scans.py",
+  "old": "return not (numbers and max(numbers, key=len) in ordered)",
+  "new": "return True"
+ },
+ {
+  "id": "M1525",
+  "name": "a containing code is another model",
+  "file": "scripts/guideline_scans.py",
+  "old": "if not wanted or not ordered or wanted in ordered or ordered in wanted or wanted[:4] == ordered[:4]:",
+  "new": "if not wanted or not ordered:"
+ },
+ {
+  "id": "M1526",
+  "name": "one ordering code may carry any value",
+  "file": "scripts/guideline_scans.py",
+  "old": "odd = [ref for ref in refs if _values_differ(kind, common, values[ref])]",
+  "new": "odd = []"
+ },
+ {
+  "id": "M1527",
+  "name": "the BOM missing a jumper is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": "lint.graph.kind(ref) not in (pw.TESTPOINT, pw.JUMPER)",
+  "new": "lint.graph.kind(ref) not in (pw.TESTPOINT,)"
+ },
+ {
+  "id": "M1528",
+  "name": "PCB graphics count as BOM parts",
+  "file": "scripts/guideline_scans.py",
+  "old": " if re.fullmatch(r'[A-Za-z]+\\d+', str(ref))]",
+  "new": "]"
+ },
+ {
+  "id": "M1529",
+  "name": "codes of different columns compare",
+  "file": "scripts/guideline_scans.py",
+  "old": "if (ORDERING_FIELD_RE.match(name) and fields.get(name) and str(written).strip()",
+  "new": "if (ORDERING_FIELD_RE.match(name) and next(iter(fields.values()), '') and str(written).strip()"
+ },
+ {
+  "id": "M1530",
+  "name": "LDO equal rails pass",
+  "file": "scripts/guideline_scans.py",
+  "old": "volts_in is not None and volts_out is not None and volts_in <= volts_out:",
+  "new": "volts_in is not None and volts_out is not None and volts_in < volts_out:"
+ },
+ {
+  "id": "M1531",
+  "name": "declared rail voltages are ignored",
+  "file": "scripts/guideline_scans.py",
+  "old": "if isinstance(volts, dict) and isinstance(volts.get('max'), (int, float)):",
+  "new": "if False:"
+ },
+ {
+  "id": "M1532",
+  "name": "one balancing resistor is enough",
+  "file": "scripts/guideline_scans.py",
+  "old": "if u_plus in reach and l_minus in reach:",
+  "new": "if u_plus in reach or l_minus in reach:"
+ },
+ {
+  "id": "M1533",
+  "name": "a used midpoint is called series caps",
+  "file": "scripts/guideline_scans.py",
+  "old": "if refs_on_mid - {upper, lower} - {r for r in refs_on_mid if lint.graph.kind(r) == pw.RESISTOR}:",
+  "new": "if False:"
+ },
+ {
+  "id": "M1534",
+  "name": "the same net twice is a string",
+  "file": "scripts/guideline_scans.py",
+  "old": "if upper == lower or u_minus != l_plus or is_ground(u_minus) or u_plus == l_minus:",
+  "new": "if upper == lower or u_minus != l_plus or is_ground(u_minus):"
+ },
+ {
+  "id": "M1535",
+  "name": "BOM specs are not read for the dielectric",
+  "file": "scripts/guideline_scans.py",
+  "old": "        said += [str(v) for k, v in (((lint.db.get('bom') or {}).get('parts') or {}).get(ref) or {}).items() if SPEC_FIELD_RE.match(str(k).strip())]\n",
+  "new": ""
+ },
+ {
+  "id": "M1536",
+  "name": "any soft dielectric hits with no IC supply",
+  "file": "scripts/guideline_scans.py",
+  "old": "        if fed:\n            lint.add('PWR-A11'",
+  "new": "        if True:\n            lint.add('PWR-A11'"
+ },
+ {
+  "id": "M1537",
+  "name": "stand-off equal to the rail is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": "if voltage is not None and vrwm < voltage:",
+  "new": "if voltage is not None and vrwm <= voltage:"
+ },
+ {
+  "id": "M1538",
+  "name": "the PESD family is not read",
+  "file": "scripts/guideline_scans.py",
+  "old": "match = VRWM_PESD_RE.search(str(field or ''))",
+  "new": "match = None"
+ },
+ {
+  "id": "M1539",
+  "name": "the fuse rating is not compared",
+  "file": "scripts/guideline_scans.py",
+  "old": "if voltage is not None and rated < voltage:",
+  "new": "if False:"
+ },
+ {
+  "id": "M1540",
+  "name": "a clamp below the pin maximum is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": "if limit and vcl > limit[0]:",
+  "new": "if limit:"
+ },
+ {
+  "id": "M1541",
+  "name": "a bidirectional TVS counts as unidirectional",
+  "file": "scripts/guideline_scans.py",
+  "old": "UNIDIRECTIONAL_RE = re.compile(r'^(?:SM[ABCF]J?\\d{1,3}(?:\\.\\d)?A|30KPA\\d+A|SM15T\\d+A)",
+  "new": "UNIDIRECTIONAL_RE = re.compile(r'^(?:SM[ABCF]J?\\d{1,3}(?:\\.\\d)?C?A|30KPA\\d+A|SM15T\\d+A)"
+ },
+ {
+  "id": "M1542",
+  "name": "a USB port counts as a reversible entry",
+  "file": "scripts/guideline_scans.py",
+  "old": " and not pw.usb_connector_type(lint.parts.get(ref, {})):",
+  "new": ":"
+ },
+ {
+  "id": "M1543",
+  "name": "a diode to ground is a block",
+  "file": "scripts/guideline_scans.py",
+  "old": "if far and far != net and not is_ground(far):",
+  "new": "if far and far != net:"
+ },
+ {
+  "id": "M1544",
+  "name": "a reverse controller is no block",
+  "file": "scripts/guideline_scans.py",
+  "old": "elif (kind == pw.IC and any(REVERSE_CONTROLLER_RE.match(str(part.get(k) or '')) for k in ('part', 'value'))\n              and _pin_match(lint, node, CONTROLLER_INPUT_RE)):",
+  "new": "elif False:"
+ },
+ {
+  "id": "M1545",
+  "name": "a TVS with no block is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": "if ports and blockers:",
+  "new": "if ports:"
+ },
+ {
+  "id": "M1546",
+  "name": "a driven gate is static",
+  "file": "scripts/guideline_scans.py",
+  "old": "        elif kind not in (pw.ZENER, pw.CAPACITOR, pw.TVS):\n            return None\n",
+  "new": ""
+ },
+ {
+  "id": "M1547",
+  "name": "an unwritten channel reads as P",
+  "file": "scripts/guideline_scans.py",
+  "old": "if pmos == nmos or not all(nodes.values()):",
+  "new": "if not all(nodes.values()):"
+ },
+ {
+  "id": "M1548",
+  "name": "a port-less FET is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": "if pmos and tie == 'ground' and not is_ground(source) and not is_ground(drain) and _on_connector(lint, _entry_nets(lint, source)):",
+  "new": "if pmos and tie == 'ground' and not is_ground(source) and not is_ground(drain):"
+ },
+ {
+  "id": "M1549",
+  "name": "the N channel case is not read",
+  "file": "scripts/guideline_scans.py",
+  "old": "elif nmos and tie == 'rail' and is_ground(drain) and not is_ground(source) and _on_connector(lint, _entry_nets(lint, source)):",
+  "new": "elif False:"
+ },
+ {
+  "id": "M1550",
+  "name": "a driven clear still has no reset",
+  "file": "scripts/guideline_scans.py",
+  "old": "if devices and _static_net(lint, model.graph.pin2net.get(opposite)) and (clock is None or _static_net(lint, clock)):",
+  "new": "if devices and (clock is None or _static_net(lint, clock)):"
+ },
+ {
+  "id": "M1551",
+  "name": "a running clock is no reset",
+  "file": "scripts/guideline_scans.py",
+  "old": "if devices and _static_net(lint, model.graph.pin2net.get(opposite)) and (clock is None or _static_net(lint, clock)):",
+  "new": "if devices and _static_net(lint, model.graph.pin2net.get(opposite)):"
+ },
+ {
+  "id": "M1552",
+  "name": "a receiver on the cut output counts",
+  "file": "scripts/guideline_scans.py",
+  "old": "\n                         and not outputs & set(lint.graph.nets_of(n.partition('.')[0]))]",
+  "new": "]"
+ },
+ {
+  "id": "M1553",
+  "name": "a status pin with no receiver is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": "if pull and receivers:",
+  "new": "if pull:"
+ },
+ {
+  "id": "M1554",
+  "name": "a pull-up from elsewhere is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": "pull = sorted(r for r, far in lint.graph.neighbors(net, {pw.RESISTOR}) if far in outputs)",
+  "new": "pull = sorted(r for r, far in lint.graph.neighbors(net, {pw.RESISTOR}))"
+ },
+ {
+  "id": "M1555",
+  "name": "an SPI line named SDA is an open-drain bus",
+  "file": "scripts/guideline_scans.py",
+  "old": "if OPEN_DRAIN_NET_RE.search(str(net)) and not spi:",
+  "new": "if OPEN_DRAIN_NET_RE.search(str(net)):"
+ },
+ {
+  "id": "M1556",
+  "name": "a series resistor is a TXB pull",
+  "file": "scripts/guideline_scans.py",
+  "old": " and (is_ground(far) or _named_rail(far)):\n                    lint.add('SIG-A07'",
+  "new": ":\n                    lint.add('SIG-A07'"
+ },
+ {
+  "id": "M1557",
+  "name": "a 100k pull is below the TXB limit",
+  "file": "scripts/guideline_scans.py",
+  "old": "TXB_PULL_MIN_KOHM = 50.0",
+  "new": "TXB_PULL_MIN_KOHM = 500.0"
+ },
+ {
+  "id": "M1558",
+  "name": "a controller's CC pins are judged",
+  "file": "scripts/guideline_scans.py",
+  "old": "            continue   # a controller or a module answers for its CC pins\n",
+  "new": "            pass\n"
+ },
+ {
+  "id": "M1559",
+  "name": "shared CC is not read",
+  "file": "scripts/guideline_scans.py",
+  "old": "if real['1'] and real['1'] == real['2']:",
+  "new": "if False:"
+ },
+ {
+  "id": "M1560",
+  "name": "a pull-up Rp is judged as Rd",
+  "file": "scripts/guideline_scans.py",
+  "old": "if is_ground(far) and value and not RD_MIN_KOHM <= value['kohm'] <= RD_MAX_KOHM:",
+  "new": "if value and not RD_MIN_KOHM <= value['kohm'] <= RD_MAX_KOHM:"
+ },
+ {
+  "id": "M1561",
+  "name": "a floating DE passes",
+  "file": "scripts/guideline_scans.py",
+  "old": "if net is None or net in lint.pseudo or len(lint.nets.get(net, [])) < 2:\n            lint.add('SIG-A09'",
+  "new": "if net is None:\n            lint.add('SIG-A09'"
+ },
+ {
+  "id": "M1562",
+  "name": "a fixed DE passes",
+  "file": "scripts/guideline_scans.py",
+  "old": "        if _named_rail(net):\n            lint.add('SIG-A09'",
+  "new": "        if False:\n            lint.add('SIG-A09'"
+ },
+ {
+  "id": "M1563",
+  "name": "a pulled-down DE is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": "        elif not downs:\n            lint.add('SIG-A09'",
+  "new": "        else:\n            lint.add('SIG-A09'"
+ },
+ {
+  "id": "M1564",
+  "name": "a GPIO behind a resistor drives nothing",
+  "file": "scripts/guideline_scans.py",
+  "old": "through = [peer for peer in lint.graph.signal_source_peers(net) if peer != net]",
+  "new": "through = []"
+ },
+ {
+  "id": "M1565",
+  "name": "its own RE counts as a driver",
+  "file": "scripts/guideline_scans.py",
+  "old": "others = [n for n in drivers if n.partition('.')[0] != ref]",
+  "new": "others = drivers"
+ },
+ {
+  "id": "M1566",
+  "name": "the driven DE row needs no human",
+  "file": "scripts/guideline_scans.py",
+  "old": "ref, kind='CANDIDATE', needs_human=['RS-485 DE 复位期间默认态'])",
+  "new": "ref, kind='CANDIDATE')"
+ },
+ {
+  "id": "M1567",
+  "name": "different straps are one address",
+  "file": "scripts/guideline_scans.py",
+  "old": "        if name_hits or static:\n            return False\n",
+  "new": ""
+ },
+ {
+  "id": "M1568",
+  "name": "a differing alert pin reads as an address strap",
+  "file": "scripts/guideline_scans.py",
+  "old": "r'(?:[AE]\\d?|AD\\d?|ADD\\d?|ADDR\\d?|SA\\d?|ASEL|AS|ALT|SDO)'",
+  "new": "r'A\\w{0,4}'"
+ },
+ {
+  "id": "M1569",
+  "name": "different models are one address",
+  "file": "scripts/guideline_scans.py",
+  "old": "by_model.setdefault(model, set()).add(ref)",
+  "new": "by_model.setdefault('X1Y', set()).add(ref)"
+ },
+ {
+  "id": "M1570",
+  "name": "a TVS above the common mode is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": "if vrwm is None or vrwm >= RS485_COMMON_MODE_V:",
+  "new": "if vrwm is None:"
+ },
+ {
+  "id": "M1571",
+  "name": "the TVS behind a series part is not on the bus",
+  "file": "scripts/guideline_scans.py",
+  "old": "for member in lint.graph.series_path(net, {pw.RESISTOR, pw.FERRITE, pw.COMMON_MODE_CHOKE}, max_hops=1):",
+  "new": "for member in (net,):"
+ },
+ {
+  "id": "M1572",
+  "name": "no capacitor is still a split",
+  "file": "scripts/guideline_scans.py",
+  "old": "if not any(is_ground(other) for _, other in lint.graph.neighbors(mid, {pw.CAPACITOR})):",
+  "new": "if False:"
+ },
+ {
+  "id": "M1573",
+  "name": "equal resistors are a mismatch",
+  "file": "scripts/guideline_scans.py",
+  "old": "if all(parsed) and abs(parsed[0]['kohm'] - parsed[1]['kohm']) > 0.001 * parsed[0]['kohm']:",
+  "new": "if all(parsed):"
+ },
+ {
+  "id": "M1574",
+  "name": "a wide tolerance passes",
+  "file": "scripts/guideline_scans.py",
+  "old": "elif tolerances and max(tolerances) >= 5:",
+  "new": "elif False:"
+ },
+ {
+  "id": "M1575",
+  "name": "a capacitor-less input is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": "if capacitor and not path:",
+  "new": "if not path:"
+ },
+ {
+  "id": "M1576",
+  "name": "a connector is no DC path",
+  "file": "scripts/guideline_scans.py",
+  "old": "            else:\n                return capacitor, True\n    return capacitor, False",
+  "new": "    return capacitor, False"
+ },
+ {
+  "id": "M1577",
+  "name": "a ground reach is no DC path",
+  "file": "scripts/guideline_scans.py",
+  "old": "        if is_ground(current) or _named_rail(current):\n            return capacitor, True\n        for other in lint.graph.nodes_on(current):",
+  "new": "        for other in lint.graph.nodes_on(current):"
+ },
+ {
+  "id": "M1578",
+  "name": "a follower has no feedback",
+  "file": "scripts/guideline_scans.py",
+  "old": "if active or reached & set(inputs.values()):",
+  "new": "if active:"
+ },
+ {
+  "id": "M1579",
+  "name": "a composite stage is open loop",
+  "file": "scripts/guideline_scans.py",
+  "old": "if active or reached & set(inputs.values()):",
+  "new": "if reached & set(inputs.values()):"
+ },
+ {
+  "id": "M1580",
+  "name": "an unused unit on fixed levels is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": "            if any(is_ground(net) or _named_rail(net) for net in inputs.values()) and all(is_ground(net) or _named_rail(net) for net in inputs.values()):\n                continue   # an unused unit parked on fixed levels\n",
+  "new": ""
+ },
+ {
+  "id": "M1581",
+  "name": "current sense amplifiers are amplifiers",
+  "file": "scripts/guideline_scans.py",
+  "old": "\n                and not NOT_VOLTAGE_AMP_RE.search(_text(part))):",
+  "new": "):"
+ },
+ {
+  "id": "M1582",
+  "name": "the kicad pinout is not read",
+  "file": "scripts/guideline_scans.py",
+  "old": "    layout = OPAMP_LAYOUTS.get(len([p for p in pins if p.isdigit()]))\n",
+  "new": "    layout = None\n"
+ },
+ {
+  "id": "M1583",
+  "name": "a lone symbol output is not read",
+  "file": "scripts/guideline_scans.py",
+  "old": "if len(drives) == 1 and sorted(sign for sign, _ in signs) == ['+', '-']:",
+  "new": "if False:"
+ },
+ {
+  "id": "M1584",
+  "name": "a lower amplifier supply is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": "if limit is None or supply <= limit:",
+  "new": "if limit is None:"
+ },
+ {
+  "id": "M1585",
+  "name": "a divider does not count",
+  "file": "scripts/guideline_scans.py",
+  "old": "if kind == pw.RESISTOR and any(is_ground(far) or _named_rail(far) for far in lint.graph.nets_of(owner)):",
+  "new": "if False:"
+ },
+ {
+  "id": "M1586",
+  "name": "a clamp does not count",
+  "file": "scripts/guideline_scans.py",
+  "old": "            if kind in (pw.DIODE, pw.ZENER, pw.TVS):\n                return True\n",
+  "new": ""
+ },
+ {
+  "id": "M1587",
+  "name": "a plain pin counts as ADC",
+  "file": "scripts/guideline_scans.py",
+  "old": "if not any(ADC_PIN_RE.search(n) for n in _names(lint, node)):",
+  "new": "if False:"
+ },
+ {
+  "id": "M1588",
+  "name": "a pulled-up net counts as push-pull",
+  "file": "scripts/guideline_scans.py",
+  "old": "return not any(_named_rail(far) for _, far in lint.graph.neighbors(lint.pin2net.get(node), {pw.RESISTOR}))",
+  "new": "return True"
+ },
+ {
+  "id": "M1589",
+  "name": "amplifiers and comparators drive logic levels",
+  "file": "scripts/guideline_scans.py",
+  "old": "if OPAMP_RE.search(_text(lint.parts[ref])) or COMPARATOR_RE.search(_text(lint.parts[ref])) or lint.graph.role_kind(ref) == 'opamp_comparator':",
+  "new": "if False:"
+ },
+ {
+  "id": "M1590",
+  "name": "any output type is a driver",
+  "file": "scripts/guideline_scans.py",
+  "old": "if str(lint.graph.native_pintype.get(node) or '').lower() != 'output' or not _single_rail_ic(lint, ref):",
+  "new": "if not _single_rail_ic(lint, ref):"
+ },
+ {
+  "id": "M1591",
+  "name": "any input type is a receiver",
+  "file": "scripts/guideline_scans.py",
+  "old": "inputs = [n for n in nodes if str(lint.graph.native_pintype.get(n) or '').lower() == 'input'\n                  and _single_rail_ic(lint, n.partition('.')[0])]",
+  "new": "inputs = [n for n in nodes if _single_rail_ic(lint, n.partition('.')[0])]"
+ },
+ {
+  "id": "M1592",
+  "name": "one domain counts as two",
+  "file": "scripts/guideline_scans.py",
+  "old": "and high >= low + LOGIC_LEVEL_GAP_V:",
+  "new": ":"
+ },
+ {
+  "id": "M1593",
+  "name": "a VIO transceiver is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": " or 'VIO' in names or 'VCCIO' in names:",
+  "new": ":"
+ },
+ {
+  "id": "M1594",
+  "name": "a 3.3 V transceiver is reported",
+  "file": "scripts/guideline_scans.py",
+  "old": "if supply is None or supply < 4.5 or net is None:",
+  "new": "if supply is None or net is None:"
+ },
+ {
+  "id": "M1595",
+  "name": "a floating centre tap passes",
+  "file": "scripts/guideline_scans.py",
+  "old": "if alone or is_ground(net):",
+  "new": "if is_ground(net):"
+ },
+ {
+  "id": "M1596",
+  "name": "a grounded centre tap passes",
+  "file": "scripts/guideline_scans.py",
+  "old": "if alone or is_ground(net):",
+  "new": "if alone:"
+ },
+ {
+  "id": "M1597",
+  "name": "any connector's CT pin is judged",
+  "file": "scripts/guideline_scans.py",
+  "old": " or not RJ45_RE.search(_text(part)):\n            continue\n        for node in _nodes(lint, ref):\n            if not any(CT_PIN_RE",
+  "new": ":\n            continue\n        for node in _nodes(lint, ref):\n            if not any(CT_PIN_RE"
+ },
+ {
+  "id": "M1598",
+  "name": "two positive rails are not compared",
+  "file": "scripts/board_scans.py",
+  "old": "if high is not None and low is not None and high > low:   # G03-037: + on the lower rail of two positive rails",
+  "new": "if False:"
+ },
+ {
+  "id": "M1599",
+  "name": "a negative rail reads as positive",
+  "file": "scripts/board_scans.py",
+  "old": "and not NEGATIVE_INSIDE_RE.search(plus + ' ' + minus):",
+  "new": ":"
+ },
+ {
+  "id": "M1600",
+  "name": "the guideline scans do not run",
+  "file": "scripts/board_scans.py",
+  "old": "    guideline_scans.run(lint)\n",
+  "new": ""
+ },
+ {
+  "id": "M1601",
+  "name": "the short data pin names are not read",
+  "file": "scripts/guideline_scans.py",
+  "old": "if {'A', 'B', 'DE'} <= set(names) and {'RO', 'R'} & set(names) and {'DI', 'D'} & set(names):",
+  "new": "if {'A', 'B', 'DE', 'RO', 'DI'} <= set(names):"
+ },
+ {
+  "id": "M1602",
+  "name": "a DC rating is not read",
+  "file": "scripts/guideline_scans.py",
+  "old": "rated = float(match.group(1)) if match else None",
+  "new": "rated = None"
+ },
+ {
+  "id": "M1603",
+  "name": "a resistor pack on DE reads as a driver",
+  "file": "scripts/guideline_scans.py",
+  "old": "        if any(lint.graph.kind(n.partition('.')[0]) == pw.RESISTOR or RESISTOR_PACK_RE.search(_text(lint.parts[n.partition('.')[0]])) for n in others):\n            continue   # a resistor pack hides what the net is pulled to\n",
+  "new": ""
+ },
+ {
+  "id": "M1604",
+  "name": "a connector drives no DE",
+  "file": "scripts/guideline_scans.py",
+  "old": "            and (lint.graph.kind(node.partition('.')[0]) not in (pw.RESISTOR, pw.CAPACITOR, pw.TESTPOINT, pw.TVS, pw.ZENER)\n                 or len(lint.graph.nets_of(node.partition('.')[0])) > 2)]",
+  "new": "            and lint.graph.kind(node.partition('.')[0]) in (pw.IC, pw.MOSFET, pw.BJT, pw.OPTO)]"
+ },
+ {
+  "id": "M1605",
+  "name": "a clamp behind a reverse controller is ahead of it",
+  "file": "scripts/guideline_scans.py",
+  "old": "\n              and _pin_match(lint, node, CONTROLLER_INPUT_RE)):",
+  "new": "):"
  }
 ]

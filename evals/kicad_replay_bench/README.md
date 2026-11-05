@@ -4,7 +4,9 @@ SR 现在主要审 ASG 生成的 KiCad 工程。`seeded_bench` 统计真实电�
 严格解析能不能产出 db、缺名脚怎么记、导出日志怎么算、去耦清单在缺口下怎么分组。本基准用 ASG 已冻结的
 真实交付回放这一层，每个字段都有人工核对后冻结的预期答案。每次改 SR 都应跑一次，几秒即可。
 
-当前默认约定 `sr-scan-v1`（2026-11-04，Matrix R2 扫描修正）：父约定 `boards-merge7-v1` 的输入字节不变，只改 r05 的 `plan.checks_total`（80→81）：全部器件封装字段为空时 DEV-D01 冷扫出一条 FINDING，成一项计划检查；不是电气缺陷。
+当前默认约定 `guideline-scans-v1`（2026-11-04，设计准则自动扫描覆盖）：父约定 `sr-scan-v1` 的输入字节不变，只改 r02 的 `plan.checks_total`（391→392）和 r03 的 `plan.checks_total`（436→438）：DEV-A04 占位值在 r02 多 Q1,Q2 值 PMOS 一条，在 r03 多 Y1 Crystal_GND24、U12,U2 nRF9151-LAXX 两条，都是库默认名且无料号，人工核对为有效线索。
+
+此前默认约定 `sr-scan-v1`（2026-11-04，Matrix R2 扫描修正）：父约定 `boards-merge7-v1` 的输入字节不变，只改 r05 的 `plan.checks_total`（80→81）：全部器件封装字段为空时 DEV-D01 冷扫出一条 FINDING，成一项计划检查；不是电气缺陷。
 
 此前默认约定 `boards-merge7-v1`（2026-11-03，合并步 7）：父约定 `boards-merge4-v1` 的输入字节不变，只改 rh-ad8495 三例的 `plan.checks_total`（67→68、67→68、63→64）：名称线索把层次网名的叶名当词，`/02_tc_amp/VREF_2V5` 命中 ANALOG，多一行 REQ-Q07.ANALOG；不表示该电路已核。
 

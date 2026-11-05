@@ -1,0 +1,67 @@
+{
+ "rule": "SIG-A07",
+ "runner": "cold",
+ "note": "TXB0104 vs TXS0102 on an I2C line",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "TXB0104",
+    "pins": [
+     [
+      "1",
+      "A1",
+      "I2C_SDA"
+     ],
+     [
+      "2",
+      "B1",
+      "OTHER"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "PA0",
+      "I2C_SDA"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "TXS0102",
+    "pins": [
+     [
+      "1",
+      "A1",
+      "I2C_SDA"
+     ],
+     [
+      "2",
+      "B1",
+      "OTHER"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "MCU",
+    "pins": [
+     [
+      "1",
+      "PA0",
+      "I2C_SDA"
+     ]
+    ]
+   }
+  ]
+ }
+}

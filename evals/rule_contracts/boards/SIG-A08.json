@@ -1,0 +1,129 @@
+{
+ "rule": "SIG-A08",
+ "runner": "cold",
+ "note": "a 1k vs a 5.1k Rd",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "USB_C_Receptacle",
+    "pins": [
+     [
+      "A5",
+      "CC1",
+      "CC1"
+     ],
+     [
+      "B5",
+      "CC2",
+      "CC2"
+     ],
+     [
+      "A4",
+      "VBUS",
+      "VBUS"
+     ],
+     [
+      "A1",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "1k",
+    "pins": [
+     [
+      "1",
+      "",
+      "CC1"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "5.1k",
+    "pins": [
+     [
+      "1",
+      "",
+      "CC2"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "USB_C_Receptacle",
+    "pins": [
+     [
+      "A5",
+      "CC1",
+      "CC1"
+     ],
+     [
+      "B5",
+      "CC2",
+      "CC2"
+     ],
+     [
+      "A4",
+      "VBUS",
+      "VBUS"
+     ],
+     [
+      "A1",
+      "GND",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "5.1k",
+    "pins": [
+     [
+      "1",
+      "",
+      "CC1"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "5.1k",
+    "pins": [
+     [
+      "1",
+      "",
+      "CC2"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

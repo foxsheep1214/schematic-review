@@ -1,0 +1,119 @@
+{
+ "rule": "PRO-A11",
+ "runner": "cold",
+ "note": "PMOS with the source vs the drain at the input",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN_2P",
+    "pins": [
+     [
+      "1",
+      "",
+      "VIN"
+     ],
+     [
+      "2",
+      "",
+      "RTN"
+     ]
+    ]
+   },
+   {
+    "ref": "Q1",
+    "value": "Q_PMOS_GDS",
+    "pins": [
+     [
+      "1",
+      "G",
+      "G1"
+     ],
+     [
+      "2",
+      "D",
+      "VLOAD"
+     ],
+     [
+      "3",
+      "S",
+      "VIN"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "10k",
+    "pins": [
+     [
+      "1",
+      "",
+      "G1"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "J1",
+    "value": "CONN_2P",
+    "pins": [
+     [
+      "1",
+      "",
+      "VIN"
+     ],
+     [
+      "2",
+      "",
+      "RTN"
+     ]
+    ]
+   },
+   {
+    "ref": "Q1",
+    "value": "Q_PMOS_GDS",
+    "pins": [
+     [
+      "1",
+      "G",
+      "G1"
+     ],
+     [
+      "2",
+      "D",
+      "VIN"
+     ],
+     [
+      "3",
+      "S",
+      "VLOAD"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "10k",
+    "pins": [
+     [
+      "1",
+      "",
+      "G1"
+     ],
+     [
+      "2",
+      "",
+      "GND"
+     ]
+    ]
+   }
+  ]
+ }
+}

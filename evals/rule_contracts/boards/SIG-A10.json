@@ -1,0 +1,161 @@
+{
+ "rule": "SIG-A10",
+ "runner": "cold",
+ "note": "both straps on ground vs one on the rail",
+ "trigger": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "TMP102",
+    "pins": [
+     [
+      "1",
+      "SDA",
+      "I2C_SDA"
+     ],
+     [
+      "2",
+      "SCL",
+      "I2C_SCL"
+     ],
+     [
+      "3",
+      "ADD0",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "TMP102",
+    "pins": [
+     [
+      "1",
+      "SDA",
+      "I2C_SDA"
+     ],
+     [
+      "2",
+      "SCL",
+      "I2C_SCL"
+     ],
+     [
+      "3",
+      "ADD0",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "4.7k",
+    "pins": [
+     [
+      "1",
+      "",
+      "I2C_SDA"
+     ],
+     [
+      "2",
+      "",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "4.7k",
+    "pins": [
+     [
+      "1",
+      "",
+      "I2C_SCL"
+     ],
+     [
+      "2",
+      "",
+      "VCC_3V3"
+     ]
+    ]
+   }
+  ]
+ },
+ "near_miss": {
+  "parts": [
+   {
+    "ref": "U1",
+    "value": "TMP102",
+    "pins": [
+     [
+      "1",
+      "SDA",
+      "I2C_SDA"
+     ],
+     [
+      "2",
+      "SCL",
+      "I2C_SCL"
+     ],
+     [
+      "3",
+      "ADD0",
+      "GND"
+     ]
+    ]
+   },
+   {
+    "ref": "U2",
+    "value": "TMP102",
+    "pins": [
+     [
+      "1",
+      "SDA",
+      "I2C_SDA"
+     ],
+     [
+      "2",
+      "SCL",
+      "I2C_SCL"
+     ],
+     [
+      "3",
+      "ADD0",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R1",
+    "value": "4.7k",
+    "pins": [
+     [
+      "1",
+      "",
+      "I2C_SDA"
+     ],
+     [
+      "2",
+      "",
+      "VCC_3V3"
+     ]
+    ]
+   },
+   {
+    "ref": "R2",
+    "value": "4.7k",
+    "pins": [
+     [
+      "1",
+      "",
+      "I2C_SCL"
+     ],
+     [
+      "2",
+      "",
+      "VCC_3V3"
+     ]
+    ]
+   }
+  ]
+ }
+}
