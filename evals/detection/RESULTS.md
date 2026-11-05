@@ -441,15 +441,15 @@
 
 | 输入 | SHA256 |
 |---|---|
-| seeded results.json | `01325cd147e3d646a3ce3c9e36e2b01248f7d9e09812cb35ea40f1320245db5d` |
+| seeded results.json | `7768ef8aa65d1ec7f98e78c429fc4ae6403700c02ab7bece12c9067c64084ac8` |
 | typical results.json | `e8dce54928d9ea72a1d965db3fd16e586939a82ebc4a2b0b2cb190205c0a6881` |
-| KiCad replay results.json | `e43362109a51ba2ab316ed11585e663abe7fdc8245d4fc6b88dc7a16df2531e1` |
+| KiCad replay results.json | `1161ab4623603745cbce1993f98a028308a9d8e94d5ac2f821a4577acf531c5a` |
 | known_defects.json | `e098a3ccbcd277598a22517b674fd0485cbe70d31b32be0e4fb0808057b2d7e1` |
 | catalog.py | `08043d32dab7f786cc9f43833b200d497cf00b8d3e396ea6be296d1e55820dc3` |
 | guideline-criteria.json | `6345d60065a04d6e776219e0f5824b323c7b4364ecaf7fb754e06935b97804b4` |
 | seeded corpus.json | `191a704ebd11e0e16da56c8cafb8fd4f66ba933b05a80453ef1dd1814661a532` |
 | typical cases.json | `6be32bc4b1b584952c82917cba087a6b347b8aad961e3dd131619debd7107ccf` |
-| improvement-ledger.md | `f72494739fb148757be31cc1de7c4c237699f24185f5cf19a32eb811bb24f0f4` |
+| improvement-ledger.md | `3f72be28938cbf10e04e9d7db2c575ba6668043b3f7a524a40051d0009d04b4f` |
 | docs/audits/2026-10-07-module-scope-replay.md | `6c8f91297d55555a484838931f91eefdc1af094f3efc277babac3b214dfe85f0` |
 | docs/audits/2026-10-07-review-charter.md | `7ae76d400315188e0a2d94a7cef8b69076f2e813715cb4020132b00697d14574` |
 
