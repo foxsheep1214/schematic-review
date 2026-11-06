@@ -45,6 +45,30 @@ def bundle(*rules):
     return base
 
 
+def unreachable_rules(library):
+    """Active item rules with no SR check that can reach them: a rule triggered by circuit types needs a check of one of
+    those types or one not tied to a type; a board rule needs a check not tied to a subject. REQ-Q09 holds the others."""
+    held = {}
+    for check, targets in catalog.BASIS.items():
+        for target in targets:
+            held.setdefault(target, []).append(check)
+    out = []
+    for card in library['criteria']:
+        if card['status'] != 'active' or g.coverage_class(card) != 'item':
+            continue
+        checks = held.get(card['id'], [])
+        types = set(card['applies_when'].get('circuit_types', ()))
+        if types:
+            reached = any(catalog.BY_ID[c].source != 'subject' or types & set(catalog.circuit_types_of(c)) for c in checks)
+        elif card['applies_when'].get('board'):
+            reached = any(catalog.BY_ID[c].source != 'subject' for c in checks)
+        else:
+            reached = bool(checks)
+        if not reached:
+            out.append(card['id'])
+    return out
+
+
 class GuidelineRulesTests(unittest.TestCase):
     def test_installed_bundle_is_valid(self):
         self.assertEqual(g.bundle_errors(g.load()), [])
@@ -155,22 +179,39 @@ class GuidelineRulesTests(unittest.TestCase):
         # one of those types, or by a check that is not tied to a circuit type.
         library = g.load()
         self.assertEqual(catalog.basis_errors({r['id'] for r in library['criteria']}), [])
-        held = {}
-        for check, targets in catalog.BASIS.items():
-            for target in targets:
-                held.setdefault(target, []).append(check)
-        for card in library['criteria']:
-            if card['status'] != 'active':
-                continue
-            with self.subTest(card['id']):
-                checks = held.get(card['id'], [])
-                self.assertTrue(checks)
-                types = set(card['applies_when'].get('circuit_types', ()))
-                if types:
-                    self.assertTrue(any(catalog.BY_ID[c].source != 'subject' or types & set(catalog.circuit_types_of(c))
-                                        for c in checks), checks)
-                elif card['applies_when'].get('board'):
-                    self.assertTrue(any(catalog.BY_ID[c].source != 'subject' for c in checks), checks)
+        self.assertEqual(unreachable_rules(library), [])
+
+    def test_a_batch_rule_is_held_by_req_q09_and_an_item_rule_still_needs_its_own_check(self):
+        # user 2026-11-04: project_input and handoff rules answer to the one REQ-Q09 row of their class; item stays strict
+        self.assertEqual(catalog.BY_ID[catalog.COVERAGE_BATCH_RULE].source, 'plan')
+        self.assertEqual(set(catalog.COVERAGE_BATCH_CRITERIA), set(g.COVERAGES) - {'item'})
+        library = bundle(rule('G08-901', applies_when={'board': True}, coverage='project_input'),
+                         rule('G08-902', applies_when={'board': True}, coverage='handoff', closing_stage='pcb'),
+                         rule('G08-903', applies_when={'board': True}),
+                         rule('G08-904', applies_when={'board': True}, coverage='item'))
+        self.assertEqual(unreachable_rules(library), ['G08-903', 'G08-904'])
+
+    def test_the_coverage_field_is_checked_and_a_library_without_it_is_as_before(self):
+        def field_errors(*rules):
+            return [e for e in g.bundle_errors(bundle(*rules)) if ': coverage must' in e or 'a handoff rule closes' in e]
+        self.assertEqual(field_errors(rule(), rule('G04-002', coverage='item'), rule('G04-003', coverage='project_input'),
+                                      rule('G04-004', coverage='handoff', closing_stage='pcb')), [])
+        self.assertEqual(len(field_errors(rule(coverage='batch'))), 1)
+        self.assertEqual(len(field_errors(rule(coverage='handoff'))), 1)
+        plain = bundle(rule(applies_when={'board': True}))
+        self.assertNotIn('by_coverage', g.coverage(plain, plain['criteria'], {}))
+
+    def test_coverage_lists_the_three_classes_and_only_an_answer_covers_a_project_input(self):
+        rules = [rule('G04-001', applies_when={'board': True}),
+                 rule('G04-002', applies_when={'board': True}, coverage='project_input'),
+                 rule('G04-003', applies_when={'board': True}, coverage='handoff', closing_stage='pcb')]
+        library = bundle(*rules)
+        found = g.coverage(library, rules, {'G04-002': ['calc:C1'], 'G04-003': ['work:W1']})
+        self.assertEqual(found['by_coverage'], {'item': ['G04-001'], 'project_input': ['G04-002'], 'handoff': ['G04-003']})
+        self.assertEqual(found['uncovered'], ['G04-001', 'G04-002'])
+        found = g.coverage(library, rules, {'G04-001': ['calc:C1']}, answered={'G04-002': 'R1'})
+        self.assertEqual(found['covered']['G04-002'], ['baseline:R1'])
+        self.assertEqual(found['uncovered'], ['G04-003'])
 
     def test_the_library_is_part_of_the_engineering_identity(self):
         # a new library version reopens designs and reviews like any rule change (workflow-handoff.md)
@@ -200,7 +241,9 @@ class GuidelineRulesTests(unittest.TestCase):
                          'autonomous-schematic-generation checkout without the rule library')
     def test_asg_holds_the_same_shared_layer(self):
         for name in SHARED:
-            self.assertEqual(committed_bytes(ASG, name), (ROOT / name).read_bytes(), name)
+            # An explicit integration pair compares working bytes; default installed checkout retains HEAD isolation.
+            other = (ASG / name).read_bytes() if os.environ.get('SR_ASG_SHARED_ROOT') else committed_bytes(ASG, name)
+            self.assertEqual(other, (ROOT / name).read_bytes(), name)
 
     def test_the_asg_comparison_ignores_an_uncommitted_edit(self):
         with tempfile.TemporaryDirectory() as tmp:

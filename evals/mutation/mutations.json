@@ -7689,7 +7689,7 @@
   "id": "M1513",
   "name": "ASG design-closure is citable",
   "file": "scripts/independence.py",
-  "old": "    r'design[_-]closure|reference[_-]input|design[_-]checklist', re.I)",
+  "old": "    r'design[_-]closure|reference[_-]input|scheme[_-]criteria|design[_-]checklist', re.I)",
   "new": "    r'design[_-]checklist', re.I)"
  },
  {
@@ -8335,5 +8335,138 @@
   "file": "scripts/guideline_scans.py",
   "old": "\n              and _pin_match(lint, node, CONTROLLER_INPUT_RE)):",
   "new": "):"
+ },
+ {
+  "id": "M1606",
+  "name": "coverage class default is not item",
+  "file": "scripts/guideline_criteria.py",
+  "old": "return rule.get('coverage', 'item')",
+  "new": "return rule.get('coverage', 'handoff')"
+ },
+ {
+  "id": "M1607",
+  "name": "coverage value unchecked",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if coverage_class(rule) not in COVERAGES:",
+  "new": "if False:"
+ },
+ {
+  "id": "M1608",
+  "name": "a schematic rule may be a handoff",
+  "file": "scripts/guideline_criteria.py",
+  "old": "elif coverage_class(rule) == 'handoff' and rule.get('closing_stage') == 'schematic':",
+  "new": "elif False:"
+ },
+ {
+  "id": "M1609",
+  "name": "by_coverage on an all-item library",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if set(classes.values()) - {'item'}:",
+  "new": "if True:"
+ },
+ {
+  "id": "M1610",
+  "name": "a citation covers a project input",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if classes[i] == 'project_input' else cited.get(i)",
+  "new": "if False else cited.get(i)"
+ },
+ {
+  "id": "M1611",
+  "name": "no REQ-Q09 rows",
+  "file": "scripts/plan_review.py",
+  "old": "        self.plan_guideline_batches()\n",
+  "new": "        pass\n"
+ },
+ {
+  "id": "M1612",
+  "name": "batch rules stay in the item lists",
+  "file": "scripts/plan_review.py",
+  "old": "open_items = [gid for gid in found['uncovered'] if gid not in batch]",
+  "new": "open_items = list(found['uncovered'])"
+ },
+ {
+  "id": "M1613",
+  "name": "handoff row reads the requirements",
+  "file": "scripts/plan_review.py",
+  "old": "('handoff', 'handoff_list')):",
+  "new": "('handoff', 'requirements')):"
+ },
+ {
+  "id": "M1614",
+  "name": "item rule rides in a batch",
+  "file": "scripts/validate_review.py",
+  "old": "wrong = [gid for gid in ids if classes.get(gid) != kind]",
+  "new": "wrong = []"
+ },
+ {
+  "id": "M1615",
+  "name": "row and section may differ",
+  "file": "scripts/validate_review.py",
+  "old": "if (planned.get('object') or {}).get('criteria', []) != ids:",
+  "new": "if False:"
+ },
+ {
+  "id": "M1616",
+  "name": "batch PASS with other rules",
+  "file": "scripts/validate_review.py",
+  "old": "isinstance(answers, dict) and set(answers) == set(ids) and all(",
+  "new": "isinstance(answers, dict) and set(answers) >= set(ids) and all("
+ },
+ {
+  "id": "M1617",
+  "name": "handoff PASS on TBR",
+  "file": "scripts/validate_review.py",
+  "old": "elif kind == 'handoff' and 'TBR' in answers.values():",
+  "new": "elif False:"
+ },
+ {
+  "id": "M1618",
+  "name": "any material may be a designer document",
+  "file": "scripts/independence.py",
+  "old": "if '%s.%s' % (path, key) != HANDOFF_LIST_INTENT:",
+  "new": "if key != 'materials':"
+ },
+ {
+  "id": "M1619",
+  "name": "every row may cite a designer document",
+  "file": "scripts/independence.py",
+  "old": "str(check.get('id')).startswith(HANDOFF_LIST_ROW)",
+  "new": "str(check.get('id')).startswith('REQ-Q09')"
+ },
+ {
+  "id": "M1620",
+  "name": "report lists batch rules in the main table",
+  "file": "scripts/render_report.py",
+  "old": "        if card['id'] in batched:\n            continue\n",
+  "new": ""
+ },
+ {
+  "id": "M1621",
+  "name": "OUT surge loses negative polarity and both switch states",
+  "file": "scripts/catalog.py",
+  "old": "OUT 外部线路逐模式列正负极性浪涌，按输出开、关状态追注入路径，含体二极管回灌母线和负压到输出脚，逐脚比极性与持续时间对应额定；",
+  "new": ""
+ },
+ {
+  "id": "M1622",
+  "name": "field supply treated as signal port and no series surge stress",
+  "file": "scripts/catalog.py",
+  "old": "现场电源口按直流电源口归类，先列耦合模式、波形、源阻抗和正负事件，不能当普通信号口；并联电容放电电流计入钳位前通路，串联元件逐颗核浪涌电压、电流及脉冲能量，追到后级脚；",
+  "new": ""
+ },
+ {
+  "id": "M1623",
+  "name": "generated OUT question omits surge states",
+  "file": "scripts/catalog.py",
+  "old": "OUT 外部线路逐模式正负极性浪涌在输出开、关时的体二极管回灌母线和负压到输出脚路径是否均核；",
+  "new": ""
+ },
+ {
+  "id": "M1624",
+  "name": "generated field power question omits dc surge",
+  "file": "scripts/catalog.py",
+  "old": "现场电源口是否按直流电源口归类，耦合波形、源阻抗、并联电容放电和串联元件浪涌应力是否逐项核；",
+  "new": ""
  }
 ]

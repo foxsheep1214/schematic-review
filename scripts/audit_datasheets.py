@@ -15,6 +15,7 @@ Typical flow::
         --resolution datasheet-resolution.json --json datasheet-audit.json
 """
 import datasheet_kinds
+import ordering_status
 import part_words
 import argparse
 import hashlib
@@ -322,7 +323,8 @@ def validate_datasheet_audit(audit, db=None):
                 'NEEDS_VERIFICATION': 'VERIFY_LOCAL_DATASHEET',
                 'MISSING': 'FETCH_DATASHEET_ONLINE',
                 'NOT_FOUND': 'REQUEST_USER_DATASHEET',
-            }.get(item.get('status'))
+            }.get(item.get('status'), 'REVIEW_ORDERING_STATUS' if
+                  (item.get('ordering') or {}).get('status') in ('RISK', 'INSUFFICIENT') else None)
             for item in materials if isinstance(item, dict)
         }
         seen_requests = set()
@@ -633,6 +635,16 @@ def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
                 'download_directory': '/tmp/codex-work/<task>/datasheets/',
                 'on_failure_message': message,
             })
+        # Status is an agent work item, independent of document availability/electrical readiness.
+        document = material.get('document') or {}
+        path = document.get('path') or ''
+        path = path if not path or os.path.isabs(path) else os.path.join(base_dir, path)
+        ordering = ordering_status.scan_ordering(identity, path)
+        material['ordering'] = ordering
+        notice = ordering_status.notice(ordering)
+        if notice and material['status'] == 'AVAILABLE':
+            requests.append({'action': 'REVIEW_ORDERING_STATUS', 'identity': identity,
+                             'refdes': material['refdes'], 'ordering': ordering, 'message': notice['message']})
         materials.append(material)
 
     counts = Counter(item['status'] for item in materials)
@@ -718,7 +730,7 @@ def main():
           f"needs_verification={summary['needs_verification']}  "
           f"missing={summary['missing']}  not_found={summary['not_found']}")
     for request in audit['agent_requests']:
-        if request['action'] == 'REQUEST_USER_DATASHEET':
+        if request['action'] in ('REQUEST_USER_DATASHEET', 'REVIEW_ORDERING_STATUS'):
             print('  ' + request['message'])
         else:
             print(f"  [{request['action']}] {request['identity']} "

@@ -86,10 +86,11 @@ ASG 自检缺口留在 ASG 的开放项里，不作 SR 的输入；FRESH 不是�
 改版还应收入 change contract、preflight、基线和复验记录，可使用附加角色。
 
 **对账清单（不采信）**：ASG 的 `record/design-closure.json` 和 `record/reference-input.json` 可以用
-`design_checklist.py --design-closure … --reference-input … [--results review-results.json] --json <草稿目录>/design-checklist.json`
+`design_checklist.py --design-closure … --reference-input … [--scheme-criteria …] [--results review-results.json] --json <草稿目录>/design-checklist.json`
 读成待核清单：每项计算只留 id、种类、涉及的位号与需求、去掉数值的计算名（数值换成〈值〉），每份脚表只留位号、型号和脚号；
+ASG 任务 1.3 的 `record/scheme-criteria.json` 只留关键功能块、电路类型和它说能淘汰候选的规则编号，排除了哪个候选、怎样满足都不读，审查员按图自己复核这些规则，方案踩到排除条件的按现有审查项报告；
 数值、限值、额定、结论、覆盖一概不读。审查员拿它核“设计方算过的对象我是否都自己算过”，带 `--results` 时列出台账还没提到的位号。
-清单和这两份文件都是设计方记录，引用或作证据时 `independence.py` 拒收；清单放在 `record/` 之外，不进交付。
+清单和这三份文件都是设计方记录，引用或作证据时 `independence.py` 拒收；清单放在 `record/` 之外，不进交付。
 
 ## SR → ASG/控制器必需角色
 

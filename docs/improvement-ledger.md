@@ -9,6 +9,74 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 共用层：1.9.0 覆盖层已写回登记（2026-11-05）
+
+ASG 合入 main 前已把覆盖层写回准则登记，从登记直接构建的规则库与 1.9.0 逐字节一致；`shared-layer.md` 那一节随 ASG 改为“已写回”，两边同字节，指纹 430c93a02bbf → f62f9e757234。规则库内容不变。
+
+- Event: user:2026-11-05（“修缺陷并升版”）
+- Causes: rule_not_enforced 1
+- Changed: references/shared/shared-layer.md, docs/improvement-ledger.md
+- Gates: 3002 passed（配对 SR_ASG_SHARED_ROOT=ASG r3-skill-fixes）；mutation --changed d15cae1 --tier unit 181/181 KILLED（改文档前跑）；check_ledger.py PASS
+
+## ASG 方案阶段规则记录进对账清单（2026-11-05）
+
+ASG 任务 1.3 新增 `record/scheme-criteria.json`（关键功能块会淘汰候选的规则）。`design_checklist.py --scheme-criteria` 只读块名、电路类型和规则编号，排除了哪个候选、怎样满足都不读；`independence.py` 把它列为设计方记录拒收（变异 M1513 的匹配文本随正则更新）。共用脚本 `guideline_criteria.py` 与 ASG 同字节（select 加 `typed_only`、`ports`，缺省行为不变）。
+
+- Event: user:2026-11-05（主会话转达：批准 ASG 方案阶段对照规则草案，SR 读这份记录复核被引用的规则）
+- Causes: rule_not_enforced 1
+- Changed: scripts/guideline_criteria.py, scripts/design_checklist.py, scripts/independence.py, scripts/tests/test_sr_tools_r2.py, references/architecture.md, references/workflow-handoff.md, docs/improvement-ledger.md, evals/mutation/mutations.json
+- Gates: 3002 passed in 116.53s（配对 SR_ASG_SHARED_ROOT=ASG integration）；mutation --changed --tier unit 14/14 KILLED；check_ledger.py PASS；git diff --check 通过
+
+## G01–G09 运行包 1.9.0 与登记只读覆盖层（2026-11-05）
+
+按 integration brief 升级；当前登记 534 条已不含指定排除的五个编号，故运行包为 534 而非 brief 预期 529，不再任意删规则。ASG 覆盖层锁定九份源哈希；G05-031 动作逐字采用批准草案、版本 1.1→1.2；五条 handoff 的关闭阶段按原文交接对象最小修正，正文不动。合入 main 时才把覆盖层写回登记，本次不写登记、不提交。共享层两边同字节。
+
+BASIS 将新增 item 按主题映射到现有审查项；project_input/handoff 沿用 REQ-Q09。只扩展 PRO-D03/04 的两类浪涌检查问题，不新增逐规则检查器。映射和计划覆盖不等于审查已执行。显式 SR_ASG_SHARED_ROOT 配对时比较工作区字节，默认仍比较对方 HEAD，满足不提交的联调约束。两个缺口先复现失败，新增 M1621–M1624，包含实际生成的接口问题。
+
+- Event: user:2026-11-05
+- Causes: rule_not_enforced 2, rule_missing 2
+- Changed: evals/mutation/mutations.json, references/check-catalog.md, references/shared/guideline-criteria.json, references/shared/shared-layer.md, scripts/catalog.py, scripts/tests/test_guideline_criteria.py, scripts/tests/test_registry_integration.py, docs/improvement-ledger.md
+- Gates: 3001 passed, 5 warnings in 122.82s (0:02:02)；check_ledger.py PASS；git diff --check 通过；mutation --changed --tier unit 49/49 KILLED；新增四条仅跑功能测试亦全部杀死；完整日志见指定 integration/实施说明.md。
+
+
+## 设计准则覆盖方式 coverage：REQ-Q09 按类各核一项 (2026-11-04)
+
+用户原则：ASG 和 SR 只对原理图负责。准则加可选字段 `coverage`（共用脚本与 ASG 同字节），缺省 `item`，行为不变。`project_input`、`handoff` 不要求 `catalog.BASIS` 映射，也不进 `uncovered`；计划的 `guidelines` 单列这两类，各生成一项 REQ-Q09：前者核需求基线是否写明，后者核 `materials.handoff_list` 是否列出，不核 PCB、EMC、热设计验收。库里没有这两类就没有 REQ-Q09，所以现有计划的检查项不变。门禁核这一项列的准则与计划一致、全是该类，PASS 要写 `batch_answers` 且键恰好相符，`handoff` 不能标 TBR；`item` 混入即报错。交接清单是设计方文档，独立性检查只对 `materials.handoff_list` 和 REQ-Q09 的 handoff 项放行，SR 只核列出，不采信其内容。
+
+阅读量记录：①② 各 +89（intent-format.md 的 `materials.handoff_list`），③ +476（plan-format.md 的 REQ-Q09、results-format.md 的 `batch_answers`），④ +257（results-format.md 的 `batch_answers`）。变异 M1606–M1610 落在共用脚本上，门内首个失败是逐字节比对测试；已去掉该测试单独重跑，五条都被功能测试杀死。
+
+- Event: user:2026-11-04 (主会话转达：规则库升版前让非逐条的准则批量处理，ASG、SR 只对原理图负责)
+- Causes: rule_missing 1
+- Changed: scripts/guideline_criteria.py scripts/catalog.py scripts/plan_review.py scripts/validate_review.py scripts/render_report.py scripts/independence.py scripts/tests/test_guideline_criteria.py scripts/tests/test_guideline_plan.py scripts/tests/test_catalog.py scripts/tests/test_reading_path.py references/shared/guideline-criteria.md references/check-catalog.md references/intent-format.md references/plan-format.md references/results-format.md evals/mutation/mutations.json evals/detection/RESULTS.md docs/improvement-ledger.md
+- Gates: pytest 2966 passed（配对 SR_ASG_SHARED_ROOT=asg-criteria-coverage）；mutation --changed d15cae1 --tier unit 168/168 killed；kicad_replay 195/195；detection RESULTS.md 重生成；check_ledger PASS（2026-11-04，分支 sr-criteria-coverage）
+
+
+## 关键/特殊器件订货状态风险与库内替换线索（2026-11-05）
+
+ISOW3080 资料可用但预量产状态漏问：先用现有资料审计复现（任务为 0，断言失败），再复用 audit_datasheets 的逐物料绑定、agent_requests 与 DEV-D01。
+ordering_status 库只提取订货行及首面预发布标记、保留路径/PDF页序、以预量产 Material type 优先于 Active；X/P 只给风险线索。
+资料不足不等于量产；已登记投产前换料并有接收方/出处时只标已登记，不重复新问题。接受动作不回显未经核实的设计方候选料号。
+同二级类 + selection 本角色未入选型号只作检索线索，候选必须落到 catalog 的真实文件，再独立核功能/电压/封装等决定性参数；
+建议仅留状态明确的 1–3 项，未知状态排除，非量产状态保留风险；待核建议不构成替代批准。脚本负责线索和库边界，审查员负责原表列归属、取舍与兼容结论。
+实际示例读 SLLSG02A p32/p36，均识别 XISOW3080PDWER 的预量产；读取 W-U401-PRODUCTION 的 owner/投产前换料动作仅用于去重。
+ADM2561E 的手册 p28 无明确状态列，且 28 引脚与原件 16 引脚不同，本轮无状态已核且适合的库内替代，不捏造型号。
+G09-020 尚未入运行包，本项只在 SR 自身 DEV-D01 承接，不改 BASIS 或共用层。brief 中 selection-review.md 在本分支不存在，沿用 datasheets.md。
+① 阅读字节上限 +3511 B 至 178445：新增订货状态、去重、库内候选筛选和人工核验边界，无新增入口、步骤或格式版本。
+
+- Event: user:2026-11-05
+- Causes: knowledge_missing 1, rule_not_enforced 1
+- Changed: scripts/ordering_status.py scripts/audit_datasheets.py scripts/catalog.py scripts/tests/test_ordering_status.py scripts/tests/test_reading_path.py references/architecture.md references/check-catalog.md references/datasheets.md docs/improvement-ledger.md
+- Gates: pytest scripts/tests -q：2983 passed, 2 skipped, 5 warnings in 120.16s (0:02:00)（真实 ASG 共用层对照未覆盖环境变量）；mutation --changed --tier unit：49/49 KILLED，0 存活、0 失效锚点；check_ledger PASS；git diff --check 无输出。实际库/手册示例见指定运行结果 sr-order/example.json、example.txt（run-example.py 可重跑）；不提交。
+
+## 电路评测集搬到规范目录，本仓库只留运行器 (2026-11-05)
+
+公开板审查记录和已知缺陷搬到 `原理图设计规范/评测集/`，与 ASG 共用；抓板工具留下并改名 `evals/boards_tools/`，新增 `evals/circuit_cases/run.py` 跑评测集自动层。种子基准的 `corpus.json`、`boards-merge*.json` 留在本仓库：`--offline` 和种子测试要用，搬走门禁就跑不全。
+
+- Event: user:2026-11-05 (能否将这些电路做成给SR和ASG两项技能进行评测和改进的，专门的评测集合？放在电路设计规范里。改现在的SR、ASG的架构)
+- Causes: rule_missing 1（两技能没有共用的电路评测集，案例和路径各管各的）
+- Changed: evals/eval_set.py, evals/circuit_cases/run.py, evals/boards_tools/fetch_board.py, evals/boards_tools/run_lane.sh, evals/boards_tools/board-prompt.md, evals/detection/run.py, evals/detection/README.md, scripts/tests/test_circuit_cases.py, scripts/tests/test_boards_tools.py, scripts/tests/test_detection_bench.py, references/architecture.md, docs/improvement-ledger.md
+- Gates: pytest 2959 passed；评测集不在时相关测试 26 passed、6 skipped；mutation --changed 0 mutations on 413 changed files
+
 ## 设计准则自动扫描覆盖 (2026-11-04)
 
 用户 2026-11-04 要求提高 SR 对设计准则的自动扫描覆盖。先复核“13 条准则映射到 A 类扫描”：按 BASIS 第二段字母 A 统计确为 13（G01 2、G02 0、G03 2、G04 8、G05 1）。354 条准则逐条分类（`docs/proposals/guideline-scan-classes-2026-11-04.json`）：网表、BOM、表格数据可判 52，加意图字段可判 33，只能人判 269。这批新增 24 项扫描（`scripts/guideline_scans.py`），优先 Matrix R2 真实漏检和 G02、G05、G03；另把 7 条已有 A 类的隐藏覆盖补进 BASIS，DEV-A02 扩到两条正电源轨接反（G03-037）。A 类映射的准则从 13 升到 47（G01 3、G02 3、G03 9、G04 23、G05 9）。多数扫描只判必要条件，准则的 C、D 类人工检查不撤。除 ANA-A01 和 SIG-A08 共用 CC 为 FINDING 外都是 CANDIDATE，缺证据就不报。回放约定 `guideline-scans-v1` 只改 r02 391→392、r03 436→438；阅读路径棘轮 ③ 226_267→227_448（`scans-and-tools.md` 五行）。开过 217 块板的语料，按误报收窄判据后，Matrix R2 只新增 PRO-A09 一条（D801 钳位 24.4 V 高于 U802.6 的 20 V，与 R2 F05 同一问题），校准板 0 条。

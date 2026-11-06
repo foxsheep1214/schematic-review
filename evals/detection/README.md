@@ -28,7 +28,7 @@ python3 -B evals/detection/run.py \
 |---|---|---|
 | seeded_bench | 每个 board/defect/site 一个正例；targets 经 `catalog.BASIS` 去重映射；auto 任一目标命中即检出 | 203 个假设注入位点，不是 203 个经独立确认的真实电气缺陷；其他规则发现、计划 pointed 均不算目标命中 |
 | typical_circuits | 调用原基准 judge 产生的每条分类结果，按规则映射 BASIS | expected 是真实问题或正确线索，201 个正例不能都称真实缺陷 |
-| known_defects.json | 人工整理台账与 audits 中有审查来源的事件；按具体语义窄映射 | 是历史结果，不是本次自动运行结果；不把一条事件中的行数当缺陷数 |
+| known_defects.json（在电路评测集 `已知缺陷/`，见 `evals/eval_set.py`） | 人工整理台账与 audits 中有审查来源的事件；按具体语义窄映射 | 是历史结果，不是本次自动运行结果；不把一条事件中的行数当缺陷数 |
 | kicad_replay_bench | 当前默认约定下字段一致/偏差/不一致总数单列 | 不具有设计缺陷真值，不能换算成电气命中 |
 | input_bench | 展示仓库存档的 2026-10-07 import_after 4/4 | 未获得冻结作者输入，不重新运行；仅导入完整性 |
 | consistency_bench | 明示没有仓内评分记录 | 一致性不判对错，即使有结果也不直接计检出 |

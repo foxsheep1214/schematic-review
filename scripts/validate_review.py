@@ -236,6 +236,35 @@ def review_scope(plan, report, require):
     return (decl if ok else {"functions": [], "reason": ""}), rows
 
 
+def guideline_batch_errors(section, expected, checks, library):
+    """REQ-Q09 (user 2026-11-04): each batch class has its one row, listing exactly the plan's rules of that class. A rule
+    the library holds item never rides in a batch, and a PASS says rule by rule where it is answered or listed (only a
+    project input may be TBR: nothing is listed yet is no handoff)."""
+    section = section if isinstance(section, dict) else {}
+    classes = {r['id']: guideline_criteria.coverage_class(r) for r in library['criteria']}
+    rows = {(x.get('object') or {}).get('coverage'): (key, x) for key, x in expected.items()
+            if x.get('rule') == catalog.COVERAGE_BATCH_RULE}
+    errors = []
+    for kind in ('project_input', 'handoff'):
+        ids = section.get(kind) or []
+        key, planned = rows.get(kind, (None, {}))
+        if (planned.get('object') or {}).get('criteria', []) != ids:
+            errors.append(f"plan guidelines.{kind} and its {catalog.COVERAGE_BATCH_RULE} row list different rules: regenerate the plan")
+        wrong = [gid for gid in ids if classes.get(gid) != kind]
+        if wrong:
+            errors.append(f"{catalog.COVERAGE_BATCH_RULE} {kind}: {', '.join(wrong)} are not {kind} in the rule library; "
+                          "an item rule is reviewed by its own check")
+        row = checks.get(key) or {}
+        if row.get('review_result') == 'PASS':
+            answers = row.get('batch_answers')
+            if not (isinstance(answers, dict) and set(answers) == set(ids) and all(text(a) for a in answers.values())):
+                errors.append(f"{key}: a PASS needs batch_answers saying, for exactly {', '.join(ids)}, where each is "
+                              + ('answered or TBR' if kind == 'project_input' else 'listed'))
+            elif kind == 'handoff' and 'TBR' in answers.values():
+                errors.append(f"{key}: a handoff rule is listed or the row is not a PASS; TBR is for a project input")
+    return errors
+
+
 def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
                     require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False,
                     require_dependencies=False, base_dir=None):
@@ -669,6 +698,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
                 "plan guidelines were built on another shared rule library (or none): regenerate the plan")
         require(isinstance(guidelines, dict) and guidelines.get("shared_sha256") == guideline_criteria.shared_digest(),
                 "plan guidelines were built on another shared layer (references/shared): regenerate the plan")
+    errors.extend(guideline_batch_errors(guidelines, expected, checks, library))
     errors[:] = collapse_open_cascade(errors, checks)   # same count of validity, one line per open item instead of per row
     release = release_for(errors, blockers, accepted)
     if "release" in report:
