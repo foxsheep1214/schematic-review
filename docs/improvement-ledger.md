@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 电容寿命按 G08-040 区分固态聚合物与混合型（2026-11-06）
+
+用户要求核对 G08-040 与 SR 寿命估算的差异。SR 无电容寿命数值自动计算器，原计划判据、DEV-C02 与审查说明统一指向无厂家公式时 10 ℃ 翻倍，且普通钽电容的排除逻辑连聚合物钽电容一起跳过。先补测试复现三项失败，再修正：先核系列类型，系列公式优先；无系列公式时固态聚合物按 20 ℃ 十倍，液态铝电解与混合型按 10 ℃ 翻倍，其他电容沿用原估算；类型未定写 BOM 约束，聚合物同时核 CAP-POLY-LIFE 的寿命与工况。判断和计算仍由审查员完成，不增加自动寿命结论。普通钽电容保持排除，明确聚合物的钽电容进入寿命计划。共用层与 ASG 未改。② 阅读量增加 335 B 至 161508：commodity-floors.md 补上两种公式、类型核验、聚合物钽与降额工况；全量首次仅此阅读量记录失败，按维护约定更新记录，不增加新流程或新文档。
+
+- Event: user:2026-11-06（驱动codex进行两处小核对）；test:/tmp/codex-work/A/life-red.log（3 failed，22 passed）
+- Causes: rule_not_enforced 2
+- Changed: scripts/part_words.py, scripts/plan_circuits.py, scripts/catalog.py, scripts/review_functions.py, scripts/tests/test_life_rows.py, scripts/tests/test_reading_path.py, references/commodity-floors.md, references/check-catalog.md, evals/mutation/mutations.json, docs/improvement-ledger.md
+- Gates: 寿命专项 25 passed；SR_ASG_SHARED_ROOT=ASG main 9aecc2a 全量 pytest 3002 passed、2 skipped、5 warnings（141.23 s）；mutation --changed 20d4d52 --tier unit 329/329 KILLED（--jobs 10；临时插件只把历史检出测试前置，不删测试，未变异副本通过；运行器未改）；新增 M1625–M1630 另只跑寿命测试亦 6/6 KILLED；check_ledger.py PASS；按 ASG tests/test_terminology.py 核新增文档行 PASS；git diff --check PASS。日志与测试排序说明见 /tmp/codex-work/A/。
+
 ## 共用层：1.9.0 覆盖层已写回登记（2026-11-05）
 
 ASG 合入 main 前已把覆盖层写回准则登记，从登记直接构建的规则库与 1.9.0 逐字节一致；`shared-layer.md` 那一节随 ASG 改为“已写回”，两边同字节，指纹 430c93a02bbf → f62f9e757234。规则库内容不变。
