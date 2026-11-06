@@ -3,7 +3,7 @@
 在仓库根目录运行（Python 标准库，无网络、无需 KiCad）：
 
 ```sh
-python3 -B evals/detection/run.py
+python3 -B evals/detection/run.py --guideline-release <选定发布包>
 ```
 
 默认重跑种子离线语料、典型电路、KiCad 原生回放，写本目录 `RESULTS.md`。
@@ -12,7 +12,7 @@ python3 -B evals/detection/run.py
 复用已有结果（路径分别对应上游 `--out`、`--json`、`--out`）：
 
 ```sh
-python3 -B evals/detection/run.py \
+python3 -B evals/detection/run.py --guideline-release <选定发布包> \
   --seeded /tmp/codex-work/sr-detection/seeded/results.json \
   --typical /tmp/codex-work/sr-detection/typical.json \
   --replay /tmp/codex-work/sr-detection/replay/results.json
@@ -70,3 +70,6 @@ R6/R7 仅有不同判断而无已确认真值的技术争议没有算成电气�
 历史 `false` 不证明当前版本仍漏；当前自动层命中也不证明专家审查、全部工况、动态/热/PCB/实测覆盖或设计准出。
 样本偏斜、BASIS 的粗映射、未映射的自动规则、重叠的典型/种子板，均使整体准确率没有可靠含义。
 不能按零命中、零样本或规则数多少直接砍检查；先补独立真缺陷及相邻合法反例，再讨论检查是否重复或无效。
+
+
+M5：显式发布包须与安装件一致；准则 ID/状态/标题来自选定包。报告及同名 JSON 保存汇总时的发布版/指纹/格式、E 提交/实际工作区、技能提交/字节及输入哈希。复用上游结果的标记单列，旧观测不据汇总时身份晋升为新执行；历史来源仍按原义。缺 E 单独报告外部评测 skip。源数据说明见 E/发布绑定.md。

@@ -19,6 +19,24 @@ spec.loader.exec_module(run)
 needs_set = pytest.mark.skipif(not eval_set.available(), reason='电路评测集不在本机')
 
 
+def local_release():
+    import shutil
+    import tempfile
+    temporary = tempfile.TemporaryDirectory(prefix='eval-release-')
+    release = Path(temporary.name)
+    manifest = json.loads((ROOT / 'shared-release.json').read_text(encoding='utf-8'))
+    manifest.update(inputs={}, auxiliary={})
+    for name in manifest['payload']:
+        target = release / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / name, target)
+    (release / 'manifest.json').write_text(json.dumps(manifest), encoding='utf-8')
+    return temporary, release
+
+
+_RELEASE_TEMP, RELEASE = local_release()
+
+
 def test_env_overrides_default(monkeypatch, tmp_path):
     monkeypatch.setenv('CIRCUIT_EVAL_SET', str(tmp_path))
     assert eval_set.root() == tmp_path
@@ -30,8 +48,9 @@ def test_env_overrides_default(monkeypatch, tmp_path):
 
 def test_missing_set_is_a_clear_stop(monkeypatch, tmp_path):
     monkeypatch.setenv('CIRCUIT_EVAL_SET', str(tmp_path))
-    with pytest.raises(SystemExit, match='电路评测集不在'):
+    with pytest.raises(SystemExit) as stop:
         run.tool()
+    assert stop.value.code == 0
 
 
 def test_raised_only_counts_named_rule_on_named_refs():
@@ -51,13 +70,13 @@ def test_slash_separated_rules_are_split():
 @needs_set
 def test_eval_set_is_valid():
     tool = eval_set.root() / '工具/evalset.py'
-    result = subprocess.run([sys.executable, '-B', str(tool), 'check'], capture_output=True, text=True)
+    result = subprocess.run([sys.executable, '-B', str(tool), 'check', '--guideline-release', str(RELEASE)], capture_output=True, text=True)
     assert result.returncode == 0, result.stdout
 
 
 @needs_set
 def test_auto_runs_one_case_and_finds_no_stale_ids(tmp_path):
-    result = subprocess.run([sys.executable, '-B', str(ROOT / 'evals/circuit_cases/run.py'), 'auto', '--out', str(tmp_path), '--case', 'iio-can'],
+    result = subprocess.run([sys.executable, '-B', str(ROOT / 'evals/circuit_cases/run.py'), 'auto', '--out', str(tmp_path), '--case', 'iio-can', '--guideline-release', str(RELEASE)],
                             capture_output=True, text=True, timeout=300)
     assert result.returncode == 0, result.stderr
     report = json.loads((tmp_path / 'iio-can.r1.json').read_text(encoding='utf-8'))

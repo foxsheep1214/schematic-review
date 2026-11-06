@@ -5,11 +5,12 @@
 `no_false_alarm` 测试点点名的规则有没有在该位号上报出。其余测试点要审查员判定，记 not_run，不算通过。
 判定层（judged）：审查员把每个测试点的结论写成 run.json（evalset.py score 能读），再打分。
 
-    python3 evals/circuit_cases/run.py auto --out <目录> [--case iio-can]
-    python3 evals/circuit_cases/run.py score <run.json>
+    python3 evals/circuit_cases/run.py auto --out <目录> --guideline-release <发布包> [--case iio-can]
+    python3 evals/circuit_cases/run.py score <run.json> --guideline-release <发布包>
 """
 import argparse
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -22,12 +23,7 @@ import eval_set  # noqa: E402
 
 
 def tool():
-    if not eval_set.available():
-        sys.exit(f'电路评测集不在 {eval_set.root()}；设 CIRCUIT_EVAL_SET 指向它')
-    sys.path.insert(0, str(eval_set.root() / '工具'))
-    import evalset
-    return evalset
-
+    return eval_set.tool()
 
 def rules_of(point):
     return [r for r in re.split(r'[/、,，\s]+', point.get('sr_rule', '')) if r]
@@ -48,15 +44,21 @@ def raised(plan, hits, rules, refs):
     return seen
 
 
-def run_variant(case, name, variant, directory, commit):
+def run_variant(case, name, variant, directory, commit, evaluation):
     source = eval_set.root() / '案例' / case['family'] / case['id'] / variant['netlist']
     work = Path(directory)
+    env = dict(os.environ)
+    env.pop('GUIDELINE_CRITERIA', None)
+    env.pop('GUIDELINE_CRITERIA_TESTING', None)
     db, plan_path, hits_path = work / 'db.json', work / 'plan.json', work / 'hits.json'
     subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/parse_kicad.py'), str(source), '-o', str(db)],
-                   check=True, capture_output=True)
+                   check=True, capture_output=True, env=env)
     subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/lint.py'), str(db), '--plan-json', str(plan_path),
-                    '--json', str(hits_path)], check=False, capture_output=True)
+                    '--json', str(hits_path)], check=False, capture_output=True, env=env)
     plan = json.loads(plan_path.read_text(encoding='utf-8'))
+    for key in ('library_version', 'shared_sha256', 'fingerprint_format'):
+        if plan.get('guidelines', {}).get(key) != evaluation['guidelines'][key]:
+            raise ValueError('plan did not use selected guideline release: ' + key)
     hits = json.loads(hits_path.read_text(encoding='utf-8')).get('findings', [])
     text = plan_path.read_text(encoding='utf-8')
     results, missing = [], {}
@@ -71,22 +73,34 @@ def run_variant(case, name, variant, directory, commit):
             seen = raised(plan, hits, rules_of(point), refs)
             results.append({'tp': point['id'], 'verdict': 'fail' if seen else 'pass', 'evidence': '；'.join(seen[:4])})
     return {'case': case['id'], 'variant': name, 'skill': 'SR', 'skill_commit': commit, 'mode': 'auto', 'results': results,
-            'criteria_not_in_plan': missing}
+            'criteria_not_in_plan': missing, 'evaluation': evaluation}
 
 
 def cmd_auto(args):
     evalset = tool()
-    commit = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True).stdout.strip()
+    context = eval_set.context(args.guideline_release, ROOT)
+    criteria, _ = evalset.binding.release_context(args.guideline_release)
+    commit = context['skill']['head']
+    if args.out.exists() and any(args.out.iterdir()):
+        raise ValueError('evaluation output must be empty: ' + str(args.out))
     args.out.mkdir(parents=True, exist_ok=True)
     totals, rows = {}, []
-    for _, case in evalset.load_cases():
+    found = list(evalset.load_cases())
+    if args.case and not any(c['id'] == args.case and 'SR' in c['skills'] for _, c in found):
+        raise ValueError('unknown SR case: ' + args.case)
+    for path, case in found:
         if args.case and case['id'] != args.case or 'SR' not in case['skills']:
             continue
+        errors = evalset.check_case(path, case, criteria)
+        if errors:
+            raise ValueError('; '.join(errors))
+        evaluation = dict(context, case_inputs=evalset.binding.case_inputs(path))
         for name, variant in case['variants'].items():
             if 'netlist' not in variant:
                 continue
             with tempfile.TemporaryDirectory(prefix='sr-case-') as work:
-                run = run_variant(case, name, variant, work, commit)
+                run = run_variant(case, name, variant, work, commit, evaluation)
+            (args.out / f"{case['id']}.{name}.run.json").write_text(json.dumps(run, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
             report = evalset.score(run, case)
             report['criteria_not_in_plan'] = run['criteria_not_in_plan']
             (args.out / f"{case['id']}.{name}.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
@@ -95,11 +109,11 @@ def cmd_auto(args):
                 totals[key] = totals.get(key, 0) + value
             print(case['id'], name, report['counts'], 'criteria_not_in_plan=', sum(map(len, run['criteria_not_in_plan'].values())))
     print('total', totals, 'variants', len(rows))
-    (args.out / 'summary.json').write_text(json.dumps(dict(skill_commit=commit, totals=totals, variants=len(rows)), ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    (args.out / 'summary.json').write_text(json.dumps(dict(status='completed' if rows else 'not_run', skill_commit=commit, evaluation=context, totals=totals, variants=len(rows)), ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
 
 def cmd_score(args):
-    return tool().main(['score', str(args.run), '--json'])
+    return tool().main(['score', str(args.run), '--json', '--guideline-release', str(args.guideline_release), '--skill-root', str(ROOT)])
 
 
 def main():
@@ -108,11 +122,17 @@ def main():
     p = sub.add_parser('auto')
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--case')
+    p.add_argument('--guideline-release', type=Path, required=True)
     p = sub.add_parser('score')
     p.add_argument('run')
+    p.add_argument('--guideline-release', type=Path, required=True)
     args = parser.parse_args()
     return (cmd_auto if args.command == 'auto' else cmd_score)(args) or 0
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except (ValueError, OSError, KeyError) as exc:
+        print(str(exc), file=sys.stderr)
+        sys.exit(2)

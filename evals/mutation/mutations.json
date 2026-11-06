@@ -8706,5 +8706,47 @@
   "file": "scripts/plan_review.py",
   "old": "**guideline_criteria.shared_versions(bundle=library),",
   "new": "**{k: v for k, v in guideline_criteria.shared_versions(bundle=library).items() if k != 'fingerprint_format'},"
+ },
+ {
+  "id": "M1659",
+  "name": "external binding ignores explicitly selected release",
+  "file": "evals/eval_set.py",
+  "old": "return tool().binding.context(release, root(), skill_root)",
+  "new": "return tool().binding.context(None, root(), skill_root)"
+ },
+ {
+  "id": "M1660",
+  "name": "automatic score summary loses its evaluation identity",
+  "file": "evals/circuit_cases/run.py",
+  "old": "skill_commit=commit, evaluation=context, totals=totals",
+  "new": "skill_commit=commit, evaluation={}, totals=totals"
+ },
+ {
+  "id": "M1661",
+  "name": "automatic plan silently uses a different guideline identity",
+  "file": "evals/circuit_cases/run.py",
+  "old": "if plan.get('guidelines', {}).get(key) != evaluation['guidelines'][key]:",
+  "new": "if False:"
+ },
+ {
+  "id": "M1662",
+  "name": "test override leaks into an external evaluation subprocess",
+  "file": "evals/circuit_cases/run.py",
+  "old": "env.pop('GUIDELINE_CRITERIA', None)",
+  "new": "pass"
+ },
+ {
+  "id": "M1663",
+  "name": "detection aggregate drops explicitly bound package identity",
+  "file": "evals/detection/run.py",
+  "old": "evaluation = eval_set.context(release, ROOT)",
+  "new": "evaluation = {}"
+ },
+ {
+  "id": "M1664",
+  "name": "detection child inherits test-only criteria override",
+  "file": "evals/detection/run.py",
+  "old": "env.pop('GUIDELINE_CRITERIA', None)",
+  "new": "pass"
  }
 ]

@@ -174,6 +174,8 @@ def render(criteria, table, rows, unmapped, provenance, auxiliary):
 
 def execute(script, args, work):
     env = dict(os.environ, TMPDIR=str(work), PYTHONDONTWRITEBYTECODE='1')
+    env.pop('GUIDELINE_CRITERIA', None)
+    env.pop('GUIDELINE_CRITERIA_TESTING', None)
     proc = subprocess.run([sys.executable, '-B', str(ROOT / script), *map(str, args)],
                           cwd=ROOT, env=env, capture_output=True, text=True)
     # Bench exit 1 can mean genuine misses/false alarms, so keep its observations.
@@ -182,14 +184,25 @@ def execute(script, args, work):
     return proc.returncode
 
 
+
+def bound_inputs(release):
+    evaluation = eval_set.context(release, ROOT)
+    library = Path(release) / 'references/shared/guideline-criteria.json'
+    criteria = {c['id']: c for c in read(library)['criteria']}
+    return evaluation, library, criteria
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--guideline-release', type=Path, required=True, help='explicit fixed guideline package')
     ap.add_argument('--seeded', type=Path, help='reuse seeded results.json')
     ap.add_argument('--typical', type=Path, help='reuse typical --json output')
     ap.add_argument('--replay', type=Path, help='reuse KiCad replay results.json')
     ap.add_argument('--output', type=Path, default=HERE / 'RESULTS.md')
     ap.add_argument('--work', type=Path, default=Path('/tmp/codex-work/sr-detection'))
     args = ap.parse_args(argv)
+    evaluation, library, criteria = bound_inputs(args.guideline_release)
+    known_path = eval_set.root() / '已知缺陷/known_defects.json'
     args.work.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=args.work, prefix='run-') as tmp:
         work = Path(tmp)
@@ -202,14 +215,12 @@ def main(argv=None):
             execute('evals/typical_circuits/run.py', ['--json', typical], work)
         if not args.replay:
             execute('evals/kicad_replay_bench/run.py', ['--out', replay.parent], work)
-        library = ROOT / 'references/shared/guideline-criteria.json'
-        criteria = {c['id']: c for c in read(library)['criteria']}
-        known = read(KNOWN)
+        known = read(known_path)
         validate_known(known, criteria, [r.id for r in catalog.RULES])
         rows = seeded_rows(read(seeded), catalog.BASIS) + typical_rows(read(typical), catalog.BASIS) + known_rows(known)
         table, unmapped = aggregate(criteria, catalog.BASIS, rows)
         inputs = [('seeded results.json', seeded), ('typical results.json', typical), ('KiCad replay results.json', replay),
-                  ('known_defects.json', KNOWN), ('catalog.py', ROOT / 'scripts/catalog.py'),
+                  ('known_defects.json', known_path), ('catalog.py', ROOT / 'scripts/catalog.py'),
                   ('guideline-criteria.json', library), ('seeded corpus.json', ROOT / 'evals/seeded_bench/corpus.json'),
                   ('typical cases.json', ROOT / 'evals/typical_circuits/cases.json'),
                   ('improvement-ledger.md', ROOT / 'docs/improvement-ledger.md')]
@@ -223,6 +234,11 @@ def main(argv=None):
                      '缺原作者输入，不把导入拒绝计作电气检出。',
                      '- consistency_bench：没有随仓库保存的评分结果，且只度量一致性，不判对错；未计分。',
                      '- mutation：代码测试门，不是设计缺陷检出，排除。规则合同是合成触发板，亦排除。']
+        receipt = dict(evaluation=evaluation, input_sha256=dict(provenance),
+                       reused_inputs=dict(seeded=bool(args.seeded), typical=bool(args.typical), replay=bool(args.replay)),
+                       scope='Selected package groups this aggregate; historical/reused observations retain their original provenance and are not relabelled as new runs.')
+        args.output.with_suffix('.json').write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        auxiliary += ['- 本次汇总来源身份：' + json.dumps(receipt, ensure_ascii=False)]
         args.output.write_text(render(criteria, table, rows, unmapped, provenance, auxiliary), encoding='utf-8')
         print(args.output)
         return int(any(r['status'] in ('error', 'unclassified') for r in rows) or bool(replay_data['totals'].get('MISMATCH')))
