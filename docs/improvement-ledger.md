@@ -9,6 +9,17 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+
+## M0：固定共用层 1.9.0 发布输入（2026-11-06）
+
+按关系梳理草案方案 A 归档现行十文件与 19 个持久构建输入，固定完整指纹、逐文件哈希及评测集实际工作区身份；不改载荷。验收与回退锚点见 docs/shared-release-migration.md 和规范 发布/1.9.0/manifest.json。
+
+- Event: user:2026-11-06（按关系梳理草案推荐方案完成更改，本批 M0）
+- Causes: rule_not_enforced 1
+- Changed: docs/shared-release-migration.md, docs/improvement-ledger.md
+- Gates: ASG 全量 1273 passed；SR 全量 3004 passed（5 warnings）；SR mutation --changed aee8b4b --tier unit 0 mutations（仅文档）；两边 check_ledger.py PASS；git diff --check PASS；归档输入重建 JSON 与安装件同字节，十文件与两边同字节，完整指纹 f62f9e757234。
+
+
 ## 电容寿命按 G08-040 区分固态聚合物与混合型（2026-11-06）
 
 用户要求核对 G08-040 与 SR 寿命估算的差异。SR 无电容寿命数值自动计算器，原计划判据、DEV-C02 与审查说明统一指向无厂家公式时 10 ℃ 翻倍，且普通钽电容的排除逻辑连聚合物钽电容一起跳过。先补测试复现三项失败，再修正：先核系列类型，系列公式优先；无系列公式时固态聚合物按 20 ℃ 十倍，液态铝电解与混合型按 10 ℃ 翻倍，其他电容沿用原估算；类型未定写 BOM 约束，聚合物同时核 CAP-POLY-LIFE 的寿命与工况。判断和计算仍由审查员完成，不增加自动寿命结论。普通钽电容保持排除，明确聚合物的钽电容进入寿命计划。共用层与 ASG 未改。② 阅读量增加 335 B 至 161508：commodity-floors.md 补上两种公式、类型核验、聚合物钽与降额工况；全量首次仅此阅读量记录失败，按维护约定更新记录，不增加新流程或新文档。
