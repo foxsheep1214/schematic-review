@@ -11,11 +11,11 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 ## ASG 方案阶段规则记录进对账清单（2026-11-05）
 
-ASG 任务 1.3 新增 `record/scheme-criteria.json`（关键功能块会淘汰候选的规则）。`design_checklist.py --scheme-criteria` 只读块名、电路类型和规则编号，排除了哪个候选、怎样满足都不读；`independence.py` 把它列为设计方记录拒收。共用脚本 `guideline_criteria.py` 与 ASG 同字节（select 加 `typed_only`、`ports`，缺省行为不变）。
+ASG 任务 1.3 新增 `record/scheme-criteria.json`（关键功能块会淘汰候选的规则）。`design_checklist.py --scheme-criteria` 只读块名、电路类型和规则编号，排除了哪个候选、怎样满足都不读；`independence.py` 把它列为设计方记录拒收（变异 M1513 的匹配文本随正则更新）。共用脚本 `guideline_criteria.py` 与 ASG 同字节（select 加 `typed_only`、`ports`，缺省行为不变）。
 
 - Event: user:2026-11-05（主会话转达：批准 ASG 方案阶段对照规则草案，SR 读这份记录复核被引用的规则）
 - Causes: rule_not_enforced 1
-- Changed: scripts/guideline_criteria.py, scripts/design_checklist.py, scripts/independence.py, scripts/tests/test_sr_tools_r2.py, references/architecture.md, references/workflow-handoff.md, docs/improvement-ledger.md, evals/mutation/mutations.json（M1513 的匹配文本随正则更新）
+- Changed: scripts/guideline_criteria.py, scripts/design_checklist.py, scripts/independence.py, scripts/tests/test_sr_tools_r2.py, references/architecture.md, references/workflow-handoff.md, docs/improvement-ledger.md, evals/mutation/mutations.json
 - Gates: 3002 passed in 116.53s（配对 SR_ASG_SHARED_ROOT=ASG integration）；mutation --changed --tier unit 14/14 KILLED；check_ledger.py PASS；git diff --check 通过
 
 ## G01–G09 运行包 1.9.0 与登记只读覆盖层（2026-11-05）
