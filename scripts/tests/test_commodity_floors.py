@@ -52,5 +52,25 @@ class CommodityFloorsTests(unittest.TestCase):
         self.assertEqual(len(got), 7)
 
 
+class GeneratedTablesTests(unittest.TestCase):
+    def test_regeneration_has_no_difference(self):
+        from render_commodity_floors import render_doc
+        self.assertEqual(render_doc(DOC), DOC)
+
+    def test_modified_json_changes_each_numeric_table_and_keeps_explanation(self):
+        import copy
+        from render_commodity_floors import render_doc
+        data = copy.deepcopy(FLOORS)
+        data['chip_resistor']['packages']['0402']['voltage_v'] = 23
+        data['mlcc_orderable']['rows'][0]['voltage_v'] = 49
+        data['contacts']['rows'][0]['current_a'] = 0.049
+        rendered = render_doc(DOC, data)
+        self.assertIn('| 0402 | 1/16 W | 23 V |', rendered)
+        self.assertIn('| 0402 | 100 nF | 49 V |', rendered)
+        self.assertIn('| 轻触开关：Omron B3U | 49 mA / 12 VDC（阻性） |', rendered)
+        self.assertEqual(render_doc(rendered, data), rendered)
+        self.assertIn('LED 的光度测试电流不能用于证明', rendered)
+
+
 if __name__ == '__main__':
     unittest.main()

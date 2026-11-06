@@ -11,6 +11,8 @@ new kind is one row here (plus a bounding-table cell when it has guaranteed para
 circuits are the roles of `catalog.DEVICE_ROLES`; this registry carries them as the single kind `ic`.
 """
 import re
+
+import guideline_criteria
 from collections import OrderedDict, namedtuple
 
 import catalog
@@ -37,73 +39,80 @@ SI_FET_WORDS = family(r'SI\d{4}')
 
 # Registry order is the classifier's keyword precedence (the first kind whose word matches wins); kinds without words
 # follow. Transistor order between bjt and mosfet does not matter: both matching is UNKNOWN whatever comes first.
+_KIND_TITLES = guideline_criteria.vocabulary_titles('device_kinds')
+_LOCAL_KIND_TITLES = {'unknown': '未知'}
+
+def _kind(name, *args, **kwargs):
+    title = _LOCAL_KIND_TITLES[name] if name in _LOCAL_KIND_TITLES else _KIND_TITLES[name]
+    return name, DeviceKind(title, *args, **kwargs)
+
 KINDS = OrderedDict([
-    ('relay', DeviceKind('继电器', (r'^K\d',), (r'RELAY|继电器',), ('relay',), wearout='RELAY', datasheet=True)),
+    _kind('relay', (r'^K\d',), (r'RELAY|继电器',), ('relay',), wearout='RELAY', datasheet=True),
     # Thermistors and varistors by the shared words; an IC refdes or a part with more than three pins never becomes one
     # by a word in its description ("charger with NTC input"). RV is also KiCad's potentiometer prefix: no prefix rule.
-    ('varistor', DeviceKind('压敏电阻', (), (VARISTOR_WORDS,), ('varistor', 'siov'), two_terminal=True, protective=True,
-                            wearout='VARISTOR', datasheet=True)),
-    ('ntc', DeviceKind('热敏电阻', (r'^(TH|RT|NTC)\d',), (NTC_WORDS,), ('ntcthermistor', 'thermistor', 'inrushcurrentlimiter'),
-                       two_terminal=True, passive_link=True, protective=True, datasheet=True)),   # INRUSH_NTC only in the power path
+    _kind('varistor', (), (VARISTOR_WORDS,), ('varistor', 'siov'), two_terminal=True, protective=True,
+                            wearout='VARISTOR', datasheet=True),
+    _kind('ntc', (r'^(TH|RT|NTC)\d',), (NTC_WORDS,), ('ntcthermistor', 'thermistor', 'inrushcurrentlimiter'),
+                       two_terminal=True, passive_link=True, protective=True, datasheet=True),   # INRUSH_NTC only in the power path
     # Part-number families through family(): a vendor prefix on a family is its own entry (DESD, AUIRF).
-    ('opto', DeviceKind('光耦', (), (r'OPTO|光耦|' + family(
+    _kind('opto', (), (r'OPTO|光耦|' + family(
         r'PC81[07]', r'LTV-?\d', r'TLP\d', r'6N13[57]', 'HCPL', 'ACPL', r'FOD\d', 'CNY17', r'VO6\d', r'SFH6\d{2,3}',
         r'EL8\d\d', r'PS2[5-9]\d\d', r'TCMT\d', r'KPC\d', r'H11[A-Z]\d'),),
                         ('optocoupler', 'photocoupler', 'optoisolator', 'opticallycoupled', 'opticalisolator', 'opticalcoupler'),
-                        wearout='OPTO', datasheet=True)),
-    ('tvs', DeviceKind('TVS', (), (r'\bTVS\b|' + family('SMAJ', 'SMBJ', 'SMCJ', 'P6KE', r'1\.5KE', r'ESD\d', 'PESD', 'DESD',
+                        wearout='OPTO', datasheet=True),
+    _kind('tvs', (), (r'\bTVS\b|' + family('SMAJ', 'SMBJ', 'SMCJ', 'P6KE', r'1\.5KE', r'ESD\d', 'PESD', 'DESD',
                                                         'SM712'),),
                        ('tvs', 'esdprotection', 'transientvoltagesuppress', 'transientsuppress',
                         'surgeprotectiondevice'), two_terminal=True, protective=True,
-                       datasheet=True)),
-    ('zener', DeviceKind('稳压管', (), (r'ZENER|稳压二极管|' + family('BZX', r'BZT5\d', 'MMSZ', r'1N47\d'),), ('zener',),
-                         two_terminal=True, datasheet=True)),
+                       datasheet=True),
+    _kind('zener', (), (r'ZENER|稳压二极管|' + family('BZX', r'BZT5\d', 'MMSZ', r'1N47\d'),), ('zener',),
+                         two_terminal=True, datasheet=True),
     # KiCad symbol-library category of the symbol actually placed, then the part words; 2N7000/2N7002 are MOSFETs.
-    ('bjt', DeviceKind('双极晶体管', (), (r'TRANSISTOR_BJT:', r'\bNPN\b|\bPNP\b|三极管|' +
+    _kind('bjt', (), (r'TRANSISTOR_BJT:', r'\bNPN\b|\bPNP\b|三极管|' +
                                         family(r'BC[PXW]?\d{2,3}', r'2N(?!700[02])\d{4}', 'MMBT', 'PBSS', 'S8050', 'S8550')),
-                       ('npn', 'pnp', 'bipolar'), datasheet=True)),
-    ('mosfet', DeviceKind('MOSFET', (r'^Q\d',), (r'TRANSISTOR_FET:|TRANSISTOR_IGBT:',
+                       ('npn', 'pnp', 'bipolar'), datasheet=True),
+    _kind('mosfet', (r'^Q\d',), (r'TRANSISTOR_FET:|TRANSISTOR_IGBT:',
                                                  r'MOSFET|\bFET\b|NMOS|PMOS|[NP]-MOS|IGBT|' +
                                                  family('IRF', 'AUIRF', 'IRLML', r'AO\d{4}', r'BSS\d', '2N700[02]'), SI_FET_WORDS),
-                          ('mosfet', 'nchannel', 'pchannel', 'superjunction'), datasheet=True)),
-    ('diode', DeviceKind('二极管', (r'^D\d',), (r'SCHOTTKY|DIODE|二极管|' + family(r'SS\d{2}', r'BAT\d', r'1N4\d{3}', r'1N58\d'),),
-                         ('rectifier', 'diode', 'schottky'), two_terminal=True, datasheet=True)),
+                          ('mosfet', 'nchannel', 'pchannel', 'superjunction'), datasheet=True),
+    _kind('diode', (r'^D\d',), (r'SCHOTTKY|DIODE|二极管|' + family(r'SS\d{2}', r'BAT\d', r'1N4\d{3}', r'1N58\d'),),
+                         ('rectifier', 'diode', 'schottky'), two_terminal=True, datasheet=True),
     # Multi-winding magnetics by what they do (A1b, 2026-10-27): only the datasheet tells a common-mode choke, a coupled
     # inductor and a transformer apart, so both are datasheet kinds; above the CHOKE and ferrite words.
-    ('common_mode_choke', DeviceKind('共模扼流圈', (), (r'COMMON[-_ ]?MODE|共模',),
+    _kind('common_mode_choke', (), (r'COMMON[-_ ]?MODE|共模',),
                                      ('commonmodechoke', 'commonmodefilter', 'commonmodeinductor', 'commonmodecoil'),
-                                     datasheet=True)),
-    ('coupled_inductor', DeviceKind('耦合电感', (), (r'COUPLED[-_ ]?INDUCTOR|耦合电感',), ('coupledinductor',), datasheet=True)),
-    ('ferrite', DeviceKind('磁珠', (r'^FB\d',), (r'FERRITE|BEAD|磁珠|' + family(r'BLM\d', r'MPZ\d'),), two_terminal=True,
-                           passive_link=True)),
-    ('inductor', DeviceKind('电感', (r'^L\d',), (r'INDUCTOR|CHOKE|电感',), two_terminal=True, passive_link=True)),
+                                     datasheet=True),
+    _kind('coupled_inductor', (), (r'COUPLED[-_ ]?INDUCTOR|耦合电感',), ('coupledinductor',), datasheet=True),
+    _kind('ferrite', (r'^FB\d',), (r'FERRITE|BEAD|磁珠|' + family(r'BLM\d', r'MPZ\d'),), two_terminal=True,
+                           passive_link=True),
+    _kind('inductor', (r'^L\d',), (r'INDUCTOR|CHOKE|电感',), two_terminal=True, passive_link=True),
     # OSC only as a whole word: footprint names like Bosch_LGA-8 contain the letters.
-    ('crystal', DeviceKind('晶体', (r'^Y\d', r'^X\d'), (r'CRYSTAL|XTAL|\bOSC(?:ILLATOR)?\b|晶振|晶体',))),
-    ('transformer', DeviceKind('变压器', (r'^T\d',), (r'TRANSFORMER|变压器',), ('transformer',), datasheet=True)),
-    ('fuse', DeviceKind('保险丝', (r'^F\d',), (r'FUSE|PTC|保险',), ('fuse', 'pptc'), two_terminal=True, passive_link=True,
-                        protective=True, datasheet=True)),  # PTC or FUSE by its words
-    ('battery', DeviceKind('电池', (r'^BT\d',), (r'(?:^|[\s:_])BATTERY\b|电池',), wearout='BATTERY', declarable=False)),
+    _kind('crystal', (r'^Y\d', r'^X\d'), (r'CRYSTAL|XTAL|\bOSC(?:ILLATOR)?\b|晶振|晶体',)),
+    _kind('transformer', (r'^T\d',), (r'TRANSFORMER|变压器',), ('transformer',), datasheet=True),
+    _kind('fuse', (r'^F\d',), (r'FUSE|PTC|保险',), ('fuse', 'pptc'), two_terminal=True, passive_link=True,
+                        protective=True, datasheet=True),  # PTC or FUSE by its words
+    _kind('battery', (r'^BT\d',), (r'(?:^|[\s:_])BATTERY\b|电池',), wearout='BATTERY', declarable=False),
     # KiCad places test pads as Connector:TestPoint*; the library entry, not the namespace, decides that this is a
     # probe/fixture pad rather than a connector.
-    ('testpoint', DeviceKind('测试点', (r'^TP\d',), (r'(?:^|[\s:])TEST_?POINT(?:_|\b)',), declarable=False)),
+    _kind('testpoint', (r'^TP\d',), (r'(?:^|[\s:])TEST_?POINT(?:_|\b)',), declarable=False),
     # Explicit connector symbol/part families can use arbitrary refdes (e.g. K). Stronger device keywords stay above;
     # a bare "terminal" or "header" in an IC description is not a connector. Role evidence only, never a pinout or
     # current-rating guarantee. Legacy physical USB connector symbols can have a U refdes (USB_CONNECTOR_RE matches the
     # complete family token, never a controller/PHY description); a bare vendor name never re-identifies an IC (JST).
-    ('connector', DeviceKind('连接器', (r'^(J|P|CN)\d',), (
+    _kind('connector', (r'^(J|P|CN)\d',), (
         r'(?:\b|_)CONNECTORS?(?:_[A-Z0-9]+)*:|\bCONN_\d+X\d+\b|'
         r'\bUSB[-_ ]?(?:2\.0[-_ ]?)?TYPE[-_ ]?C\b|\bTYPE-C-\d+-M\b|\bBARREL[-_ ]?JACK\b|\bPWR[-_ ]?JA[C]?K|'
         r'\bPINHEADER[_:-]|\bTERMINAL_?BLOCK[_:-]|'
         r'\bHEADER_(?:MALE|FEMALE)[_:-]|\bHEADER[-_]\d+X\d+(?:\b|[_:-])|'
-        r'\bTERMINAL_KF\d', USB_CONNECTOR_RE, JST_CONNECTOR_RE), ('connector', 'receptacle', 'terminalblock'), wearout='CONNECTOR')),
+        r'\bTERMINAL_KF\d', USB_CONNECTOR_RE, JST_CONNECTOR_RE), ('connector', 'receptacle', 'terminalblock'), wearout='CONNECTOR'),
     # Kinds a part's text names only by its refdes prefix.
-    ('resistor', DeviceKind('电阻', (r'^R\d', r'^RN\d'), two_terminal=True, passive_link=True)),
-    ('capacitor', DeviceKind('电容', (r'^C\d', r'^C[XY]\d'), two_terminal=True)),
-    ('jumper', DeviceKind('跳线', (r'^JP\d',), two_terminal=True, passive_link=True)),
-    ('switch', DeviceKind('开关', (r'^SW\d', r'^S\d'), wearout='SWITCH')),
-    ('bridge_rectifier', DeviceKind('整流桥', (r'^BR\d',), cues=('bridgerectifier',), protective=True, datasheet=True)),
-    ('ic', DeviceKind('集成电路', (r'^[UM]\d',), declarable=False, datasheet=True)),   # declared by role (catalog.DEVICE_ROLES)
-    ('unknown', DeviceKind('未知', declarable=False)),
+    _kind('resistor', (r'^R\d', r'^RN\d'), two_terminal=True, passive_link=True),
+    _kind('capacitor', (r'^C\d', r'^C[XY]\d'), two_terminal=True),
+    _kind('jumper', (r'^JP\d',), two_terminal=True, passive_link=True),
+    _kind('switch', (r'^SW\d', r'^S\d'), wearout='SWITCH'),
+    _kind('bridge_rectifier', (r'^BR\d',), cues=('bridgerectifier',), protective=True, datasheet=True),
+    _kind('ic', (r'^[UM]\d',), declarable=False, datasheet=True),   # declared by role (catalog.DEVICE_ROLES)
+    _kind('unknown', declarable=False),
 ])
 
 

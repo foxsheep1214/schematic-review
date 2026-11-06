@@ -4147,8 +4147,8 @@
   "id": "M651",
   "name": "a bare RV refdes is a varistor (it is also a potentiometer)",
   "file": "scripts/device_kinds.py",
-  "old": "    ('varistor', DeviceKind('压敏电阻', (), (VARISTOR_WORDS,),",
-  "new": "    ('varistor', DeviceKind('压敏电阻', (r'^RV\\d',), (VARISTOR_WORDS,),"
+  "old": "    _kind('varistor', (), (VARISTOR_WORDS,),",
+  "new": "    _kind('varistor', (r'^RV\\d',), (VARISTOR_WORDS,),"
  },
  {
   "id": "M652",
@@ -8566,5 +8566,40 @@
   "file": "scripts/guideline_criteria.py",
   "old": "if not path and override and os.environ.get('GUIDELINE_CRITERIA_TESTING') != '1':",
   "new": "if False:"
+ },
+ {
+  "id": "M1639",
+  "name": "assumed resistor package bypasses engineering value",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "ASSUMED_PACKAGE = guideline_criteria.engineering_value('assumed_resistor_package')",
+  "new": "ASSUMED_PACKAGE = '0402'"
+ },
+ {
+  "id": "M1640",
+  "name": "device title bypasses installed vocabulary",
+  "file": "scripts/device_kinds.py",
+  "old": "else _KIND_TITLES[name]",
+  "new": "else ('继电器' if name == 'relay' else _KIND_TITLES[name])"
+ },
+ {
+  "id": "M1641",
+  "name": "circuit title bypasses installed vocabulary",
+  "file": "scripts/catalog.py",
+  "old": "return CircuitType(name, _CIRCUIT_TITLES[name], *args)",
+  "new": "return CircuitType(name, '变换器与稳压器' if name == 'POWER_CONVERTER' else _CIRCUIT_TITLES[name], *args)"
+ },
+ {
+  "id": "M1642",
+  "name": "generated resistor table drops a JSON row",
+  "file": "scripts/render_commodity_floors.py",
+  "old": "for package, row in packages.items():",
+  "new": "for package, row in list(packages.items())[1:]:"
+ },
+ {
+  "id": "M1643",
+  "name": "metadata reader returns fixed relay title",
+  "file": "scripts/guideline_criteria.py",
+  "old": "return {item['name']: item['title'] for item in raw[group]}",
+  "new": "return {item['name']: '继电器' if item['name'] == 'relay' else item['title'] for item in raw[group]}"
  }
 ]

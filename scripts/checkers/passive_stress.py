@@ -50,7 +50,7 @@ PIN_CRITERION = ('源轨最高电压经串联电阻最小阻值流入该 IC 脚�
                  '接到高于本 IC 最低供电的轨的脚），该脚电压在手册绝对最大额定内，串联电阻承受的功耗与脉冲在额定内')
 # A schematic without footprints (drawn before the PCB) has no package; the smallest package commonly used in power
 # and control boards bounds it, and a rating written in the value replaces the package floor.
-ASSUMED_PACKAGE = '0402'
+ASSUMED_PACKAGE = guideline_criteria.engineering_value('assumed_resistor_package')
 WRITTEN_V_RE = re.compile(r'^(\d+(?:\.\d+)?)\s*V$', re.I)
 WRITTEN_W_RE = re.compile(r'^(\d+(?:\.\d+)?)\s*W$', re.I)
 PACKAGE_RE = re.compile(r'^(Resistor|Capacitor)_SMD:[RC]_(0201|0402|0603|0805|1206|1210|2010|2512)_', re.I)
