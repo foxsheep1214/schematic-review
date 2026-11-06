@@ -39,3 +39,8 @@
 评测只测声明范围内的工具能力，不代替真实项目审查或电路准出。
 
 MIT License，见 [LICENSE](LICENSE)。
+
+## 共用层更新入口
+
+共用工程判据由硬件设计规范的 `工具/guideline_criteria.py release` 发布，再用 `install --target <选定worktree>` 从同一正式包安装；维护源在规范 `准则登记/`、`共用层/` 和 `工具/`，技能内不得编辑共用载荷。安装路径与 import 不变。
+当前机制与完整清单见 [共用层说明](references/shared/shared-layer.md)，迁移验收见 [迁移记录](docs/shared-release-migration.md)。M3/M4 的测试与指纹边界另批实施。

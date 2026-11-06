@@ -138,8 +138,7 @@ class GuidelineRulesTests(unittest.TestCase):
 
     def test_build_gathers_registries(self):
         with tempfile.TemporaryDirectory() as tmp:
-            spec = Path(tmp) / 'G04_信号与模拟链设计规范'
-            spec.mkdir()
+            spec = Path(tmp)  # 构建只读直接子登记；历史子目录由发布测试验证不读
             (spec / 'G04_准则登记.json').write_text(json.dumps(
                 {'spec': 'G04', 'version': '0.1', 'criteria': [rule('G04-002'), rule('G04-001')]}), encoding='utf-8')
             built = g.build(tmp, '0.1.0')

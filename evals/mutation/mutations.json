@@ -8510,5 +8510,61 @@
   "file": "scripts/plan_circuits.py",
   "old": "L = L0 × 2^((T0 − T)/10)",
   "new": "L = L0 × 2^((T0 − T)/20)"
+ },
+ {
+  "id": "M1631",
+  "name": "registry scan recurses into historical copies",
+  "file": "scripts/guideline_criteria.py",
+  "old": "Path(registry_dir).glob('G0*_准则登记.json')",
+  "new": "Path(registry_dir).rglob('G0*_准则登记.json')"
+ },
+ {
+  "id": "M1632",
+  "name": "duplicate spec silently overwrites an earlier registry",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if registry['spec'] in specs:",
+  "new": "if False and registry['spec'] in specs:"
+ },
+ {
+  "id": "M1633",
+  "name": "release input hash is not verified",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if _sha(_safe_file(release, name)) != digest:",
+  "new": "if False and _sha(_safe_file(release, name)) != digest:"
+ },
+ {
+  "id": "M1634",
+  "name": "published version accepts different bytes",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if _inventory(target) != _inventory(candidate):",
+  "new": "if False and _inventory(target) != _inventory(candidate):"
+ },
+ {
+  "id": "M1635",
+  "name": "installation skips staged release verification",
+  "file": "scripts/guideline_criteria.py",
+  "old": "manifest = verify_release(staged)  # 所有验证发生在目标第一次写入之前",
+  "new": "manifest = json.loads((staged / 'manifest.json').read_text())  # skipped verification"
+ },
+ {
+  "id": "M1636",
+  "name": "failed installation does not roll back",
+  "file": "scripts/guideline_criteria.py",
+  "old": "for name in reversed(changed):",
+  "new": "for name in []:"
+ },
+ {
+  "id": "M1637",
+  "name": "build ignores the explicit vocabulary input",
+  "file": "scripts/guideline_criteria.py",
+  "old": "base = vocabulary(vocabulary_path)",
+  "new": "base = vocabulary()"
+ },
+ {
+  "id": "M1638",
+  "name": "production silently uses test substitute with installed identity",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if not path and override and os.environ.get('GUIDELINE_CRITERIA_TESTING') != '1':",
+  "new": "if False:"
  }
 ]

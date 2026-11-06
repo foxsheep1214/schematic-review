@@ -68,6 +68,7 @@ def _ruleless_guideline_file(tmp_path_factory):
 def _ruleless_guideline_library(request, monkeypatch, _ruleless_guideline_file):
     if Path(str(request.node.fspath)).name != 'test_guideline_criteria.py':   # CLI subprocesses inherit the setting
         monkeypatch.setenv('GUIDELINE_CRITERIA', _ruleless_guideline_file)
+        monkeypatch.setenv('GUIDELINE_CRITERIA_TESTING', '1')
 
 
 def pytest_configure(config):
