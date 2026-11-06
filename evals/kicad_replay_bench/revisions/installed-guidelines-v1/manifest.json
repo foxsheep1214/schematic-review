@@ -1,0 +1,81 @@
+{
+  "revision": "installed-guidelines-v1",
+  "field_changes": {
+    "r01-thingplus-esp32s3.plan.checks_total": {
+      "before": 223,
+      "after": 225
+    },
+    "r02-dasduino-coreplus.plan.checks_total": {
+      "before": 392,
+      "after": 394
+    },
+    "r03-nrf9151-feather.plan.checks_total": {
+      "before": 438,
+      "after": 440
+    },
+    "r04-host-usb-pmod.plan.checks_total": {
+      "before": 61,
+      "after": 63
+    },
+    "r04-c1-return-moved.plan.checks_total": {
+      "before": 61,
+      "after": 63
+    },
+    "r05-lipo-charger.plan.checks_total": {
+      "before": 81,
+      "after": 83
+    },
+    "rh-ad8495-thermocouple.plan.checks_total": {
+      "before": 68,
+      "after": 70
+    },
+    "rh-ad8495-thermocouple-nolog.plan.checks_total": {
+      "before": 68,
+      "after": 70
+    },
+    "rh-ad8495-thermocouple-pinmap.plan.checks_total": {
+      "before": 64,
+      "after": 66
+    },
+    "rf1-c2000-float-flyback.plan.checks_total": {
+      "before": 367,
+      "after": 369
+    },
+    "rf1-c2000-float-flyback-intent.plan.checks_total": {
+      "before": 367,
+      "after": 369
+    },
+    "rf2-hv-flyback-lt3957a.plan.checks_total": {
+      "before": 99,
+      "after": 101
+    },
+    "rf1-c2000-float-flyback-frames.plan.checks_total": {
+      "before": 392,
+      "after": 394
+    }
+  },
+  "scope_check_ids": [
+    "REQ-Q09.HANDOFF.BOARD",
+    "REQ-Q09.PROJECT-INPUT.BOARD"
+  ],
+  "release_baseline": {
+    "library_version": "1.9.4",
+    "shared_sha256": "b5def3cb109cc54a55398a83bbf040d3175c6ef3ade6bc8a934096a9b00c99f2",
+    "fingerprint_format": "shared-paths-sha256-v2"
+  },
+  "scope": [
+    "M6 集成验收：清除测试空准则覆盖，回放实际已安装的固定发布包。13 例各仅增加既有 REQ-Q09 项目输入/下游交接两个批项，不新增判据、工程数值或实际电路结论。",
+    "父约定、源 XML、脚表、案例、来源和其余182个字段不变；父约定仍可显式选择，历史结果不覆盖。"
+  ],
+  "parents": {
+    "revisions/guideline-scans-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+    "revisions/guideline-scans-v1/expected.json": "3a26b716c9151f98005cb09cfb7ecf27941ead1669505884a310d661fdaf9f14",
+    "revisions/guideline-scans-v1/manifest.json": "7a41789075c6c38ddfdf6dbfa25206a37106a8a2dbdac71263163df3f4c1b668",
+    "revisions/guideline-scans-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480"
+  },
+  "derived_files": {
+    "revisions/installed-guidelines-v1/cases.json": "4a30202a0af6a0e9e4b735775ce149c366c7264e951014b7bf1cd4fe959317c3",
+    "revisions/installed-guidelines-v1/expected.json": "79f469414bbd75615d4c6515840e3ce7c44d52b9ba335b54cf20b275e2ff24c3",
+    "revisions/installed-guidelines-v1/sources.json": "0e896b22201690f8895485b2f293b583da06f9828aac5949cee3914052716480"
+  }
+}

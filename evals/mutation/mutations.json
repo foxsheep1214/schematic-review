@@ -2367,10 +2367,10 @@
  },
  {
   "id": "M359",
-  "name": "a format-6 plan is read as format 7",
+  "name": "a retired plan format is accepted as current",
   "file": "scripts/electrical_contract.py",
-  "old": "PLAN_SCHEMA_VERSION = 7",
-  "new": "PLAN_SCHEMA_VERSION = 6"
+  "old": "PLAN_SCHEMA_VERSION = 8",
+  "new": "PLAN_SCHEMA_VERSION = 7"
  },
  {
   "id": "M360",
@@ -4147,8 +4147,8 @@
   "id": "M651",
   "name": "a bare RV refdes is a varistor (it is also a potentiometer)",
   "file": "scripts/device_kinds.py",
-  "old": "    ('varistor', DeviceKind('压敏电阻', (), (VARISTOR_WORDS,),",
-  "new": "    ('varistor', DeviceKind('压敏电阻', (r'^RV\\d',), (VARISTOR_WORDS,),"
+  "old": "    _kind('varistor', (), (VARISTOR_WORDS,),",
+  "new": "    _kind('varistor', (r'^RV\\d',), (VARISTOR_WORDS,),"
  },
  {
   "id": "M652",
@@ -8510,5 +8510,257 @@
   "file": "scripts/plan_circuits.py",
   "old": "L = L0 × 2^((T0 − T)/10)",
   "new": "L = L0 × 2^((T0 − T)/20)"
+ },
+ {
+  "id": "M1631",
+  "name": "registry scan recurses into historical copies",
+  "file": "scripts/guideline_criteria.py",
+  "old": "Path(registry_dir).glob('G0*_准则登记.json')",
+  "new": "Path(registry_dir).rglob('G0*_准则登记.json')"
+ },
+ {
+  "id": "M1632",
+  "name": "duplicate spec silently overwrites an earlier registry",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if registry['spec'] in specs:",
+  "new": "if False and registry['spec'] in specs:"
+ },
+ {
+  "id": "M1633",
+  "name": "release input hash is not verified",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if _sha(_safe_file(release, name)) != digest:",
+  "new": "if False and _sha(_safe_file(release, name)) != digest:"
+ },
+ {
+  "id": "M1634",
+  "name": "published version accepts different bytes",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if _inventory(target) != _inventory(candidate):",
+  "new": "if False and _inventory(target) != _inventory(candidate):"
+ },
+ {
+  "id": "M1635",
+  "name": "installation skips staged release verification",
+  "file": "scripts/guideline_criteria.py",
+  "old": "manifest = verify_release(staged)  # 所有验证发生在目标第一次写入之前",
+  "new": "manifest = json.loads((staged / 'manifest.json').read_text())  # skipped verification"
+ },
+ {
+  "id": "M1636",
+  "name": "failed installation does not roll back",
+  "file": "scripts/guideline_criteria.py",
+  "old": "for name in reversed(changed):",
+  "new": "for name in []:"
+ },
+ {
+  "id": "M1637",
+  "name": "build ignores the explicit vocabulary input",
+  "file": "scripts/guideline_criteria.py",
+  "old": "base = vocabulary(vocabulary_path)",
+  "new": "base = vocabulary()"
+ },
+ {
+  "id": "M1638",
+  "name": "production silently uses test substitute with installed identity",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if not path and override and os.environ.get('GUIDELINE_CRITERIA_TESTING') != '1':",
+  "new": "if False:"
+ },
+ {
+  "id": "M1639",
+  "name": "assumed resistor package bypasses engineering value",
+  "file": "scripts/checkers/passive_stress.py",
+  "old": "ASSUMED_PACKAGE = guideline_criteria.engineering_value('assumed_resistor_package')",
+  "new": "ASSUMED_PACKAGE = '0402'"
+ },
+ {
+  "id": "M1640",
+  "name": "device title bypasses installed vocabulary",
+  "file": "scripts/device_kinds.py",
+  "old": "else _KIND_TITLES[name]",
+  "new": "else ('继电器' if name == 'relay' else _KIND_TITLES[name])"
+ },
+ {
+  "id": "M1641",
+  "name": "circuit title bypasses installed vocabulary",
+  "file": "scripts/catalog.py",
+  "old": "return CircuitType(name, _CIRCUIT_TITLES[name], *args)",
+  "new": "return CircuitType(name, '变换器与稳压器' if name == 'POWER_CONVERTER' else _CIRCUIT_TITLES[name], *args)"
+ },
+ {
+  "id": "M1642",
+  "name": "generated resistor table drops a JSON row",
+  "file": "scripts/render_commodity_floors.py",
+  "old": "for package, row in packages.items():",
+  "new": "for package, row in list(packages.items())[1:]:"
+ },
+ {
+  "id": "M1643",
+  "name": "metadata reader returns fixed relay title",
+  "file": "scripts/guideline_criteria.py",
+  "old": "return {item['name']: item['title'] for item in raw[group]}",
+  "new": "return {item['name']: '继电器' if item['name'] == 'relay' else item['title'] for item in raw[group]}"
+ },
+ {
+  "id": "M1644",
+  "name": "installed package omits ten-file manifest contract",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if manifest.get('fingerprint_order') != (list(SHARED_FILES) if manifest['fingerprint_format'] == LEGACY_FINGERPRINT_FORMAT else sorted(ENGINEERING_FILES)) or set(manifest.get('payload', {})) != set(SHARED_FILES):\n        raise ValueError('installed manifest must name exactly the ten controlled files')",
+  "new": "if False:\n        raise ValueError('installed manifest must name exactly the ten controlled files')"
+ },
+ {
+  "id": "M1645",
+  "name": "installed fingerprint is ignored",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if shared_digest(root, manifest['fingerprint_format']) != manifest['fingerprint']:",
+  "new": "if False:"
+ },
+ {
+  "id": "M1646",
+  "name": "installed bundle semantics are not checked",
+  "file": "scripts/guideline_criteria.py",
+  "old": "errors = bundle_errors(bundle, root / 'references/shared/vocabulary.json')",
+  "new": "errors = []"
+ },
+ {
+  "id": "M1647",
+  "name": "installed version mismatch is accepted",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if errors or bundle['library_version'] != manifest['library_version']:\n        raise ValueError('invalid installed bundle: %s' % errors)",
+  "new": "if errors:\n        raise ValueError('invalid installed bundle: %s' % errors)"
+ },
+ {
+  "id": "M1648",
+  "name": "local verification CLI prints digest without validating",
+  "file": "scripts/guideline_criteria.py",
+  "old": "result = verify_installed()['fingerprint']",
+  "new": "result = shared_digest()"
+ },
+ {
+  "id": "M1649",
+  "name": "maintenance prose leaks into engineering fingerprint",
+  "file": "scripts/guideline_criteria.py",
+  "old": "controlled = {name: files[name] for name in sorted(ENGINEERING_FILES)}",
+  "new": "controlled = {name: files[name] for name in sorted(SHARED_FILES)}"
+ },
+ {
+  "id": "M1650",
+  "name": "normative stress specification is omitted",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if name not in (\n    'references/shared/shared-layer.md', 'references/shared/guideline-criteria.md')",
+  "new": "if name not in (\n    'references/shared/shared-layer.md', 'references/shared/guideline-criteria.md', 'references/shared/stress-spec.md')"
+ },
+ {
+  "id": "M1651",
+  "name": "missing historical format is silently promoted to v2",
+  "file": "scripts/guideline_criteria.py",
+  "old": "fmt = record.get('fingerprint_format', LEGACY_FINGERPRINT_FORMAT)",
+  "new": "fmt = record.get('fingerprint_format', FINGERPRINT_FORMAT)"
+ },
+ {
+  "id": "M1652",
+  "name": "version change bypasses shared record validation",
+  "file": "scripts/guideline_criteria.py",
+  "old": "for key in ('library_version', 'shared_sha256'):",
+  "new": "for key in ('shared_sha256',):"
+ },
+ {
+  "id": "M1653",
+  "name": "alternate data borrows the installed engineering hash",
+  "file": "scripts/guideline_criteria.py",
+  "old": "digest = _engineering_digest(files)",
+  "new": "digest = shared_digest(root, fmt)"
+ },
+ {
+  "id": "M1654",
+  "name": "real alternate JSON bytes replaced by normalized data",
+  "file": "scripts/guideline_criteria.py",
+  "old": "raw = alternate",
+  "new": "raw = dump(library).encode('utf-8')"
+ },
+ {
+  "id": "M1655",
+  "name": "plan shared identity check is removed",
+  "file": "scripts/validate_review.py",
+  "old": "for problem in guideline_criteria.identity_errors(guidelines, bundle=library):",
+  "new": "for problem in []:"
+ },
+ {
+  "id": "M1656",
+  "name": "pure shared explanation re-enters SR engineering identity",
+  "file": "scripts/skill_identity.py",
+  "old": "p.relative_to(root).as_posix() in {'references/shared/shared-layer.md',\n                                                         'references/shared/guideline-criteria.md'}",
+  "new": "p.relative_to(root).as_posix() in set()"
+ },
+ {
+  "id": "M1657",
+  "name": "legacy full-file algorithm is removed",
+  "file": "scripts/guideline_criteria.py",
+  "old": "return hashlib.sha256('\\n'.join(files[n] for n in SHARED_FILES).encode('utf-8')).hexdigest()",
+  "new": "return _engineering_digest(files)"
+ },
+ {
+  "id": "M1658",
+  "name": "new plan omits fingerprint format",
+  "file": "scripts/plan_review.py",
+  "old": "**guideline_criteria.shared_versions(bundle=library),",
+  "new": "**{k: v for k, v in guideline_criteria.shared_versions(bundle=library).items() if k != 'fingerprint_format'},"
+ },
+ {
+  "id": "M1659",
+  "name": "external binding ignores explicitly selected release",
+  "file": "evals/eval_set.py",
+  "old": "return tool().binding.context(release, root(), skill_root)",
+  "new": "return tool().binding.context(None, root(), skill_root)"
+ },
+ {
+  "id": "M1660",
+  "name": "automatic score summary loses its evaluation identity",
+  "file": "evals/circuit_cases/run.py",
+  "old": "skill_commit=commit, evaluation=context, totals=totals",
+  "new": "skill_commit=commit, evaluation={}, totals=totals"
+ },
+ {
+  "id": "M1661",
+  "name": "automatic plan silently uses a different guideline identity",
+  "file": "evals/circuit_cases/run.py",
+  "old": "if plan.get('guidelines', {}).get(key) != evaluation['guidelines'][key]:",
+  "new": "if False:"
+ },
+ {
+  "id": "M1662",
+  "name": "test override leaks into an external evaluation subprocess",
+  "file": "evals/circuit_cases/run.py",
+  "old": "env.pop('GUIDELINE_CRITERIA', None)",
+  "new": "pass"
+ },
+ {
+  "id": "M1663",
+  "name": "detection aggregate drops explicitly bound package identity",
+  "file": "evals/detection/run.py",
+  "old": "evaluation = eval_set.context(release, ROOT)",
+  "new": "evaluation = {}"
+ },
+ {
+  "id": "M1664",
+  "name": "detection child inherits test-only criteria override",
+  "file": "evals/detection/run.py",
+  "old": "env.pop('GUIDELINE_CRITERIA', None)",
+  "new": "pass"
+ },
+ {
+  "id": "M1665",
+  "name": "native replay inherits the test-only empty guideline input",
+  "file": "evals/kicad_replay_bench/run.py",
+  "old": "env.pop('GUIDELINE_CRITERIA', None)",
+  "new": "pass"
+ },
+ {
+  "id": "M1666",
+  "name": "default native replay silently returns to a contract missing guideline batches",
+  "file": "evals/kicad_replay_bench/run.py",
+  "old": "CONTRACT_REVISION = 'installed-guidelines-v1'",
+  "new": "CONTRACT_REVISION = 'guideline-scans-v1'"
  }
 ]

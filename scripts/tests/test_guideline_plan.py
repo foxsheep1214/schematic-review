@@ -2,6 +2,7 @@
 (references/shared/guideline-criteria.md; user 2026-10-31: 请开始执行这个方案). An empty rule library leaves the plan as it was.
 """
 import sys
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -24,6 +25,11 @@ STALE = 'plan guidelines were built on another shared rule library'
 STALE_LAYER = 'plan guidelines were built on another shared layer'
 
 
+def identity(library):
+    with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}):
+        return guideline_criteria.shared_versions(bundle=library)
+
+
 class GuidelinePlanTests(unittest.TestCase):
     def library(self):
         return bundle(rule('G01-001', applies_when={'board': True}),
@@ -33,13 +39,15 @@ class GuidelinePlanTests(unittest.TestCase):
 
     def plan(self, basis=None):
         library = self.library()
-        with mock.patch.object(guideline_criteria, 'load', lambda *args: library), \
+        with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}), mock.patch.object(guideline_criteria, 'load', lambda *args: library), \
                 mock.patch.object(catalog, 'BASIS', basis or {}):
             return plan_for()
 
     def test_the_plan_lists_applicable_rules_and_their_coverage(self):
         plan = self.plan({'DOC-Q01': ('G01-001',)})
         section = plan['guidelines']
+        self.assertEqual(section['fingerprint_format'], 'shared-paths-sha256-v2')
+        self.assertEqual(section['shared_sha256'], identity(self.library())['shared_sha256'])
         self.assertEqual(section['baseline'], 'industrial_telecom')
         self.assertIn('capacitor', section['device_kinds'])
         self.assertEqual(section['circuit_types'], sorted({c['circuit_type'] for c in plan['checks']
@@ -69,7 +77,7 @@ class GuidelinePlanTests(unittest.TestCase):
             intent, audit = intent_for(db)
             intent.setdefault('materials', {}).update(materials or {})
             return intent, audit
-        with mock.patch.object(guideline_criteria, 'load', lambda *args: library), mock.patch.object(catalog, 'BASIS', {}), \
+        with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}), mock.patch.object(guideline_criteria, 'load', lambda *args: library), mock.patch.object(catalog, 'BASIS', {}), \
                 mock.patch.object(fx, 'intent_for', with_materials):
             return plan_for()
 
@@ -125,8 +133,7 @@ class GuidelinePlanTests(unittest.TestCase):
 class GuidelineGateAndReportTests(unittest.TestCase):
     def setUp(self):
         self.library = GuidelinePlanTests.library(None)
-        self.section = {'library_version': '0.0.0', 'content_sha256': self.library['content_sha256'],
-                        'shared_sha256': guideline_criteria.shared_digest(),
+        self.section = {**identity(self.library),
                         'baseline': 'industrial_telecom', 'circuit_types': [], 'device_kinds': ['capacitor'],
                         'applicable': ['G01-001', 'G02-001'], 'covered': {'G01-001': ['DOC-Q01']},
                         'uncovered': ['G02-001'], 'downstream': ['G02-001']}
@@ -136,7 +143,7 @@ class GuidelineGateAndReportTests(unittest.TestCase):
         if section is not None:
             plan['guidelines'] = section
         report['plan_digest'] = fingerprint(plan)
-        with mock.patch.object(guideline_criteria, 'load', lambda *args: self.library):
+        with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}), mock.patch.object(guideline_criteria, 'load', lambda *args: self.library):
             return validate_review(plan, report, db)
 
     def test_the_gate_wants_the_plan_built_on_the_installed_library(self):
@@ -195,7 +202,7 @@ class GuidelineGateAndReportTests(unittest.TestCase):
                          rule('G08-001', applies_when={'board': True}, coverage='project_input'),
                          rule('G07-001', applies_when={'board': True}, coverage='handoff', closing_stage='pcb'))
         section = dict(self.section, applicable=['G01-001', 'G07-001', 'G08-001'], project_input=['G08-001'], handoff=['G07-001'])
-        with mock.patch.object(guideline_criteria, 'load', lambda *args: library):
+        with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}), mock.patch.object(guideline_criteria, 'load', lambda *args: library):
             lines = render_report.render_guidelines({'guidelines': section})
         self.assertEqual(lines.count('### 由需求基线回答的设计准则'), 1)
         self.assertEqual(lines.count('### 进下游交接清单的设计准则'), 1)
@@ -218,16 +225,16 @@ class GuidelineGateAndReportTests(unittest.TestCase):
         self.assertIsNone(result['guideline_coverage'])
 
     def test_the_report_lists_applicable_rules_and_sr_lists_the_uncovered(self):
-        with mock.patch.object(guideline_criteria, 'load', lambda *args: self.library):
+        with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}), mock.patch.object(guideline_criteria, 'load', lambda *args: self.library):
             lines = render_report.render_guidelines({'guidelines': self.section})
         text = '\n'.join(lines)
-        self.assertIn(guideline_criteria.shared_label() + '，产品基线 industrial_telecom。', text)   # one label binds library and derating
+        self.assertIn(guideline_criteria.shared_label(identity=self.section) + '，产品基线 industrial_telecom。', text)   # one label binds library and derating
         self.assertIn('| G01-001 | RS-485 共模范围 | TI SLLA272 C §2 第3页 | DOC-Q01 | 原理图 |', text)
         self.assertIn('| G02-001 | RS-485 共模范围 | TI SLLA272 C §2 第3页 | 未覆盖 | 样机 |', text)
         self.assertEqual(render_report.render_guidelines({}), [])
 
     def test_an_undeclared_external_interface_is_said_once_any_is_declared_it_is_not(self):
-        with mock.patch.object(guideline_criteria, 'load', lambda *args: self.library):
+        with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}), mock.patch.object(guideline_criteria, 'load', lambda *args: self.library):
             bare = '\n'.join(render_report.render_guidelines({'guidelines': self.section}))
             named = '\n'.join(render_report.render_guidelines(
                 {'guidelines': dict(self.section, external_interfaces=['POE_PD'])}))
@@ -239,7 +246,7 @@ class GuidelineGateAndReportTests(unittest.TestCase):
         plan, report, db = fixture()
         plan['guidelines'] = self.section
         report['plan_digest'] = fingerprint(plan)
-        with mock.patch.object(guideline_criteria, 'load', lambda *args: self.library):
+        with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}), mock.patch.object(guideline_criteria, 'load', lambda *args: self.library):
             text = render_report.render(plan, report, validate_review(plan, report, db))
         self.assertIn('<summary>共用设计准则覆盖</summary>', text)
         uncovered = text[text.index('### 适用但还没有检查的共用设计准则'):]
@@ -249,3 +256,30 @@ class GuidelineGateAndReportTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+class M4IdentityTests(unittest.TestCase):
+    setUp = GuidelineGateAndReportTests.setUp
+    gate = GuidelineGateAndReportTests.gate
+    def test_missing_or_unknown_format_does_not_promote_an_old_plan(self):
+        import copy
+        for value in (None, 'unknown', guideline_criteria.LEGACY_FINGERPRINT_FORMAT):
+            section = copy.deepcopy(self.section)
+            if value is None:
+                section.pop('fingerprint_format')
+            else:
+                section['fingerprint_format'] = value
+            original = copy.deepcopy(section)
+            gate = self.gate(section)
+            self.assertTrue(any('fingerprint format' in e for e in gate['errors']), gate['errors'])
+            self.assertEqual(original, section)
+
+    def test_version_change_requires_reverification_even_with_same_digest(self):
+        gate = self.gate(dict(self.section, library_version='different-release'))
+        self.assertTrue(any('shared library_version changed' in e for e in gate['errors']), gate['errors'])
+
+    def test_old_plan_schema_is_rejected_before_new_identity_is_accepted(self):
+        plan, report, db = fixture()
+        plan['schema_version'] = 7
+        report['plan_digest'] = fingerprint(plan)
+        gate = validate_review(plan, report, db)
+        self.assertTrue(any('plan.schema_version must be 8' in e for e in gate['errors']))

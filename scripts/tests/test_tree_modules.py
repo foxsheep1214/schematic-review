@@ -51,8 +51,8 @@ class OldRecordTests(unittest.TestCase):
         self.plan = plan_for()
 
     def test_a_plan_carries_schema_7_with_its_owner_table_and_interfaces(self):
-        self.assertEqual(PLAN_SCHEMA_VERSION, 7)
-        self.assertEqual(self.plan['schema_version'], 7)
+        self.assertEqual(PLAN_SCHEMA_VERSION, 8)
+        self.assertEqual(self.plan['schema_version'], 8)
         self.assertIsInstance(self.plan['owners'], list)
         self.assertIsInstance(self.plan['interfaces'], dict)
 
@@ -69,16 +69,16 @@ class OldRecordTests(unittest.TestCase):
         report['plan_digest'] = fingerprint(plan)
         gate = validate_review(plan, report, db)
         self.assertFalse(gate['valid'])
-        self.assertTrue(any('schema_version must be 7' in e for e in gate['errors']), gate['errors'])
+        self.assertTrue(any('schema_version must be 8' in e for e in gate['errors']), gate['errors'])
 
     def test_a_schema_6_plan_is_not_merged_or_compared(self):
         old = copy.deepcopy(self.plan)
         old['schema_version'] = 6
-        with self.assertRaisesRegex(ValueError, 'schema_version must be 7'):
+        with self.assertRaisesRegex(ValueError, 'schema_version must be 8'):
             planner = plan_review.ReviewPlanner({'parts': {}, 'nets': {}}, {'schema_version': 5})
             planner.previous_plan = old
             planner.merge_previous_checks()
-        with self.assertRaisesRegex(ValueError, 'schema_version != 7'):
+        with self.assertRaisesRegex(ValueError, 'schema_version != 8'):
             revision_impact._baseline({'parts': {}, 'nets': {}}, old)
 
 

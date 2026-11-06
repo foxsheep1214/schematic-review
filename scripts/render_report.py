@@ -781,7 +781,7 @@ def render_guidelines(plan):
     out = ['## 共用设计准则覆盖', '',
            '%s，产品基线 %s。适用的设计准则 %d 条；检查项这次没有展开的 %d 条是本板没有它的对象或电路还没声明；'
            '没有对应检查项的 %d 条列在“对 SR 的反馈”，是 SR 待补的规则，不是设计缺陷。'
-           % (guideline_criteria.shared_label(), section['baseline'], len(applicable), len(section.get('not_triggered') or {}),
+           % (guideline_criteria.shared_label(identity=section), section['baseline'], len(applicable), len(section.get('not_triggered') or {}),
               len(section.get('uncovered') or [])), '',
            '“内容”列是准则库条款标题的原文引文，照录不改写。', '',
            '| 设计准则 | 内容（准则库原文） | 出处 | 本次由哪些检查核对 | 关闭阶段 |', '|---|---|---|---|---|']

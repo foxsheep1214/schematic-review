@@ -18,7 +18,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | `datasheet-audit.json` | 工具 | ① 读入 | — | 每颗物料的资料是否找到、是否核实 |
 | `intent.json` | 审查员 | ①② 的输入 | 5 | 需求理解、需求澄清（问用户的问题与答复）、任务剖面、电源轨、器件类别与配置组、电路取舍、装配状态、规则缺口、产品基线（`guideline_baseline`） |
 | `record/circuit-candidates.json` | 工具 | ② 出计划 | 2 | 候选及带物理网的成员、按角色持有/唯一所属、隔离侧别证据；接口附默认工作态（计划标“默认状态，未经需求确认”） |
-| `review-plan.json` | 工具 | ② 出计划 | 7 | 功能树、每个检查项检查、功能框架、各检查器清单、接口；设计准则库有规则时另有 `guidelines`（适用的共用设计准则与覆盖） |
+| `review-plan.json` | 工具 | ② 出计划 | 8 | 功能树、每个检查项检查、功能框架、各检查器清单、接口；设计准则库有规则时另有 `guidelines`（适用的共用设计准则与覆盖） |
 | `review-results.json` | 审查员 | ③ 判断 | 15 | 功能判定（条件及其位号 `refs`、计算、余量及其推法与公差端、开放项及其单侧定界、失败项）和手填的检查项；绑定功能的检查项不落盘，门禁、报告、打包、对比读取时由功能派生（`results_model.materialize`），审查员的绑定或注记只留 `{id, function_id, aspect}` / `{id, 注记}` 残根 |
 | `review-gate.json` | 工具 | ④ 校验 | — | 对账结果、阻断项、待办 |
 | `审查报告.md` / `审查报告.html`、`record/` | 工具 | ⑤ 出报告 | — | 交付物：报告与留档 |
@@ -38,13 +38,13 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 
 | 步骤 | 入口 | 工具 | 库 |
 |---|---|---|---|
-| ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`ordering_status.py`（订货表状态线索、库内候选筛选；不作电气判定）、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`device_kinds.py`（器件类别登记表）、`part_words.py`（器件身份、PCB 铜与有出处的精确型号脚方向）、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
-| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`latch_criteria.py`（外部锁存判据：状态脚驱动的锁存树逐动作代入）、`guideline_scans.py`（把能由网表、BOM 字段和入表数据判定的设计准则做成冷扫描候选）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`（原生事实不变，给 NetGraph 附完整有出处脚表的缺名解析与冲突）、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`guideline_criteria.py`、`stress_check.py`（共用应力核对：降额限值、应力判法、挑规则）（共用设计准则库：校验、选用、覆盖；与 ASG 同字节）、`checkers/` |
+| ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`ordering_status.py`（订货表状态线索、库内候选筛选；不作电气判定）、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`guideline_criteria.py`（本地发布包的词表与设计准则读取、校验、选用和覆盖）、`device_kinds.py`（器件类别登记表）、`part_words.py`（器件身份、PCB 铜与有出处的精确型号脚方向）、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
+| ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`latch_criteria.py`（外部锁存判据：状态脚驱动的锁存树逐动作代入）、`guideline_scans.py`（把能由网表、BOM 字段和入表数据判定的设计准则做成冷扫描候选）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`（原生事实不变，给 NetGraph 附完整有出处脚表的缺名解析与冲突）、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`stress_check.py`（共用应力核对：降额限值、应力判法、挑规则）（共用设计准则库：校验、选用、覆盖；与 ASG 同字节）、`checkers/` |
 | ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py`、`design_checklist.py`（ASG 设计记录的对账清单：只取对象与计算名） | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
 | ④ 校验 | `validate_review.py` | `migrate_results.py` | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`validate_remediation.py`、`review_engine.py` |
 | ⑤ 出报告 | `render_report.py`、`pack_review.py` | — | `report_html.py` |
 | 复审 | `diff_netlists.py` | — | `revision_impact.py` |
-| 维护 SR | `catalog.py --write-doc` | `compare_reviews.py`、`check_ledger.py` | — |
+| 维护 SR | `catalog.py --write-doc` | `compare_reviews.py`、`check_ledger.py`、`render_commodity_floors.py` | — |
 
 `catalog.py` 是规则的唯一登记处，既被出计划导入，维护时也用它重写规则总表。
 `independence.py` 在出计划时拒收引用设计方文档的声明，在校验时拒收这样的证据，两步共用。
@@ -57,6 +57,9 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 
 | 日期 | 决定 | 为什么 |
 |---|---|---|
+| 2026-11-06 | M4：计划格式 7→8，`guidelines` 记录共用层版本、`shared_sha256`、`fingerprint_format`；v2 按受控相对路径与文件哈希映射生成，保留准则、词表、降额、最弱档、应力规范和共用代码。纯说明和迁出的维护历史不属于工程身份，亦不进入 SR 的规则身份。旧 v1 算法仍校验旧包/旧记录，缺格式只按 v1 解释；新版下重新生成计划并复验，不补字段转移旧 PASS。替代准则输入绑定其真实哈希；合并计划也核身份；报告显示记录身份 | user:2026-11-06：“按照这个草案的推荐方案，逐个完成这个草案的更改，都按照你推荐的方式来。”本批明确批准草案第 7 节 M4 行；维护文字触发工程重审（P05），测试替代与安装指纹脱节（P15） |
+| 2026-11-06 | M3：共用设计准则来自硬件设计规范发布包；SR 固定本次审查采用的版本与指纹，独立取证和复算。规则总表只映射到本地发布包中的准则，运行和本地测试不读取 ASG 源码。两个分支可各自固定不同版本；项目要求同一判据基线时核同一包，有意升版说明差异与重审范围。配对字节检查移至规范发布验收，本地只验本技能安装包，五步、判断者、交接与现行指纹格式不变 | user:2026-11-06：“按照这个草案的推荐方案，逐个完成这个草案的更改，都按照你推荐的方式来。”本批明确批准草案第 7 节 M1/M3 两行文字 |
+| 2026-11-06 | M1：共用源收回硬件设计规范，使用确定性发布包安装到选定技能 worktree；技能相对路径、import、五步输入输出与判断责任不变。1.9.0 正式归档，机制变化用设计准则库 1.9.1；现行十文件指纹算法保留，跨仓库测试到 M3 再替换，SKILL.md 批准文字留到 M3 一起改 | 用户批准关系梳理草案推荐方案 A：“按照这个草案的推荐方案，逐个完成这个草案的更改，都按照你推荐的方式来。”本批明确只做 M0/M1，不改准则含义或工程数值 |
 | 2026-11-03 | 合并步 7：词表加 `HOLD_UP`（掉电保持）与 `SIGNAL_PROTECTION`（信号端口保护），准则库 1.7.2；保持二极管加储能加下游变换器出 HOLD_UP 候选，连接器经限流件与对地钳位到 IC 脚出跨电路的 SIGNAL_PROTECTION 候选，POWER_PROTECTION 不再按成员裁剪；PRO-E02 在钳位网没有 IC 脚时穿正向二极管和一颗电阻/PTC 找被保护脚，精确表器件按电阻压降比较；名称线索把层次网名的叶名当词（DEBUG 除外） | 用户 2026-11-03：按建议执行。合并步 6 第六节的 1–5 点：保持电路和信号通道保护各有自己的问法，F11 需要穿串阻找到 IPx；共用层只改词表的电路类型，准则条款不变 |
 | 2026-11-03 | 准则库 1.7.3：G03-023、G05-090 的适用类型加 `HOLD_UP`（条目 1.0→1.1），条款文字不变；共用层指纹 48c61bb3a5e7 → d4c79a47c214 | 用户 2026-11-03：这两件事也做了。词表有了 HOLD_UP 后掉电保持的两条准则要能被这个类型选出，否则 HOLD_UP 电路没有准则点名 |
 | 2026-11-04 | 准则库 1.7.4：G03-025 的适用类型加 `STARTUP`（条目 1.0→1.1），条款文字不变；共用层指纹 d4c79a47c214 → ea8f1a727df3 | 用户 2026-11-04：修改 ASG 问题。复位监督典型电路做了 G03-025 的核算却因类型不交不能引用 |
@@ -162,7 +165,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
   `python3 scripts/catalog.py --write-doc references/check-catalog.md` 和 `--write-doc references/review-vocabulary.md`（审查员的三张名称表）。来源为“全板通用”“电路检查项”的新规则
   登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在计划生成的对应层（电路与器件 `plan_circuits.py`、接口 `interfaces.py`、
   系统功能 `plan_system.py`、全板与覆盖 `plan_board.py`；`plan_review.py` 只做汇总）、`lint.py` 或对应检查器里实现展开/扫描。新增或调整规则先回答 [审查要点中的三个问题](references/review-charter.md#用审查要点指导进化)。
-- 共用层（`references/shared/` 全部文件与 `scripts/guideline_criteria.py`、`scripts/stress_check.py`）与 ASG 同字节，改一边要整目录复制到另一边，`python3 scripts/guideline_criteria.py shared` 两边同指纹；哪些文件、各管什么、谁读、哪条测试守见[共用层](shared/shared-layer.md)，设计准则库的更新步骤见[共用设计准则库](shared/guideline-criteria.md#六更新设计准则库)。新增或调整 SR 规则时，若它核对某条设计准则，在 `catalog.BASIS` 登记映射；报告里“适用但还没有检查的共用设计准则”就是这里的待办。`test_guideline_criteria.py` 核对设计准则库词表与 `CIRCUIT_TYPES`、`device_kinds.KINDS` 一致，加电路类型或器件类别后同步改设计准则库词表。
+- 共用层（`references/shared/` 全部文件与 `scripts/guideline_criteria.py`、`scripts/stress_check.py`）由硬件设计规范的 `工具/guideline_criteria.py` 统一发布，选定的 ASG/SR worktree 从同一正式包核清单后安装，技能内不得编辑或互相复制；`python3 scripts/guideline_criteria.py shared` 核各自已装指纹；哪些文件、各管什么、谁读、哪条测试守见[共用层](shared/shared-layer.md)，设计准则库的更新步骤见[共用设计准则库](shared/guideline-criteria.md#六更新设计准则库)。新增或调整 SR 规则时，若它核对某条设计准则，在 `catalog.BASIS` 登记映射；报告里“适用但还没有检查的共用设计准则”就是这里的待办。`test_guideline_criteria.py` 核对设计准则库词表与 `CIRCUIT_TYPES`、`device_kinds.KINDS` 一致，名字与标题由本地词表读取，分类线索及检查器归属在 SR 维护；本地安装包完整性由 test_installed_release.py 核对，配对字节验收由规范显式发布检查承担。
 - **门禁只有一条**（2026-10-27，用户：门禁合成一条 pytest）：每次改动跑 `python3 -m pytest scripts/tests -q`。它已经包含
   [规则合同](evals/rule_contracts/README.md)（每条自动规则一块触发板、一块近似板）、[KiCad 原生交付回放](evals/kicad_replay_bench/README.md)
   和 [典型电路基准](evals/typical_circuits/README.md)（每条报出都要已归类，新出现的须逐条审读），不再单独跑、不再分行记。
@@ -172,6 +175,6 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
   `python3 evals/mutation/run.py --changed`，确认改动文件上的现有变异仍被杀死、锚点仍命中；锚点因本次改动失效的就地重锚或删去。
   只有新加的判断逻辑没有直接测试守着时才补变异，不再每次必加。一批改动后或每周跑一次全量 `python3 evals/mutation/run.py`，
   把存活的补测试、失效的重锚或删去，记一条台账。
-- **电路评测集**（2026-11-05，用户：把这些电路做成给 SR 和 ASG 评测和改进的专门评测集，放在电路设计规范里）：电路案例、测试点、公开板审查记录、已知缺陷和运行结果都在 `原理图设计规范/评测集/`（`evals/eval_set.py` 定位，`CIRCUIT_EVAL_SET` 可改），说明见它的 README。本仓库只留运行器和代码门禁固件（规则合同、回放、典型电路、种子基准、变异），评测集不在时门禁里读它的测试跳过。`python3 evals/circuit_cases/run.py auto --out <目录>` 跑自动层，结果连同提交号存进评测集 `运行结果/SR/`。
+- **电路评测集**（2026-11-05，用户：把这些电路做成给 SR 和 ASG 评测和改进的专门评测集，放在电路设计规范里）：电路案例、测试点、公开板审查记录、已知缺陷和运行结果都在 `原理图设计规范/评测集/`（`evals/eval_set.py` 定位，`CIRCUIT_EVAL_SET` 可改），说明见它的 README。本仓库只留运行器和代码门禁固件（规则合同、回放、典型电路、种子基准、变异），评测集不在时门禁里读它的测试跳过。`python3 evals/circuit_cases/run.py auto --out <新目录> --guideline-release <选定发布包>` 跑自动层；现行说明在评测集 `发布绑定.md`。ID/状态来自显式包，包须与本技能安装件一致；子进程不用测试替代输入，实际计划身份另核。原始 run、成绩与汇总均记发布版/指纹/格式、E 提交及实际工作区身份、案例与原件哈希、技能提交及字节。缺 E 独立打印外部评测 skip，不当代码门或案例通过；历史无身份结果不自动补贴新版。
 - 按需另跑：改导入器时跑 [真实来源导入回归](evals/input_bench/README.md)；看自动层检出率跑 [种子基准](evals/seeded_bench/README.md)；
   `python3 evals/bench_coverage.py --seeded <注入基准 results.json>` 列出每条 A 规则在哪个基准有真实板正例。评测通过不等于任何真实电路审查通过。

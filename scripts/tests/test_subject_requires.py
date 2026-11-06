@@ -95,7 +95,7 @@ class PreconditionTableTests(unittest.TestCase):
             self.assertTrue(catalog.SUBJECT_PRECONDITIONS[requires].startswith('电路里没有'), requires)
 
     def test_the_plan_format_is_7(self):
-        self.assertEqual(PLAN_SCHEMA_VERSION, 7)
+        self.assertEqual(PLAN_SCHEMA_VERSION, 8)
 
 
 class PowerSwitchTests(unittest.TestCase):

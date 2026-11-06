@@ -696,8 +696,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     if library["criteria"] or guidelines is not None:   # the plan was built on the installed shared rule library
         require(isinstance(guidelines, dict) and guidelines.get("content_sha256") == library["content_sha256"],
                 "plan guidelines were built on another shared rule library (or none): regenerate the plan")
-        require(isinstance(guidelines, dict) and guidelines.get("shared_sha256") == guideline_criteria.shared_digest(),
-                "plan guidelines were built on another shared layer (references/shared): regenerate the plan")
+        for problem in guideline_criteria.identity_errors(guidelines, bundle=library):
+            require(False, "plan guidelines were built on another shared layer (references/shared): " + problem)
     errors.extend(guideline_batch_errors(guidelines, expected, checks, library))
     errors[:] = collapse_open_cascade(errors, checks)   # same count of validity, one line per open item instead of per row
     release = release_for(errors, blockers, accepted)

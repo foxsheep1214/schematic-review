@@ -93,3 +93,28 @@ def test_missing_seed_baseline_is_an_explicit_error():
     rows = bench.seeded_rows({'records': [], 'baselines': {'broken': {'error': 'no db'}}}, {})
     assert rows[0]['status'] == 'error'
     assert rows[0]['criteria'] == []
+
+
+def test_aggregate_selects_explicit_package_instead_of_current_registry(monkeypatch, tmp_path):
+    import json
+    selected = tmp_path / 'selected/references/shared/guideline-criteria.json'
+    selected.parent.mkdir(parents=True)
+    selected.write_text(json.dumps({'criteria': [{'id': 'selected-only', 'status': 'retired'}]}))
+    calls = []
+    monkeypatch.setattr(bench.eval_set, 'context', lambda *args: calls.append(args) or {'bound': True})
+    evaluation, library, criteria = bench.bound_inputs(tmp_path / 'selected')
+    assert evaluation == {'bound': True}
+    assert library == selected
+    assert criteria == {'selected-only': {'id': 'selected-only', 'status': 'retired'}}
+    assert calls == [(tmp_path / 'selected', ROOT)]
+
+
+def test_aggregate_subprocess_clears_test_guidelines(monkeypatch, tmp_path):
+    from types import SimpleNamespace
+    monkeypatch.setenv('GUIDELINE_CRITERIA', '/testing')
+    monkeypatch.setenv('GUIDELINE_CRITERIA_TESTING', '1')
+    seen = []
+    monkeypatch.setattr(bench.subprocess, 'run', lambda *a, **kw: seen.append(kw['env']) or SimpleNamespace(returncode=0))
+    assert bench.execute('script.py', [], tmp_path) == 0
+    assert 'GUIDELINE_CRITERIA' not in seen[0]
+    assert 'GUIDELINE_CRITERIA_TESTING' not in seen[0]

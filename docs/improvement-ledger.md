@@ -9,6 +9,84 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+
+
+
+
+
+
+## M6：最终集成与过时入口清理（2026-11-06）
+
+清理 README 中 M3/M4 尚待实施的过时说法，指向各自本地发布检查与显式评测入口。核查草案所列无用 SR_PASSIVE、G02 未接入/登记1.1、G06–G09 待接入和旧双向同步已在 M2/M3/M4 消除，不重复修改发布包或历史文字。N/E 当前入口局部更新，原有历史台账与记录保留；正式包仍为 1.9.4，工程输入与数值不变。ASG 历史回放输入缺失，按 NOT_RUN 独立披露，不作为 PASS。SR 实测发现 pytest 空准则覆盖掩盖 13 例检查数各少2，清除原生回放子进程的测试覆盖；确认仅两个既有 REQ-Q09 项目输入/交接批项，按既有约定另存 installed-guidelines-v1，旧输入与约定不改，其他182字段不变。
+
+- Event: user:2026-11-06（按关系梳理草案推荐方案完成更改，本批 M6）
+- Causes: rule_not_enforced 1
+- Changed: README.md, docs/improvement-ledger.md, evals/kicad_replay_bench/run.py, evals/kicad_replay_bench/README.md, evals/kicad_replay_bench/revisions/installed-guidelines-v1/cases.json, evals/kicad_replay_bench/revisions/installed-guidelines-v1/sources.json, evals/kicad_replay_bench/revisions/installed-guidelines-v1/expected.json, evals/kicad_replay_bench/revisions/installed-guidelines-v1/manifest.json, scripts/tests/test_replay_release_binding.py, evals/mutation/mutations.json
+- Gates: 不设配对变量：ASG 全量 1336 passed（499.43 s，无跳过），SR 全量 3078 passed（168.81 s，无跳过，5 条既有 warnings）；SR 官方 --changed aee8b4b --tier unit 260/260 KILLED（仅临时排序，未变异副本先通过）；M1665/M1666 独立功能变异 2/2 KILLED；SR 原生回放新约定13例195/195 MATCH、0 KNOWN/0 MISMATCH，父约定不改；ASG 历史10轮因缺源 NOT_RUN，不计 PASS；E 工具28 passed、规范工具4 passed、文档/最弱档 --check PASS；两边 check_ledger.py、diff --check、quick_validate PASS；十载荷与1.9.4同字节同指纹，N十八受控输入同快照。
+
+
+## M5：显式绑定外部评测发布输入（2026-11-06）
+
+E 校验、评测运行与打分显式选择准则发布包，ID/状态只读该包；核安装件一致，记录版/指纹/格式、E 提交与实际工作区、案例原件哈希、技能提交与字节身份。ASG prepare 不给答案且先写来源记录；SR 保存原始运行、成绩与汇总，清除测试替代准则并核实际计划。缺 E 单独报告外部评测 skip；旧成绩不自动晋升。只改评测与维护入口，不改五步、判断责任、准则或工程数值。
+
+- Event: user:2026-11-06（按关系梳理草案推荐方案完成更改，本批 M5）
+- Causes: rule_not_enforced 2, rule_missing 1
+- Changed: docs/improvement-ledger.md, evals/eval_set.py, evals/circuit_cases/run.py, references/architecture.md, scripts/tests/test_circuit_cases.py, scripts/tests/test_evaluation_binding.py, evals/mutation/mutations.json, evals/detection/run.py, evals/detection/README.md, scripts/tests/test_detection_bench.py
+- Gates: ASG 全量 1336 passed（469.61 s，无跳过），SR 全量 3076 passed（155.45 s，无跳过、5 条既有 warnings）；不设配对变量；SR 官方 --changed aee8b4b --tier unit 258/258 KILLED（临时插件仅排序，未变异副本先通过）；新增 SR 6/6、ASG 2/2、E 4/4 独立功能变异 KILLED；E 工作区工具 28 passed、本批提交影像 25 passed；搬移 E 显式包校验 34 案例/96 测试点/100 板/0 错误；ASG 方案案例 1/1 hit，SR 自动层 1 hit/4 not_run；两边 check_ledger.py、diff --check、skill-creator quick_validate PASS；共用十载荷及规范18输入与1.9.4同字节。
+
+
+## M4：分离工程身份与维护文字（2026-11-06）
+
+工程指纹 v2 绑定八个受控工程文件的相对路径与哈希，纯说明和维护历史不进工程身份；十文件完整性不减。保留旧 v1 算法与身份校验，历史缺格式只解释 v1，新包下重生成计划/审计并复验，不静默重算或转移旧 PASS。替代输入绑定真实字节，修复 P15。新 ASG 审计和 SR 格式 8 计划明确 fingerprint_format，SR 历次架构决定同步；报告按记录显示身份。未改准则含义、工程数值或五步流程，未做 M5/M6。
+
+- Event: user:2026-11-06（“按照这个草案的推荐方案，逐个完成这个草案的更改，都按照你推荐的方式来”；本批明确批准第 7 节 M4 行文字）
+- Causes: rule_not_enforced 2, rule_missing 1
+- Changed: SKILL.md, docs/improvement-ledger.md, docs/shared-release-migration.md, evals/mutation/mutations.json, references/architecture.md, references/shared/guideline-criteria.json, references/shared/guideline-criteria.md, references/shared/shared-layer.md, scripts/electrical_contract.py, scripts/guideline_criteria.py, scripts/plan_review.py, scripts/render_report.py, scripts/skill_identity.py, scripts/tests/test_engineering_fingerprint.py, scripts/tests/test_guideline_criteria.py, scripts/tests/test_guideline_plan.py, scripts/tests/test_plan_review.py, scripts/tests/test_registry_integration.py, scripts/tests/test_shared_release.py, scripts/tests/test_subject_requires.py, scripts/tests/test_tree_modules.py, scripts/validate_review.py, shared-release.json
+- Approved: user:2026-11-06（批准关系梳理草案推荐方案，按草案第 7 节文字）
+- Gates: 不设配对变量：ASG 全量 1333 passed（447.37 s，无跳过），SR 全量 3069 passed（115.16 s，5 条既有 warnings，无跳过）；SR 官方 mutation --changed aee8b4b --tier unit 252/252 KILLED，未变异副本先通过；新增 M1649–M1658 限定指纹/计划功能测试独立 10/10 KILLED（不跑实际安装件一致断言）；规范工具测试 4 passed；正式包 29 文件独立重建全等，两安装件 10/10 与正式包相同；旧发布 1.9.0–1.9.3 全部校验且字节保持；两边 check_ledger.py、git diff --check、术语/架构/阅读路径 PASS。
+
+
+## M3：本地发布包独立校验与批准的依赖边界文字（2026-11-06）
+
+按已批准草案第 4.4、6、7 节移除 D07/D08/D09 的对方源码、工作区/HEAD 读取及无用 SR_PASSIVE。各自核本地已安装包的十文件清单、版本、指纹与准则有效性；配对字节检查移入规范显式发布验收。原分类、应力、覆盖、BASIS 可达性与独立性测试保留，分类对照改为明确预期（全 25 类线索、原 15 引用例、全部本地 IC 角色排除负载），不再由另一技能给答案。指定 SKILL.md 段落逐字采用批准文字；项目基线可核代替另一安装目录必须同版，五步与判断责任不变。共用校验入口与说明变化按规范发布 1.9.3，保持现行指纹格式；M4/M5 不提前做。
+
+- Event: user:2026-11-06（“按照这个草案的推荐方案，逐个完成这个草案的更改，都按照你推荐的方式来”；本批明确批准第 7 节 M1/M3 文字）
+- Causes: rule_not_enforced 3, rule_missing 1
+- Changed: SKILL.md, docs/improvement-ledger.md, docs/shared-release-migration.md, evals/mutation/mutations.json, references/architecture.md, references/shared/guideline-criteria.json, references/shared/guideline-criteria.md, references/shared/shared-layer.md, scripts/guideline_criteria.py, scripts/tests/test_derating_rules.py, scripts/tests/test_guideline_criteria.py, scripts/tests/test_installed_release.py, shared-release.json
+- Approved: user:2026-11-06（批准关系梳理草案推荐方案，按草案第 7 节文字）
+- Gates: 不设配对变量／对方读取不可用／对方为 1.9.0 三场景：ASG 各 1314 passed，SR 各 3047 passed、5 warnings，全部无跳过；SR 官方 mutation --changed aee8b4b --tier unit 126/126 KILLED（未变异副本先通过）；新增 M1644–M1648 只跑本地包功能测试、排除实际安装件一致断言后亦 5/5 KILLED；规范发布检查及生成测试 4 passed；两安装件与同一 1.9.3 包十文件相等；check_ledger.py、git diff --check、术语及阅读路径 PASS。
+
+
+## M2：消除工程取值、词表与人读表的重复维护（2026-11-06）
+
+按已批准草案第 4、6 节执行。SR 默认封装读取既有 assumed_resistor_package；双方分类定义只从本地词表读取名字/标题，分类线索、顺序及所有行为字段与 M1 逐项相等。规范准则条目和工程取值表从登记渲染，SR 三张最弱档数值表从 JSON 渲染，解释段保留。共用装载器增加元数据读取接口，故按发布流程安装 1.9.2；全部工程 JSON 除版本外相等，指纹格式不变。规范首轮生成纠正既有正文漂移（G05-031 动作、五条关闭阶段），未改任何登记；再次生成无差异。SKILL.md 留 M3。详见 docs/shared-release-migration.md。
+
+- Event: user:2026-11-06（按关系梳理草案推荐方案完成更改，本批 M2）
+- Causes: rule_not_enforced 3
+- Changed: docs/improvement-ledger.md, docs/shared-release-migration.md, evals/mutation/mutations.json, references/shared/guideline-criteria.json, scripts/catalog.py, scripts/checkers/passive_stress.py, scripts/device_kinds.py, scripts/guideline_criteria.py, scripts/render_commodity_floors.py, scripts/tests/test_commodity_floors.py, scripts/tests/test_shared_consumers.py, shared-release.json
+- Gates: ASG 全量 1294 passed（补齐已安装 Poppler 的 PATH 后，无跳过）；SR 全量 3028 passed、5 warnings；SR mutation --changed aee8b4b --tier unit 121/121 KILLED；新增 M1639–M1643 仅消费者/表格功能测试亦 5/5 KILLED；规范生成测试 1 passed、九份正文 --check PASS，SR 最弱档表重生成同字节；工程 JSON 除版本外全等；全部分类字段与顺序逐项相等；check_ledger.py、git diff --check PASS。
+
+
+## M1：共用源收回规范并确定性发布 1.9.1（2026-11-06）
+
+按已批准关系梳理草案方案 A 第 4、6 节：规范维护共用源及两个脚本，显式九份直接子登记与词表构建；确定性清单、持久输入快照、同版不覆盖、核清单后整批安装与失败回滚。生产默认固定安装包，替代输入显式声明测试模式；现有合成测试按原用途声明模式。两边从同一包安装，工程数据不变；SKILL.md、主流程和指纹算法不改，M2–M6 不提前做。SR 架构决定同步记录用户原话。验收、四个有意字节变化及回退见 docs/shared-release-migration.md。
+
+- Event: user:2026-11-06（“按照这个草案的推荐方案，逐个完成这个草案的更改，都按照你推荐的方式来”；本批 M0/M1）
+- Causes: rule_missing 2, rule_not_enforced 1
+- Changed: README.md, references/shared/shared-layer.md, references/shared/guideline-criteria.md, references/shared/guideline-criteria.json, scripts/guideline_criteria.py, shared-release.json, scripts/tests/test_shared_release.py, scripts/tests/test_guideline_criteria.py, scripts/tests/conftest.py, references/architecture.md, evals/mutation/mutations.json, docs/shared-release-migration.md, docs/improvement-ledger.md
+- Gates: ASG 全量 1293 passed；SR 全量 3024 passed（5 warnings）；SR mutation --changed aee8b4b --tier unit 15/15 KILLED；新增 M1631–M1638 仅发布功能测试 8/8 KILLED；新增 20 项测试在旧码失败、最终两边通过；两边 check_ledger.py PASS；git diff --check PASS；ASG 术语与 SR 阅读路径 PASS；两位置完整发布目录同字节，快照重建同字节，十文件两边与发布件相同；原内容除 library_version 外全等；指纹 f62f9e757234 → 702e9b357e13。
+
+
+## M0：固定共用层 1.9.0 发布输入（2026-11-06）
+
+按关系梳理草案方案 A 归档现行十文件与 19 个持久构建输入，固定完整指纹、逐文件哈希及评测集实际工作区身份；不改载荷。验收与回退锚点见 docs/shared-release-migration.md 和规范 发布/1.9.0/manifest.json。
+
+- Event: user:2026-11-06（按关系梳理草案推荐方案完成更改，本批 M0）
+- Causes: rule_not_enforced 1
+- Changed: docs/shared-release-migration.md, docs/improvement-ledger.md
+- Gates: ASG 全量 1273 passed；SR 全量 3004 passed（5 warnings）；SR mutation --changed aee8b4b --tier unit 0 mutations（仅文档）；两边 check_ledger.py PASS；git diff --check PASS；归档输入重建 JSON 与安装件同字节，十文件与两边同字节，完整指纹 f62f9e757234。
+
+
 ## 电容寿命按 G08-040 区分固态聚合物与混合型（2026-11-06）
 
 用户要求核对 G08-040 与 SR 寿命估算的差异。SR 无电容寿命数值自动计算器，原计划判据、DEV-C02 与审查说明统一指向无厂家公式时 10 ℃ 翻倍，且普通钽电容的排除逻辑连聚合物钽电容一起跳过。先补测试复现三项失败，再修正：先核系列类型，系列公式优先；无系列公式时固态聚合物按 20 ℃ 十倍，液态铝电解与混合型按 10 ℃ 翻倍，其他电容沿用原估算；类型未定写 BOM 约束，聚合物同时核 CAP-POLY-LIFE 的寿命与工况。判断和计算仍由审查员完成，不增加自动寿命结论。普通钽电容保持排除，明确聚合物的钽电容进入寿命计划。共用层与 ASG 未改。② 阅读量增加 335 B 至 161508：commodity-floors.md 补上两种公式、类型核验、聚合物钽与降额工况；全量首次仅此阅读量记录失败，按维护约定更新记录，不增加新流程或新文档。
@@ -44,7 +122,7 @@ BASIS 将新增 item 按主题映射到现有审查项；project_input/handoff �
 
 - Event: user:2026-11-05
 - Causes: rule_not_enforced 2, rule_missing 2
-- Changed: evals/mutation/mutations.json, references/check-catalog.md, references/shared/guideline-criteria.json, references/shared/shared-layer.md, scripts/catalog.py, scripts/tests/test_guideline_criteria.py, scripts/tests/test_registry_integration.py, docs/improvement-ledger.md
+- Changed: references/architecture.md, evals/mutation/mutations.json, references/check-catalog.md, references/shared/guideline-criteria.json, references/shared/shared-layer.md, scripts/catalog.py, scripts/tests/test_guideline_criteria.py, scripts/tests/test_registry_integration.py, docs/improvement-ledger.md
 - Gates: 3001 passed, 5 warnings in 122.82s (0:02:02)；check_ledger.py PASS；git diff --check 通过；mutation --changed --tier unit 49/49 KILLED；新增四条仅跑功能测试亦全部杀死；完整日志见指定 integration/实施说明.md。
 
 
