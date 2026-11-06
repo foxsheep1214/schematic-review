@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## 共用层：1.9.0 覆盖层已写回登记（2026-11-05）
+
+ASG 合入 main 前已把覆盖层写回准则登记，从登记直接构建的规则库与 1.9.0 逐字节一致；`shared-layer.md` 那一节随 ASG 改为“已写回”，两边同字节，指纹 430c93a02bbf → f62f9e757234。规则库内容不变。
+
+- Event: user:2026-11-05（“修缺陷并升版”）
+- Causes: rule_not_enforced 1
+- Changed: references/shared/shared-layer.md, docs/improvement-ledger.md
+- Gates: 3002 passed（配对 SR_ASG_SHARED_ROOT=ASG r3-skill-fixes）；mutation --changed d15cae1 --tier unit 181/181 KILLED（改文档前跑）；check_ledger.py PASS
+
 ## ASG 方案阶段规则记录进对账清单（2026-11-05）
 
 ASG 任务 1.3 新增 `record/scheme-criteria.json`（关键功能块会淘汰候选的规则）。`design_checklist.py --scheme-criteria` 只读块名、电路类型和规则编号，排除了哪个候选、怎样满足都不读；`independence.py` 把它列为设计方记录拒收（变异 M1513 的匹配文本随正则更新）。共用脚本 `guideline_criteria.py` 与 ASG 同字节（select 加 `typed_only`、`ports`，缺省行为不变）。
