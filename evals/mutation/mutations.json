@@ -2446,7 +2446,7 @@
   "id": "M381",
   "name": "an electrolytic is found by its symbol only",
   "file": "scripts/plan_circuits.py",
-  "old": "        if POLARIZED_SYMBOL_RE.search(symbol) or ELECTROLYTIC_RE.search(text):",
+  "old": "        if POLARIZED_SYMBOL_RE.search(symbol) or ELECTROLYTIC_RE.search(text) or POLYMER_RE.search(text):",
   "new": "        if POLARIZED_SYMBOL_RE.search(symbol):"
  },
  {
@@ -2460,7 +2460,7 @@
   "id": "M383",
   "name": "a tantalum capacitor gets a life row",
   "file": "scripts/plan_circuits.py",
-  "old": "        if TANTALUM_RE.search(text):\n            return None",
+  "old": "        if TANTALUM_RE.search(text) and not POLYMER_RE.search(text):\n            return None",
   "new": "        if False:\n            return None"
  },
  {
@@ -8468,5 +8468,47 @@
   "file": "scripts/catalog.py",
   "old": "现场电源口是否按直流电源口归类，耦合波形、源阻抗、并联电容放电和串联元件浪涌应力是否逐项核；",
   "new": ""
+ },
+ {
+  "id": "M1625",
+  "name": "solid polymer life reverts to ten-degree doubling",
+  "file": "scripts/plan_circuits.py",
+  "old": "L = L0 × 10^((T0 − T)/20)",
+  "new": "L = L0 × 2^((T0 − T)/10)"
+ },
+ {
+  "id": "M1626",
+  "name": "hybrid life is sent to solid polymer rule",
+  "file": "scripts/plan_circuits.py",
+  "old": "混合型走 G08-038",
+  "new": "混合型走 G08-040"
+ },
+ {
+  "id": "M1627",
+  "name": "polymer tantalum loses its life row",
+  "file": "scripts/plan_circuits.py",
+  "old": "if TANTALUM_RE.search(text) and not POLYMER_RE.search(text):",
+  "new": "if TANTALUM_RE.search(text):"
+ },
+ {
+  "id": "M1628",
+  "name": "Chinese polymer identity is no longer recognized",
+  "file": "scripts/part_words.py",
+  "old": "POLYMER_RE = re.compile(r'聚合物|POLYMER|OS-?CON', re.I)",
+  "new": "POLYMER_RE = re.compile(r'POLYMER|OS-?CON', re.I)"
+ },
+ {
+  "id": "M1629",
+  "name": "polymer lifetime floor disappears from plan",
+  "file": "scripts/plan_circuits.py",
+  "old": "聚合物同时核 CAP-POLY-LIFE 的寿命与工况",
+  "new": "聚合物不核寿命降额"
+ },
+ {
+  "id": "M1630",
+  "name": "liquid and hybrid life use wrong doubling interval",
+  "file": "scripts/plan_circuits.py",
+  "old": "L = L0 × 2^((T0 − T)/10)",
+  "new": "L = L0 × 2^((T0 − T)/20)"
  }
 ]

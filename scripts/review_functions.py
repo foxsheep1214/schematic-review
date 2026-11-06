@@ -2026,7 +2026,8 @@ def life_errors(checks, functions):
             rows = [cid for cid, row in checks.items() if isinstance(row, dict) and row.get('open_ref') == ref]
             if rows and all(life_row(cid) for cid in rows):
                 errors.append('%s: a life row opens no VENDOR_DATUM; estimate on the mission profile with the vendor life '
-                              'formula or the 10 °C doubling rule (ESTIMATE), write the result as a bom_constraint and hand '
+                              'formula or G08-038/G08-040 (hybrid: 10 °C doubling; solid polymer: 20 °C tenfold; ESTIMATE), '
+                              'write the result as a bom_constraint and hand '
                               'the hot spot to thermal design (%s)' % (ref, ', '.join(sorted(rows))))
     return errors
 

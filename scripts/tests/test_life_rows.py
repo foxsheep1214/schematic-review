@@ -6,7 +6,7 @@ Two reviews of one board read the same "10 years" two ways: one took 87600 h of 
 used it and wrote a BOM constraint. The intent now carries one mission profile (`intent.mission_profile`: phases with
 their share of the time, load and ambient, each citing the requirement), every life row is planned on it, an
 electrolytic, solid or super capacitor is found by its symbol, its BOM part number or specification, or an aluminium
-package with a stated voltage, and its endurance is estimated (vendor life formula or 10 °C doubling, both ESTIMATE)
+package with a stated voltage, and its endurance is estimated (series formula first, otherwise G08-038/G08-040 by type)
 into a BOM constraint "耐久 ≥ X h @T（估算，热点 ≤ Y °C）" with the hot spot handed to thermal design; no vendor-data
 item is opened for it.
 """
@@ -124,6 +124,24 @@ class CapacitorTests(unittest.TestCase):
         rows = self.rows([('C2', 'Device:C_Polarized', '47u/16V', {'Electrical specification': '钽电容 TANTALUM'})])
         self.assertEqual(rows, {})
 
+    def test_life_plan_separates_solid_polymer_from_hybrid_before_estimating(self):
+        # G08-040: the plan must give the reviewer both models, including for an
+        # unspecified polarized capacitor; a generic symbol cannot prove the series type.
+        rows = self.rows([
+            ('C2', 'Device:C_Polarized', '47u/35V', {'Electrical specification': '固态聚合物铝电解'}),
+            ('C3', 'Device:C_Polarized', '47u/35V', {'Electrical specification': 'Hybrid polymer 混合型'}),
+            ('C4', 'Device:C_Polarized', '47u/35V', None)])
+        for ref in ('C2', 'C3', 'C4'):
+            criterion = rows[ref]['criterion']
+            for piece in ('核系列类型', '系列寿命公式优先', 'G08-040', 'L = L0 × 10^((T0 − T)/20)',
+                          '混合型走 G08-038', 'L = L0 × 2^((T0 − T)/10)', 'CAP-POLY-LIFE', 'BOM 约束'):
+                self.assertIn(piece, criterion, ref)
+
+    def test_polymer_tantalum_is_not_exempted_as_conventional_tantalum(self):
+        for specification in ('导电聚合物钽电容', 'TANTALUM POLYMER'):
+            rows = self.rows([('C2', 'Device:C_Polarized', '47u/16V', {'Electrical specification': specification})])
+            self.assertIn('C2', rows)
+
     def test_a_super_capacitor_also_derates_its_voltage(self):
         rows = self.rows([('C2', 'Device:C', '1F/5.5V', None)])
         self.assertIn('电压降额', rows['C2']['criterion'])
@@ -227,6 +245,7 @@ class EstimateTests(unittest.TestCase):
                              'rationale': '寿命模型缺'}],
                 'severity': {'level': 'P1', 'class': 'PERFORMANCE_OR_LIFE', 'consequence': '寿命不足'}}
         errors = self.errors(life_function(item), result='INSUFFICIENT', bom=False)
+        self.assertTrue(any('G08-038/G08-040' in e for e in errors), errors)
         self.assertTrue(any('VENDOR_DATUM' in e and '10 °C' in e for e in errors), errors)
 
 

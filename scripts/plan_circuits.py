@@ -39,7 +39,7 @@ from checkers.netgraph import RAIL_RE, NetGraph, is_analog_sense_pair, is_ground
 from part_words import (BJT, BRIDGE_RECTIFIER, CAPACITOR, COMMON_MODE_CHOKE, CONNECTOR, COUPLED_INDUCTOR, CRYSTAL, DIODE, FUSE, IC,
                         INDUCTOR, MOSFET, OPTO,
                         PASSIVE_LINKS, RESISTOR, SWITCH, TESTPOINT, TRANSFORMER, TVS, UNKNOWN, ZENER, ELECTROLYTIC_RE,
-                        LED_RE, NTC, NTC_RE, POLARIZED_SYMBOL_RE, TANTALUM_RE, VARISTOR, VARISTOR_RE, name_matches,
+                        LED_RE, NTC, NTC_RE, POLARIZED_SYMBOL_RE, POLYMER_RE, TANTALUM_RE, VARISTOR, VARISTOR_RE, name_matches,
                         normalize, usb_connector_type)
 from checkers.netgraph import is_ground as netgraph_ground
 from checkers.planutil import frame_slug
@@ -138,12 +138,15 @@ def _differential_pairs(db):
 
 # An electrolytic capacitor (the part a lifetime falls on) by its symbol (Device:C_Polarized, CP, CP_Small) or, 6c, by
 # its BOM words (netgraph.ELECTROLYTIC_RE), or an aluminium package with a stated voltage holding at least 1 µF;
-# tantalum is none.
+# conventional tantalum is none; polymer tantalum still gets a life row.
 ALUMINIUM_PACKAGE_RE = re.compile(r'(^|[:_])CP_|_Elec|Radial', re.I)
 VOLTAGE_RE = re.compile(r'\d\s*V(\b|$)', re.I)
 SUPERCAP_FARAD = 0.1
-LIFE_CRITERION = ('%s；电解、固态与超级电容按此剖面估算所需耐久等级：厂家有寿命公式（含厂家通用技术说明）用公式，没有就按 10 °C '
-                  '翻倍，两种都标估算（ESTIMATE）；写成 bom_constraint“耐久 ≥ X h @T（估算，热点 ≤ Y °C）”，热点温度和纹波自热'
+LIFE_CRITERION = ('%s；电解、固态与超级电容按此剖面估算所需耐久等级：核系列类型，系列寿命公式优先（含厂家通用技术说明）；'
+                  '无系列公式时，固态聚合物走 G08-040，L = L0 × 10^((T0 − T)/20)；液态铝电解及混合型走 G08-038，'
+                  'L = L0 × 2^((T0 − T)/10)（10 °C 翻倍），混合型不得用固态公式；其他电容沿用 10 °C 翻倍估算；'
+                  '类型未定写为 BOM 约束，聚合物同时核 CAP-POLY-LIFE 的寿命与工况；均标估算（ESTIMATE）；'
+                  '写成 bom_constraint“耐久 ≥ X h @T（估算，热点 ≤ Y °C）”，热点温度和纹波自热'
                   '移交热设计实测后复算，不开厂家数据缺口（VENDOR_DATUM）%s')
 LIFE_HANDOFF = {'required': True, 'state': 'OPEN', 'receivers': ['热设计'],
                 'constraint': '电解电容热点温度不超过寿命约束写的 Y °C', 'verification': '样机热点与纹波自热实测后按同一剖面复算'}
@@ -1206,13 +1209,13 @@ class CircuitPlanning:
             return None
         from decoupling import parse_capacitance
         part, text = graph.parts.get(ref) or {}, self._part_text(graph, ref)
-        if TANTALUM_RE.search(text):
+        if TANTALUM_RE.search(text) and not POLYMER_RE.search(text):
             return None
         farads = parse_capacitance(part.get('value'))
         if farads is not None and farads >= SUPERCAP_FARAD:
             return 'super'
         symbol = ' '.join(str(part.get(k) or '') for k in ('prim', 'part'))
-        if POLARIZED_SYMBOL_RE.search(symbol) or ELECTROLYTIC_RE.search(text):
+        if POLARIZED_SYMBOL_RE.search(symbol) or ELECTROLYTIC_RE.search(text) or POLYMER_RE.search(text):
             return 'electrolytic'
         if (ALUMINIUM_PACKAGE_RE.search(text) and VOLTAGE_RE.search(str(part.get('value') or ''))
                 and (farads or 0) >= BULK_FARAD):
