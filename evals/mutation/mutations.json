@@ -2367,10 +2367,10 @@
  },
  {
   "id": "M359",
-  "name": "a format-6 plan is read as format 7",
+  "name": "a retired plan format is accepted as current",
   "file": "scripts/electrical_contract.py",
-  "old": "PLAN_SCHEMA_VERSION = 7",
-  "new": "PLAN_SCHEMA_VERSION = 6"
+  "old": "PLAN_SCHEMA_VERSION = 8",
+  "new": "PLAN_SCHEMA_VERSION = 7"
  },
  {
   "id": "M360",
@@ -8606,14 +8606,14 @@
   "id": "M1644",
   "name": "installed package omits ten-file manifest contract",
   "file": "scripts/guideline_criteria.py",
-  "old": "if manifest.get('fingerprint_order') != list(SHARED_FILES) or set(manifest.get('payload', {})) != set(SHARED_FILES):\n        raise ValueError('installed manifest must name exactly the ten controlled files')",
+  "old": "if manifest.get('fingerprint_order') != (list(SHARED_FILES) if manifest['fingerprint_format'] == LEGACY_FINGERPRINT_FORMAT else sorted(ENGINEERING_FILES)) or set(manifest.get('payload', {})) != set(SHARED_FILES):\n        raise ValueError('installed manifest must name exactly the ten controlled files')",
   "new": "if False:\n        raise ValueError('installed manifest must name exactly the ten controlled files')"
  },
  {
   "id": "M1645",
   "name": "installed fingerprint is ignored",
   "file": "scripts/guideline_criteria.py",
-  "old": "if shared_digest(root) != manifest['fingerprint']:",
+  "old": "if shared_digest(root, manifest['fingerprint_format']) != manifest['fingerprint']:",
   "new": "if False:"
  },
  {
@@ -8636,5 +8636,75 @@
   "file": "scripts/guideline_criteria.py",
   "old": "result = verify_installed()['fingerprint']",
   "new": "result = shared_digest()"
+ },
+ {
+  "id": "M1649",
+  "name": "maintenance prose leaks into engineering fingerprint",
+  "file": "scripts/guideline_criteria.py",
+  "old": "controlled = {name: files[name] for name in sorted(ENGINEERING_FILES)}",
+  "new": "controlled = {name: files[name] for name in sorted(SHARED_FILES)}"
+ },
+ {
+  "id": "M1650",
+  "name": "normative stress specification is omitted",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if name not in (\n    'references/shared/shared-layer.md', 'references/shared/guideline-criteria.md')",
+  "new": "if name not in (\n    'references/shared/shared-layer.md', 'references/shared/guideline-criteria.md', 'references/shared/stress-spec.md')"
+ },
+ {
+  "id": "M1651",
+  "name": "missing historical format is silently promoted to v2",
+  "file": "scripts/guideline_criteria.py",
+  "old": "fmt = record.get('fingerprint_format', LEGACY_FINGERPRINT_FORMAT)",
+  "new": "fmt = record.get('fingerprint_format', FINGERPRINT_FORMAT)"
+ },
+ {
+  "id": "M1652",
+  "name": "version change bypasses shared record validation",
+  "file": "scripts/guideline_criteria.py",
+  "old": "for key in ('library_version', 'shared_sha256'):",
+  "new": "for key in ('shared_sha256',):"
+ },
+ {
+  "id": "M1653",
+  "name": "alternate data borrows the installed engineering hash",
+  "file": "scripts/guideline_criteria.py",
+  "old": "digest = _engineering_digest(files)",
+  "new": "digest = shared_digest(root, fmt)"
+ },
+ {
+  "id": "M1654",
+  "name": "real alternate JSON bytes replaced by normalized data",
+  "file": "scripts/guideline_criteria.py",
+  "old": "raw = alternate",
+  "new": "raw = dump(library).encode('utf-8')"
+ },
+ {
+  "id": "M1655",
+  "name": "plan shared identity check is removed",
+  "file": "scripts/validate_review.py",
+  "old": "for problem in guideline_criteria.identity_errors(guidelines, bundle=library):",
+  "new": "for problem in []:"
+ },
+ {
+  "id": "M1656",
+  "name": "pure shared explanation re-enters SR engineering identity",
+  "file": "scripts/skill_identity.py",
+  "old": "p.relative_to(root).as_posix() in {'references/shared/shared-layer.md',\n                                                         'references/shared/guideline-criteria.md'}",
+  "new": "p.relative_to(root).as_posix() in set()"
+ },
+ {
+  "id": "M1657",
+  "name": "legacy full-file algorithm is removed",
+  "file": "scripts/guideline_criteria.py",
+  "old": "return hashlib.sha256('\\n'.join(files[n] for n in SHARED_FILES).encode('utf-8')).hexdigest()",
+  "new": "return _engineering_digest(files)"
+ },
+ {
+  "id": "M1658",
+  "name": "new plan omits fingerprint format",
+  "file": "scripts/plan_review.py",
+  "old": "**guideline_criteria.shared_versions(bundle=library),",
+  "new": "**{k: v for k, v in guideline_criteria.shared_versions(bundle=library).items() if k != 'fingerprint_format'},"
  }
 ]

@@ -13,7 +13,8 @@ import render_report
 def test_output_and_field_surge_reach_plan_and_report():
     checks = [{'rule': 'PRO-D03', 'circuit_type': 'DC_24V'},
               {'rule': 'PRO-D04', 'circuit_type': 'POWER_PROTECTION'}]
-    section = plan_review.guideline_section(checks, {'parts': {'R1': {'value': '10k', 'part': 'Device:R'}}}, {}, {}, g.load(g.BUNDLE_PATH))
+    with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}):
+        section = plan_review.guideline_section(checks, {'parts': {'R1': {'value': '10k', 'part': 'Device:R'}}}, {}, {}, g.load(g.BUNDLE_PATH))
     for rid in ('G07-004', 'G07-022', 'G07-023', 'G07-024', 'G07-032'):
         assert rid in section['covered'], rid
     with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': str(g.BUNDLE_PATH)}):

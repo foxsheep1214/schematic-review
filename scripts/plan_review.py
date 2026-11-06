@@ -382,7 +382,7 @@ def guideline_section(checks, db, kind_intent, intent, library):
     batch = set(classes.get('project_input') or ()) | set(classes.get('handoff') or ())
     open_items = [gid for gid in found['uncovered'] if gid not in batch]
     section = {'library_version': found['library_version'], 'content_sha256': found['content_sha256'],
-               'shared_sha256': guideline_criteria.shared_digest(),
+               **guideline_criteria.shared_versions(bundle=library),
                'baseline': baseline, 'circuit_types': circuits, 'device_kinds': kinds,
                'external_interfaces': sorted(set(circuits) & set(catalog.EXTERNAL_INTERFACE_TYPES)),
                'applicable': found['applicable'], 'covered': {g: v for g, v in found['covered'].items() if g not in batch},
@@ -578,6 +578,8 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
                              % PLAN_SCHEMA_VERSION)
         if previous.get('db_sha256') != self.db_sha256:
             raise ValueError('merge plan must be bound to the current db_sha256; regenerate/review stale plans')
+        if guideline_criteria.identity_errors(previous.get('guidelines')) and guideline_criteria.load()['criteria']:
+            raise ValueError('merge plan shared identity changed: regenerate the plan; old_plan is history only')
         if previous.get('review_engine') != engine_identity():
             raise ValueError('merge plan uses changed/unknown SR rules; regenerate current checks, use old_plan only for history')
         for checker in REGISTRY:

@@ -207,7 +207,9 @@ class GuidelineRulesTests(unittest.TestCase):
         # a new library version reopens designs and reviews like any rule change (workflow-handoff.md)
         import skill_identity
         files = skill_identity.engineering_identity(ROOT)['files']
-        self.assertTrue(set(SHARED) <= set(files), sorted(set(SHARED) - set(files)))
+        self.assertTrue(set(g.ENGINEERING_FILES) <= set(files), sorted(set(g.ENGINEERING_FILES) - set(files)))
+        self.assertNotIn('references/shared/shared-layer.md', files)
+        self.assertNotIn('references/shared/guideline-criteria.md', files)
         self.assertNotIn('guideline-criteria.json', skill_identity.NON_RULE_REFS)
 
     def test_the_shared_directory_holds_exactly_the_shared_files(self):
@@ -217,7 +219,7 @@ class GuidelineRulesTests(unittest.TestCase):
         self.assertIn('scripts/guideline_criteria.py', SHARED)
         self.assertEqual(len(g.shared_digest()), 64)
         self.assertEqual(g.shared_versions()['library_version'], g.load()['library_version'])
-        self.assertRegex(g.shared_label(), r'^共用层 [0-9a-f]{12}，设计准则库 \S+，降额 v\d+$')
+        self.assertRegex(g.shared_label(), r'^共用层 [0-9a-f]{12} \[shared-paths-sha256-v2\]，设计准则库 \S+，降额 v\d+$')
 
     def test_dc_24v_checks_its_declared_window_not_the_telecom_48v_one(self):
         subjects = {t.name: t.subjects for t in catalog.CIRCUIT_TYPES}['DC_24V']
