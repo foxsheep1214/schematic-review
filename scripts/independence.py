@@ -19,7 +19,7 @@ DESIGNER_DOCUMENT_RE = re.compile(
     r'设计报告|设计说明|设计方案(?!/)|计算书|design[ _-]?report|design[ _-]?proposal|electrical[_-]intent|'
     r'requirement[_-]trace|device[_-]contracts|delivery[_-]evidence|(?<!calculation-)preflight|review[_-]responses|'
     r'lessons\.json|selection\.json|visual[_-]review|downstream[_-]constraints|record/calculations/|'
-    r'design[_-]closure|reference[_-]input|design[_-]checklist', re.I)
+    r'design[_-]closure|reference[_-]input|scheme[_-]criteria|design[_-]checklist', re.I)
 
 
 HANDOFF_LIST_INTENT = 'intent.materials.handoff_list'

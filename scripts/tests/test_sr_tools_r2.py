@@ -294,3 +294,16 @@ def test_a_rule_id_header_is_not_an_id_column():
     assert not requirements_extract.is_id_header('Rule ID')
     assert requirements_extract.is_id_header('用户需求 ID')
 
+
+
+def test_the_scheme_criteria_list_keeps_blocks_and_rule_ids_only():
+    scheme = {'version': 1, 'blocks': [{'block': '24 V 保护', 'circuit_types': ['POWER_PROTECTION'], 'ports': True,
+                                        'criteria': [{'id': 'G07-023', 'excludes': '只靠输入侧保护', 'basis': 'standard',
+                                                      'how': 'OUT 口负向钳位 36 V', 'defer': ['残压']}]}]}
+    out = design_checklist.build(scheme=scheme)
+    assert out['scheme_rules'] == [{'block': '24 V 保护', 'circuit_types': ['POWER_PROTECTION'], 'rules': ['G07-023']}]
+    text = json.dumps(out, ensure_ascii=False)
+    for word in ('只靠输入侧', '36 V', 'standard', '残压'):
+        assert word not in text, word
+    assert 'scheme_rules' not in design_checklist.build(CLOSURE)
+    assert independence.designer_document('record/scheme-criteria.json')

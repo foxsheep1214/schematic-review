@@ -48,8 +48,8 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 
 `catalog.py` 是规则的唯一登记处，既被出计划导入，维护时也用它重写规则总表。
 `independence.py` 在出计划时拒收引用设计方文档的声明，在校验时拒收这样的证据，两步共用。
-`design_checklist.py` 从 ASG 的 `design-closure.json`、`reference-input.json` 只读出对象、计算种类和去掉数值的计算名，作为审查员的待核清单；
-不读数值与结论，清单和这两份文件都由 `independence.py` 拒收为引用或证据，独立性边界不变（线索，不是输入）。
+`design_checklist.py` 从 ASG 的 `design-closure.json`、`reference-input.json` 只读出对象、计算种类和去掉数值的计算名，从 `scheme-criteria.json` 只读出关键功能块和它说能淘汰候选的规则编号，作为审查员的待核清单；
+不读数值与结论，清单和这三份文件都由 `independence.py` 拒收为引用或证据，独立性边界不变（线索，不是输入）。
 
 ## 三、历次架构决定
 

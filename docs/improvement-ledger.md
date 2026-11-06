@@ -9,6 +9,15 @@ file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
+## ASG 方案阶段规则记录进对账清单（2026-11-05）
+
+ASG 任务 1.3 新增 `record/scheme-criteria.json`（关键功能块会淘汰候选的规则）。`design_checklist.py --scheme-criteria` 只读块名、电路类型和规则编号，排除了哪个候选、怎样满足都不读；`independence.py` 把它列为设计方记录拒收。共用脚本 `guideline_criteria.py` 与 ASG 同字节（select 加 `typed_only`、`ports`，缺省行为不变）。
+
+- Event: user:2026-11-05（主会话转达：批准 ASG 方案阶段对照规则草案，SR 读这份记录复核被引用的规则）
+- Causes: rule_not_enforced 1
+- Changed: scripts/guideline_criteria.py, scripts/design_checklist.py, scripts/independence.py, scripts/tests/test_sr_tools_r2.py, references/architecture.md, references/workflow-handoff.md, docs/improvement-ledger.md, evals/mutation/mutations.json（M1513 的匹配文本随正则更新）
+- Gates: 3002 passed in 116.53s（配对 SR_ASG_SHARED_ROOT=ASG integration）；mutation --changed --tier unit 14/14 KILLED；check_ledger.py PASS；git diff --check 通过
+
 ## G01–G09 运行包 1.9.0 与登记只读覆盖层（2026-11-05）
 
 按 integration brief 升级；当前登记 534 条已不含指定排除的五个编号，故运行包为 534 而非 brief 预期 529，不再任意删规则。ASG 覆盖层锁定九份源哈希；G05-031 动作逐字采用批准草案、版本 1.1→1.2；五条 handoff 的关闭阶段按原文交接对象最小修正，正文不动。合入 main 时才把覆盖层写回登记，本次不写登记、不提交。共享层两边同字节。

@@ -7689,7 +7689,7 @@
   "id": "M1513",
   "name": "ASG design-closure is citable",
   "file": "scripts/independence.py",
-  "old": "    r'design[_-]closure|reference[_-]input|design[_-]checklist', re.I)",
+  "old": "    r'design[_-]closure|reference[_-]input|scheme[_-]criteria|design[_-]checklist', re.I)",
   "new": "    r'design[_-]checklist', re.I)"
  },
  {
