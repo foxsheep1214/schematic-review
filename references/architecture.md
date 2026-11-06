@@ -57,6 +57,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 
 | 日期 | 决定 | 为什么 |
 |---|---|---|
+| 2026-11-06 | M3：共用设计准则来自硬件设计规范发布包；SR 固定本次审查采用的版本与指纹，独立取证和复算。规则总表只映射到本地发布包中的准则，运行和本地测试不读取 ASG 源码。两个分支可各自固定不同版本；项目要求同一判据基线时核同一包，有意升版说明差异与重审范围。配对字节检查移至规范发布验收，本地只验本技能安装包，五步、判断者、交接与现行指纹格式不变 | user:2026-11-06：“按照这个草案的推荐方案，逐个完成这个草案的更改，都按照你推荐的方式来。”本批明确批准草案第 7 节 M1/M3 两行文字 |
 | 2026-11-06 | M1：共用源收回硬件设计规范，使用确定性发布包安装到选定技能 worktree；技能相对路径、import、五步输入输出与判断责任不变。1.9.0 正式归档，机制变化用设计准则库 1.9.1；现行十文件指纹算法保留，跨仓库测试到 M3 再替换，SKILL.md 批准文字留到 M3 一起改 | 用户批准关系梳理草案推荐方案 A：“按照这个草案的推荐方案，逐个完成这个草案的更改，都按照你推荐的方式来。”本批明确只做 M0/M1，不改准则含义或工程数值 |
 | 2026-11-03 | 合并步 7：词表加 `HOLD_UP`（掉电保持）与 `SIGNAL_PROTECTION`（信号端口保护），准则库 1.7.2；保持二极管加储能加下游变换器出 HOLD_UP 候选，连接器经限流件与对地钳位到 IC 脚出跨电路的 SIGNAL_PROTECTION 候选，POWER_PROTECTION 不再按成员裁剪；PRO-E02 在钳位网没有 IC 脚时穿正向二极管和一颗电阻/PTC 找被保护脚，精确表器件按电阻压降比较；名称线索把层次网名的叶名当词（DEBUG 除外） | 用户 2026-11-03：按建议执行。合并步 6 第六节的 1–5 点：保持电路和信号通道保护各有自己的问法，F11 需要穿串阻找到 IPx；共用层只改词表的电路类型，准则条款不变 |
 | 2026-11-03 | 准则库 1.7.3：G03-023、G05-090 的适用类型加 `HOLD_UP`（条目 1.0→1.1），条款文字不变；共用层指纹 48c61bb3a5e7 → d4c79a47c214 | 用户 2026-11-03：这两件事也做了。词表有了 HOLD_UP 后掉电保持的两条准则要能被这个类型选出，否则 HOLD_UP 电路没有准则点名 |
@@ -163,7 +164,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
   `python3 scripts/catalog.py --write-doc references/check-catalog.md` 和 `--write-doc references/review-vocabulary.md`（审查员的三张名称表）。来源为“全板通用”“电路检查项”的新规则
   登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在计划生成的对应层（电路与器件 `plan_circuits.py`、接口 `interfaces.py`、
   系统功能 `plan_system.py`、全板与覆盖 `plan_board.py`；`plan_review.py` 只做汇总）、`lint.py` 或对应检查器里实现展开/扫描。新增或调整规则先回答 [审查要点中的三个问题](references/review-charter.md#用审查要点指导进化)。
-- 共用层（`references/shared/` 全部文件与 `scripts/guideline_criteria.py`、`scripts/stress_check.py`）由硬件设计规范的 `工具/guideline_criteria.py` 统一发布，选定的 ASG/SR worktree 从同一正式包核清单后安装，技能内不得编辑或互相复制；`python3 scripts/guideline_criteria.py shared` 核各自已装指纹；哪些文件、各管什么、谁读、哪条测试守见[共用层](shared/shared-layer.md)，设计准则库的更新步骤见[共用设计准则库](shared/guideline-criteria.md#六更新设计准则库)。新增或调整 SR 规则时，若它核对某条设计准则，在 `catalog.BASIS` 登记映射；报告里“适用但还没有检查的共用设计准则”就是这里的待办。`test_guideline_criteria.py` 核对设计准则库词表与 `CIRCUIT_TYPES`、`device_kinds.KINDS` 一致，加电路类型或器件类别后同步改设计准则库词表。
+- 共用层（`references/shared/` 全部文件与 `scripts/guideline_criteria.py`、`scripts/stress_check.py`）由硬件设计规范的 `工具/guideline_criteria.py` 统一发布，选定的 ASG/SR worktree 从同一正式包核清单后安装，技能内不得编辑或互相复制；`python3 scripts/guideline_criteria.py shared` 核各自已装指纹；哪些文件、各管什么、谁读、哪条测试守见[共用层](shared/shared-layer.md)，设计准则库的更新步骤见[共用设计准则库](shared/guideline-criteria.md#六更新设计准则库)。新增或调整 SR 规则时，若它核对某条设计准则，在 `catalog.BASIS` 登记映射；报告里“适用但还没有检查的共用设计准则”就是这里的待办。`test_guideline_criteria.py` 核对设计准则库词表与 `CIRCUIT_TYPES`、`device_kinds.KINDS` 一致，名字与标题由本地词表读取，分类线索及检查器归属在 SR 维护；本地安装包完整性由 test_installed_release.py 核对，配对字节验收由规范显式发布检查承担。
 - **门禁只有一条**（2026-10-27，用户：门禁合成一条 pytest）：每次改动跑 `python3 -m pytest scripts/tests -q`。它已经包含
   [规则合同](evals/rule_contracts/README.md)（每条自动规则一块触发板、一块近似板）、[KiCad 原生交付回放](evals/kicad_replay_bench/README.md)
   和 [典型电路基准](evals/typical_circuits/README.md)（每条报出都要已归类，新出现的须逐条审读），不再单独跑、不再分行记。

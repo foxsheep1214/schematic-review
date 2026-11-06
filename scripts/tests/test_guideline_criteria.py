@@ -1,11 +1,9 @@
 """The shared guideline rule library (G01–G09): the installed bundle is valid, its vocabulary is SR's circuit types
-and device kinds, rules are selected by baseline and triggers, coverage sorts applicable rules, and ASG holds the
-same shared layer, byte for byte (user 2026-10-31: 请开始执行这个方案; 2026-11-02: 目录制).
+and device kinds, rules are selected by baseline and triggers, coverage sorts applicable rules, and the installed
+release matches its own manifest (user 2026-10-31: 请开始执行这个方案; 2026-11-02: 目录制).
 """
 import copy
 import json
-import os
-import subprocess
 import sys
 import tempfile
 import unittest
@@ -18,14 +16,7 @@ import catalog
 import device_kinds
 import guideline_criteria as g
 
-# Explicit paired checkout for reproducible cross-skill integration; default remains installed ASG.
-ASG = Path(os.environ.get('SR_ASG_SHARED_ROOT') or Path.home() / '.agents' / 'skills' / 'autonomous-schematic-generation')
 SHARED = g.SHARED_FILES
-
-
-def committed_bytes(repo, name):
-    """The file as committed at HEAD: another session's uncommitted edit in that checkout is not yet the shared layer."""
-    return subprocess.run(['git', '-C', str(repo), 'show', 'HEAD:' + name], check=True, capture_output=True).stdout
 
 
 def rule(rid='G04-001', **changes):
@@ -236,23 +227,10 @@ class GuidelineRulesTests(unittest.TestCase):
         mapped = {gid for rule in subjects for gid in catalog.BASIS[rule]}
         self.assertTrue({'G01-051', 'G01-052', 'G01-053', 'G01-054'} <= mapped)
 
-    @unittest.skipUnless((ASG / '.git').exists() and (ASG / SHARED[1]).is_file(),
-                         'autonomous-schematic-generation checkout without the rule library')
-    def test_asg_holds_the_same_shared_layer(self):
-        for name in SHARED:
-            # An explicit integration pair compares working bytes; default installed checkout retains HEAD isolation.
-            other = (ASG / name).read_bytes() if os.environ.get('SR_ASG_SHARED_ROOT') else committed_bytes(ASG, name)
-            self.assertEqual(other, (ROOT / name).read_bytes(), name)
-
-    def test_the_asg_comparison_ignores_an_uncommitted_edit(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            git = ['git', '-C', tmp, '-c', 'user.name=t', '-c', 'user.email=t@example.invalid']
-            subprocess.run(['git', 'init', '-q', tmp], check=True)
-            (Path(tmp) / 'f.json').write_bytes(b'committed')
-            subprocess.run(git + ['add', 'f.json'], check=True)
-            subprocess.run(git + ['commit', '-qm', 'x'], check=True)
-            (Path(tmp) / 'f.json').write_bytes(b'in progress')
-            self.assertEqual(committed_bytes(tmp, 'f.json'), b'committed')
+    def test_local_installed_release_matches_its_manifest(self):
+        manifest = g.verify_installed(ROOT)
+        self.assertEqual(manifest['payload'], g.shared_files(ROOT))
+        self.assertEqual(manifest['fingerprint'], g.shared_digest(ROOT))
 
 
 if __name__ == '__main__':

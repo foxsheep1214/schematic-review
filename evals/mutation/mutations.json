@@ -8601,5 +8601,40 @@
   "file": "scripts/guideline_criteria.py",
   "old": "return {item['name']: item['title'] for item in raw[group]}",
   "new": "return {item['name']: '继电器' if item['name'] == 'relay' else item['title'] for item in raw[group]}"
+ },
+ {
+  "id": "M1644",
+  "name": "installed package omits ten-file manifest contract",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if manifest.get('fingerprint_order') != list(SHARED_FILES) or set(manifest.get('payload', {})) != set(SHARED_FILES):\n        raise ValueError('installed manifest must name exactly the ten controlled files')",
+  "new": "if False:\n        raise ValueError('installed manifest must name exactly the ten controlled files')"
+ },
+ {
+  "id": "M1645",
+  "name": "installed fingerprint is ignored",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if shared_digest(root) != manifest['fingerprint']:",
+  "new": "if False:"
+ },
+ {
+  "id": "M1646",
+  "name": "installed bundle semantics are not checked",
+  "file": "scripts/guideline_criteria.py",
+  "old": "errors = bundle_errors(bundle, root / 'references/shared/vocabulary.json')",
+  "new": "errors = []"
+ },
+ {
+  "id": "M1647",
+  "name": "installed version mismatch is accepted",
+  "file": "scripts/guideline_criteria.py",
+  "old": "if errors or bundle['library_version'] != manifest['library_version']:\n        raise ValueError('invalid installed bundle: %s' % errors)",
+  "new": "if errors:\n        raise ValueError('invalid installed bundle: %s' % errors)"
+ },
+ {
+  "id": "M1648",
+  "name": "local verification CLI prints digest without validating",
+  "file": "scripts/guideline_criteria.py",
+  "old": "result = verify_installed()['fingerprint']",
+  "new": "result = shared_digest()"
  }
 ]
