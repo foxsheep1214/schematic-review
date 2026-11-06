@@ -8748,5 +8748,19 @@
   "file": "evals/detection/run.py",
   "old": "env.pop('GUIDELINE_CRITERIA', None)",
   "new": "pass"
+ },
+ {
+  "id": "M1665",
+  "name": "native replay inherits the test-only empty guideline input",
+  "file": "evals/kicad_replay_bench/run.py",
+  "old": "env.pop('GUIDELINE_CRITERIA', None)",
+  "new": "pass"
+ },
+ {
+  "id": "M1666",
+  "name": "default native replay silently returns to a contract missing guideline batches",
+  "file": "evals/kicad_replay_bench/run.py",
+  "old": "CONTRACT_REVISION = 'installed-guidelines-v1'",
+  "new": "CONTRACT_REVISION = 'guideline-scans-v1'"
  }
 ]

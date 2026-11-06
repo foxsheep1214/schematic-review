@@ -13,6 +13,7 @@ This bench covers the input layer only; it says nothing about review verdicts.
 """
 import argparse
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -20,13 +21,13 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-CONTRACT_REVISION = 'guideline-scans-v1'
+CONTRACT_REVISION = 'installed-guidelines-v1'
 REVISIONS = ('legacy', 'page-inventory-v1', 'name-gap-scope-v1', 'passive-stress-v1', 'threshold-window-v1',
              'real-flyback-v1', 'testpoint-kind-v1', 'name-heuristics-v1', 'typical-boards-v1', 'lint-checks-v1',
              'function-frames-v1', 'state-invariant-v1', 'circuit-candidates-v1', 'circuit-owners-v1',
              'interface-rows-v1', 'single-fault-rows-v1', 'intent-format-4-v1', 'shared-part-words-v1', 'active-part-decisions-v1',
              'unknown-kind-decisions-v1', 'owned-rows-in-frames-v1', 'r7-fix-lists-v1', 'protective-clamps-v1',
-             'clamp-operating-rows-v1', 'intent-format-5-v1', 'part-kind-evidence-v1', 'guideline-rules-v1', 'guideline-rules-v2', 'native-fields-v1', 'boards-merge1-v1', 'boards-merge2a-v1', 'boards-merge2b-v1', 'boards-merge2-v1', 'boards-merge3-copper-v1', 'boards-merge3-mechanical-v1', 'boards-merge3-v1', 'boards-merge4-v1', 'boards-merge7-v1', 'sr-scan-v1', CONTRACT_REVISION)
+             'clamp-operating-rows-v1', 'intent-format-5-v1', 'part-kind-evidence-v1', 'guideline-rules-v1', 'guideline-rules-v2', 'native-fields-v1', 'boards-merge1-v1', 'boards-merge2a-v1', 'boards-merge2b-v1', 'boards-merge2-v1', 'boards-merge3-copper-v1', 'boards-merge3-mechanical-v1', 'boards-merge3-v1', 'boards-merge4-v1', 'boards-merge7-v1', 'sr-scan-v1', 'guideline-scans-v1', CONTRACT_REVISION)
 
 
 def contract_path(name, revision=CONTRACT_REVISION):
@@ -35,7 +36,10 @@ def contract_path(name, revision=CONTRACT_REVISION):
 
 
 def _run(cmd):
-    return subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+    env = dict(os.environ)
+    env.pop('GUIDELINE_CRITERIA', None)
+    env.pop('GUIDELINE_CRITERIA_TESTING', None)
+    return subprocess.run(cmd, capture_output=True, text=True, timeout=600, env=env)
 
 
 def _load(path):
