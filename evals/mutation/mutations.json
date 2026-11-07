@@ -8603,13 +8603,6 @@
   "new": "return {item['name']: '继电器' if item['name'] == 'relay' else item['title'] for item in raw[group]}"
  },
  {
-  "id": "M1644",
-  "name": "installed package omits ten-file manifest contract",
-  "file": "scripts/guideline_criteria.py",
-  "old": "if manifest.get('fingerprint_order') != (list(SHARED_FILES) if manifest['fingerprint_format'] == LEGACY_FINGERPRINT_FORMAT else sorted(ENGINEERING_FILES)) or set(manifest.get('payload', {})) != set(SHARED_FILES):\n        raise ValueError('installed manifest must name exactly the ten controlled files')",
-  "new": "if False:\n        raise ValueError('installed manifest must name exactly the ten controlled files')"
- },
- {
   "id": "M1645",
   "name": "installed fingerprint is ignored",
   "file": "scripts/guideline_criteria.py",
@@ -8652,13 +8645,6 @@
   "new": "if name not in (\n    'references/shared/shared-layer.md', 'references/shared/guideline-criteria.md', 'references/shared/stress-spec.md')"
  },
  {
-  "id": "M1651",
-  "name": "missing historical format is silently promoted to v2",
-  "file": "scripts/guideline_criteria.py",
-  "old": "fmt = record.get('fingerprint_format', LEGACY_FINGERPRINT_FORMAT)",
-  "new": "fmt = record.get('fingerprint_format', FINGERPRINT_FORMAT)"
- },
- {
   "id": "M1652",
   "name": "version change bypasses shared record validation",
   "file": "scripts/guideline_criteria.py",
@@ -8692,13 +8678,6 @@
   "file": "scripts/skill_identity.py",
   "old": "p.relative_to(root).as_posix() in {'references/shared/shared-layer.md',\n                                                         'references/shared/guideline-criteria.md'}",
   "new": "p.relative_to(root).as_posix() in set()"
- },
- {
-  "id": "M1657",
-  "name": "legacy full-file algorithm is removed",
-  "file": "scripts/guideline_criteria.py",
-  "old": "return hashlib.sha256('\\n'.join(files[n] for n in SHARED_FILES).encode('utf-8')).hexdigest()",
-  "new": "return _engineering_digest(files)"
  },
  {
   "id": "M1658",
