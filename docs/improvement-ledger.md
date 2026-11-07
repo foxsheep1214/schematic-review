@@ -15,6 +15,33 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+## ASG/SR/规范源矛盾清理（2026-11-07）
+
+用户逐条裁决 D1–D8（草案：硬件设计规范 `维护/ASG-SR-规范源-矛盾清理与精简方案-草案-2026-11-07.md`）。SR 侧分五批：
+① 修正文档与代码不符（results/plan 格式版本标头改指架构说明、引擎指纹描述、v1 兼容已取消、文件表补中间产物、机器信号补到八个含
+`FAILING_RESULT_SAYS_HOLDS`、2.1 命令编号改 a–h、统一“冷扫”、intent 补 `active_state`/`review_sources`/`review_dependencies`、
+`boundary_nets` 改为取自需求或接口表、README 删已不存在的 review_selection、architecture 第四节链接）；② 去重：SKILL 中估算判 PASS、
+机器信号、筛查提示、渲染与打包细节、共用层维护段、独立性复述、交接节改为引用，格式文档导读只留一处，review-charter 只留要点表与三问；
+③ 架构项（确认原话见下）：D4 删除 `design_checklist.py` 待核清单；D3 ASG→SR 交接只留 SR 实际读取的角色、补 `clarification_answers`；
+D5 审查要点改名要点1–7，推法统一写 G1–G11，“共用规范 G02 工程取值”改为“设计准则库 G02 工程取值”，SKILL 写明共用规范 G01–G10；
+D2 应力超幅（`derating.overreach`、`review_functions._mark_overreach`，报告风险清单单列）；D1 降额等级未定按 `unset_level` 预判并须问用户；
+D7 架构决定表压成一句话，原文移入本台账末尾“架构决定原文”；④ 删除已落地或已过时的历史设计稿、提案与迁移记录，docs/audits 两份保留并标为历史快照。
+SKILL.md 501 → 474 行。
+
+- Event: user:2026-11-07（“逐条裁决 D1–D8，按推荐执行”）
+- Causes: knowledge_wrong 9, rule_missing 1, judgment 2
+- Changed: SKILL.md, README.md, references/architecture.md, references/workflow-handoff.md, references/requirement-clarifications.md, references/margin-verdicts.md, references/results-format.md, references/review-charter.md, references/intent-format.md, scripts/derating.py, scripts/review_functions.py, scripts/render_report.py, scripts/validate_review.py, scripts/catalog.py, scripts/tests/test_derating_rules.py, docs/improvement-ledger.md
+- Gates: 3080 passed；check_ledger.py PASS；未跑变异（--changed 待下次全量）
+
+## 补记：共用包 1.9.5–1.9.7 与取消 v1 指纹兼容（2026-11-06～07）
+
+1.9.5 候选未采用（技能门禁未过）；1.9.6 安装（G10 降额与应力成为独立规范源、删除 v1 指纹兼容、发布只留现行版，提交 91d052e）；
+1.9.7 安装（相关关系补成双向、G08-035 去掉重复复用，提交 0c6c37a）；1.9.6 起无目标的三条变异删除（4d34b86）。依据规范 `发布/版本历史.md` 与 git log。
+
+- Event: user:2026-11-06（“发布里面只留最新的版本，版本兼容通过统一到最新版本上实现”）
+- Causes: knowledge_wrong 1
+- Changed: shared-release.json, docs/improvement-ledger.md
+
 ## 清理历史遗留：无人引用的旧设计稿与草案（2026-11-06）
 
 `docs/` 下 2026-10-20～10-25 的 15 份设计稿、提案、一致性审计与 R6/R7 验收记录，以及 `docs/proposals/` 下板库合并 1–7 批、抽查、检出力、待收手册清单和 G06/G07 登记草案，内容都已实施或被现行规范、台账取代（移除：question-conclusion-design、circuit-candidates-design、function-tree-design、fixed-requirements-and-review-points、bounding-consistency-proposals、bounding-table-proposal、review-consistency-proposals、decisions-and-pin-table-proposal、r6-acceptance、requirement-owners-proposal、results-expand-proposal、ring-imports-proposal、sr-consistency-audit、r7-acceptance、task-loop；proposals/ 下 boards-merge-*、spot-check-*、detection-power、datasheets-to-collect-from-boards、g06-g07-registry-draft*），代码、测试和现行文档都不再引用，移除（可从 Git 历史取回）。仍被引用的设计稿（功能判定、单元边界、条件引用、器件类别证据）、`audits/`、`criteria-from-boards`、`criteria-top50-examples`、`guideline-scan-classes` 和迁移说明保留。
