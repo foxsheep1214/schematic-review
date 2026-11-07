@@ -401,7 +401,7 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     accepted = False
     # A row passing on an estimate is C-grade evidence (2026-10-26 decision 4): derive writes C on the row. It is a
     # pass with a risk: the report lists the risks apart and they do not cap the release (2026-10-26, user: 风险不限制定稿只单列).
-    risk_rows = risks(expected, checks, report.get('functions')) \
+    risk_rows = risks(expected, checks, report.get('functions'), ((plan or {}).get('derating') or {}).get('level')) \
         + implied_stress_risks(expected, checks, report.get('functions'), plan, db)
     estimated_ids = {e['check_id'] for e in risk_rows if e['source'] == 'ESTIMATE'}
     for cid in estimated_ids:

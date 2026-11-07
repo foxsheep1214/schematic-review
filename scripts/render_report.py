@@ -380,6 +380,20 @@ def render_risks(items):
            '下面 %d 项结论是“合格，但有风险”（涉及 %d 条检查）：在额定和需求范围内过关，但有一个角点只能按典型值估算'
            '（或降额不足），实际批次、环境或寿命末期可能达不到。风险不影响定稿，按“怎么改进”一列处理即可消除。'
            % (len(rows), sum(len(e['check_ids']) for e in rows)), '']
+    # 应力超幅（2026-11-07，器件应力规范判定表第四行）：超过最宽一级降额值或离额定余量不够估算的应力风险单列在前
+    over = [e for e in rows if e.get('overreach')]
+    if over:
+        out += ['### 应力超幅（%d 项）' % len(over), '',
+                '下面的应力风险不只是降额偏离：超过了降额规范最宽一级（III 级）的降额值，或离额定的余量小于估算所需。'
+                '仍是“合格，但有风险”，不影响定稿；请优先换额定更高的器件或降低应力。', '',
+                '| 功能 | 参数 | 为什么超幅 | 余量 | 怎么改进 | 涉及检查 |', '|---|---|---|---|---|---|']
+        for e in over:
+            m = e.get('margin') or {}
+            out.append('| %s | %s | %s | %s | %s | %s |' % (
+                cell(e.get('function_id') or ''), cell(e.get('aspect') or ''), cell('；'.join(e['overreach'])),
+                cell('%s 对 %s' % (_quantity(m.get('value'), m.get('unit')), m.get('against') or '')),
+                cell(e.get('improvement') or ''), cell('、'.join(e['check_ids']))))
+        out.append('')
     # each risk once, under its first type, the others named in its row (R8: 17 risks shown as 29 rows)
     by_type = OrderedDict((t, []) for t in catalog.RISK_TYPES)
     order = list(catalog.RISK_TYPES)

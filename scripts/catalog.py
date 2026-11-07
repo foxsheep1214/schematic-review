@@ -744,7 +744,7 @@ RULES = (
     Rule('REQ-D05', 'FMEA 与 FTA 计划和条目',
          'FMEA 范围与判据在分析前写定，覆盖电源入口、对外接口、保护链与声明的关键功能；条目字段和故障模式齐全；严重度按不计补偿措施的最坏后果；不凭 RPN 关闭；需处置的都有结论；版本与待审原理图一致；项目要求 FTA 时顶事件明确、共因标出', 'board', 'board'),
     Rule('REQ-C01', '最坏工况计算口径',
-         '本审查的工程计算按共用规范 G02：参数取准确料号保证值且条件匹配（超条件按定界表），计入全部变化因素与寿命末老化（无数据按类别估算并标注），温度端点取自工况，'
+         '本审查的工程计算按设计准则 G02：参数取准确料号保证值且条件匹配（超条件按定界表），计入全部变化因素与寿命末老化（无数据按类别估算并标注），温度端点取自工况，'
          '先用极值法，方向与内部极值正确，无不可能组合；统计法满足项数、覆盖率与适用后果类；每项给 min/典型/max、判据与裕量，不符合项单列，仿真有模型验证，复用电路按新工况复算，记录可独立复核', 'board', 'board'),
     Rule('REQ-C02', '航天：辐照漂移与单粒子防护',
          '航天基线下有源器件计入总剂量与剂量率漂移，数据裕量按批次关系取，不外推超出试验剂量；单粒子防护电路纳入正常工作的最坏工况分析', 'board', 'board'),
@@ -774,45 +774,45 @@ RULES = (
 
 # 主审查要点用于维护规则目的，不向项目台账新增字段；跨域关系由实际判据和 HANDOFF 保留。
 OBJECTIVES = {
-    'G1': ('需求与功能符合', '要求的功能、接口和性能是否落实到电路？'),
-    'G2': ('器件与连接正确', '实际器件、物理脚、装配与端到端连接是否正确？'),
-    'G3': ('工况下的功能与性能', '启动、运行、掉电等适用状态下，电源、控制与信号能否按要求工作？'),
-    'G4': ('参数裕量与器件应力', '保证值、公差及工作范围是否满足指标和器件能力？'),
-    'G5': ('保护与异常响应', '需求内的故障、防护及隔离是否有效，动作与恢复是否合理？'),
-    'G6': ('实施、测试与下游约束', '原理图是否可落实和验证，必要布局、热及测试约束是否明确移交？'),
-    'G7': ('证据覆盖、改进建议与复验闭环', '是否查全且结论有据，不通过项是否明确如何改进、如何复验？'),
+    '要点1': ('需求与功能符合', '要求的功能、接口和性能是否落实到电路？'),
+    '要点2': ('器件与连接正确', '实际器件、物理脚、装配与端到端连接是否正确？'),
+    '要点3': ('工况下的功能与性能', '启动、运行、掉电等适用状态下，电源、控制与信号能否按要求工作？'),
+    '要点4': ('参数裕量与器件应力', '保证值、公差及工作范围是否满足指标和器件能力？'),
+    '要点5': ('保护与异常响应', '需求内的故障、防护及隔离是否有效，动作与恢复是否合理？'),
+    '要点6': ('实施、测试与下游约束', '原理图是否可落实和验证，必要布局、热及测试约束是否明确移交？'),
+    '要点7': ('证据覆盖、改进建议与复验闭环', '是否查全且结论有据，不通过项是否明确如何改进、如何复验？'),
 }
 OBJECTIVE_RULES = {
-    'G1': tuple('REQ-A01 REQ-A02 REQ-D01 REQ-D02 REQ-D03 REQ-D04 PWR-D04'.split()),
-    'G2': tuple(('DOC-A02 DOC-A05 DOC-T01 DOC-D01 DOC-V01 '
+    '要点1': tuple('REQ-A01 REQ-A02 REQ-D01 REQ-D02 REQ-D03 REQ-D04 PWR-D04'.split()),
+    '要点2': tuple(('DOC-A02 DOC-A05 DOC-T01 DOC-D01 DOC-V01 '
                  'DEV-A02 DEV-A04 DEV-A05 SIG-A10 SIG-A14 DEV-E01 DEV-D01 DEV-D02 DEV-D03 DEV-D04 DEV-D05 '
                  'NET-A01 NET-A02 NET-A03 NET-A04 NET-A06 NET-A07 NET-A08 '
                  'PWR-A01 PWR-A02 PWR-A03 PWR-A04 PWR-T01 PWR-T03 PWR-T06 PWR-D02 '
                  'SIG-E01 SIG-T01 SIG-T02 SIG-T03 SIG-T04 SIG-D13 PRO-A01').split()),
-    'G3': tuple(('PWR-A09 SIG-A07 SIG-A08 SIG-A09 SIG-A13 ANA-A01 ANA-A02 ANA-A03 PWR-A07 PWR-C04 PWR-C15 PWR-D03 '
+    '要点3': tuple(('PWR-A09 SIG-A07 SIG-A08 SIG-A09 SIG-A13 ANA-A01 ANA-A02 ANA-A03 PWR-A07 PWR-C04 PWR-C15 PWR-D03 '
                  'RST-A01 RST-A02 RST-A03 RST-A04 RST-A05 RST-A06 RST-E01 RST-E02 RST-E03 '
                  'RST-T01 RST-T02 RST-T03 RST-T04 RST-C01 RST-C02 '
                  'CLK-D01 CLK-D03 SIG-A01 SIG-A02 SIG-A03 SIG-A04 SIG-A06 SIG-E02 SIG-C01 SIG-C03 SIG-C04 SIG-C07 SIG-C09 '
                  'SIG-D01 SIG-D02 SIG-D03 SIG-D04 SIG-D07 SIG-D08 SIG-D09 SIG-D10 SIG-D11 SIG-D12 SIG-D14 SIG-D15 '
                  'ANA-T01 ANA-C01 ANA-C02 ANA-D01 PRO-A03 PRO-A04 PRO-E01 DRV-A03 DRV-E01 '
                  'PWR-C24 SIG-C10 SIG-C12 SIG-C13 SIG-C14 SIG-C15 SIG-C16 SIG-C17 SIG-C19 ANA-C05').split()),
-    'G4': tuple(('PWR-A10 PWR-A11 SIG-A12 DEV-A01 DEV-A03 DEV-C01 DEV-C02 DEV-C03 DEV-C04 DEV-C05 DEV-C06 '
+    '要点4': tuple(('PWR-A10 PWR-A11 SIG-A12 DEV-A01 DEV-A03 DEV-C01 DEV-C02 DEV-C03 DEV-C04 DEV-C05 DEV-C06 '
                  'PWR-A05 PWR-E01 PWR-E02 PWR-E03 PWR-C01 PWR-C02 PWR-C03 PWR-C05 '
                  'PWR-C09 PWR-C10 PWR-C11 PWR-C14 PWR-C16 CLK-A01 CLK-A02 CLK-C01 DRV-C02 '
                  'REQ-C01 REQ-C02 PWR-C17 PWR-C18 PWR-C19 PWR-C21 PWR-C22 PWR-C27 SIG-C11 ANA-C06').split()),
-    'G5': tuple(('PRO-A07 PRO-A08 PRO-A09 PRO-A10 PRO-A11 PRO-A12 PRO-A13 SIG-A11 PWR-A06 PWR-T04 PWR-T05 PWR-C06 PWR-C13 SIG-A05 SIG-C05 SIG-C08 ANA-C03 ANA-C04 '
+    '要点5': tuple(('PRO-A07 PRO-A08 PRO-A09 PRO-A10 PRO-A11 PRO-A12 PRO-A13 SIG-A11 PWR-A06 PWR-T04 PWR-T05 PWR-C06 PWR-C13 SIG-A05 SIG-C05 SIG-C08 ANA-C03 ANA-C04 '
                  'PRO-E02 PRO-C01 PRO-C02 PRO-C03 PRO-A05 PRO-A06 PWR-A08 PRO-D01 PRO-D02 PRO-D03 DRV-A01 DRV-A02 DRV-A04 DRV-T01 DRV-C01 DRV-D01 '
                  'PRO-D04 PWR-C23 PWR-C25 PWR-C26 SIG-C18 REQ-D05 PRO-D05 PRO-D06 PRO-C04 PRO-C05 PRO-C06 PRO-C07 PRO-C08 PRO-C09 '
                  'PRO-C10 PRO-C11 PRO-C12 PRO-C13').split()),
-    'G6': tuple('DOC-D02 DOC-V02 RST-D01 SIG-D06'.split()),
-    'G7': tuple(('DOC-A01 DOC-A03 DOC-A04 DOC-Q01 DEV-Q01 PWR-D01 '
+    '要点6': tuple('DOC-D02 DOC-V02 RST-D01 SIG-D06'.split()),
+    '要点7': tuple(('DOC-A01 DOC-A03 DOC-A04 DOC-Q01 DEV-Q01 PWR-D01 '
                  'REQ-Q01 REQ-Q02 REQ-Q03 REQ-Q04 REQ-Q05 REQ-Q07 REQ-Q08 REQ-Q09 REQ-H01 REQ-H02').split()),
 }
 
 
 # 共用规范依据（2026-10-31，用户：请开始执行这个方案）：SR 规则 → 它核对的共用设计准则（G0x-nnn，references/shared/guideline-criteria.md）。
-# 计划里出现一条 SR 规则，就覆盖了它映射的设计准则。规范编号 G03-005 与上面的审查要点 G1–G7、
-# 定界推法 G1–G6 格式不同，不要混写。
+# 计划里出现一条 SR 规则，就覆盖了它映射的设计准则。准则编号 G03-005 与上面的审查要点 要点1–7、
+# 定界推法 G1–G11 格式不同，不要混写。
 # 设计准则的 coverage 不是 item 的不进 BASIS（用户 2026-11-04）：REQ-Q09 按类各一项核它们，判据后面列本板适用的准则编号。
 COVERAGE_BATCH_RULE = 'REQ-Q09'
 COVERAGE_BATCH_CRITERIA = {
@@ -1126,7 +1126,7 @@ CIRCUIT_TYPES = (
             r'JTAG|SWDIO|SWCLK|(^|[:_-])(SWD|TCK|TMS|TDI|TDO|TRST\w*)([:_-]|$)|(^|[:_-])(DEBUG|DBG)',
             ('SIG-D06', 'SIG-C13', 'SIG-C18'),
             ('datasheets',)),
-    # 对外电源与现场输入接口（共用规范 G01 的接口规则按这些类型触发，2026-11-01 用户定）：网名只给候选，以 intent 声明的电路为准。
+    # 对外电源与现场输入接口（设计准则 G01 的接口规则按这些类型触发，2026-11-01 用户定）：网名只给候选，以 intent 声明的电路为准。
     _circuit_type('DC_48V', 'PWR',
             _LEAF + r'-?48V(_?RTN|_?IN)?([:_-]|$)|VBAT_?48',
             ('PWR-C17', 'PWR-C18', 'PWR-C13', 'PRO-C01'),

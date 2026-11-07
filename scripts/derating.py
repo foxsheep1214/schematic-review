@@ -205,3 +205,46 @@ def rule_hint(margin, conditions, kinds_of):
         return None
     kinds = set(kinds_of((conditions.get(basis.get('limit')) or {}).get('refs') or [])) & kinds_with_rules()
     return sorted(kinds) or None
+
+
+# 应力超幅（2026-11-07，用户：逐条裁决 D1–D8，按推荐执行；共用器件应力规范判定表第四行）：一条应力风险满足任一条时
+# 不只是降额偏离，风险清单单列，结论档位不变、不挡冻结。阈值只取共用层：降额表的 III 级取值、设计准则库工程取值。
+TEMPERATURE_MEASURES = ('max_c', 'tj_percent', 'margin_c')
+
+
+def _est_junction_margin():
+    import guideline_criteria
+    return guideline_criteria.engineering_value('est_junction_margin')
+
+
+def overreach(margin, conditions, level, rule):
+    """{'reasons': [...], 'thresholds': {...}} for a stress risk that is 应力超幅, else None: the project level is stricter
+    than III and the stress is over the level-III derated value (no level allows it), or the margin to the rating is
+    smaller than an estimate needs (temperature measures: est_junction_margin; others: the margin's relative
+    `uncertainty`, none written → not judged on the margin). At level III only the margin is judged."""
+    if not isinstance(rule, dict) or level not in LEVELS:
+        return None
+    basis = margin.get('basis') if isinstance(margin.get('basis'), dict) else {}
+    bound = ((conditions.get(basis.get('limit')) or {}).get('limit')) or {}
+    rating, value = bound.get('max'), margin.get('value')
+    if not all(isinstance(x, (int, float)) and not isinstance(x, bool) for x in (rating, value)):
+        return None
+    stress = rating - value
+    reasons, thresholds = [], {}
+    if level != 'III':
+        loosest = stress_check.derated_limit(rule, 'III', rating)
+        if isinstance(loosest, (int, float)) and stress > loosest:
+            reasons.append('应力 %g %s 超过 III 级降额值 %g %s（%s，降额规范任何一级都不允许）'
+                           % (stress, margin.get('unit') or '', loosest, margin.get('unit') or '', rule['id']))
+            thresholds['loosest_limit'] = loosest
+    if rule.get('measure') in TEMPERATURE_MEASURES:
+        need = _est_junction_margin()
+    else:
+        u = margin.get('uncertainty', basis.get('uncertainty'))
+        need = rating * u if isinstance(u, (int, float)) and not isinstance(u, bool) and u > 0 else None
+    if need is not None:
+        thresholds['margin_needed'] = need
+        if value < need:
+            reasons.append('离额定余量 %g %s 小于估算所需 %g %s' % (value, margin.get('unit') or '', need,
+                                                             margin.get('unit') or ''))
+    return {'reasons': reasons, 'thresholds': thresholds} if reasons else None

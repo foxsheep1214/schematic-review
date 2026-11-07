@@ -11,7 +11,6 @@ SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 
 import audit_datasheets
-import design_checklist
 import gap_inventory
 import guideline_criteria
 import independence
@@ -248,29 +247,8 @@ def test_the_db_beside_the_plan_is_used_only_when_it_built_the_plan():
         assert gap_inventory.beside_db(plan_path, {'db_sha256': 'other'}) is None
 
 
-# 6.4 reconciliation list
-CLOSURE = {'calculations': [{'id': 'CALC-REV', 'kind': 'threshold', 'refs': ['Q201', 'U201'], 'requirements': ['REQ-PROT-001'],
-                             'coverage': 'bounded', 'conclusion': 'supported',
-                             'parameters': [{'name': 'x', 'value': 125}],
-                             'checks': [{'name': '反接时 LTC4359 IN 对 VSS 幅值 vs 绝对最大 40 V', 'value': 23.7, 'limit': 40},
-                                        {'name': 'U201 温度 −40～+70 ℃ 下 10 %', 'value': 1}]}]}
-REFERENCE = {'pin_maps': {'Q201': {'identity': {'mpn': 'IPT015N10N5ATMA1'}, 'pins': {'10': {}, '2': {}, '1': {}}}}}
-
-
-def test_the_reconciliation_list_keeps_objects_and_names_never_values():
-    out = design_checklist.build(CLOSURE, REFERENCE, results={'functions': [{'conditions': [{'refs': ['U201']}]}]})
-    calc = out['calculations'][0]
-    assert calc == {'id': 'CALC-REV', 'kind': 'threshold', 'refs': ['Q201', 'U201'], 'requirements': ['REQ-PROT-001'],
-                    'checks': ['反接时 LTC4359 IN 对 VSS 幅值 vs 绝对最大 〈值〉', 'U201 温度 〈值〉 下 〈值〉'],
-                    'refs_not_in_ledger': ['Q201']}
-    text = json.dumps(out, ensure_ascii=False)
-    for word in ('23.7', 'supported', 'bounded', '"value"', '"limit"', '125'):
-        assert word not in text, word
-    assert out['pin_maps'] == [{'ref': 'Q201', 'mpn': 'IPT015N10N5ATMA1', 'pins': ['1', '2', '10'], 'in_ledger': False}]
-
-
-def test_the_asg_design_records_and_the_list_are_refused_as_citations():
-    for path in ('record/design-closure.json', 'record/reference-input.json', 'design-checklist.json'):
+def test_the_asg_design_records_are_refused_as_citations():
+    for path in ('record/design-closure.json', 'record/reference-input.json', 'record/scheme-criteria.json'):
         assert independence.designer_document(path), path
     assert independence.evidence_errors([{'id': 'X', 'evidence': [{'source': 'record/design-closure.json#CALC-REV'}]}])
 
@@ -294,16 +272,3 @@ def test_a_rule_id_header_is_not_an_id_column():
     assert not requirements_extract.is_id_header('Rule ID')
     assert requirements_extract.is_id_header('用户需求 ID')
 
-
-
-def test_the_scheme_criteria_list_keeps_blocks_and_rule_ids_only():
-    scheme = {'version': 1, 'blocks': [{'block': '24 V 保护', 'circuit_types': ['POWER_PROTECTION'], 'ports': True,
-                                        'criteria': [{'id': 'G07-023', 'excludes': '只靠输入侧保护', 'basis': 'standard',
-                                                      'how': 'OUT 口负向钳位 36 V', 'defer': ['残压']}]}]}
-    out = design_checklist.build(scheme=scheme)
-    assert out['scheme_rules'] == [{'block': '24 V 保护', 'circuit_types': ['POWER_PROTECTION'], 'rules': ['G07-023']}]
-    text = json.dumps(out, ensure_ascii=False)
-    for word in ('只靠输入侧', '36 V', 'standard', '残压'):
-        assert word not in text, word
-    assert 'scheme_rules' not in design_checklist.build(CLOSURE)
-    assert independence.designer_document('record/scheme-criteria.json')

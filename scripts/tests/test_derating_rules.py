@@ -86,5 +86,52 @@ class DeratingSpecTests(unittest.TestCase):
 
 
 
+class OverreachTests(unittest.TestCase):
+    """应力超幅 (stress spec row 4, 2026-11-07, user: 逐条裁决 D1–D8，按推荐执行): marked on the risk, listed apart."""
+    LM70880 = {'conditions': [{'id': 'c1', 'limit': {'max': 150, 'unit': '°C'}, 'refs': ['U1']}]}
+    MARGIN = {'value': 4, 'unit': '°C', 'against': '估算结温 146 °C', 'basis': {'limit': 'c1', 'derating_rule': 'IC-SW-TJ'}}
+
+    def setUp(self):
+        import derating
+        self.derating = derating
+        self.rule = derating.rules()['IC-SW-TJ']
+        self.conditions = {c['id']: c for c in self.LM70880['conditions']}
+
+    def test_lm70880_at_level_ii_is_overreach_on_both_counts(self):
+        found = self.derating.overreach(self.MARGIN, self.conditions, 'II', self.rule)
+        self.assertEqual(len(found['reasons']), 2, found)
+        self.assertEqual(found['thresholds'], {'loosest_limit': 105, 'margin_needed':
+                         guideline_criteria.engineering_value('est_junction_margin')})
+
+    def test_level_iii_judges_only_the_margin_and_a_wide_margin_is_no_overreach(self):
+        found = self.derating.overreach(self.MARGIN, self.conditions, 'III', self.rule)
+        self.assertEqual(list(found['thresholds']), ['margin_needed'])
+        wide = dict(self.MARGIN, value=40)   # 110 °C: over II (95) and III (105) derated values, 40 °C from the rating
+        found = self.derating.overreach(wide, self.conditions, 'II', self.rule)
+        self.assertEqual(list(found['thresholds']), ['loosest_limit', 'margin_needed'])
+        self.assertEqual(len(found['reasons']), 1)
+        self.assertIsNone(self.derating.overreach(dict(self.MARGIN, value=50), self.conditions, 'II', self.rule))
+
+    def test_a_ratio_rule_without_uncertainty_is_not_judged_on_the_margin(self):
+        rule = self.derating.rules()['IC-SW-TJ'] | {'measure': 'ratio', 'values': {'I': 0.5, 'II': 0.6, 'III': 0.7}}
+        cond = {'c1': {'id': 'c1', 'limit': {'max': 10, 'unit': 'A'}}}
+        margin = {'value': 2, 'unit': 'A', 'basis': {'limit': 'c1'}}   # stress 8 A > III 7 A
+        self.assertEqual(list(self.derating.overreach(margin, cond, 'II', rule)['thresholds']), ['loosest_limit'])
+        self.assertIsNone(self.derating.overreach(margin, cond, 'III', rule))
+        margin['uncertainty'] = 0.3   # 3 A needed > 2 A margin
+        self.assertEqual(list(self.derating.overreach(margin, cond, 'III', rule)['thresholds']), ['margin_needed'])
+
+    def test_the_risk_is_marked_and_the_report_lists_it_apart(self):
+        import render_report
+        import review_functions
+        entry = {'function_id': 'FN-1', 'aspect': '器件应力与降额', 'types': ['STRESS'], 'check_id': 'DEV-C01.U1',
+                 'margin': {'value': 4, 'unit': '°C', 'against': '估算结温 146 °C'}, 'improvement': '换件'}
+        review_functions._mark_overreach(entry, self.MARGIN, self.LM70880, 'II', self.rule)
+        self.assertEqual(len(entry['overreach']), 2)
+        text = '\n'.join(render_report.render_risks([entry]))
+        self.assertIn('### 应力超幅（1 项）', text)
+        self.assertIn('超过 III 级降额值 105', text)
+
+
 if __name__ == '__main__':
     unittest.main()

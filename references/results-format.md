@@ -16,7 +16,7 @@
 
 “资料不足”只有一个入口：先有功能判定的开放项，才有 INSUFFICIENT 的检查项。
 
-## 三、review-results.json（格式版本见[架构说明 一](architecture.md#一步骤之间传的文件)）
+## 三、review-results.json（版本见[架构说明](architecture.md#一步骤之间传的文件)）
 
 ### 顶层字段
 
@@ -159,11 +159,11 @@
 | GUARANTEED_BOUND | 在要求范围内余量的下界：满足则 PASS，不满足只说明没证明（OPEN） | 不依赖 TYPICAL_REFERENCE 或 ENGINEERING_ASSUMPTION |
 | REACHABLE_CASE | 一个确会出现的工况：不满足则 FAIL，满足不证明整个范围（OPEN） | `joint` 说明这些参数为什么会同时出现；不依赖 ENGINEERING_ASSUMPTION |
 | EXACT_ENVELOPE | 完整的最坏包络：满足 PASS，不满足 FAIL | `model`、`domain`、`extremum`；同 GUARANTEED_BOUND 不依赖典型值或假设 |
-| ESTIMATE | 什么都不决定；按定界表那一格的判决边界允许的后果类、经倍数打折后仍满足且移交样机实测时，判 PASS（见下） | 判 PASS 时写 `cell`、`method`（G7–G9）、`consequence_class`、`estimate_factor`、`handoff` 与 `risk` |
+| ESTIMATE | 什么都不决定；按定界表那一格的判决边界允许的后果类、经倍数打折后仍满足且移交样机实测时，判 PASS（见下） | 判 PASS 时写 `cell`、`method`（估算推法 G7–G9、G11）、`consequence_class`、`estimate_factor`、`handoff` 与 `risk` |
 
 估算判通过：估算能不能判 PASS 由 `basis.cell` 那一格的[判决边界](bounding-table.md#判决边界)按
 `consequence_class`（沿用开放项 `severity.class` 的词：REQUIRED_FUNCTION、PERFORMANCE_OR_LIFE、COMPONENT_DAMAGE……）决定，与检查项的规则 id 无关：
-格允许这个后果类时，`basis` 写 `method`（该格的估算推法 G7–G9，保证推法 G1–G6 得到的是 GUARANTEED_BOUND 不是估算）、`consequence_class`、
+格允许这个后果类时，`basis` 写 `method`（该格的估算推法 G7–G9、G11；保证推法 G1–G6、SOA、FORCED_BETA 得到的是 GUARANTEED_BOUND，G10 厂家参考电路可判通过，都不是估算）、`consequence_class`、
 `estimate_factor`（等于格给该后果类的倍数，余量按估算值再按不利方向打这个折之后算；格另给余量下限的，余量用那个单位且不低于它，如 MOS-RDS-HOT 判损坏要结温余量 ≥ 20 °C）
 和 `handoff`（本功能 `handoffs` 里样机实测那一条的序号，那一条写全 receivers、constraint、verification），满足就判 PASS，派生检查项带上这条移交（`required: true`，OPEN）。
 DAMAGE_OR_HAZARD、CORE_LINK_LOSS 在任何格都不估算。`cell: NONE`（表里没有这个参数）走默认：只许 REQUIRED_FUNCTION / PERFORMANCE_OR_LIFE，
@@ -171,7 +171,7 @@ DAMAGE_OR_HAZARD、CORE_LINK_LOSS 在任何格都不估算。`cell: NONE`（表�
 估算判 PASS 的检查项是 C 级证据（派生时写 `evidence_confidence: C`，门禁拒绝别的等级），结论是“合格，但有风险”（2026-10-26 定）：
 `basis.risk{types, corner, improvement}` 必写，`types` 取那一格“估算对应的风险”（ENVIRONMENT / LIFETIME / CONSISTENCY；`NONE` 任选），
 `corner` 写只靠估算的角点，`improvement` 写消除风险的改法。何时写风险（含应力 STRESS）见[余量判定规则](margin-verdicts.md)。估算判 COMPONENT_DAMAGE 通过（器件自身发热的格，2026-10-27）时 `types` 必含 STRESS，即“合格但有应力风险”。
-门禁 `risks` 逐条列出（`source` ESTIMATE / STRESS），不限制 `release`，报告按类型单列“风险清单”。
+门禁 `risks` 逐条列出（`source` ESTIMATE / STRESS；应力超幅另带 `overreach`），不限制 `release`，报告单列“风险清单”。
 寿命检查项另有自己的估算路径（见 DEV-C02/DEV-C06），凭估算判通过时不列风险，改法即它的 `bom_constraint`。
 
 `comparison` 为 GE 时零余量算满足，GT 时不算。除 ESTIMATE 外，`limit` 指向被比较的 NUMERIC_LIMIT，`regime` 写算出量成立的条件；

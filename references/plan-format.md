@@ -4,7 +4,7 @@
 
 四份格式文档（intent、计划、结果、校验）的分工见[结果格式](results-format.md)开头。
 
-## 二、review-plan.json（格式版本见[架构说明 一](architecture.md#一步骤之间传的文件)）
+## 二、review-plan.json（版本见[架构说明](architecture.md#一步骤之间传的文件)）
 
 检查项带 `owner`、`check_key` 和 `requires`，计划带所属表 `owners` 和接口 `interfaces`，功能框架带 `not_asked`；电路检查项只在网表上有它问的机制时生成
 （见下文“电路规则的前提”）。更早格式的计划（含据它写的结果）不再读，

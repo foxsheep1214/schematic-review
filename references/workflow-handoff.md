@@ -18,8 +18,9 @@
 | `requirements` | 已持久化的需求版本、目录、逐文件 SHA256 和清单 digest |
 | `skills` | ASG/SR 路径、工程规则身份和接口兼容信息；由程序管理 |
 | `design` | 当前/前版设计包的目录、文件哈希、角色、收据和自检记录；首轮可为 null |
-| `previous_review` | 前次 SR 完整包，首审可为 null；不得把前次 PASS 直接迁移 |
+| `previous_review` | 前次审查结果，首轮可为 null：SR 任务里是前次 SR 完整包，ASG 任务里可以是任何格式的审查意见；不得把前次 PASS 直接迁移 |
 | `open_items` | 前轮尚待处理的问题；详细电气判据仍以 SR 原生记录为准 |
+| `clarification_answers` | 可选：对上一轮需求澄清的答复，每项 `{id, decision, text, by, date, source, requirement_files}`，按澄清编号对上（字段同 [需求澄清](requirement-clarifications.md)） |
 | `output` | 本任务最终 result.json 的绝对路径 |
 
 需求文档保留原文与未决项。ASG 独立构建电气意图；SR 独立构建审查意图、覆盖计划和结论。
@@ -61,36 +62,19 @@ kind 取 `REQUIREMENT / EVIDENCE / DESIGN / REVIEW / TOOL / DOWNSTREAM`。
 ASG 自检或目检未通过/未完成时必须保留开放项。SR 封装必须包含原生 workflow.current_work_items
 中每个任务的 ID，原生记录中的关闭条件、阶段和证据不能被封装覆盖。
 
-## ASG → SR 必需角色
+## ASG → SR 角色
+
+必需角色是 SR 实际读取的文件，与 ASG 的交接约定用同一组名字：
 
 | 角色 | 内容 |
 |---|---|
 | `schematic` | 唯一根 .kicad_sch；其他有效图页也收入 files |
 | `netlist`、`render`、`bom` | 唯一原生 XML 网表、项目 PDF、BOM |
-| `electrical_intent` | ASG 板级电气意图 |
 | `requirements` | 全部需求基线文件，字节哈希与 task 完全一致；可多个 |
-| `requirement_trace` | 需求到模块/图页的追溯表 |
-| `device_contracts` | 确切 MPN、引脚和外围约定及适用资料 |
-| `calculations` | 计算/适用仿真及条件；无需计算时保存有依据的不适用说明 |
-| `open_items` | 设计内部 OPEN 台账，不用封装的短摘要替代 |
-| `native_summary` | 现有 verify_schematic.py 的 summary.json，保留原始状态和 gates |
-| `visual_review` | JSON；status 为 REVIEWED / REVIEW_PENDING / REWORK_REQUIRED，并保留实际逐页路径记录 |
-| `delivery_evidence` | 现有 delivery-evidence.json，所有引用文件均在包内 |
-| `downstream_constraints` | PCB/结构/固件等交接约束 |
 
-除 requirements 外，每个上述角色恰好指向一个文件，可用索引文件组织多份器件/计算证据。
-SR 只读 `schematic`、`netlist`、`render`、`bom` 和 `requirements`；其余角色（电气意图、需求追溯、器件约定、计算、开放项、
-自检摘要、目检、交付证据、下游约束）以及包里的选型记录、计算库存、归因记录随包收入 files，SR 不复核、不引用，
-只从原理图、需求和原厂资料独立审查（引用时校验拒收）。控制器重跑 ASG 新鲜度检查，拒绝遗漏有效图页和证据引用；
-ASG 自检缺口留在 ASG 的开放项里，不作 SR 的输入；FRESH 不是电气通过。
+可选的归档角色是 ASG 实际产出、随包收入的记录：`report`、`electrical_intent`、`design_closure`、`native_summary`、`visual_review`、`delivery_evidence`、`manifest`、`review_responses`（有审查意见时）。除 requirements 外每个角色恰好一个文件。
+SR 不复核、不引用归档角色和包里的其他设计方记录，只从原理图、需求和原厂资料独立审查（引用时 `independence.py` 拒收）。控制器重跑 ASG 新鲜度检查，拒绝遗漏有效图页和证据引用；ASG 自检缺口留在 ASG 的开放项里，不作 SR 的输入；FRESH 不是电气通过。
 改版还应收入 change contract、preflight、基线和复验记录，可使用附加角色。
-
-**对账清单（不采信）**：ASG 的 `record/design-closure.json` 和 `record/reference-input.json` 可以用
-`design_checklist.py --design-closure … --reference-input … [--scheme-criteria …] [--results review-results.json] --json <草稿目录>/design-checklist.json`
-读成待核清单：每项计算只留 id、种类、涉及的位号与需求、去掉数值的计算名（数值换成〈值〉），每份脚表只留位号、型号和脚号；
-ASG 任务 1.3 的 `record/scheme-criteria.json` 只留关键功能块、电路类型和它说能淘汰候选的规则编号，排除了哪个候选、怎样满足都不读，审查员按图自己复核这些规则，方案踩到排除条件的按现有审查项报告；
-数值、限值、额定、结论、覆盖一概不读。审查员拿它核“设计方算过的对象我是否都自己算过”，带 `--results` 时列出台账还没提到的位号。
-清单和这三份文件都是设计方记录，引用或作证据时 `independence.py` 拒收；清单放在 `record/` 之外，不进交付。
 
 ## SR → ASG/控制器必需角色
 

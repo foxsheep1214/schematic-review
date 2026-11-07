@@ -7,9 +7,8 @@ state what the designer meant or believes; taking them as a citation or as row e
 A citation in the review intent or a row evidence that names one is refused. Facts the schematic cannot show go to the
 designer as a handoff and come back as a requirement or an input. The one exception is the downstream handoff list
 (intent.materials.handoff_list, the REQ-Q09 handoff row, user 2026-11-04): it is the designer's by nature, and SR only
-checks that a rule is on it, never takes what it says as true. ASG's design-closure.json and reference-input.json,
-and the reconciliation list design_checklist.py reads out of them (objects and calculation names only), are
-designer records too: the list tells SR what to look at, never what is true.
+checks that a rule is on it, never takes what it says as true. ASG's design-closure.json, reference-input.json and
+scheme-criteria.json are designer records too (the reconciliation list that read them was retired 2026-11-07).
 """
 import re
 

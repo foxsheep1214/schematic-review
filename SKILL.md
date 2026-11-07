@@ -39,7 +39,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 ```
 
 规则编号里的内容域和方式字母只是检查项上的标签，说明一条规则查什么、怎么查，不是审查的顺序；
-七项审查要点 G1–G7 是改规则时回答“为什么有这条规则”的坐标（[审查要点](references/review-charter.md)），审查员不按它走。
+七项审查要点（要点1–7）是改规则时回答“为什么有这条规则”的坐标（[审查要点](references/review-charter.md)），审查员不按它走。
 
 | 步骤 | 任务 | 这一步的目的 | 审查员要做的 | 审查员不能做的 |
 |---|---|---|---|---|
@@ -117,8 +117,8 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | 工作点和保证条件对不上时定界；估算判通过的边界 | [bounding-table.md](references/bounding-table.md)（由 `scripts/catalog.py` 生成） |
 | 审查员 | 一条余量怎么判：合格、合格但有风险、不合格；无料号常规件的判定表 | [margin-verdicts.md](references/margin-verdicts.md) |
 | 审查员 | BOM 缺具体料号、要给通用件额定定界时 | [commodity-floors.md](references/commodity-floors.md) |
-| 审查员 | 器件应力降额：I/II/III 级降额值、等级从哪来、取值规则（共用层，见 shared-layer.md） | [derating-rules.md](references/shared/derating-rules.md) |
-| 审查员 | 器件应力怎么判：超额定不成立、超降额未超额定是应力风险、只审写出的应力余量（共用层，见 shared-layer.md） | [stress-spec.md](references/shared/stress-spec.md) |
+| 审查员 | 器件应力降额（共用规范 G10）：I/II/III 级降额值、等级从哪来、取值规则（共用层，见 shared-layer.md） | [derating-rules.md](references/shared/derating-rules.md) |
+| 审查员 | 器件应力怎么判（共用规范 G10）：超额定不成立、超降额未超额定是应力风险、应力超幅单列、只审写出的应力余量（共用层，见 shared-layer.md） | [stress-spec.md](references/shared/stress-spec.md) |
 | 审查员 | 结果、P0–P3（含 BOM 约束定级）、阶段、HANDOFF、准出 | [verdicts-and-release.md](references/verdicts-and-release.md) |
 | 审查员 | 需求缺失/含糊/冲突：当场问用户，答复写进需求清单 | [requirement-clarifications.md](references/requirement-clarifications.md) |
 | 审查员 | ① 写 intent.json：字段、输入声明、电路决定、需求参数 | [intent-format.md](references/intent-format.md) |
@@ -140,8 +140,8 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员与 SR 维护者 | 参与 ASG/SR 薄控制器流程时的交接 | [workflow-handoff.md](references/workflow-handoff.md) |
 | SR 维护者 | 架构明细：步骤间文件、格式版本、脚本归属、历次架构决定、规则维护步骤 | [architecture.md](references/architecture.md) |
 | SR 维护者 | 规则编号总表、判据、每项检查的盲区与常见误报（审查员用的名称表另出） | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
-| SR 维护者 | 改规则时：审查目的、七项审查要点、规则取舍 | [review-charter.md](references/review-charter.md) |
-| SR 维护者 | 共用设计准则库（G01–G09）：设计准则、适用条件、覆盖、`catalog.BASIS`、更新步骤（共用层，见 shared-layer.md） | [guideline-criteria.md](references/shared/guideline-criteria.md) |
+| SR 维护者 | 改规则时：七项审查要点（要点1–7）、规则取舍的三问 | [review-charter.md](references/review-charter.md) |
+| SR 维护者 | 共用设计准则库（共用规范 G01–G09；G10 见上面两行）：设计准则、适用条件、覆盖、`catalog.BASIS`、更新步骤（共用层，见 shared-layer.md） | [guideline-criteria.md](references/shared/guideline-criteria.md) |
 | SR 维护者 | 共用层：哪些文件与 ASG 同字节、各自的角色、谁读、哪条测试守、怎么改 | [shared-layer.md](references/shared/shared-layer.md) |
 
 ## 与 ASG 的有状态工作流交接
@@ -160,7 +160,7 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 共用设计准则来自硬件设计规范的固定发布包，SR 记录本次审查采用的版本与指纹，独立取证和复算（机制见 [共用层说明](references/shared/shared-layer.md)）。
 共用设计准则（编号 `G0x-nnn`，如 `G03-005`）是判据层，规则总表是执行层：`catalog.BASIS` 把 SR 规则映射到它核对的本地设计准则，
 计划的 `guidelines` 段列出本板适用的设计准则、由哪些检查覆盖、哪些检查这次没展开（本板没有对象或电路未声明）、哪些还没有检查（SR 待补，不是设计缺陷），见 [共用设计准则库](references/shared/guideline-criteria.md)。
-规范编号与审查要点 G1–G7、定界推法 G1–G6 是三套东西，格式不同，不要混写。
+共用规范 G01–G10 中 G01–G09 是设计准则（编号 `G0x-nnn`），G10 是降额与应力规范（规则编号如 `RES-SMD-P`，见 [降额规范](references/shared/derating-rules.md)）；它们与审查要点 要点1–7、定界推法 G1–G11 不是一回事，不要混写。
 
 功能电路（DDR、USB、电源保护等）按 `intent.circuits` 逐电路×工况展开电路检查项；电路由候选文件与 `intent.circuit_decisions` 推出，不手画（2.1）；答案不随工作态变化的电路检查项（`catalog.STATE_INVARIANT`）每电路只问一次。REQ-Q07 只汇总覆盖、由工具按同类电路各检查项写出，不能代替电路检查项；未检出也未声明的功能电路由 REQ-Q08 逐个确认。
 

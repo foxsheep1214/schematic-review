@@ -7679,13 +7679,6 @@
   "new": "        return ('part', entry['refs'][0])"
  },
  {
-  "id": "M1512",
-  "name": "the reconciliation list keeps the numbers",
-  "file": "scripts/design_checklist.py",
-  "old": "                    'checks': [unvalued(c.get('name')) for c in calc.get('checks') or []",
-  "new": "                    'checks': [str(c.get('name')) for c in calc.get('checks') or []"
- },
- {
   "id": "M1513",
   "name": "ASG design-closure is citable",
   "file": "scripts/independence.py",

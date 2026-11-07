@@ -2084,7 +2084,7 @@ def _risk_entry(cid, fn, row, state, m, types, source, **extra):
     return out
 
 
-def risks(expected, checks, functions):
+def risks(expected, checks, functions, level=None):
     """2026-10-26 (user: 三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列): the PASS rows that carry a
     risk — a corner passed only on an estimate (its cell, factor, consequence class and the prototype test that confirms
     it; C-grade evidence) and a decisive margin within the rating but short of the assumed derating (STRESS). The release
@@ -2116,8 +2116,20 @@ def risks(expected, checks, functions):
             if (margin_verdict(m) == 'PASS' and (m.get('basis') or {}).get('kind') != 'ESTIMATE'
                     and (m.get('basis') or {}).get('risk')
                     and covers(scope(m, calc.get('aspect')), row['aspect'], state, cid)):
-                out.append(_risk_entry(cid, fn, row, state, m, (), 'STRESS'))
+                entry = _risk_entry(cid, fn, row, state, m, (), 'STRESS')
+                _mark_overreach(entry, m, fn, level, derating.rules().get((m.get('basis') or {}).get('derating_rule')))
+                out.append(entry)
     return out
+
+
+def _mark_overreach(entry, margin, fn, level, rule):
+    """应力超幅 (stress spec, 2026-11-07): a stress risk past the loosest level or too close to its rating is marked so the
+    report lists it apart; the verdict and the release are unchanged."""
+    conditions = {c.get('id'): c for c in fn.get('conditions') or [] if isinstance(c, dict)}
+    found = derating.overreach(margin, conditions, level, rule) if rule else None
+    if found:
+        entry['overreach'] = found['reasons']
+        entry['overreach_thresholds'] = found['thresholds']
 
 
 def implied_stress_risks(expected, checks, functions, plan, db):
@@ -2154,6 +2166,7 @@ def implied_stress_risks(expected, checks, functions, plan, db):
                 entry['corner'] = '应力 %g %s 在额定内，超过 %s 级降额值 %g %s（%s %s）' % (
                     stress, m.get('unit'), level, derated, m.get('unit'), rule['id'], rule['parameter'])
                 entry['improvement'] = '换额定更高的器件或降低应力，使应力不超过降额值'
+                _mark_overreach(entry, m, fn, level, rule)
                 out.append(entry)
     return out
 

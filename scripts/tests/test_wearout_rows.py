@@ -51,7 +51,7 @@ def wearout(p):
 
 class CatalogTests(unittest.TestCase):
     def test_the_rule_and_its_classes(self):
-        self.assertIn('DEV-C06', catalog.OBJECTIVE_RULES['G4'])
+        self.assertIn('DEV-C06', catalog.OBJECTIVE_RULES['要点4'])
         for aspect in ('LIFETIME_BASIS', 'MISSION_PROFILE'):
             self.assertIn('DEV-C06', catalog.ASPECT_RULES[aspect])
         self.assertEqual(set(CLASSES.values()) | {'BATTERY'}, set(catalog.WEAROUT_CLASSES))

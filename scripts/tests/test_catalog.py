@@ -255,26 +255,26 @@ class ObjectiveAlignmentTest(unittest.TestCase):
 
     def test_duplicate_alignment_is_rejected(self):
         groups = copy.deepcopy(catalog.OBJECTIVE_RULES)
-        groups['G2'] += (groups['G1'][0],)
+        groups['要点2'] += (groups['要点1'][0],)
         with self.assertRaises(ValueError):
             catalog.build_objective_index(catalog.BY_ID, groups)
 
     def test_unknown_alignment_is_rejected(self):
         groups = copy.deepcopy(catalog.OBJECTIVE_RULES)
-        groups['G2'] += ('NET-A05',)
+        groups['要点2'] += ('NET-A05',)
         with self.assertRaises(ValueError):
             catalog.build_objective_index(catalog.BY_ID, groups)
 
     def test_undefined_objective_is_rejected(self):
         groups = copy.deepcopy(catalog.OBJECTIVE_RULES)
-        groups['UNDEFINED'] = groups.pop('G1')
+        groups['UNDEFINED'] = groups.pop('要点1')
         with self.assertRaises(ValueError):
             catalog.build_objective_index(catalog.BY_ID, groups)
 
     def test_empty_objective_cannot_hide_unassigned_rules(self):
         groups = copy.deepcopy(catalog.OBJECTIVE_RULES)
-        groups['G2'] += groups['G1']
-        groups['G1'] = ()
+        groups['要点2'] += groups['要点1']
+        groups['要点1'] = ()
         with self.assertRaises(ValueError):
             catalog.build_objective_index(catalog.BY_ID, groups)
 
