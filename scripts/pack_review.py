@@ -256,6 +256,27 @@ def stale_gate_errors(ledger):
             'being packed' % ', '.join(changed)] if changed else []
 
 
+REQUIREMENT_TEXT = ('.md', '.markdown', '.txt')
+
+
+def requirement_omission_errors(inputs, ledger):
+    """A requirement document in the declared `requirements` input that intent.requirement_source leaves out
+    (R6 acceptance 2026-10-24: the brief named two documents and one reviewer transcribed only one, 195 rows)."""
+    declared = inputs.get('requirements')
+    if not declared or 'intent.json' not in ledger or not Path(declared).exists():
+        return []
+    root = Path(declared)
+    docs = [root] if root.is_file() else sorted(p for p in root.rglob('*') if p.is_file())
+    docs = [p for p in docs if p.suffix.lower() in REQUIREMENT_TEXT and not p.name.startswith('.')]
+    source = json.loads(Path(ledger['intent.json']).read_text(encoding='utf-8')).get('requirement_source')
+    if not source:
+        return []   # nothing transcribed: requirement_source itself is the plan's check, not the pack's
+    listed = {s.get('sha256') for s in (source if isinstance(source, list) else [source]) if isinstance(s, dict)}
+    return ['requirement document %s is in the declared requirements input but not in intent.requirement_source; '
+            'transcribe every document the brief names (requirements_extract.py a.md b.md)' % p
+            for p in docs if sha256(p) not in listed]
+
+
 def pack(out, ledger, evidence_root, inputs, title=None, detail='compact'):
     out = Path(out)
     errors = []
@@ -298,6 +319,7 @@ def pack(out, ledger, evidence_root, inputs, title=None, detail='compact'):
     if errors:
         return errors, None
     errors += stale_gate_errors(ledger)
+    errors += requirement_omission_errors(inputs, ledger)
     if errors:
         return errors, None
     (record / 'evidence').mkdir(parents=True, exist_ok=True)

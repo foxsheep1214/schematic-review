@@ -14,6 +14,15 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+## 已知缺陷逐条复核（2026-11-07）
+
+用户：确认已知缺陷是否还存在，存在则修复并验证，不存在则删除记录；4 条已检出的保留作命中真值，删除前每条须有回归测试守着。46 条逐条核对：4 条已检出（TR1 三条、HOT-mcu-pad）回放仍检出，保留；40 条现行流程已不复现，均有针对性测试（缺的补在 test_known_defects_r5.py、test_known_defects_electrical.py）；2 条仍存在并修复：
+R6-source-omission（打包核对声明的需求输入里每份 .md/.txt 文档都已抄入 intent.requirement_source，`pack_review.requirement_omission_errors`）；R5-pfc-missed（NCP1623 Table 3 第 8 页高线门限 1.65/1.80/1.95 V，R5 分压 3×499k/22k，KCS≈69，90 Vac 标称即判高线、最坏 76–101 Vac，与 REQ-IN-001 90–264 Vac 冲突；新增按网表派生的 `PWR-C06.LINE-SENSE` 行：IC 信号脚经 ≥100 kΩ 纯串联电阻接到升压输入或开关节点时，问各检测门限对应的交流输入窗；R5 回放问到 U201.6）。电路评测集 known_defects.json 只留 4 条命中真值（46→4），发布绑定改到 1.9.8。
+
+- Event: user:2026-11-07（确认已知缺陷是否还存在，存在则修复并验证，如果不存在就删除这些缺陷的记录）
+- Causes: rule_missing 1, rule_not_enforced 1
+- Changed: scripts/pack_review.py, scripts/plan_circuits.py, scripts/tests/test_known_defects_electrical.py, scripts/tests/test_known_defects_r5.py, scripts/tests/test_known_defects_r678.py, docs/improvement-ledger.md
+
 ## 删除旧条文审计（2026-11-07）
 
 用户：以后升级比较用新的审计数据。删除 docs/audits/ 两份 2026-10-07 审计快照；电路评测集 `已知缺陷/known_defects.json` 删去依据它们的 10 条 `rule_audit` 记录（caught 均为 unknown，不是已确认电气缺陷），已知缺陷 56→46，此前的检测汇总不与之后直接比较；`evals/detection/run.py` 不再把 docs/audits 计入输入哈希。

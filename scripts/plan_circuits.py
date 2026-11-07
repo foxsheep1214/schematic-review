@@ -196,6 +196,11 @@ SET_POINT_CRITERION = ('%s 设定输出档位（%s：%s；出处 %s）：逐个�
                        '中间档不由两端档推出')
 ENABLE_LINK_CRITERION = ('光耦 %s 使能或关断 %s（%s 脚）：核上电时两侧供电建立的先后、使能门限与光耦传输延时，以及掉电后再上电能否'
                          '恢复工作')
+# Line sensing: a resistor chain of at least 100 kΩ (gate and snubber resistors are far below it) of at most six parts.
+LINE_SENSE_OHM, LINE_CHAIN_MAX = 100e3, 6
+LINE_SENSE_CRITERION = ('线路检测：%s 经 %s 从 %s 取输入电压；按手册该脚各检测门限（高低线判别、欠压或掉电的进入与退出）的保证'
+                        ' MIN/MAX、迟滞与分压电阻公差的最坏组合，算出每个判别点对应的交流输入电压窗，对照需求的最低与最高输入：'
+                        '核最低输入是否全部落在判低线一侧、最高输入是否全部落在判高线一侧，欠压进入窗是否全部低于最低输入')
 
 
 # Circuit-rule preconditions (consistency proposals of 2026-10-23, item 2; catalog.SUBJECT_REQUIRES): the pins and
@@ -1152,6 +1157,38 @@ class CircuitPlanning:
                                                    'optocoupler_digest': optocouplers['digest']},
                                        key='ENABLE-LINK', criterion=ENABLE_LINK_CRITERION % (opto['ref'], ref, node),
                                        trigger=['optocoupler:%s' % opto['ref'], 'enable-pin:%s' % node])
+
+        # Line sensing (known defect R5-pfc-missed): an IC pin that reads the line through a high-ohm resistor chain from
+        # the boost input or switch node (a net with an inductor and a bridge rectifier or a MOSFET drain).
+        def line_net(net):
+            kinds = {graph.kind(r) for r in graph.refs_on(net)}
+            drain = any(graph.kind(n.split('.')[0]) == MOSFET and graph.role(n) == 'drain' for n in graph.nodes_on(net))
+            return not is_ground(net) and INDUCTOR in kinds and (BRIDGE_RECTIFIER in kinds or drain)
+
+        def line_chain(first, current):
+            """The series resistors from a pin net through two-node junctions, the net it ends on, its total ohms."""
+            chain, ohm = [first], 0.0
+            while True:
+                parsed = parse_resistor_noted((graph.parts.get(chain[-1]) or {}).get('value'))
+                ohm += parsed['kohm'] * 1000 if parsed else 0.0
+                onward = [(r, o) for r, o in graph.neighbors(current, {RESISTOR}) if r not in chain]
+                if len(graph.nodes_on(current)) != 2 or len(onward) != 1 or len(chain) >= LINE_CHAIN_MAX:
+                    return chain, current, ohm
+                chain.append(onward[0][0])
+                current = onward[0][1]
+
+        for net in sorted(graph.nets):
+            pins = list(signal_pins(net))
+            if not pins or is_ground(net):
+                continue
+            for resistor, other in graph.neighbors(net, {RESISTOR}):
+                chain, source, ohm = line_chain(resistor, other)
+                if not (line_net(source) and ohm >= LINE_SENSE_OHM):
+                    continue
+                for ref, node in pins:
+                    self.add_check('PWR-C06', {'ref': ref, 'node': node, 'net': net, 'source': source, 'chain': chain},
+                                   key='LINE-SENSE', criterion=LINE_SENSE_CRITERION % (node, '、'.join(chain), source),
+                                   trigger=['line-net:%s' % source, 'sense-pin:%s' % node])
 
     def plan_feedback_open_rows(self, graph):
         """A controller regulated through an optocoupler on its feedback pin: one row for the feedback opening, the
