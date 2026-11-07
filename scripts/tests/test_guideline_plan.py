@@ -262,7 +262,7 @@ class M4IdentityTests(unittest.TestCase):
     gate = GuidelineGateAndReportTests.gate
     def test_missing_or_unknown_format_does_not_promote_an_old_plan(self):
         import copy
-        for value in (None, 'unknown', guideline_criteria.LEGACY_FINGERPRINT_FORMAT):
+        for value in (None, 'unknown', 'shared-files-sha256-lines-v1'):
             section = copy.deepcopy(self.section)
             if value is None:
                 section.pop('fingerprint_format')
