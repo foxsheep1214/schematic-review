@@ -15,6 +15,15 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+## 清理历史遗留：无人引用的旧设计稿与草案（2026-11-06）
+
+`docs/` 下 2026-10-20～10-25 的 15 份设计稿、提案、一致性审计与 R6/R7 验收记录，以及 `docs/proposals/` 下板库合并 1–7 批、抽查、检出力、待收手册清单和 G06/G07 登记草案，内容都已实施或被现行规范、台账取代（移除：question-conclusion-design、circuit-candidates-design、function-tree-design、fixed-requirements-and-review-points、bounding-consistency-proposals、bounding-table-proposal、review-consistency-proposals、decisions-and-pin-table-proposal、r6-acceptance、requirement-owners-proposal、results-expand-proposal、ring-imports-proposal、sr-consistency-audit、r7-acceptance、task-loop；proposals/ 下 boards-merge-*、spot-check-*、detection-power、datasheets-to-collect-from-boards、g06-g07-registry-draft*），代码、测试和现行文档都不再引用，移除（可从 Git 历史取回）。仍被引用的设计稿（功能判定、单元边界、条件引用、器件类别证据）、`audits/`、`criteria-from-boards`、`criteria-top50-examples`、`guideline-scan-classes` 和迁移说明保留。
+
+- Event: user:2026-11-06（“清理ASG、SR、设计规范，这三者里面的历史任务和历史遗留”）
+- Causes: knowledge_wrong 1
+- Changed: docs, docs/proposals, docs/improvement-ledger.md
+- Gates: 3078 passed（只删文档，未动代码，未跑变异）；check_ledger.py PASS
+
 ## M6：最终集成与过时入口清理（2026-11-06）
 
 清理 README 中 M3/M4 尚待实施的过时说法，指向各自本地发布检查与显式评测入口。核查草案所列无用 SR_PASSIVE、G02 未接入/登记1.1、G06–G09 待接入和旧双向同步已在 M2/M3/M4 消除，不重复修改发布包或历史文字。N/E 当前入口局部更新，原有历史台账与记录保留；正式包仍为 1.9.4，工程输入与数值不变。ASG 历史回放输入缺失，按 NOT_RUN 独立披露，不作为 PASS。SR 实测发现 pytest 空准则覆盖掩盖 13 例检查数各少2，清除原生回放子进程的测试覆盖；确认仅两个既有 REQ-Q09 项目输入/交接批项，按既有约定另存 installed-guidelines-v1，旧输入与约定不改，其他182字段不变。
