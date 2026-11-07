@@ -6,7 +6,7 @@
 - `评测记录/SR/2026-11-02-公开板审查/README.md`（回路的六步、`findings.json` 的格式、流水线不能做的事——照它做）。
 - `评测集/来源/公开板库/catalog.json` 里 `{{BOARD_ID}}` 那一项（repo、commit、schematic、license、types）。
 - `评测记录/SR/2026-11-02-公开板审查/_lanes/{{LANE}}/memo.md`（前面板子留下的经验；没有就跳过）。
-- `SKILL.md`（SR 的审查流程 ①–⑧ 与命令）、`references/check-catalog.md`（规则总表）、`references/shared/guideline-criteria.md`（设计准则怎么用）、`docs/proposals/criteria-top50-examples-2026-11-02.md`（50 条准则的正反例，漏报核对用）。
+- `SKILL.md`（SR 的审查流程 ①–⑤ 与命令）、`references/check-catalog.md`（规则总表）、`references/shared/guideline-criteria.md`（设计准则怎么用）、`docs/proposals/criteria-top50-examples-2026-11-02.md`（50 条准则的正反例，漏报核对用）。
 
 ## 做
 1. `python3 -B evals/boards_tools/fetch_board.py {{BOARD_ID}} --cache ~/.cache/sr-boards`，得到 `~/.cache/sr-boards/{{BOARD_ID}}/db.json`（它拉源仓库、`kicad-cli` 导网表、`scripts/parse_kicad.py` 解析）。失败就在 `评测记录/SR/2026-11-02-公开板审查/{{BOARD_ID}}/round-report.md` 写明原因（KiCad 版本、库缺失、许可证），`findings.json` 的 `run.gate` 写 `not_run`，结束。

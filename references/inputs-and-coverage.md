@@ -103,7 +103,7 @@ DOC-V01 同时核原生图面的文字可读性。功能脚名、标签或关键
 
 项目审查目录固定为 `审查报告.md`、`审查报告.html` 加 `record/`，由 `scripts/pack_review.py` 生成：`record/` 含最终计划、结果、
 gate、`db.json`、`intent.json`、两次扫描的 lint、`manifest.json`、声明了电路时的 `circuit-candidates.json`（`--circuit-candidates`；intent 有 `circuits` 或 `circuit_decisions` 而没有它，或决定与候选、db 不符，打包失败，手画电路的旧记录不再打包），以及 `evidence/` 下被检查证据引用的计算、裁图、问题配图（`figures/`）和复审 Diff。
-原理图工程、数据手册、需求和旧审查只按路径与 SHA-256 记入 manifest，不复制；网表扫描计划快照、日志、
+原理图工程、数据手册、需求和旧审查只按路径与 SHA-256 记入 manifest，不复制；冷扫计划快照、日志、
 脚本副本等中间文件留在工作目录（例如 /tmp/codex-work/<任务>/）。最终结论引用的证据必须进 `record/evidence/`，
 不能只留在临时目录：打包时引用找不到就失败。打包的几条口径（5.2 审核 2026-10-26）：引用台账文件（`db.json`、`review-results.json`、
 `record/circuit-candidates.json` 等）的证据指向 `record/` 里那一份，不复制进 `evidence/`；引用 SR 技能目录里的文档（commodity-floors.md、定界表）

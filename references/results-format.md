@@ -16,7 +16,7 @@
 
 “资料不足”只有一个入口：先有功能判定的开放项，才有 INSUFFICIENT 的检查项。
 
-## 三、review-results.json（schema_version 14）
+## 三、review-results.json（格式版本见[架构说明 一](architecture.md#一步骤之间传的文件)）
 
 ### 顶层字段
 
@@ -382,11 +382,10 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 算出余量的方面是否已下结论；每个开放项的 `kind` 是否对（本设计要定的量不是厂家资料）、`decides` 是否只覆盖它真正决定的方面与状态、
 `severity.consequence` 是否写了这个缺口在什么工况下导致什么后果。然后逐项用实际对象上下文对照手填检查项的 `rationale` 及关联待办：
 
-这一步有七个机器信号（`quality_screening` 的疑点）；它们点出的是最常漏的几种，不是复核的全部：
+这一步有八个机器信号（`quality_screening` 的疑点）；它们点出的是最常漏的几种，不是复核的全部：
 
 - `UNIT_GLYPH_SUSPECT`：条款引的资料文本层丢了符号字体（kΩ 印成 kW、全文没有 µ，1.3 的审计给该资料记 `unit_glyphs: SYMBOL_FALLBACK`），
   这条 NUMERIC_LIMIT 的单位又是 ms、mA、mH、W、kW、MW——它可能是 µs、µA、µH、Ω。对照渲染页，在 `says` 写明核过（含“核过原图”“误码”“实为”或 µ 字样的 says 不再提示），或改单位。
-  R7 的一份记录把 22.5–37.5 "ms" 的 OVP 检测延时当真，算出反馈断开后 VRAW 冲到 38 V 判了 P1；同一条款另一份记录注明误码按 µs 算，结论相反。
   校验器按结果文件所在目录解析条款的 `source`（相对路径或绝对路径，PDF 原件也读文本层）。
 - `RATING_AT_TEST_TEMP`：余量的 `limit` 是功率或电流额定（W、mW、A、mA），`regime` 只给一个 ≤ 25 °C 的温度点，`method` 却写 G1：
   额定在这个温度成立，本板环温更高时要经降额曲线或数表（G5、G7–G9 或 `conversion` 指向的换算条件）带过来，或在 `regime` 写明为什么不降额。
@@ -398,7 +397,8 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 - `QUANTITY_IMPLAUSIBLE`：限值的 `min`/`max`（两端）或余量的 `value`（只看上端：余量可以很小）换算到基本单位后超出该量纲在板级可能的范围
   （电压 1 µV–1 MV、电流 1 pA–100 kA、电阻 1 µΩ–100 TΩ、电容 1 fF–10 kF、时间 1 ps–1 Gs、温度 −273–3000 °C……，`units.SPANS`）：多半是前缀写错或文本层丢了 µ，对照渲染页改。
 - `RESULT_NARRATIVE`：`calculation.result` 超过 300 字，或带超过 8 个余量 `value`、限值 `min`/`max` 都没承载的“数字 + 单位”。结构化字段是主路径：每个比较过的量写成
-  `margin{value, unit, against, basis}` 或条款的 `limit`，`result` 只留结论句（报告只印第一句）。R7 两份 Codex 记录把 514/561 个量写在 result 里（10/13 个 result 超 300 字），余量只有 111/96 条；两份 Claude 记录 117/107 个量对 151/181 条余量。
+  `margin{value, unit, against, basis}` 或条款的 `limit`，`result` 只留结论句（报告只印第一句）。
+- `FAILING_RESULT_SAYS_HOLDS`（2026-10-27）：功能有失败项，`calculation.result` 却只说哪些成立。功能表把 result 印在“不合格”旁边，先写失败了什么。
 
 4.2 证据不足的分类另有自己的提示：`DOWNSTREAM_RECORDED_AS_DESIGN_GAP` 除了读检查项的缺口文字，还读 VENDOR_DATUM 开放项的
 `closure`、`acquisition`、`why_insufficient`——写了实测、样机、样品、仿真作为关闭路径的（“随后/留给……”分句已分出下游部分，不算），厂家保证值和样机才能测是两档，

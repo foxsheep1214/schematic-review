@@ -2,7 +2,7 @@
 
 > 读者：审查员。
 
-审查数据分四份文档：[intent 格式](intent-format.md)（`intent.json`，按需求和设计结果写，不抄设计方的意图文件）、[计划格式](plan-format.md)（`review-plan.json`）、[结果格式](results-format.md)（`review-results.json`）、[校验与重新审查](gate-and-rerun.md)（门禁输出与规则指纹）。计划只决定每项的规则、适用性和准备度，不提前制造 PASS/FAIL；结果另存，由 `validate_review.py` 对账。常规命令见 [SKILL.md](../SKILL.md)。
+四份格式文档（intent、计划、结果、校验）的分工见[结果格式](results-format.md)开头。
 
 ## 一、intent.json（schema_version 5）
 
@@ -98,7 +98,7 @@
 - `derating`：项目降额等级 `{level: I/II/III, source: req:<需求编号> 或 clarification:<已答复的澄清编号>}`，需求没写时按需求澄清问用户；
   计划照抄，点名降额规则的应力余量按它核（[器件应力规范](shared/stress-spec.md)）。
 - 可选 `open_pins` `[{node, state, citation}]`：用户确认的悬空输入，NET-A07/RST-A04 降为 INFO（手册写明开路状态的扫描自己读出）；
-  可选 `boundary_nets` `[{net, to, contract}]`：照抄 ASG 设计网表的离板网，NET-A08 核其标签。
+  可选 `boundary_nets` `[{net, to, contract}]`：离板网，取自需求或接口表并写出处，NET-A08 核其标签。
 - `interfaces`（可选）：对外连接器的暴露等级 `{"J801": {"exposure": "via_box_connector", "citation": "E-IF-01 接口表"}}`，`exposure` 取 `in_box`（箱内）、`via_box_connector`（经航插出箱）、`exposed`（直接暴露），`citation` 引需求或接口表。PRO-E02 按它取浪涌：箱内的不取外部浪涌需求；出箱的按需求 `surge_voltage` 参数的幅值与耦合方式取源阻抗（差模 2 Ω、共模 12 Ω），钳位件入表时给 IPP 与钳位电压初算；钳位网上的连接器没声明时照原逻辑，计划行标“需人判：端口暴露等级”。需求给了允许热插入的负载电容时写 `load_capacitance` 参数，PWR-A08 用它代替示例值。
 - `guideline_baseline`：产品基线，默认工业/通信板卡不写；需求写明航天、军用时写 `aerospace`/`military`。
 - `mission_profile`：所有寿命检查项共用的一份任务剖面
@@ -152,6 +152,8 @@
   合并扫描前 `power_rails` 仍为空却有 DEV-C01/PWR-C10 项，属审查准备未完成，先补齐再录结论。
 - 条件导通另可声明 `power_sources`（某状态的供入节点）与 `power_paths`（某状态可导通的方向，不是理想短路或载流声明），
   不得把未上电的稳压器或端口标成 source 来消除告警。
+  写了这两项就必须写 `active_state`（二极管/MOS 只按该态的导通方向跨越）。
+- `review_sources`、`review_dependencies`：见[改版复审](revision-review.md)。
 - 各检查器的 intent 段（`i2c_topology`、`decoupling`、`device_kinds` 等）见 [自动检查](automation.md)。
   `device_kinds` 也覆盖集成电路：每颗 IC 声明手册标题给出的角色（角色登记表 `catalog.DEVICE_ROLES`，见
   [检查目录·器件角色](check-catalog.md#器件角色)；标题没有任何登记角色的写泛称 ic，计划列成 `DEVICE_KIND_GENERIC` 诊断），

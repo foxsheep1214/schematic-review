@@ -2,7 +2,7 @@
 
 > 读者：审查员。
 
-审查数据分四份文档：[intent 格式](intent-format.md)（`intent.json`，按需求和设计结果写，不抄设计方的意图文件）、[计划格式](plan-format.md)（`review-plan.json`）、[结果格式](results-format.md)（`review-results.json`）、[校验与重新审查](gate-and-rerun.md)（门禁输出与规则指纹）。计划只决定每项的规则、适用性和准备度，不提前制造 PASS/FAIL；结果另存，由 `validate_review.py` 对账。常规命令见 [SKILL.md](../SKILL.md)。
+四份格式文档（intent、计划、结果、校验）的分工见[结果格式](results-format.md)开头。
 
 ## 四、校验与门禁输出
 
@@ -11,7 +11,7 @@
 - 退出 0 表示台账有效（结论 NO_GO 也可正常交付）；2 表示台账有错。冻结门加 `--require-release`，NO_GO 也退出 2。
 - 校验只证明记录一致，不验证来源文字真实、计算合理或判据穷尽。空计划、遗漏对象、C 写 PASS、NA 冲突、
   无位置/改法、虚假汇总、陈旧规则指纹均被拒绝。
-- **自动扫描发现即计划检查**：冷检每条 FINDING/CANDIDATE 在计划里自成一项（id 形如
+- **自动扫描发现即计划检查**：冷扫每条 FINDING/CANDIDATE 在计划里自成一项（id 形如
   `PWR-A01.AUX-DC-b17ec0`，判据为“规则名：发现原文”），像其他检查一样写结论；INFO 进计划
   `diagnostics`（`LINT_INFO`），不计疑点。两次 `--lint` 提供两次扫描的 JSON，
   校验核对每条发现都有计划检查项；结果不再写 `lint_reviews`。仅 PDF 模式明确 NA 并留依据。
@@ -28,8 +28,7 @@
 
 ## 五、规则指纹与重新审查
 
-计划写入 `review_engine`：SKILL.md、`references/` 与 `scripts/` 的逐文件 SHA256 及总摘要（含未提交修改，
-排除测试、缓存、隐藏文件、`.pyc` 和 `~` 备份）。任何规则文字修改都会改变指纹。
+计划写入 `review_engine`（规则指纹）；哪些文件、怎样计入见 [架构说明](architecture.md#四规则维护) 的工程规则身份一条。受控规则文字修改会改变指纹。
 
 - 指纹变化后以当前输入重新生成计划并完整审查；旧 PASS、旧缺口列表不能代替本轮判断。
 - 两次扫描的结果合并只接受同一指纹；CLI 校验要求当前指纹。

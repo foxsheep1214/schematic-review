@@ -2,9 +2,9 @@
 
 > 读者：审查员。
 
-审查数据分四份文档：[intent 格式](intent-format.md)（`intent.json`，按需求和设计结果写，不抄设计方的意图文件）、[计划格式](plan-format.md)（`review-plan.json`）、[结果格式](results-format.md)（`review-results.json`）、[校验与重新审查](gate-and-rerun.md)（门禁输出与规则指纹）。计划只决定每项的规则、适用性和准备度，不提前制造 PASS/FAIL；结果另存，由 `validate_review.py` 对账。常规命令见 [SKILL.md](../SKILL.md)。
+四份格式文档（intent、计划、结果、校验）的分工见[结果格式](results-format.md)开头。
 
-## 二、review-plan.json（schema_version 7）
+## 二、review-plan.json（格式版本见[架构说明 一](architecture.md#一步骤之间传的文件)）
 
 检查项带 `owner`、`check_key` 和 `requires`，计划带所属表 `owners` 和接口 `interfaces`，功能框架带 `not_asked`；电路检查项只在网表上有它问的机制时生成
 （见下文“电路规则的前提”）。更早格式的计划（含据它写的结果）不再读，
@@ -12,7 +12,7 @@
 
 ### 生成与合并
 
-- 网表扫描 `lint.py --plan-json review-plan-cold.json` 保存计划和候选；审查者要补的检查登记到 `intent.rule_gaps` 后重新生成，计划工具没写的检查项（自动扫描检查项与改版记录以外）在合并和校验时都被拒。
+- 冷扫 `lint.py --plan-json review-plan-cold.json` 保存计划和候选；审查者要补的检查登记到 `intent.rule_gaps` 后重新生成，计划工具没写的检查项（自动扫描检查项与改版记录以外）在合并和校验时都被拒。
 - intent 声明电路时两次扫描都带 `--candidates record/circuit-candidates.json`；计划顶层 `circuit_candidates` 记候选文件的 `db_sha256`、`rules_version`、候选编号、决定和未归属器件，
   功能框架的 objects 直接取电路（即候选经决定后的）成员；候选文件随计划一起打包（`pack_review.py --circuit-candidates`）。
 - 合并扫描 `--merge-plan review-plan-cold.json --plan-json review-plan.json` 产生**唯一最终计划**。

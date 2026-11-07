@@ -7,8 +7,7 @@
 - 全部检查按 [规则总表](references/check-catalog.md) 编号（`内容域-方式序号`，如 `PWR-E01`），11 个内容域、8 种检查方式；
   DDR、USB、电源保护等功能以“功能电路”组织，确认实际用途后逐电路、逐工况展开。
 - 判“证据不足”前先用已有参数定界，规则见 [最小充分证据](references/evidence-proportionality.md)。
-- ASG 交付带核心器件选型记录和意见归因时，用 `scripts/review_selection.py` 独立复核，见 [选型与归因复核](references/selection-review.md)。
-  SR 自己的改动按 [改进台账](docs/improvement-ledger.md) 记事件来源与归因，`scripts/check_ledger.py` 检查最新条目。
+- SR 自己的改动按 [改进台账](docs/improvement-ledger.md) 记事件来源与归因，`scripts/check_ledger.py` 检查最新条目。
 
 ## 使用与安装
 
@@ -42,5 +41,4 @@ MIT License，见 [LICENSE](LICENSE)。
 
 ## 共用层更新入口
 
-共用工程判据由硬件设计规范的 `工具/guideline_criteria.py release` 发布，再用 `install --target <选定worktree>` 从同一正式包安装；维护源在规范 `准则登记/`、`共用层/` 和 `工具/`，技能内不得编辑共用载荷。安装路径与 import 不变。
-当前机制与完整清单见 [共用层说明](references/shared/shared-layer.md)，迁移验收见 [迁移记录](docs/shared-release-migration.md)。本地测试只核自己的固定发布包；工程指纹采用包内声明的格式。外部评测显式指定 --guideline-release，现行用法见评测集 发布绑定.md。M0–M6 迁移总验收见硬件设计规范维护目录。
+共用判据（共用规范 G01–G10：G01–G09 设计准则、G10 降额与应力规范）由硬件设计规范发布、按固定版本安装，技能内不得编辑共用文件。技能里有哪些共用文件、谁读、指纹怎么算见 [共用层说明](references/shared/shared-layer.md)；维护源（规范 `准则登记/`、`规范正文/G10_元器件降额与应力规范/`、`工具/`（含 `包说明/`））与发布、安装流程见硬件设计规范 `README.md`。
