@@ -16,7 +16,8 @@ fetch = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fetch)
 sys.path.insert(0, str(ROOT / 'evals'))
 import eval_set  # noqa: E402
-BOARDS = eval_set.root() / '公开真实板'
+BOARDS = eval_set.board_library()
+REVIEW = eval_set.records() / 'SR/2026-11-02-公开板审查'
 needs_set = pytest.mark.skipif(not eval_set.available(), reason='电路评测集不在本机')
 
 
@@ -169,7 +170,7 @@ def test_catalog_contains_100_distinct_pinned_qualified_boards():
 def test_lanes_partition_catalog_and_spread_types_and_workload():
     from collections import Counter
     boards = {b['id']: b for b in json.loads((BOARDS / 'catalog.json').read_text())['boards']}
-    lanes = [json.loads((BOARDS / '_lanes' / ('lane-%d.json' % i)).read_text()) for i in range(1, 5)]
+    lanes = [json.loads((REVIEW / '_lanes' / ('lane-%d.json' % i)).read_text()) for i in range(1, 5)]
     assert [lane['lane'] for lane in lanes] == ['lane-1', 'lane-2', 'lane-3', 'lane-4']
     assert all(len(lane['boards']) == 25 for lane in lanes)
     assigned = [bid for lane in lanes for bid in lane['boards']]

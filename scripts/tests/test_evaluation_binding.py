@@ -85,7 +85,7 @@ def test_variant_clears_test_overrides_and_checks_actual_plan(monkeypatch, tmp_p
         (tmp_path / 'plan.json').write_text(json.dumps(dict(guidelines=identity)))
         (tmp_path / 'hits.json').write_text('{}')
     monkeypatch.setattr(runner.subprocess, 'run', process)
-    case = dict(id='c', family='f', test_points=[])
+    case = dict(id='c', family='f', category='通信接口', test_points=[])
     result = runner.run_variant(case, 'v', {'netlist': 'v.xml'}, tmp_path, 'commit', {'guidelines': identity})
     assert result['evaluation']['guidelines'] == identity
     assert len(calls) == 2

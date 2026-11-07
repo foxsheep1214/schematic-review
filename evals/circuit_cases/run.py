@@ -45,7 +45,7 @@ def raised(plan, hits, rules, refs):
 
 
 def run_variant(case, name, variant, directory, commit, evaluation):
-    source = eval_set.root() / '案例' / case['family'] / case['id'] / variant['netlist']
+    source = eval_set.root() / '案例' / case['category'] / case['id'] / variant['netlist']
     work = Path(directory)
     env = dict(os.environ)
     env.pop('GUIDELINE_CRITERIA', None)

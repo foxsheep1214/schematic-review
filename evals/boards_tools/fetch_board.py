@@ -17,7 +17,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'evals'))
 import eval_set  # noqa: E402
-CATALOG = eval_set.root() / '公开真实板' / 'catalog.json'
+CATALOG = eval_set.board_library() / 'catalog.json'
 
 
 class FetchError(RuntimeError):

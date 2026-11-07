@@ -10,7 +10,9 @@ while [ $# -gt 0 ]; do case "$1" in
   --model) MODEL=$2; shift 2;; --effort) EFFORT=$2; shift 2;; --max) MAX=$2; shift 2;; --merge-from) MERGE_FROM=$2; shift 2;; *) echo "unknown $1"; exit 2;; esac; done
 ROOT=$(git rev-parse --show-toplevel) || exit 1
 cd "$ROOT"
-SET=${CIRCUIT_EVAL_SET:-$HOME/Documents/知识库/HardwareWiki/原理图设计规范/评测集}/公开真实板
+# 板子原件与目录在评测集 来源/公开板库/；审查产出与流水线记忆写评测记录（REVIEW 可改）。
+EVAL=${CIRCUIT_EVAL_SET:-$HOME/Documents/知识库/HardwareWiki/原理图设计规范/评测集}
+SET=${REVIEW:-${CIRCUIT_EVAL_RECORDS:-${EVAL:h}/评测记录}/SR/2026-11-02-公开板审查}
 LOGDIR=${LOGDIR:-$HOME/.cache/sr-boards/_logs/$LANE}; mkdir -p "$LOGDIR" "$SET/_lanes/$LANE"
 TEMPLATE=evals/boards_tools/board-prompt.md
 BOARDS=$(python3 -c "import json,sys; print('\n'.join(json.load(open('$SET/_lanes/$LANE.json'))['boards']))") || exit 1
