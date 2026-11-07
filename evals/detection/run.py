@@ -224,7 +224,6 @@ def main(argv=None):
                   ('guideline-criteria.json', library), ('seeded corpus.json', ROOT / 'evals/seeded_bench/corpus.json'),
                   ('typical cases.json', ROOT / 'evals/typical_circuits/cases.json'),
                   ('improvement-ledger.md', ROOT / 'docs/improvement-ledger.md')]
-        inputs += [(str(p.relative_to(ROOT)), p) for p in sorted((ROOT / 'docs/audits').glob('*.md'))]
         provenance = [(name, hashlib.sha256(path.read_bytes()).hexdigest()) for name, path in inputs]
         replay_data = read(replay)
         imported = read(ROOT / 'evals/input_bench/validation-2026-10-07.json')['import_after']

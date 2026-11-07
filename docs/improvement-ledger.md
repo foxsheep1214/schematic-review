@@ -4,8 +4,7 @@ Every entry ends with three lines the test suite checks
 (`scripts/check_ledger.py`): `Event:` the review item, datasheet page, test
 record or user correction that caused the change; `Causes:` how many items
 fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
-knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
-file existed are in `docs/audits/` (historical snapshots, not current rules). A fourth line, `Gates:`, gives the pytest
+knowledge_wrong, judgment); `Changed:` the files touched. A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
@@ -14,6 +13,14 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+
+## 删除旧条文审计（2026-11-07）
+
+用户：以后升级比较用新的审计数据。删除 docs/audits/ 两份 2026-10-07 审计快照；电路评测集 `已知缺陷/known_defects.json` 删去依据它们的 10 条 `rule_audit` 记录（caught 均为 unknown，不是已确认电气缺陷），已知缺陷 56→46，此前的检测汇总不与之后直接比较；`evals/detection/run.py` 不再把 docs/audits 计入输入哈希。
+
+- Event: user:2026-11-07（SR 的两份审计文档及评测集里依赖它们的 10 条 rule_audit 一并删除）
+- Causes: judgment 1
+- Changed: evals/detection/run.py, evals/detection/README.md, docs/improvement-ledger.md
 
 ## ASG/SR/规范源矛盾清理（2026-11-07）
 
