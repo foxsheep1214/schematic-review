@@ -261,13 +261,7 @@ VENDOR_DATUM 写 `checked`（查过的条款 id）、
 REVIEW_INCOMPLETE 本轮自己做完。字段全表见
 [功能判定](results-format.md#功能判定functions)。
 
-设计没定的乙写成条件，不开项（甲是失败项）：
-
-```json
-{"id": "c6", "kind": "DESIGN_CONSTRAINT", "source": "evidence/engineering.md", "locator": "claim BIAS-VCCMIN",
- "says": "T1 辅助绕组 5 V 空载最低峰值 ≥ 13.5 V", "limit": {"min": 13.5, "unit": "V"},
- "regime": "5 V 空载、−10..105 °C", "owner": "磁件设计", "handoff": 0, "use": "辅助绕组最低峰值取约束下限"}
-```
+设计没定的乙写成 DESIGN_CONSTRAINT 条件，不开项（甲是失败项），写法见[功能判定](results-format.md#功能判定functions)的示例。
 
 - 功能的 `calculation` 和 `conditions` 写哪个判断因缺口不能成立；已有事实与未知边界分开，不泛称“影响安全”。
 - `scope`：所需数值范围、单位、模式、版本、对象、工况或状态；只索取能改变该判据的条件，
