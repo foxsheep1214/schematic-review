@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rows follow their function verdict (docs/2026-10-20-function-verdicts-design.md §5).
+"""Rows follow their function verdict (architecture.md 2026-10-20; references/results-format.md).
 
     python3 scripts/derive_rows.py review-plan.json review-results.json
 

@@ -1,3 +1,5 @@
+> 历史快照（2026-10-07），不代表现行规则；现行规则见 references/check-catalog.md 与 review-charter.md。
+
 # 模块审查范围判例回放（2026-10-07）
 
 ## 方式与限度

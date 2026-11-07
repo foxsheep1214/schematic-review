@@ -1,4 +1,4 @@
-"""What settles a part's kind (decisions 2026-10-27, docs/2026-10-26-part-kind-evidence.md).
+"""What settles a part's kind (decisions 2026-10-27, architecture.md and the ledger).
 
 A1/A1b: twelve kinds, every IC role and every multi-winding magnetic need a verified datasheet declaration; magnetics
 are told apart by what they do (common-mode choke, coupled inductor, transformer). A2/A3: the classifier's final kind

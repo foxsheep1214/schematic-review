@@ -1,3 +1,5 @@
+> 历史快照（2026-10-07），不代表现行规则；现行规则见 references/check-catalog.md 与 review-charter.md。
+
 # SR 目的与纲要对齐审计（2026-10-07）
 
 ## 结论

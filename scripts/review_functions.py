@@ -1,4 +1,4 @@
-"""Function verdicts: the unit of judgement (docs/2026-10-20-function-verdicts-design.md, §4 and §7).
+"""Function verdicts: the unit of judgement (architecture.md 2026-10-20; references/results-format.md).
 
 A function verdict answers one question about one circuit block. Before it may leave anything open
 it must have listed the datasheet clauses that bear on the question (F1), kept a design value as a

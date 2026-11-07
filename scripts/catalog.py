@@ -1657,7 +1657,7 @@ CONSEQUENCE_WORDS = OrderedDict((('REQUIRED_FUNCTION', '功能'), ('PERFORMANCE_
 
 _EP = 'evidence-proportionality.md'
 _WCA = 'wca-formulas.md'   # 器件参数定界口径（2026-10-27 从 evidence-proportionality 移来）
-_CB = 'docs/2026-10-26-cell-boundary.md'
+_CB = '定界表扩表决定（architecture.md 2026-10-26）'
 _IC_ROLES = tuple(DEVICE_ROLES)      # 器件角色登记表的全部角色，含泛称 ic
 _M = ('MEASURABLE',)
 _T = ('TYPE_TEST',)
@@ -1756,13 +1756,13 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           'TYPICAL_BY_DEFINITION', (), ('COMPONENT_DAMAGE', 'DAMAGE_OR_HAZARD'), _T, '不估算；热态阻值按 0 Ω（“按 0 Ω 定结论”）'),
     # 3.6b 压敏电阻（2026-10-26 扩表：R7 板 RV101 词表认不出）
     Bound('VAR-UC', ('varistor',), '最大持续工作电压 Uc', 'LOWER', '环境温度（额定温度以上降额）', 'DECREASING', (('G1', ()), ('G2', ())),
-          'VENDOR_DATUM', 'docs/2026-10-26-cell-boundary.md 扩表记录',
+          'VENDOR_DATUM', '定界表扩表决定（architecture.md 2026-10-26）',
           'GUARANTEED', (), ('DAMAGE_OR_HAZARD',), _M, '不估算：母线最高持续电压（含容差、过压）不超过 Uc 保证值，超额定温度按降额曲线；长期超 Uc 是热失控的安全后果'),
     Bound('VAR-VC', ('varistor',), '钳位（残）电压上界', 'UPPER', '浪涌电流（8/20 µs 同一波形）', 'INCREASING', (('G1', ()), ('G2', ())),
-          'VENDOR_DATUM', 'docs/2026-10-26-cell-boundary.md 扩表记录',
+          'VENDOR_DATUM', '定界表扩表决定（architecture.md 2026-10-26）',
           'TEST_POINT', (), ('COMPONENT_DAMAGE',), _T, '不估算；缺本板浪涌电流对应的保证值时按额定电流处 Vc max 判下游耐受'),
     Bound('VAR-SURGE', ('varistor',), '最大浪涌电流 / 能量（按次数降额）', 'LOWER', '脉冲次数与波形', 'DECREASING', (('G1', ()), ('G2', ())),
-          'VENDOR_DATUM', 'docs/2026-10-26-cell-boundary.md 扩表记录',
+          'VENDOR_DATUM', '定界表扩表决定（architecture.md 2026-10-26）',
           'GUARANTEED', (), ('DAMAGE_OR_HAZARD',), _T, '不估算：需求浪涌等级与次数对降额曲线取保证值；寿命走 DEV-C06 VARISTOR'),
     # 3.7 无源件
     Bound('RES-POWER', ('resistor',), '电阻功率、脉冲、TCR 与耐压', 'UPPER', '温度与脉宽', None, (('G1', ()), ('G5', ())),

@@ -20,7 +20,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
   `estimate_factor`（等于格的倍数）、`handoff`，格给了余量下限的还要满足它；DAMAGE_OR_HAZARD、CORE_LINK_LOSS 任何格都不估算；`cell: NONE` 走默认（只许功能/性能后果，
   损坏/过热/保护类规则不估算）并记 NEW_BOUND_CELL 待扩项（`GUARANTEED_LIMIT`、点不出器件、该类器件已有格、只服务寿命检查项的不记）。可得性为“行业不给”的格，开放项写向厂家索取出 `UNOBTAINABLE_DATUM` 提示。
   表是可增长的：审查里遇到词表没有的器件类别（NEW_DEVICE_KIND）或有类别没有格的参数（NEW_BOUND_CELL），门禁记进 `sr_improvements`，报告在“对 SR 的反馈”下列出，
-  扩表时补齐五列并加测试。决定记录见 docs/2026-10-26-cell-boundary.md。
+  扩表时补齐五列并加测试。决定见架构说明 2026-10-26 一行与台账。
 - **风险标签（2026-10-26，用户：三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列，关键参数表在定界表上扩）**：
   本表兼作各类器件的关键参数表，先逐颗器件按格比参数再下功能结论。靠估算过关的角点是“合格，但有风险”，余量写 `risk{types, corner, improvement}`，
   `types` 取“估算对应的风险”列（`NONE` 任选环境适应性、寿命、一致性）。哪种余量判风险见[余量判定规则](margin-verdicts.md)，字段见结果格式。
@@ -91,9 +91,9 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `OPTO-CTR` | opto | CTR 随 IF 和温度 | LOWER | 输入电流 IF 与温度 / NONMONOTONIC | G1；G7（`ratio_extrapolation`） | `VENDOR_DATUM` | evidence-proportionality.md“身份冲突与身份分支”（取最低档） |
 | `NTC-SENSE` | ntc | 检测用 NTC 的 R(T) | — | 温度 / DECREASING | G5（`ntc_table_bound`、`ntc_beta_bound`） | `BOUNDED` | 本表“几条口径”检测用 NTC；datasheets.md“公开曲线表先于索取” |
 | `NTC-INRUSH-HOT` | ntc | 浪涌限制 NTC 热态重新接入 | LOWER | 热态 / — | G6（`inrush_peak_current`、`inrush_i2t`） | `BOUNDED` | 本表“几条口径”浪涌限制 NTC |
-| `VAR-UC` | varistor | 最大持续工作电压 Uc | LOWER | 环境温度（额定温度以上降额） / DECREASING | G1；G2 | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md 扩表记录 |
-| `VAR-VC` | varistor | 钳位（残）电压上界 | UPPER | 浪涌电流（8/20 µs 同一波形） / INCREASING | G1；G2 | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md 扩表记录 |
-| `VAR-SURGE` | varistor | 最大浪涌电流 / 能量（按次数降额） | LOWER | 脉冲次数与波形 / DECREASING | G1；G2 | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md 扩表记录 |
+| `VAR-UC` | varistor | 最大持续工作电压 Uc | LOWER | 环境温度（额定温度以上降额） / DECREASING | G1；G2 | `VENDOR_DATUM` | 定界表扩表决定（architecture.md 2026-10-26） |
+| `VAR-VC` | varistor | 钳位（残）电压上界 | UPPER | 浪涌电流（8/20 µs 同一波形） / INCREASING | G1；G2 | `VENDOR_DATUM` | 定界表扩表决定（architecture.md 2026-10-26） |
+| `VAR-SURGE` | varistor | 最大浪涌电流 / 能量（按次数降额） | LOWER | 脉冲次数与波形 / DECREASING | G1；G2 | `VENDOR_DATUM` | 定界表扩表决定（architecture.md 2026-10-26） |
 | `RES-POWER` | resistor | 电阻功率、脉冲、TCR 与耐压 | UPPER | 温度与脉宽 / — | G1；G5 | `VENDOR_DATUM` | commodity-floors.md 片式电阻 |
 | `MLCC-EFFECTIVE-C` | capacitor | MLCC 有效容量（偏压、温度、老化） | LOWER | 直流偏压与温度 / DECREASING | G1；G2；G5（`table_interpolate`）；G8 | `VENDOR_DATUM` | commodity-floors.md MLCC；wca-formulas.md |
 | `ECAP-ESR-RIPPLE` | electrolytic | 电解 ESR 与纹波电流（温度、频率系数表） | — | 温度与频率 / NONMONOTONIC | G1；G5（`table_interpolate`）；G9 | `VENDOR_DATUM` | commodity-floors.md 电解 |
@@ -106,9 +106,9 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `IC-IO-CURRENT` | ic 及各 IC 角色 | IO 灌/拉电流超出规定 | UPPER | 负载电流 / — | G1；G10 | `OUTSIDE_SPECIFIED` | evidence-proportionality.md“手册的情况按四档判” |
 | `IC-PIN-ABSMAX` | ic 及各 IC 角色 | 引脚瞬态电压/注入电流对绝对最大额定 | UPPER | 瞬态源与串联阻抗 / — | G1 | `OUTSIDE_SPECIFIED` | 钳位规则（architecture.md 2026-10-25，B3 a） |
 | `IC-RECOMMENDED` | ic 及各 IC 角色 | 推荐工作条件（绝对最大额定只算损坏边界） | — | 工作条件 / — | G1 | `OUTSIDE_SPECIFIED` | DEV-C05 |
-| `CAP-SURGE-V` | capacitor、electrolytic | 浪涌/瞬态时电容电压对额定电压 | UPPER | 浪涌电荷与回路阻抗 / INCREASING | G1；G2；G5；G6 | `OUTSIDE_SPECIFIED` | docs/2026-10-26-cell-boundary.md |
-| `MOS-DISCHARGE-I2T` | mosfet | 短路放电峰流与 I²t 对脉冲能力 | UPPER | 回路阻抗 / DECREASING | G2；G5；G6 | `OUTSIDE_SPECIFIED` | docs/2026-10-26-cell-boundary.md |
-| `IC-GATE-DRIVE-I` | mosfet | 栅极驱动平均电流 Qg·f 对偏置供给 | UPPER | 开关频率与 VGS / INCREASING | G1；G2；G9（`typical_band`） | `VENDOR_DATUM` | docs/2026-10-26-cell-boundary.md |
+| `CAP-SURGE-V` | capacitor、electrolytic | 浪涌/瞬态时电容电压对额定电压 | UPPER | 浪涌电荷与回路阻抗 / INCREASING | G1；G2；G5；G6 | `OUTSIDE_SPECIFIED` | 定界表扩表决定（architecture.md 2026-10-26） |
+| `MOS-DISCHARGE-I2T` | mosfet | 短路放电峰流与 I²t 对脉冲能力 | UPPER | 回路阻抗 / DECREASING | G2；G5；G6 | `OUTSIDE_SPECIFIED` | 定界表扩表决定（architecture.md 2026-10-26） |
+| `IC-GATE-DRIVE-I` | mosfet | 栅极驱动平均电流 Qg·f 对偏置供给 | UPPER | 开关频率与 VGS / INCREASING | G1；G2；G9（`typical_band`） | `VENDOR_DATUM` | 定界表扩表决定（architecture.md 2026-10-26） |
 
 ### 判决边界
 

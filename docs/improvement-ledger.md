@@ -5,7 +5,7 @@ Every entry ends with three lines the test suite checks
 record or user correction that caused the change; `Causes:` how many items
 fell in each cause class (rule_missing, rule_not_enforced, knowledge_missing,
 knowledge_wrong, judgment); `Changed:` the files touched. Entries before this
-file existed are in `docs/audits/`. A fourth line, `Gates:`, gives the pytest
+file existed are in `docs/audits/` (historical snapshots, not current rules). A fourth line, `Gates:`, gives the pytest
 count (it includes the rule contracts, the KiCad replay and the typical
 circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
