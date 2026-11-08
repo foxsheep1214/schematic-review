@@ -657,6 +657,9 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         self.plan_owned_parts()
         rule_gaps.plan(self)
         self.plan_stress_conditions()
+        # REQ-Q09 rows are planned rows too: the gate rebuilds the plan with generate() alone, so they belong here
+        # (PoE node 2026-11-07: built after generate(), the gate read them as reviewer additions)
+        self.plan_guideline_batches()
 
 
     def build(self):
@@ -717,7 +720,6 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
             self.diagnostics.append(dict(conflict, detail='参考地分区按地的直流连通推导；与 power_rails.<网>.domain 的声明不一致，改声明或改网表'))
         for line in requirement_clarifications.pending_errors(self.intent):   # printed by the cold scan of step ①
             self.diagnostics.append({'code': 'CLARIFICATION_PENDING', 'detail': line})
-        self.plan_guideline_batches()
         self.checks.sort(key=lambda x: x['id'])
         self.plan_rules()
         self.rule_plan.sort(key=lambda x: x['rule'])

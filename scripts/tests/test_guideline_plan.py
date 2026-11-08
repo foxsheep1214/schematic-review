@@ -105,6 +105,25 @@ class GuidelinePlanTests(unittest.TestCase):
         row = next(c for c in plan['checks'] if c['id'] == 'REQ-Q09.HANDOFF.BOARD')
         self.assertEqual(row['readiness'], 'READY')
 
+    def test_the_gate_rebuild_writes_the_same_batch_rows(self):
+        # PoE node 2026-11-07: the rows were written after generate(), so the gate's rebuild lacked them and called
+        # them reviewer additions; the rebuild has to write them, unchanged
+        from revision_impact import check_spec
+        library = self.batch_library()
+        with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}), mock.patch.object(guideline_criteria, 'load', lambda *args: library), \
+                mock.patch.object(catalog, 'BASIS', {}):
+            plan = plan_for()
+            inputs, summary = plan['review_inputs'], plan.get('circuit_candidates')
+            candidates = ({'candidates': [], 'unassigned': [{'ref': r} for r in summary.get('unassigned') or []]}
+                          if isinstance(summary, dict) else None)
+            planner = plan_review.ReviewPlanner(fx.board(), inputs['intent'], plan.get('review_mode'),
+                                                datasheet_audit=inputs['datasheet_audit'], candidates=candidates)
+            planner.generate()
+        planned = {c['id']: check_spec(c) for c in plan['checks'] if c['rule'] == 'REQ-Q09'}
+        rebuilt = {c['id']: check_spec(c) for c in planner.checks if c['rule'] == 'REQ-Q09'}
+        self.assertEqual(sorted(planned), ['REQ-Q09.HANDOFF.BOARD', 'REQ-Q09.PROJECT-INPUT.BOARD'])
+        self.assertEqual(planned, rebuilt)
+
     def test_a_library_without_batch_rules_adds_no_row_and_no_keys(self):
         plan = self.plan({'DOC-Q01': ('G01-001',)})
         self.assertFalse([c for c in plan['checks'] if c['rule'] == 'REQ-Q09'])
@@ -205,7 +224,9 @@ class GuidelineGateAndReportTests(unittest.TestCase):
         with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}), mock.patch.object(guideline_criteria, 'load', lambda *args: library):
             lines = render_report.render_guidelines({'guidelines': section})
         self.assertEqual(lines.count('### 由需求基线回答的设计准则'), 1)
-        self.assertEqual(lines.count('### 进下游交接清单的设计准则'), 1)
+        self.assertEqual(lines.count('### 要列进交接清单的设计准则'), 1)
+        # PoE node 2026-11-07: the heading said 下游 and pack_review refused the report's own wording
+        self.assertEqual([w for title, intro in render_report.BATCH_TABLES.values() for w in render_report.jargon_in(title + intro)], [])
         self.assertIn('| G08-001 | RS-485 共模范围 | 原理图 |', lines)
         self.assertIn('| G07-001 | RS-485 共模范围 | PCB |', lines)
         self.assertEqual([l for l in lines if l.startswith('| G08-001') or l.startswith('| G07-001')],

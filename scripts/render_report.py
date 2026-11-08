@@ -774,7 +774,7 @@ STAGE_WORDS = {'schematic': '原理图', 'pcb': 'PCB', 'simulation': '仿真', '
 
 # Rules covered in bulk (user 2026-11-04), one table per class; the REQ-Q09 row of the class answers them.
 BATCH_TABLES = {'project_input': ('由需求基线回答的设计准则', '本次只核需求基线或需求澄清记录是否写明；逐条回答在 REQ-Q09 那一项。'),
-                'handoff': ('进下游交接清单的设计准则', '本次只核交接清单是否列出，不核 PCB、EMC、热设计验收；逐条位置在 REQ-Q09 那一项。')}
+                'handoff': ('要列进交接清单的设计准则', '本次只核交接清单是否列出，不核 PCB、EMC、热设计验收；逐条位置在 REQ-Q09 那一项。')}
 
 
 def guideline_cards(plan):

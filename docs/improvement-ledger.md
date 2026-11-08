@@ -14,6 +14,15 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+## 门禁重建计划漏掉 REQ-Q09 行（2026-11-07）
+
+PoE 传感节点首审（ASG 整板评测基线）：536 条检查写完，门禁仍报 `REQ-Q09.HANDOFF.BOARD`、`REQ-Q09.PROJECT-INPUT.BOARD` 不是计划工具写的。原因是 `plan_guideline_batches()` 在 `build()` 里、`generate()` 之后才写这两行，而门禁重建计划只调 `generate()`，于是把它们当成审查员手加的行；intent 不变时重建也复现，与台账内容无关。改为在 `generate()` 末尾写这两行，出计划与门禁重建走同一组步骤，门禁也因此逐字核对这两行没被改过。准则范围取计划行上的电路类型，`build()` 后段加的自动扫描行和系统框架行不带电路类型，所以行的内容不变。PoE 产物按新版重出冷、热计划（536 条逐条相同，只有 `review_engine` 变），结果的 `plan_digest` 改指新计划后门禁 valid。门禁过了才第一次走到打包，又暴露报告模板自己的用词：REQ-Q09 交接类那张表的标题写“进下游交接清单的设计准则”，`pack_review` 按写法要求拒收“下游”；改为“要列进交接清单的设计准则”，测试核对两张批量表的标题与说明不含禁用词。改后 PoE 报告打包 PASS。
+
+- Event: test:评测记录/ASG/2026-11-07-wholeboard-128178e/judge/poe-sr（门禁 2 条 REQ-Q09 报错），user:2026-11-07（现在就开始修，在这个对话里进行）
+- Causes: rule_not_enforced 2
+- Changed: scripts/plan_review.py, scripts/render_report.py, scripts/tests/test_guideline_plan.py, docs/improvement-ledger.md
+- Gates: pytest 3090 passed；mutation --changed 81/81 killed
+
 ## 已知缺陷逐条复核（2026-11-07）
 
 用户：确认已知缺陷是否还存在，存在则修复并验证，不存在则删除记录；4 条已检出的保留作命中真值，删除前每条须有回归测试守着。46 条逐条核对：4 条已检出（TR1 三条、HOT-mcu-pad）回放仍检出，保留；40 条现行流程已不复现，均有针对性测试（缺的补在 test_known_defects_r5.py、test_known_defects_electrical.py）；2 条仍存在并修复：
