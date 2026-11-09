@@ -40,7 +40,15 @@ COMPOSITION_REASON_RE = re.compile(r'内部|内置|集成|构成|internal|integr
 
 
 def squash(text):
-    return re.sub(r'[^a-z0-9]', '', str(text or '').lower())
+    """Letters and digits only, full-width letters and digits folded to ASCII; Chinese characters are kept, so a
+    Chinese title can name its kind and a Chinese quote is looked for as written."""
+    return re.sub(r'[^a-z0-9\u4e00-\u9fff]', '', str(text or '').translate(FULL_WIDTH).lower())
+
+
+FULL_WIDTH = {code: code - 0xFEE0 for code in range(0xFF01, 0xFF5F)}   # ＣＲＹＳＴＡＬ, ＣＯ．，ＬＴＤ (YXC)
+
+
+CJK = re.compile(r'[\u4e00-\u9fff]')
 
 
 SHORT_CUE = 3   # squashed, "Supply Current vs" holds tvs and "Maximum Current" mcu: a cue this short is read as a word
@@ -54,7 +62,7 @@ def named_by(word, text, flat=None):
     if word == 'efuse':
         # boards-merge6 F17: "PTC Resettable Fuses" holds e-f-u-s-e across two words; an eFuse is named as its own word
         return re.search(r'(?<![A-Za-z0-9])e-?fuses?(?![a-z0-9])', str(text or ''), re.I) is not None
-    if len(word) > SHORT_CUE and word not in WORD_CUES:
+    if CJK.search(word) or len(word) > SHORT_CUE and word not in WORD_CUES:
         return word in (squash(text) if flat is None else flat)
     spaced = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', str(text or ''))
     return re.search(r'(?<![A-Za-z0-9])(?:%s(?![0-9])|(?i:%s)s?(?![a-z0-9]))' % (word.upper(), word), spaced) is not None

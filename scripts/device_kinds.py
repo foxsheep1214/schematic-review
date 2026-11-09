@@ -47,49 +47,55 @@ def _kind(name, *args, **kwargs):
     return name, DeviceKind(title, *args, **kwargs)
 
 KINDS = OrderedDict([
-    _kind('relay', (r'^K\d',), (r'RELAY|继电器',), ('relay',), wearout='RELAY', datasheet=True),
+    _kind('relay', (r'^K\d',), (r'RELAY|继电器',), ('relay', '继电器'), wearout='RELAY', datasheet=True),
     # Thermistors and varistors by the shared words; an IC refdes or a part with more than three pins never becomes one
     # by a word in its description ("charger with NTC input"). RV is also KiCad's potentiometer prefix: no prefix rule.
-    _kind('varistor', (), (VARISTOR_WORDS,), ('varistor', 'siov'), two_terminal=True, protective=True,
+    _kind('varistor', (), (VARISTOR_WORDS,), ('varistor', 'siov', '压敏电阻'), two_terminal=True, protective=True,
                             wearout='VARISTOR', datasheet=True),
-    _kind('ntc', (r'^(TH|RT|NTC)\d',), (NTC_WORDS,), ('ntcthermistor', 'thermistor', 'inrushcurrentlimiter'),
+    _kind('ntc', (r'^(TH|RT|NTC)\d',), (NTC_WORDS,), ('ntcthermistor', 'thermistor', 'inrushcurrentlimiter', '热敏电阻'),
                        two_terminal=True, passive_link=True, protective=True, datasheet=True),   # INRUSH_NTC only in the power path
     # Part-number families through family(): a vendor prefix on a family is its own entry (DESD, AUIRF).
     _kind('opto', (), (r'OPTO|光耦|' + family(
         r'PC81[07]', r'LTV-?\d', r'TLP\d', r'6N13[57]', 'HCPL', 'ACPL', r'FOD\d', 'CNY17', r'VO6\d', r'SFH6\d{2,3}',
         r'EL8\d\d', r'PS2[5-9]\d\d', r'TCMT\d', r'KPC\d', r'H11[A-Z]\d'),),
-                        ('optocoupler', 'photocoupler', 'optoisolator', 'opticallycoupled', 'opticalisolator', 'opticalcoupler'),
+                        ('optocoupler', 'photocoupler', 'optoisolator', 'opticallycoupled', 'opticalisolator', 'opticalcoupler',
+                         '光耦', '光电耦合'),
                         wearout='OPTO', datasheet=True),
     _kind('tvs', (), (r'\bTVS\b|' + family('SMAJ', 'SMBJ', 'SMCJ', 'P6KE', r'1\.5KE', r'ESD\d', 'PESD', 'DESD',
                                                         'SM712'),),
                        ('tvs', 'esdprotection', 'transientvoltagesuppress', 'transientsuppress',
-                        'surgeprotectiondevice'), two_terminal=True, protective=True,
+                        'surgeprotectiondevice',
+                        # esdsuppressor: Littelfuse AXGD1 (polymer) page 1 says only "ESD Suppressors"
+                        'esdsuppressor', 'electrostaticdischargesuppressor', '瞬态抑制', '静电保护'), two_terminal=True, protective=True,
                        datasheet=True),
-    _kind('zener', (), (r'ZENER|稳压二极管|' + family('BZX', r'BZT5\d', 'MMSZ', r'1N47\d'),), ('zener',),
+    _kind('zener', (), (r'ZENER|稳压二极管|' + family('BZX', r'BZT5\d', 'MMSZ', r'1N47\d'),), ('zener', '稳压二极管', '稳压管'),
                          two_terminal=True, datasheet=True),
     # KiCad symbol-library category of the symbol actually placed, then the part words; 2N7000/2N7002 are MOSFETs.
     _kind('bjt', (), (r'TRANSISTOR_BJT:', r'\bNPN\b|\bPNP\b|三极管|' +
                                         family(r'BC[PXW]?\d{2,3}', r'2N(?!700[02])\d{4}', 'MMBT', 'PBSS', 'S8050', 'S8550')),
-                       ('npn', 'pnp', 'bipolar'), datasheet=True),
+                       ('npn', 'pnp', 'bipolar', '三极管'), datasheet=True),
     _kind('mosfet', (r'^Q\d',), (r'TRANSISTOR_FET:|TRANSISTOR_IGBT:',
                                                  r'MOSFET|\bFET\b|NMOS|PMOS|[NP]-MOS|IGBT|' +
                                                  family('IRF', 'AUIRF', 'IRLML', r'AO\d{4}', r'BSS\d', '2N700[02]'), SI_FET_WORDS),
-                          ('mosfet', 'nchannel', 'pchannel', 'superjunction'), datasheet=True),
+                          ('mosfet', 'nchannel', 'pchannel', 'superjunction', '场效应', 'mos管'), datasheet=True),
     _kind('diode', (r'^D\d',), (r'SCHOTTKY|DIODE|二极管|' + family(r'SS\d{2}', r'BAT\d', r'1N4\d{3}', r'1N58\d'),),
-                         ('rectifier', 'diode', 'schottky'), two_terminal=True, datasheet=True),
+                         ('rectifier', 'diode', 'schottky', '二极管'), two_terminal=True, datasheet=True),
     # Multi-winding magnetics by what they do (A1b, 2026-10-27): only the datasheet tells a common-mode choke, a coupled
     # inductor and a transformer apart, so both are datasheet kinds; above the CHOKE and ferrite words.
     _kind('common_mode_choke', (), (r'COMMON[-_ ]?MODE|共模',),
-                                     ('commonmodechoke', 'commonmodefilter', 'commonmodeinductor', 'commonmodecoil'),
+                                     ('commonmodechoke', 'commonmodefilter', 'commonmodeinductor', 'commonmodecoil',
+                                      # Bourns SRF "Common Mode Chip Inductors", Würth WE-CNSW "Common Mode Line Filter"
+                                      'commonmodechipinductor', 'commonmodelinefilter', '共模'),
                                      datasheet=True),
-    _kind('coupled_inductor', (), (r'COUPLED[-_ ]?INDUCTOR|耦合电感',), ('coupledinductor',), datasheet=True),
+    _kind('coupled_inductor', (), (r'COUPLED[-_ ]?INDUCTOR|耦合电感',), ('coupledinductor', '耦合电感'), datasheet=True),
     _kind('ferrite', (r'^FB\d',), (r'FERRITE|BEAD|磁珠|' + family(r'BLM\d', r'MPZ\d'),), two_terminal=True,
                            passive_link=True),
     _kind('inductor', (r'^L\d',), (r'INDUCTOR|CHOKE|电感',), two_terminal=True, passive_link=True),
     # OSC only as a whole word: footprint names like Bosch_LGA-8 contain the letters.
     _kind('crystal', (r'^Y\d', r'^X\d'), (r'CRYSTAL|XTAL|\bOSC(?:ILLATOR)?\b|晶振|晶体',)),
-    _kind('transformer', (r'^T\d',), (r'TRANSFORMER|变压器',), ('transformer',), datasheet=True),
-    _kind('fuse', (r'^F\d',), (r'FUSE|PTC|保险',), ('fuse', 'pptc'), two_terminal=True, passive_link=True,
+    # magneticmodule: Pulse HX5164NL page 1 calls its LAN transformer only "1Gigabit Magnetic Modules"
+    _kind('transformer', (r'^T\d',), (r'TRANSFORMER|变压器',), ('transformer', 'magneticmodule', '变压器'), datasheet=True),
+    _kind('fuse', (r'^F\d',), (r'FUSE|PTC|保险',), ('fuse', 'pptc', '保险丝', '熔断器'), two_terminal=True, passive_link=True,
                         protective=True, datasheet=True),  # PTC or FUSE by its words
     _kind('battery', (r'^BT\d',), (r'(?:^|[\s:_])BATTERY\b|电池',), wearout='BATTERY', declarable=False),
     # KiCad places test pads as Connector:TestPoint*; the library entry, not the namespace, decides that this is a
@@ -110,7 +116,7 @@ KINDS = OrderedDict([
     _kind('capacitor', (r'^C\d', r'^C[XY]\d'), two_terminal=True),
     _kind('jumper', (r'^JP\d',), two_terminal=True, passive_link=True),
     _kind('switch', (r'^SW\d', r'^S\d'), wearout='SWITCH'),
-    _kind('bridge_rectifier', (r'^BR\d',), cues=('bridgerectifier',), protective=True, datasheet=True),
+    _kind('bridge_rectifier', (r'^BR\d',), cues=('bridgerectifier', '整流桥', '桥式整流'), protective=True, datasheet=True),
     _kind('ic', (r'^[UM]\d',), declarable=False, datasheet=True),   # declared by role (catalog.DEVICE_ROLES)
     _kind('unknown', declarable=False),
 ])
@@ -187,8 +193,8 @@ def errors(kinds=KINDS):
             except re.error as exc:
                 out.append('%s: %r does not compile (%s)' % (name, pattern, exc))
         for cue in kind.cues:
-            if not re.fullmatch(r'[a-z0-9]+', cue):
-                out.append('%s: cue %r must be lowercase alphanumerics with spaces removed' % (name, cue))
+            if not re.fullmatch(r'[a-z0-9\u4e00-\u9fff]+', cue):
+                out.append('%s: cue %r must be lowercase alphanumerics or Chinese with spaces removed' % (name, cue))
         if kind.wearout is not None and kind.wearout not in catalog.WEAROUT_CLASSES:
             out.append('%s: wearout %r is not a catalog.WEAROUT_CLASSES entry' % (name, kind.wearout))
         if kind.passive_link and not kind.two_terminal:

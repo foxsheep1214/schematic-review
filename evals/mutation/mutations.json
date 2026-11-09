@@ -4980,8 +4980,8 @@
   "id": "M778",
   "name": "a short datasheet cue matches inside squashed words again",
   "file": "scripts/datasheet_kinds.py",
-  "old": "    if len(word) > SHORT_CUE and word not in WORD_CUES:",
-  "new": "    if word not in WORD_CUES:"
+  "old": "    if CJK.search(word) or len(word) > SHORT_CUE and word not in WORD_CUES:",
+  "new": "    if CJK.search(word) or word not in WORD_CUES:"
  },
  {
   "id": "M779",
@@ -5057,8 +5057,8 @@
   "id": "M789",
   "name": "fuse is read inside a maker's name again",
   "file": "scripts/datasheet_kinds.py",
-  "old": "if len(word) > SHORT_CUE and word not in WORD_CUES:",
-  "new": "if len(word) > SHORT_CUE:"
+  "old": "if CJK.search(word) or len(word) > SHORT_CUE and word not in WORD_CUES:",
+  "new": "if CJK.search(word) or len(word) > SHORT_CUE:"
  },
  {
   "id": "M790",
@@ -7199,8 +7199,8 @@
   "id": "M1309",
   "name": "a surge protection device title no longer names a TVS",
   "file": "scripts/device_kinds.py",
-  "old": "                        'surgeprotectiondevice'), two_terminal=True",
-  "new": "                        ), two_terminal=True"
+  "old": "                        'surgeprotectiondevice',\n",
+  "new": "\n"
  },
  {
   "id": "M1310",

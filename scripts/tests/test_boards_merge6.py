@@ -370,3 +370,31 @@ def test_tvs_with_several_bare_k_pins_is_one_channel():
     add(db, 'D3', 'NUP2105L', [('1', 'K', 'CAN_L'), ('2', 'K', 'CAN_H'), ('3', 'A', 'GND')])
     db['device_kinds']['D3'] = {'kind': 'tvs', 'citation': 'synthetic'}
     assert sorted(c['nets'] for c in pc.channels('D3', db['parts']['D3'], NetGraph(db))) == [['CAN_H'], ['CAN_L']]
+
+
+# Pulse HX5164NL p1: a LAN transformer titled only "1Gigabit Magnetic Modules"
+def test_lan_magnetic_module_title_names_a_transformer():
+    import datasheet_kinds as dk
+    assert dk.cues('1Gigabit Magnetic Modules') == {'transformer'}
+    assert 'transformer' not in dk.cues('Magnetic shielded power inductor')
+
+
+# Maker wordings from the knowledge library that named no kind before, Chinese titles and full-width text
+def test_maker_wordings_and_chinese_titles_name_their_kind():
+    import datasheet_kinds as dk
+    assert dk.cues('SRF3216 Series - Common Mode Chip Inductors') == {'common_mode_choke'}
+    assert dk.cues('WE-CNSW SMT Common Mode Line Filter') == {'common_mode_choke'}
+    assert dk.cues('XTREME-GUARD™ ESD Suppressors') == {'tvs'}
+    assert dk.cues('片 式 发 光 二 极 管') == {'diode'}
+    assert dk.cues('稳压二极管') == {'zener'}
+    assert dk.cues('贴片压敏电阻') == {'varistor'}
+    assert dk.cues('ＴＲＡＮＳＦＯＲＭＥＲ') == {'transformer'}
+
+
+def test_a_chinese_quote_must_be_on_the_page():
+    import datasheet_kinds as dk
+    page = lambda path, n: '片 式 发 光 二 极 管\nNCD0805R1'
+    found = dk.verify({'kind': 'diode', 'page': 1, 'quote': '片式发光二极管'}, 'x.pdf', read_page=page)
+    missing = dk.verify({'kind': 'zener', 'page': 1, 'quote': '稳压二极管'}, 'x.pdf', read_page=page)
+    assert found['status'] != 'QUOTE_NOT_FOUND'
+    assert missing['status'] == 'QUOTE_NOT_FOUND'
