@@ -138,17 +138,17 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | 自动扫描怎么跑、扫描提示怎么读、计算与厂家参数核对工具 | [scans-and-tools.md](references/scans-and-tools.md) |
 | 审查员 | 检查器共同的识别与声明规则：轨身份、识别依据、器件类型核验、电路候选、装配状态、指纹绑定、缺口 | [checker-conventions.md](references/checker-conventions.md) |
 | 审查员与 SR 维护者 | 各检查器查什么、intent 里怎么声明它 | [automation.md](references/automation.md)（检查器实现细节给维护者） |
-| 审查员与 SR 维护者 | 由外部流程派发任务、与 ASG 交接时 | [workflow-handoff.md](references/workflow-handoff.md) |
+| 审查员 | 被审对象是 ASG 的交付目录时 | [workflow-handoff.md](references/workflow-handoff.md) |
 | SR 维护者 | 架构明细：步骤间文件、格式版本、脚本归属、历次架构决定、规则维护步骤 | [architecture.md](references/architecture.md) |
 | SR 维护者 | 规则编号总表、判据、每项检查的盲区与常见误报（审查员用的名称表另出） | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
 | SR 维护者 | 改规则时：七项审查要点（要点1–7）、规则取舍的三问 | [review-charter.md](references/review-charter.md) |
 | SR 维护者 | 共用设计准则库（共用规范 G01–G09；G10 见上面两行）：设计准则、适用条件、覆盖、`catalog.BASIS`、更新步骤（共用层，见 shared-layer.md） | [guideline-criteria.md](references/shared/guideline-criteria.md) |
 | SR 维护者 | 共用层：哪些文件与 ASG 同字节、各自的角色、谁读、哪条测试守、怎么改 | [shared-layer.md](references/shared/shared-layer.md) |
 
-## 与 ASG 的有状态工作流交接
+## 审查 ASG 交付的设计
 
-由外部流程派发任务、与 ASG 交接时，读 [工作流交接约定 v1](references/workflow-handoff.md)：只读 ASG 交付包里的原理图、网表、PDF、BOM 和需求，独立取证、复算和审查，不迁移设计侧的通过结论。
-独立使用 SR（包括受限 PDF 审查）不依赖外部流程；不得伪造网表来满足完整 ASG 交接约定。
+被审对象是 ASG 的交付目录时，读 [审查 ASG 交付的设计](references/workflow-handoff.md)：只读其中的原理图、网表、PDF、BOM 和需求，独立取证、复算和审查，不迁移设计侧的通过结论。
+受限 PDF 审查不得伪造网表来凑成完整输入。
 
 ## 规则编号
 
@@ -376,7 +376,7 @@ SR 只用“不变的决定”第 1 条的四类输入：设计方的报告、�
 
 绑定了功能的检查项由功能派生（结论、open_ref/fail_ref、rationale 都从功能来），不手填；绑定了树上检查的需求检查项（`bound_checks`）取绑定检查项中最差的结论，也不手填。
 派生的检查项**不写进台账**：`review-results.json` 只装功能判定和手填的检查项，门禁、报告、打包、对比读取时从计划和功能派生（`results_model.materialize`），
-所以台账里不可能有一份和功能判定不一致的副本。审查员自己把检查项绑到功能时只写 `{id, function_id, aspect}`；要给派生检查项补注记（`manual_verification`、`notes`、`settings`、`bom_constraint`、`requirement_clauses`）时只写 `{id, 注记}`，结论仍由功能派生。
+所以台账里不可能有一份和功能判定不一致的副本。审查员自己把检查项绑到功能时只写 `{id, function_id, aspect}`；要给派生检查项补注记（`manual_verification`、`notes`、`handoff_evidence`、`applicability_evidence`、`settings`、`bom_constraint`、`requirement_clauses`、`proposal_override`）时只写 `{id, 注记}`，结论仍由功能派生。
 功能判定写完后跑一次检查，看功能派生出什么、哪些方面没判、哪条手填检查项和功能不一致（它不写文件）：
 
     python3 scripts/derive_rows.py review-plan.json review-results.json

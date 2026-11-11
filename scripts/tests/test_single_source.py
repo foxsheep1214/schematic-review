@@ -6,10 +6,12 @@ reference's readers and size; this one keeps the names in the documents and the 
 """
 import ast
 import re
+import sys
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / 'scripts'))
 SCRIPTS = ROOT / 'scripts'
 # Installed read-only from the design guidelines and the knowledge framework; not the skill's to edit.
 SHARED = {'guideline_criteria.py', 'stress_check.py'}
@@ -33,7 +35,40 @@ def python_files():
     return sorted(p for d in (SCRIPTS, ROOT / 'evals') for p in d.rglob('*.py') if '__pycache__' not in p.parts)
 
 
+# A list of code words a document copies (`a/b/c` or `a`、`b`、`c`) and the constant it copies. The document must hold
+# one list equal to the constant, so a word added in the code fails here until the document follows.
+ENUMERATION = re.compile(r'`[A-Za-z_][\w-]*(?:\s*/\s*[A-Za-z_][\w-]*){2,}`|(?:`[A-Za-z_][\w-]*`[、/，, ]+){2,}`[A-Za-z_][\w-]*`')
+COPIED = (
+    ('SKILL.md', 'results_model', 'DERIVED_ROW_KEPT'),
+    ('references/intent-format.md', 'plan_review', 'NO_SUPPLY_KINDS'),
+    ('references/automation.md', 'i2c_topology', 'KINDS'),
+    ('references/automation.md', 'board_intent', 'PIN_ROLES'),
+    ('references/automation.md', 'decoupling', 'KINDS'),
+    ('references/automation.md', 'decoupling', 'REQUIREMENT_KINDS'),
+    ('references/automation.md', 'checkers.power_switch', 'LINEAR_ROLES'),
+    ('references/automation.md', 'checkers.supervision', 'FEED_FIELDS'),
+    ('references/checker-conventions.md', 'board_intent', 'JUMPER_POSITIONS'),
+    ('references/results-format.md', 'catalog', 'COVERAGE_RULES'),
+    ('references/results-format.md', 'review_functions', 'RETIRED_ITEM_FIELDS'),
+    ('references/results-format.md', 'review_functions', 'TEMPLATE_FIELDS'),
+    ('references/scans-and-tools.md', 'audit_parameter_claims', 'BASES'),
+    ('references/verdicts-and-release.md', 'electrical_contract', 'HAZARD_PATHS'),
+    ('references/verdicts-and-release.md', 'plan_review', 'HANDOFF_STATES'),
+)
+
+
 class SingleSourceTests(unittest.TestCase):
+    def test_a_list_a_document_copies_equals_the_code(self):
+        import importlib
+        stale = []
+        for name, module, constant in COPIED:
+            want = set(getattr(importlib.import_module(module), constant))
+            lists = [set(re.findall(r'[A-Za-z_][\w-]*', found))
+                     for found in ENUMERATION.findall((ROOT / name).read_text(encoding='utf-8'))]
+            if want not in lists:
+                stale.append('%s 没有一处列举等于 %s.%s：%s' % (name, module, constant, '、'.join(sorted(want))))
+        self.assertEqual([], stale)
+
     def test_every_script_a_document_names_exists(self):
         known = {p.name for p in python_files()} | OTHER_SKILL
         missing = []

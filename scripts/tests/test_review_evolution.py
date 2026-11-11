@@ -26,10 +26,10 @@ class EvolutionTests(unittest.TestCase):
     def test_interface_explanations_and_metadata_do_not_change_rules(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d); (root/'references').mkdir()
-            (root/'SKILL.md').write_text('---\nname: sr\ndescription: before\n---\n## 审查纪律\nRespect limits\n## 与 ASG 的有状态工作流交接\nOld interface\n')
+            (root/'SKILL.md').write_text('---\nname: sr\ndescription: before\n---\n## 审查纪律\nRespect limits\n## 审查 ASG 交付的设计\nOld interface\n')
             (root/'references/workflow-handoff.md').write_text('old interface')
             before = engine_identity(root)
-            (root/'SKILL.md').write_text('---\nname: sr\ndescription: clearer\n---\n## 审查纪律\nRespect limits\n## 与 ASG 的有状态工作流交接\nClearer interface\n')
+            (root/'SKILL.md').write_text('---\nname: sr\ndescription: clearer\n---\n## 审查纪律\nRespect limits\n## 审查 ASG 交付的设计\nClearer interface\n')
             (root/'references/workflow-handoff.md').write_text('clearer interface')
             (root/'README.md').write_text('better explanation')
             self.assertEqual(before, engine_identity(root))

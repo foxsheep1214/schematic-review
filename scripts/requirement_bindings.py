@@ -6,7 +6,7 @@ rules owned by the circuits, interfaces or system functions the requirement name
 aspect of the whole board (catalog.BOARD_ASPECTS) is bound to every row of its rules and any other aspect to none.
 A bound requirement row is not judged again: its result is the worst result of its bound rows that are not NA, and
 it is judged on its own (with clauses) only when no bound row is. The planner writes `bound_checks`, the validator
-recomputes them, and derive_rows.py writes the bound requirement rows.
+recomputes them, and the bound requirement rows are derived when the ledger is read (derive_rows.py checks them).
 
 A circuit-type coverage row (REQ-Q07) is bound the same way to the applicable rows of its circuit type (consistency
 proposals of 2026-10-23, 5b). It answers coverage only: once every bound row has a result it passes, and it copies no
@@ -226,7 +226,7 @@ def coverage_errors(expected, rows):
         result = rows[cid].get('review_result')
         if derived is not None and result != derived:
             out.append('%s: 功能电路覆盖只答同类电路各检查项（%s）是否都已审，各检查项都有结论即为 %s，不复制子项结论，不是 %s；'
-                       '用 derive_rows.py 写出' % (cid, '、'.join(planned.get('bound_checks') or []), derived, result))
+                       '这一行由校验推出，不手写结论（derive_rows.py 可核对）' % (cid, '、'.join(planned.get('bound_checks') or []), derived, result))
     return out
 
 

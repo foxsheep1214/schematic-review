@@ -1,4 +1,4 @@
-"""Electrical known defects (评测集 已知缺陷/known_defects.json) that need a guard of their own.
+"""Electrical defects found in past reviews that need a guard of their own.
 
 HOT-mcu-pad: on OLIMEX ESP32-PoE-ISO Rev.N the CH340 RXD node is pulled to +5V_USB by R18 and reaches the ESP32 U0TXD
 pad through the forward diode D7, so the pad is lifted above VDD+0.3 V whenever the ESP32 is in reset or unpowered

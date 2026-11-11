@@ -9,7 +9,7 @@ import re
 import tokenize
 
 NON_RULE_REFS = {"workflow-handoff.md"}
-INTERFACE_SECTIONS = {"参考文件", "与 ASG 的有状态工作流交接", "规则维护"}
+INTERFACE_SECTIONS = {"参考文件", "审查 ASG 交付的设计", "规则维护"}
 
 
 def _hash(value):

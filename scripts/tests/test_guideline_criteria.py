@@ -204,7 +204,7 @@ class GuidelineRulesTests(unittest.TestCase):
         self.assertEqual(found['uncovered'], ['G04-003'])
 
     def test_the_library_is_part_of_the_engineering_identity(self):
-        # a new library version reopens designs and reviews like any rule change (workflow-handoff.md)
+        # a new library version reopens designs and reviews like any rule change (architecture.md 规则维护)
         import skill_identity
         files = skill_identity.engineering_identity(ROOT)['files']
         self.assertTrue(set(g.ENGINEERING_FILES) <= set(files), sorted(set(g.ENGINEERING_FILES) - set(files)))

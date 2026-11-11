@@ -62,5 +62,5 @@ python3 scripts/lint.py db.json --intent intent-reviewed.json --candidates recor
 ## 核对者身份
 
 `reviewer.kind` 必须如实写 AI 或 HUMAN；HUMAN 只用于实际人员参与且有记录的核对。
-未记录身份时，不从旧字段名 `manual_*` 推断为人员核对。它们为兼容旧格式保留，表示自动检查之外的独立核对。
+未记录身份时，不从字段名 `manual_*` 推断为人员核对：这个名字只表示自动检查之外的独立核对。
 报告中的 `manual_verification` 可用 `reviewer_kind: "AI"` 明示身份；已解决的工具限制不继续列为待改进项。

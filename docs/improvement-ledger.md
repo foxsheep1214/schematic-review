@@ -15,6 +15,15 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+## 删旧评测集运行器；交接文档只留审查 ASG 交付；文档列举对照代码（2026-11-11）
+
+用户对四个遗留问题的决定：评测运行器“删除”，外部控制器“已放弃，精简文档”，列举改生成“现在做”；其余“自行决策”。其一，旧电路评测集 2026-11-11 已删，读它的运行器没有数据可跑：删 `evals/eval_set.py`、`evals/circuit_cases/`、`evals/boards_tools/`、`evals/detection/`（汇总也要评测集的发布绑定和已知缺陷，单独跑不了）和四个测试文件，变异清单删对应的 M1659–M1664；架构说明的评测一条改写。其二，外部控制器已放弃：`workflow-handoff.md` 从任务与结果封装、控制器命令和恢复流程缩成一页“审查 ASG 交付的设计”（读哪些文件、哪些不读、独立性），SKILL.md 对应章节同名，`skill_identity.INTERFACE_SECTIONS` 跟着改名。其三，文档里抄代码常量的列举有两处已经漏项（SKILL.md 派生检查项可补的注记少三个字段；intent-format 的无供电脚类别改写成代码里的类别名），补齐后在 `test_single_source.py` 加一条测试：登记的 15 处列举必须与代码常量相等，代码加词而文档没跟就失败。其四，上一条留下的存疑条目查实三处并改：架构表“配置组”改“输出档位”，需求项整项阶段 NA 的例外（`DOWNSTREAM_HANDOFF`）写进 verdicts-and-release，`manual_*` 不是旧格式字段；`requirement_bindings.py` 的报错不再叫人“用 derive_rows.py 写出”。`migrate_results.METHOD_OF` 把 `ADJACENT_TEST_POINT` 映到 G2 不动：旧词的原义查不到依据，改成 G3 同样没有依据。
+
+- Event: user:2026-11-11（评测运行器删除；外部控制器已放弃，精简文档；列举改生成现在做）
+- Causes: rule_not_enforced 2, judgment 2
+- Changed: references/workflow-handoff.md, SKILL.md, scripts/skill_identity.py, scripts/requirement_bindings.py, scripts/tests/test_single_source.py, scripts/tests/test_review_evolution.py, scripts/tests/test_guideline_criteria.py, scripts/tests/test_known_defects_electrical.py, references/architecture.md, references/intent-format.md, references/reviewed-declarations.md, references/verdicts-and-release.md, evals/mutation/mutations.json, docs/improvement-ledger.md
+- Gates: pytest 3065 passed；mutation --changed 单元层全部 KILLED（退出码 0）
+
 ## 资料文件补版本常量；阅读量棘轮改固定上限（2026-11-11）
 
 用户：“这两项应该怎么做？不要考虑现在的固有规则，只考虑SR技能的宗旨”；方案确认：“按照上面的方向改”。两处都是上一条里迁就现有测试留下的。其一，`datasheet-audit.json` 与 `datasheet-resolution.json` 一直带格式版本、读入时也校验，只是版本写成散落的字面数字，架构说明的文件表因此写“—”；现在 `audit_datasheets.py` 有 `AUDIT_SCHEMA_VERSION`、`RESOLUTION_SCHEMA_VERSION`，表里写 1（资料请求与解析记录拆成两行），`test_architecture.py` 一并核对。其二，各步骤参考文档的字节数原来是“只许减”的棘轮：补全一处列举比让它继续不全更难通过，而上一条查出的 35 条里 9 条正是列举不全。改为每步一个留有余量的固定上限（① 190000、② 170000、③ 240000、④ 132000、⑤ 40000，实测 179596/161859/228703/125191/38175），超过才失败，抬上限仍写台账；测试里那段逐次记账的注释删去，历史在本台账与 git。没做的：把手写的列举改成由代码生成或指向计划输出，另起一轮。

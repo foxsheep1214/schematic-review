@@ -349,7 +349,7 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 烧录镜像、读回 hash、编程模式/夹具、量产校准结果只能在生产/固件环节产生，记阶段 NA + HANDOFF（接收方“固件/生产”），
 不阻塞原理图冻结（`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP` 提示：读开放项的 `what`/`acquisition`/`closure`/`why_insufficient`，手填检查项读 `missing_inputs`）。
 复合 REQ-D01、功能电路汇总或 PRO-C01 不能整项改 NA；设计要求照常判，纯测试要求另立检查并关联。
-需求检查项（计划按 `intent.requirements` 生成的 `REQ-D01.<需求 ID>`）整项写 `OUTSIDE_SCHEMATIC_STAGE` 会被校验拒绝：
+需求检查项（计划按 `intent.requirements` 生成的 `REQ-D01.<需求 ID>`）整项写 `OUTSIDE_SCHEMATIC_STAGE` 会被校验拒绝（要求方面本身就是原理图之后的工作，即 `DOWNSTREAM_HANDOFF` 的除外）：
 “工作温度 −10..50 °C”里器件温度等级是设计要求，闭壳温升才是试验，各写各的条款。
 生成计划的自动判据不得删改来绕过这一拆分。
 
