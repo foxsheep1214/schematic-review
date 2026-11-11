@@ -54,7 +54,7 @@ INTENT_FIELDS = {'schema_version', 'review_mode', 'review_phase', 'input_sha256'
                  'requirement_source', 'requirements', 'clarifications', 'circuit_decisions', 'circuits', 'circuit_candidates_sha256',
                  'expect', 'features', 'materials', 'rail_exclusions', 'rule_gaps', 'power_rails', 'power_sources',
                  'power_paths', 'active_state', 'mission_profile', 'review_sources', 'review_dependencies', 'derating',
-                 'guideline_baseline', 'open_pins', 'boundary_nets', 'interfaces'} | {
+                 'guideline_baseline', 'open_pins', 'boundary_nets', 'interfaces', 'reviewed_declarations'} | {
     checker.intent_key for checker in REGISTRY if checker.intent_key}
 APPLICABILITY = ('APPLICABLE', 'NOT_APPLICABLE', 'UNDETERMINED')
 READINESS = ('READY', 'WAITING_EVIDENCE', 'NOT_SCHEDULED')

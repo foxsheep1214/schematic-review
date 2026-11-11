@@ -17,8 +17,8 @@
 | `driver` | 网上（或经已装配的串联无源件回溯到）有输出脚候选 |
 | `name-hint` | 只有轨名像电源，无来源可推 |
 
-轨名提示（`name-hint`）按 VCC/VDD/VIN/VOUT/VBAT/VBUS/V<数字>/<数字>V/HV 开头识别，可带 `RAIL_` 前缀（RAIL_3V3_PRI）。
-以 `_N/_NEG/_RTN/_RET/-` 结尾的是回流（VOUT_N、VIN-），含 `_FB/_FBACK/_SENSE/_SNS` 段的是反馈或检测线，
+轨名提示（`name-hint`）按 VCC/VDD/VDDA/VCCA/AVDD/DVDD/VIN/VOUT/VBAT/VBUS/VSYS/VMOT/VLED/VM/V<数字>/P<数字>V/<数字>V/HV 开头识别（以 `checkers/netgraph.py` 的 `RAIL_RE` 为准），可带 `RAIL_` 前缀（RAIL_3V3_PRI）。
+以 `_N/_NEG/_RTN/_RET/_MINUS/-` 结尾的是回流（VOUT_N、VIN-），含 `_FB/_FBACK/_FEEDBACK/_SENSE/_SNS/_DET/_DETECT/_PG/_PGOOD/_MON` 段的是反馈、检测或状态线，
 HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（`evals/kicad_replay_bench` 的 rf1/rf2）。
 轨名不像电源的供电网（BULK、HVDC、PRI_AUX）在 `intent.power_rails` 声明后同样进入 PWR-A01 扫描和 PWR-T01/PWR-C01 计划（触发 `declared-rail:<网>`）；条件是该网给已贴 IC 的供电脚供电，或经 ≥1µF 电容回到地/声明窗口不高于 0V 的回流网。只声明电压窗口的信号网（ZCD、CC1、栅极驱动）不因此变成轨；PWR_FLAG 不是来源，自供电（如 NCP4307 从 CS 取电）要在 `power_sources` 写出处。
 
@@ -46,7 +46,7 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
   集成电路声明它的**角色**，角色登记表是 `catalog.DEVICE_ROLES`（[审查词表·器件角色](review-vocabulary.md#器件角色)：每个角色的
   手册标题词、它作核心器件时生成的电路类型、ANALOG 走线从哪些脚出发；`board_intent.IC_KINDS`、`part_words.IC_ROLES`、
   `datasheet_kinds.KIND_CUES` 都从这张表读，加角色只改这一行）。手册标题没有任何登记角色的才写泛称 `ic`；计划把每个 `ic`
-  列成 `DEVICE_KIND_GENERIC` 诊断，这些器件不生成电路候选。角色决定哪些 IC 是电路候选的核心器件（`ANCHOR_KINDS`：登记表里有
+  列成 `DEVICE_KIND_GENERIC` 诊断，这些器件不生成电路候选。角色决定哪些 IC 是电路候选的核心器件（`part_words.ANCHOR_ROLES`：登记表里有
   电路类型的角色，isolator 与 ic 除外），所以 IC 没有核验过的类别同样在 DEV-D02 登记 `intent.device_kinds.<ref>` 缺口。
   核验通过的 bridge_rectifier/transformer/connector 没有需要 IC 旁路的供电脚，不再留 PWR-D01 的 `unverified-device-pinout` 缺口；
   极性、绕组、额定、绝缘与针表仍由各自检查核对。
@@ -81,7 +81,7 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 - 需定类器件的 DEV-D02 登记缺口，缺口文字带审计状态和候选类型。
   例外：D/ZD/TVS/LED 位号的符号恰有一阳一阴两脚、封装名是两端封装（0402/0603…、SOD、SMA/SMB/SMC、DO、MELF、两引脚 LED_D3/D5mm）时，脚集合由封装决定，DEV-D02 不要求原厂全脚表或确切料号（类型声明照旧）；焊盘与阴/阳极标记的对应移交 PCB 阶段。双向两脚（A1/A2 或 1/2）同样按两端封装就绪，实际是单向还是双向由类型/功能检查判定，不属于脚集差。1/2 位单排连接器（封装名含 1x01/1x02，符号脚号恰为 1..N，封装无安装/屏蔽焊盘）同理就绪，脚义由 DEV-D03/DEV-E01 核对。三脚及以上、多焊盘 LED 封装（PLCC、RGB、散热焊盘、带脚数后缀）、带安装或屏蔽焊盘的连接器，或封装名看不出两端时仍登记缺口。
 
-工具不从 PDF 抽数值参数，数值仍按 datasheet-facts 的审查者核对流程处理。
+工具不从 PDF 抽数值参数，数值由审查者按 [器件资料](datasheets.md) 的保证值核对方式读手册核对。
 
 **参考地分区、跨域器件与截止网络**（`checkers/domains.py`，计划顶层 `domains`，schema 1）：
 - 域是参考关系，不是把全部端口当等势短接。地取 GND/回流名或声明的零电压窗；标签取其 `domain`，否则取网名。同叶名的不同层次地保留全名；域声明可点名实际地网。
@@ -158,4 +158,4 @@ python3 scripts/lint.py db.json --checker-json <checker-id>=inventory.json
 
 **规则编号**：检查器的规则与其他规则共用[规则总表](check-catalog.md)的编号（`内容域-方式序号`），
 在 `scripts/catalog.py` 以检查器 id 为来源登记；检查器类只引用编号，自动扫描（A）与保证值核对（E）
-规则由 `cold_rules`/`e_rules` 从总表取出。下文各节列出每个检查器使用的规则。
+规则由 `cold_rules`/`e_rules` 从总表取出。每个检查器使用的规则列在[自动检查](automation.md)各检查器小节。

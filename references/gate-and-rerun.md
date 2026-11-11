@@ -16,7 +16,7 @@
   `diagnostics`（`LINT_INFO`），不计疑点。两次 `--lint` 提供两次扫描的 JSON，
   校验核对每条发现都有计划检查项；结果不再写 `lint_reviews`。仅 PDF 模式明确 NA 并留依据。
 - **输出**：`summary`（检查结果计数、唯一缺陷及 P0–P3）、`categorized_summary`（当前/历史检查、唯一缺陷、
-  唯一任务、必需移交及其状态）、`insufficient_by_cause`、`requirement_clarification_summary`、`workflow`、
+  唯一任务、必需移交及其状态）、`insufficient_by_cause`、`workflow`、
   `release`/`blockers`、`remediation_validation`、`binding_validation`；`parameter_sheet`（器件参数表：条款 `refs` 点名的每只器件
   引了哪些参数、出处与页、保证值 / 典型值 / 强制条款各几条、用在哪条余量或判断；`--detail full` 的报告据此出“器件参数表”）。
 - 同一开放项派生的检查项同错（如开放项写了没有的 `kind: NEEDS_HUMAN`）按开放项合并成一行，注明条数。

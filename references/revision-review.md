@@ -119,11 +119,11 @@ intent 实际条件或 evidence/audit 内容变化仍保守触发全量复验。
 - `strategy=FULL_REVIEW`：未知全局变化、缺失基线、不可读文件等阻断缺口时全量复验；
   不能用候选路径或“未匹配到变化”声明依赖不完整的项不受影响。
 - `blocking_gaps`：旧基线/快照缺失、文件不可读、未匹配依赖声明等未决项。
-  `revision-impact-coverage` 必须保持 INSUFFICIENT；先恢复材料、重建并重审，再清除缺口。
+  改版影响覆盖检查项（`REQ-Q05.GLOBAL`）必须保持 INSUFFICIENT；先恢复材料、重建并重审，再清除缺口。
 
 部分依赖本身不永久阻止交付：按影响清单执行扩大后的复验，逐项记录本轮结果，并由 coverage
 项说明实际范围。但这不消除真实缺证，不自动解除任何其他检查或 HANDOFF。
-旧检查在新计划消失时新增独立 `revision-removed-check`，保留 prior_check 与旧 ID；审查者
+旧检查在新计划消失时新增独立的旧项消失检查项（`REQ-H02.<摘要>`），保留 prior_check 与旧 ID；审查者
 核对删除/替代、复发/撤回及连带影响。该历史记录在后续版本继续保留，结果每轮独立填写。
 同一历史 ID 同时经“旧项消失”和“保留历史记录”生成时仅保留一个；不同 prior_check 定义
 保存在 `prior_checks` 数组，主 `prior_check` 优先保留最近基线定义。历史检查身份/判据冲突仍报错，
@@ -210,7 +210,7 @@ required 项仍必须填写本轮 reverification，复用不能免除已经命�
 
 ### 闭环断言格式
 
-claim id 唯一；ref/node/net/field 等定位字段完整。器件字段仅允许 part、value、jedec、prim、nc；
+claim id 唯一；ref/node/net/field 等定位字段完整。器件字段仅允许 part、value、jedec、prim、nc、datasheet；
 nc 的期望值为布尔值，其余为字符串。结构不合法时直接退出，不进入判定。
 
 下例全部为合成设定：U3.9 已由引脚表核实为地，旧上拉 R40 停贴；R41 以 10K 1% 贴装，

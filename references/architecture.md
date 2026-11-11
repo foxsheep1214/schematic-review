@@ -181,6 +181,6 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
   只有新加的判断逻辑没有直接测试守着时才补变异，不再每次必加。一批改动后或每周跑一次全量 `python3 evals/mutation/run.py`，
   把存活的补测试、失效的重锚或删去，记一条台账。
 - **电路评测集**（2026-11-05，用户：把这些电路做成给 SR 和 ASG 评测和改进的专门评测集，放在电路设计规范里）：电路案例（按典型电路分类）、整板与公开板原件、已知缺陷在 `原理图设计规范/评测集/`（`evals/eval_set.py` 定位，`CIRCUIT_EVAL_SET` 可改）；运行结果与公开板审查记录在同级 `评测记录/`（2026-11-06 起，`CIRCUIT_EVAL_RECORDS` 可改），说明见它的 README。本仓库只留运行器和代码门禁固件（规则合同、回放、典型电路、种子基准、变异），评测集不在时门禁里读它的测试跳过。`python3 evals/circuit_cases/run.py auto --out <新目录> --guideline-release <选定发布包>` 跑自动层；现行说明在评测集 `发布绑定.md`。ID/状态来自显式包，包须与本技能安装件一致；子进程不用测试替代输入，实际计划身份另核。原始 run、成绩与汇总均记发布版/指纹/格式、E 提交及实际工作区身份、案例与原件哈希、技能提交及字节。缺 E 独立打印外部评测 skip，不当代码门或案例通过；历史无身份结果不自动补贴新版。
-  2026-11-09 起原评测集停用（评测体系重建中），目录已移到知识库 `归档/硬件设计知识框架/旧评测集-已停用/`；`evals/eval_set.py` 的默认路径不再存在，`evals/circuit_cases`、`evals/detection` 读已知缺陷的部分和 `evals/boards_tools` 要显式设 `CIRCUIT_EVAL_SET` 才能跑，门禁里读它的测试照旧跳过。新评测体系定下后改这一条。
+  2026-11-09 起原评测集停用（评测体系重建中），评测集与评测记录已于 2026-11-11 删除；`evals/eval_set.py` 的默认路径不再存在，`evals/circuit_cases`、`evals/detection` 读已知缺陷的部分和 `evals/boards_tools` 现在没有数据可跑，门禁里读它的测试照旧跳过。新评测体系定下后改这一条。
 - 按需另跑：改导入器时跑 [真实来源导入回归](../evals/input_bench/README.md)；看自动层检出率跑 [种子基准](../evals/seeded_bench/README.md)；
   `python3 evals/bench_coverage.py --seeded <注入基准 results.json>` 列出每条 A 规则在哪个基准有真实板正例。评测通过不等于任何真实电路审查通过。

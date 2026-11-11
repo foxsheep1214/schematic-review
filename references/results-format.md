@@ -35,7 +35,7 @@
 - 没有分版本号：`binding_version`、`remediation_version`、`workflow_version`、`impact_class_version`、
   `requirement_clauses_version`、`requirement_clarification_version` 写了会被拒绝，各项一律按最新规则校验。
   绑定由 `validate_review.py` 总是要求，修改说明由 `--require-actionable` 要求。
-  schema 2/3/4 的旧台账不再读取，按本版 SR 重新审查。
+  只读当前格式；旧格式的台账先用 `migrate_results.py` 迁移（只改名的变更可迁移，结构变了的按本版 SR 重新审查，见 [架构说明](architecture.md) “格式版本怎么升”）。
 - 复审另有 `revision_impact_version`、`revision_digest` 和必需项的 `reverification`，见 [改版复审](revision-review.md)。
 - `summary` / `release` 可省略，由校验器计算；填了必须一致。
 
@@ -105,7 +105,7 @@
 | `calculation` | 同节第 2 步“算出了余量就下结论”：`result`（一句结论；比较过的量不写在这里，超 300 字或游离数字超 8 个出 RESULT_NARRATIVE）、`margin{value,unit,against,basis[,aspect,states,check_ids]}`（多个方面写成列表，各带 `aspect`；`against` 写含项目降额的限值；`unit` 按 `scripts/units.py` 的拼法）、`claim_ids`、`inputs`（计算的输入量名，影响条目的 `via.input` 从这里取）、`assumptions`；只针对一个方面时写 `aspect`。同一功能里 `value`、`unit`、`against` 都相同的余量只能有一条：一个缺陷落在证明它的那个方面，要落到别的方面须是另一个量、另一条余量。没有数值的功能写 `no_calculation_reason` |
 | `judgements[]` | 没有数值的方面各写一条：`{aspect, conditions: [条件 id], says[, states, check_ids]}`，`says` 写这几条条件对本方面说明了什么（例如“无外置补偿网络，按拓扑无独立电压环”）。厂家参考电路也可以撑起判断：该 TYPICAL_REFERENCE 条件写 `reference_circuit{figure, connection, load}`——参考电路的图号或页、本板与它相同的接法、它的元件值与本板负载的对照（本板不重于它），报告依据写“厂家参考电路 + 图号”。检查项要判 PASS，本方面本状态必须有证明通过的余量或一条 judgement，不能借别的方面或别的状态的结论 |
 | `verdict` | PASS / FAIL / OPEN，且与 `open`/`fails` 一致（有失败项即 FAIL，否则有开放项即 OPEN） |
-| `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[影响条目]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`，`title`/`why` 可选；各种 `kind` 另要的字段见下面“开放项的三种” |
+| `open[]` | 开放项：`key`（全文件唯一）、`kind`、`what`、`scope`、`decides[影响条目]`、`severity{level,class,affects,consequence[,hazard_path,exclusion]}`、`closure`、`due_stage`（默认 design_iteration）、`design_option`，`title`/`why` 可选；各种 `kind` 另要的字段见下面“开放项的两种” |
 | `fails[]` | 失败项：`key`、`finding_id`（指向 findings）、`what`、`decides`，可带 `conditions`（被违反的强制条款）、`title`/`why`/`due_stage`/`design_option`；依据三选一：余量证明不够（REACHABLE_CASE/EXACT_ENVELOPE）、违反强制条款、或 `outside_specified{condition, operating_point, curves_checked}`——器件工作在手册没规定的区域：`condition` 是本功能里给出手册规定区的条款，`operating_point` 写本机工作点，`curves_checked` 列查过的曲线和表，其中须有推荐工作条件或电气特性节，工作点是某个引脚的还须有引脚说明节；不要把“没规定”写成限值 0 去比较 |
 | `handoffs[]` | 功能级移交，派生检查项时填进计划要求移交的检查项 |
 | `verdict_history[]` | 改过结论时写 `{from, to, basis: [条件或 claim id], note}`，basis 不能为空 |
@@ -134,7 +134,7 @@
 | REVIEW_INCOMPLETE（审查没做完） | — | — | 本轮自己读算完；只在审查过程中存在，有这种开项时不出报告、不打包 |
 
 **每类开放项能挡哪些检查项**（`catalog.OPEN_ITEM_RULES`）：
-`decides` 边的 `aspect` 是规则标题，那个标题的规则不在本类能挡的集合里就拒绝。VENDOR_DATUM 能挡计算检查项（C）、电气窗口检查项（E）和需求检查项 REQ-D01；
+`decides` 边的 `aspect` 是规则标题，那个标题的规则不在本类能挡的集合里就拒绝。VENDOR_DATUM 能挡计算检查项（C）、电气窗口检查项（E）和需求检查项 REQ-D01，PWR-C16（待机与空载输入功耗，要在成品上测）除外；
 配置表不是缺口。文档/身份检查项（D）、拓扑检查项（T）、提示（A）和覆盖检查项不等任何开放项：
 按已知的判，或换对的缺口种类。不是规则标题的 aspect（需求方面、自由文字）不在此查。
 
@@ -254,7 +254,7 @@ F11 框架功能的 `objects` 不超出 intent 电路声明的位号与网络（
 
 **接口检查项。** 计划按 `catalog.INTERFACE_SUBJECTS` 逐接口生成检查项，对象带 `interface`：电路对问 SIG-T04 方向语义与 SIG-C07 电平，
 链路问 SIG-C07（两端电平），轨、开关节点、变压器绕组和整流桥上的网络（`power_node`）不问这两项，只剩这种网络的电路对不出检查项、不建框架；两端 IC 供电轨或参考地分区不同的接口网络（`cross_supply`）另问 SIG-C08；连接器问 DEV-D03 对端定义、
-DEV-C04 载流、PRO-D03 对外防护（对象 `{interface: EXT-<连接器>, ref}`）；供电轨在敏感电路（ANALOG、CLOCK、RF）取电时问 PWR-C14
+DEV-C04 载流、PRO-D03 对外防护、PRO-D04 外部线路浪涌（对象 `{interface: EXT-<连接器>, ref}`）；供电轨在敏感电路（ANALOG、CLOCK、RF）取电时问 PWR-C14
 （对象带 `loads`）。检查项的缺口取接口的角色缺口（`interface-role:<脚>`）、轨源缺口（`rail-source:<接口>`）和端点 IC 的资料。
 电路对、链路和连接器各一个接口框架（`functions[]` 里带 `interface`、`interface_kind`，没有 `circuit`），成员是该接口的检查项；
 供电接口只有检查项，不建框架。按声明的总线电路展开的同名规则仍问电路内部的链路。
@@ -403,7 +403,7 @@ USB 的 D+/D−、Host/Device 与供电 Source/Sink、CC/Rp/Rd 分别核相应�
 4.2 证据不足的分类另有自己的提示：`DOWNSTREAM_RECORDED_AS_DESIGN_GAP` 除了读检查项的缺口文字，还读 VENDOR_DATUM 开放项的
 `closure`、`acquisition`、`why_insufficient`——写了实测、样机、样品、仿真作为关闭路径的（“随后/留给……”分句已分出下游部分，不算），厂家保证值和样机才能测是两档，
 实测的部分拆成阶段 NA 检查项加移交，开放项只写真正能关它的数据或规格。R7 的四份记录里这样的开放项有 2 / 0 / 6 / 2 条（三只光耦的 CTR“保证或高低温实测”、端口短路“实测峰流”、BULK 浪涌“实测或仿真上界”）。
-`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP` 与 `CALCULATION_RECORDED_AS_DATA_GAP` 同样读开放项（`what`、`acquisition`、`closure`、`why_insufficient`、`deliverable`、`spec`，“随后/留给……”分句不算）：
+`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP` 与 `CALCULATION_RECORDED_AS_DATA_GAP` 同样读开放项（`what`、`acquisition`、`closure`、`why_insufficient`，“随后/留给……”分句不算）：
 VENDOR_DATUM 项写了烧录镜像、读回、编程模式、量产校准而 `what`/`acquisition` 里没有编程口、上拉、GPIO 这类原理图前提的是前者；
 VENDOR_DATUM 项的取得方式写了已读某页、只剩复算，又没有一句说缺哪个数据的是后者。手填检查项仍按检查项的 `missing_inputs` 判，派生检查项不逐项点。
 
@@ -536,7 +536,7 @@ R7 上这些疑点原来点到的派生检查项（codex1 对象/后果越界 18
   - 开关节点（有 MOS 漏极和变压器或电感）经二极管到一个没有对地大电容的节点，该节点上的电阻和电容另一端接同一网：每颗电阻一项 `DRV-C01.RCD`，钳位电阻功率与耐压；
   - IC 的信号脚和 LED 或光耦 LED 的一端在同一网（不经晶体管、不是地网）：`DEV-C05.PIN-LED`，按第 5 条四档核该脚的电流；
   - 光耦输出接到 IC 的使能或关断脚（EN、SHDN、DIS、INH、STBY、ON/OFF、RUN 等）：`SIG-C09.ENABLE-LINK`，上电先后、使能门限与光耦延时、掉电后能否恢复。
-- 器件检查项（DEV-D01 身份、DEV-D05 引脚处置、DEV-C05 工况）只跟核验过的器件类别走：集成电路（U/M 位号或原生电源脚识别的有源器件）、晶体管、光耦、稳压/TVS 二极管、整流桥、变压器和 part/value 写明 CUSTOM 的电感固定生成（跨网与地的防护钳位不出 DEV-C05，归 PRO-E02）；普通二极管、普通电感和阻容是常规件，声明了 `intent.devices` 也不生成器件检查项（声明只供脚表与输出档位用），它们的应力在所属电路的 DEV-C01 预判里按最弱档算，超了才逐颗出 DEV-C01 项；要让一颗二极管进器件检查项，路径是 `device_kinds` 核验为 zener/tvs/整流桥（[通用件定界](commodity-floors.md#哪些器件有自己的检查项)）。
+- 器件检查项（DEV-D01 身份、DEV-D05 引脚处置、DEV-C05 工况）只跟核验过的器件类别走：集成电路（U/M 位号或原生电源脚识别的有源器件）、晶体管、光耦、稳压/TVS 二极管、整流桥、变压器、耦合电感、共模扼流圈和 part/value 写明 CUSTOM 的电感固定生成（跨网与地的防护钳位不出 DEV-C05，归 PRO-E02）；普通二极管、普通电感和阻容是常规件，声明了 `intent.devices` 也不生成器件检查项（声明只供脚表与输出档位用），它们的应力在所属电路的 DEV-C01 预判里按最弱档算，超了才逐颗出 DEV-C01 项；要让一颗二极管进器件检查项，路径是 `device_kinds` 核验为 zener/tvs/整流桥（[通用件定界](commodity-floors.md#哪些器件有自己的检查项)）。
 - 脚电流行（`DEV-C01.PIN.*`）的串阻读不出阻值、计划没算出脚电流时，判 PASS 须附 `manual_verification`，在 `method` 里写出自己的脚电流计算。
 - 阶段 NA：`review_result: NA` + `na_reason: OUTSIDE_SCHEMATIC_STAGE`，`applicability` 保持 APPLICABLE，
   `handoff.product_requirement_status: PENDING_VERIFICATION`，不建开放项；完整写法见 [纯下游验证项](verdicts-and-release.md#纯下游验证项)。
@@ -573,7 +573,7 @@ REQ-Q09 判 PASS 时写 `batch_answers`：`{准则编号: 位置}`，键恰是�
 ### 示例：设计约束和开放项各决定一项
 
 合成例子：反激变换器的 T1 是定制件，图纸还没出：SR 把它要满足的条件写成设计约束（DESIGN_CONSTRAINT 条款，交给磁件设计），
-环路模型（PWR-C15）按这条约束判合格；输出电容的低温 ESR（厂家才知道，VENDOR_DATUM）挡住最小关断时间（PWR-C04）。两项都由 `derive_rows.py` 从功能派生。
+环路模型（PWR-C15）按这条约束判合格；输出电容的低温 ESR（厂家才知道，VENDOR_DATUM）挡住最小关断时间（PWR-C04）。两项都由功能派生（读取时派生，不写进台账）。
 
 ```json
 {
@@ -634,10 +634,10 @@ REQ-Q09 判 PASS 时写 `batch_answers`：`{准则编号: 位置}`，键恰是�
 }
 ```
 
-- 一项只指向一个开放项：同时受几个开放项影响时，`derive_rows.py` 取 `open[]` 里先写的那个；
+- 一项只指向一个开放项：同时受几个开放项影响时，派生时取 `open[]` 里先写的那个；
   开放项派生一件待办（W-C5-ESR），待办的 `check_ids` 是指向它的检查项。设计约束不派生待办，只随检查项移交。
 - 共享的是开放项，不是结论：各项的方面写在 `decides` 里，等级和 `scope` 写在开放项上。
-- 不再有 `obligations`、`request_keys`、`closure_domain`：隔离资格与环路稳定是功能的方面（见上）。
+- 功能判定里不再有 `obligations`、`request_keys`、`closure_domain`（派生待办上的 `request_keys` 仍由工具生成）：隔离资格与环路稳定是功能的方面（见上）。
 
 ### 发现项
 

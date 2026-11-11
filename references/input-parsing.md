@@ -70,7 +70,7 @@ pinname = 0 条（应为 6047 条）。
 
 导出器会把"带 No-Connect 属性且无连线"的引脚汇集到一张名为 `NC` 的网。
 它不是电气短路。脚本按 `C_SIGNAL` 是否带层次路径自动判别，结果放进
-`pseudo_nets`（判别式详见 `automation.md`）。
+`pseudo_nets`（判别式详见[自动扫描与计算工具](scans-and-tools.md)“NC 网络判别”一节）。
 
 ### 输出索引
 

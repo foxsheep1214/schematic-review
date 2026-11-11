@@ -13,7 +13,7 @@
 | PASS | 原理图与资料/需求证据充分且符合 | 无 |
 | FAIL | 原理图证据已证明存在问题 | 按 P0–P3 处置 |
 | INSUFFICIENT（证据不足） | 本项适用，但缺会改变本判据的具体输入，无法定判 | 阻断级项未补齐或未书面接受时阻断 |
-| NA | 对本产品不适用（`NOT_APPLICABLE`）；或纯下游判据本阶段不判（阶段 NA，`APPLICABLE` + `na_reason: OUTSIDE_SCHEMATIC_STAGE`） | 不构成电气缺证；须有依据。阶段 NA 单独统计，保留产品待验及移交闸门，见[纯下游验证项](#纯下游验证项) |
+| NA | 对本产品不适用（`NOT_APPLICABLE`）；或纯下游判据本阶段不判（阶段 NA，`APPLICABLE` + `na_reason: OUTSIDE_SCHEMATIC_STAGE`）；或用户明确暂缓的需求（`APPLICABLE` + `na_reason: USER_DEFERRED`，统计单列） | 不构成电气缺证；须有依据。阶段 NA 单独统计，保留产品待验及移交闸门，见[纯下游验证项](#纯下游验证项) |
 
 - NA 不得代替 INSUFFICIENT；未执行项不能填 PASS，也不能用 NA 消失。
 - 已有资料尚未读算的事项记“审查待完成”（REVIEW_INCOMPLETE），不得称为外部资料缺失。
@@ -146,7 +146,7 @@ DEV-D01/D02/D04 与 DOC-* 的缺陷在 `consequence` 或 `severity_reason` 写�
 |---|---|---|
 | `DAMAGE_OR_HAZARD` | 安全危险：火灾、触电、绝缘跨域器件、危险能量、用户端口过压，或使一项安全保护失效 | P0；须在 `severity.hazard_path` 写明是哪条路径：`FIRE` / `SHOCK` / `INSULATION` / `HAZARDOUS_ENERGY` / `PORT_OVERVOLTAGE` / `PROTECTION_LOSS`；该路径已有独立排除依据时写 `exclusion` 后可为 P1 |
 | `CORE_LINK_LOSS` | 唯一必需供电或核心链路可能断开 | P0（同上，须写 `hazard_path`，有 `exclusion` 可为 P1） |
-| `COMPONENT_DAMAGE` | 某个器件可能不可逆损坏，但不打开上面任何一条危险路径（例如二次侧低压开关管短路 SOA、同步整流管交叉导通、信号脚 ESD 损伤） | P1（版本 2 新增；版本 1 没有这一类，当时这类缺口只能写 `DAMAGE_OR_HAZARD`） |
+| `COMPONENT_DAMAGE` | 某个器件可能不可逆损坏，但不打开上面任何一条危险路径（例如二次侧低压开关管短路 SOA、同步整流管交叉导通、信号脚 ESD 损伤） | P1 |
 | `REQUIRED_FUNCTION` | 必需功能、启动/恢复、协议不保证 | P1 |
 | `PERFORMANCE_OR_LIFE` | 精度、动态性能、寿命或全工况保证不足 | P1 |
 | `LOCAL_OR_DATA` | 局部非关键功能、维护测试、物料/图纸数据一致性 | P2 |
@@ -187,7 +187,7 @@ DEV-D01/D02/D04 与 DOC-* 的缺陷在 `consequence` 或 `severity_reason` 写�
 具体缺口与证据由开放项的 `what`、功能的 `conditions`/`evidence` 和检查项的 `binding` 定位。共用物理路径可以引用同一分析，
 但必须说明它与本项判据的关系；一个高风险对象上的所有检查不因此自动成为 P0。
 `consequence` 包含“缺口→后果路径→独立保护/排除依据→所选等级”；调整等级所需证据和复验动作写在
-`acquisition`/`spec` 或 `closure` 里。没有后果路径的“风险未知/参考手册”不构成定级理由。
+`acquisition` 或 `closure` 里。没有后果路径的“风险未知/参考手册”不构成定级理由。
 把“该规则涉及可靠性，未知时可能影响功能”等泛化文字换成当前对象的实际物理因果：未知参数如何
 经哪段供电/信号/保护路径改变哪项受控功能，已知限值与独立排除依据是什么。单纯回显对象、工况、
 判据或加一句“潜在 P1/P2”仍不构成后果链。依据不足时先完成追踪，不能为了完整字段或 `valid=true`
@@ -220,7 +220,7 @@ HANDOFF 不是检查结果，而是原理图审查形成的下游动作。每项
 - `constraint`：由原理图证据导出的可执行约束；`verification`：下游如何关闭。两者都要写出具体位号、网络和数值，
   脱离检查项也能读懂，不写“本检查项”“本项”；验证不抄约束（`HANDOFF_RESTATES_REQUIREMENT`）。
 
-**只交本设计特有、由原理图审查算出来的要求。** 自动计划只给电解电容寿命检查项（DEV-C02 寿命检查项）预填热设计移交，不预填其他 HANDOFF；审查中确实得出一条
+**只交本设计特有、由原理图审查算出来的要求。** 自动计划只给电容寿命检查项（DEV-C02：电解、固态聚合物、混合型和超级电容）预填热设计移交，不预填其他 HANDOFF；审查中确实得出一条
 后续环节必须照做、否则原理图结论不成立的具体要求时，才在该检查项加 HANDOFF，例如“测 Q1 漏极峰值应低于 800V”
 “变压器漏感不超过主电感的 0.5%”“USB D+/D− 按 90Ω 差分走线（数据功能已启用时）”。
 “回路尽量短、去耦就近、注意散热、差分等长”这类通用布板常识不是原理图审查结论，不写 HANDOFF，
@@ -297,13 +297,13 @@ BOM 约束不同：状态 TO_WRITE 的约束即使是 P3 也挡原理图冻结�
 ### 待办由开放项派生
 
 待办（`work_items`）不手写。`validate_review.py` 从 `functions[]` 的每个开放项（`open[]`）和
-失败项（`fails[]`）各派生一件，写进 `review-gate.json` 的 `workflow.work_items`，编号 `W-<key>`（key 已是 W- 开头则原样）：
+失败项（`fails[]`）各派生一件，写进 `review-gate.json` 的 `workflow.work_items`，编号 `W-<key>`（key 已是 W- 开头则原样）；没挂功能的文档类（DOC-*）FAIL 按它的发现项另派生一件，编号 `W-<发现项 id>`：
 
 | 待办字段 | 来自 |
 |---|---|
 | `title` / `root_cause` | 开放项的 `title`（无则 `what`）/ `what` |
 | `reason` | `why`，无则 `severity.consequence` |
-| `next_action` | VENDOR_DATUM：`acquisition`；失败项：“按发现项 {finding_id} 的改法处理” |
+| `next_action` | 开放项：`acquisition`，没写取 `what`；失败项：“按发现项 {finding_id} 的改法处理” |
 | `due_stage` / `design_option` | 开放项同名字段（`due_stage` 默认 `design_iteration`） |
 | `check_ids` | 用 `open_ref`/`fail_ref` 指向这一项的检查项（即 `decides` 命中的方面×状态） |
 | 等级 | 开放项的 `severity.level`；失败项取发现项 |
@@ -347,7 +347,7 @@ PCB 实际间距等结果不能在原理图阶段取得；不能因此增加原�
 配置表（PDO/PPS 能力、NTC 切档阈值、OVP 编码、GPIO 角色、恢复策略）不审：手册声明了需求要的能力，功能就判可达，需求检查项照判；
 订货代码决定的工厂选项是器件身份，在 DEV-D01 核；引脚、上拉、GPIO 冲突、编程口与功能脚复用在原理图上判；
 烧录镜像、读回 hash、编程模式/夹具、量产校准结果只能在生产/固件环节产生，记阶段 NA + HANDOFF（接收方“固件/生产”），
-不阻塞原理图冻结（`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP` 提示：读开放项的 `what`/`closure`/`deliverable`，手填检查项读 `missing_inputs`）。
+不阻塞原理图冻结（`FIRMWARE_IMAGE_RECORDED_AS_DESIGN_GAP` 提示：读开放项的 `what`/`acquisition`/`closure`/`why_insufficient`，手填检查项读 `missing_inputs`）。
 复合 REQ-D01、功能电路汇总或 PRO-C01 不能整项改 NA；设计要求照常判，纯测试要求另立检查并关联。
 需求检查项（计划按 `intent.requirements` 生成的 `REQ-D01.<需求 ID>`）整项写 `OUTSIDE_SCHEMATIC_STAGE` 会被校验拒绝：
 “工作温度 −10..50 °C”里器件温度等级是设计要求，闭壳温升才是试验，各写各的条款。
@@ -412,7 +412,7 @@ P0–P3 是本审查的分级方法，不是原厂规定；具体门限查正在
 真实电气缺口仍保留；不能为压低数量改成 PASS，也不能为补齐模板扩大实际审查范围。
 
 每条补证、澄清及移交的关闭条件反查到现有来源要求，在证据记录保留该条的要求/排除/条件、已证范围及真实未知：
-全温、系统实测、认证及 BEFORE_FREEZE/BLOCKING 按[受控范围与可达状态](evidence-proportionality.md#将判据绑定受控范围与可达状态)
+全温、系统实测、认证及到期阶段（`due_stage`）与是否阻断按[受控范围与可达状态](evidence-proportionality.md#将判据绑定受控范围与可达状态)
 核本轮承诺和实际依赖；OFF 或故障的潜在 P0 核实际供能/信号路径及排除条件的实现依据；源文件 OPEN 按
 [需求原文到审查要求](requirement-clarifications.md#需求原文到审查要求) 区分；自动 WAITING_EVIDENCE 不当电气 FAIL，
 审查者限定 PASS 也不反推完整自动保证已经成立。格式校验不能替代这一步。

@@ -15,6 +15,15 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+## 通读参考文档改过时文字（2026-11-11）
+
+用户：“SR的文档进行通读”“改这 35 条”。25 份手写参考文档逐行读过（四组并行，每条对照代码核实），确定过时 35 条，按性质：照着写会被工具拒收的（示例里意图格式版本写 4、示例让填 `db_fingerprint`、`bound.basis`、开放项的 `spec`/`deliverable`、`BEFORE_FREEZE/BLOCKING`）；提到的名字已不存在的（`parent_check_id`、`requirement_clarification_summary`、`ANCHOR_KINDS`、datasheet-facts 流程、`revision-impact-coverage`/`revision-removed-check`、“开放项的三种”、“待办固定五行”、`ADJACENT_TEST_POINT`）；行为描述与代码不符的（多处说 `derive_rows.py` 写出检查项，实际读取时派生不落盘；“G09 尚未进入运行包”；RST-A03 对线性稳压器只记 INFO；SIG-A03 的串阻判法；单位表）；列举不全的（连接器与 IC 生成的检查项、I²C 展开的规则、轨名写法、引脚角色 `absent`、VENDOR_DATUM 不挡 PWR-C16、寿命检查项覆盖的电容种类、文档类 FAIL 也派生待办、用户暂缓的 NA）；指向别处而落空的“见上文/下文”三处。一处是代码缺陷而不是文档过时：`reviewed-declarations.md` 的流程把带 `reviewed_declarations` 的意图交给冷扫，`validate_intent` 自从未知字段检查（SR 自查 2.8）起把这个键当未知字段拒收，计划生成和去耦清单本来都认它；现把它登记进 `INTENT_FIELDS` 并加测试。上一条里“评测集目录已移到归档”写错了（当天已删除），一并改正。各步骤文档字节数上限随之上调（见 `test_reading_path.py` 的注记）。没改的：存疑的 13 条待用户过目；`requirement_bindings.py` 报错文案里同源的“用 derive_rows.py 写出”；`migrate_results.py` 把 `ADJACENT_TEST_POINT` 映到 G2 而定界表的斜率界是 G3。
+
+- Event: user:2026-11-11（改这 35 条）
+- Causes: knowledge_wrong 34, rule_not_enforced 1
+- Changed: references/architecture.md, references/automation.md, references/checker-conventions.md, references/datasheets.md, references/evidence-proportionality.md, references/execution-consistency.md, references/gate-and-rerun.md, references/input-parsing.md, references/intent-format.md, references/plan-format.md, references/report-and-remediation.md, references/results-format.md, references/revision-review.md, references/scans-and-tools.md, references/verdicts-and-release.md, references/wca-formulas.md, scripts/plan_review.py, scripts/tests/test_reviewed_declarations.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 3097 passed, 6 skipped；mutation --changed 单元层全部 KILLED（退出码 0）
+
 ## 清理过时文字并加防漏测试（2026-11-11）
 
 用户：“类似的，也检查修改SR技能，让SR的技能也简洁清晰明确”。按在 ASG 上用过的办法查了一遍：找无人引用的函数与模块、文档里提到而不存在的脚本和链接、通读 SKILL.md。代码只有一个无人引用的常量（`latch_criteria.ASYNC_PIN_RE`，删）。文档改了这些：`workflow-handoff.md` 提到的 `contract.py`、`adapters.py` 本技能里没有，改为写明控制器是派发任务的外部程序；SKILL.md 的“薄控制器流程”改叫“由外部流程派发任务”，执行流程里六处带日期的括注（记的是当时的用户决定，架构说明“历次架构决定”和本台账已有）删去，条文不变；README 的“七项审查纲要”改回“七项审查要点”；架构说明“电路评测集”一条补上 2026-11-09 停用和归档位置；公开板流水线的提示词标明停用。新增 `test_single_source.py`：文档提到的脚本都存在、相对链接都能打开、每个脚本有人导入或文档提到、每个顶层名字有人用。没动的：`evals/eval_set.py` 的默认路径（评测体系重建后再定）、`evals/mutation/README.md` 里按批记的历史行。

@@ -42,6 +42,12 @@ class ReviewedDeclarationsTests(unittest.TestCase):
         self.assertTrue(electrical);self.assertTrue(all(c['analysis_required'] for c in electrical))
         self.assertFalse(any(c.get('review_result') == 'PASS' for c in plan['checks']))
 
+    def test_the_cold_scan_accepts_an_intent_that_carries_the_record(self):
+        # 2026-11-11: reviewed-declarations.md step 4 hands the applied intent to lint.py, whose validate_intent refused
+        # the key as an unknown field since the unknown-field check of SR self-check 2.8.
+        errors=validate_intent(self.applied(),self.db)
+        self.assertFalse([e for e in errors if KEY in e],errors)
+
     def test_rewiring_stays_stale_even_after_generic_input_hash_is_refreshed(self):
         bound=self.applied();move_pin(self.db,'C1.2','IO');rebind(self.db,bound)
         with self.assertRaisesRegex(ValueError,'changed'):

@@ -80,9 +80,9 @@ kind 仍为 resistor；共端阵列须由原件证明共端，不能把所有焊
 每状态最多 1024 个候选网络，达上限记录缺口及 `unvisited_seed_nets/unvisited_frontier_nets`。
 `segments` 是连接分组，不证明 0Ω/跳线无压降或无限带宽。
 
-计划：每状态、每连接区域新增 1 项连接覆盖检查（SIG-T02），并逐区域展开 I²C 功能电路的电气判据（SIG-C01
-灌电流/上升时间、SIG-C07 电平与驱动、SIG-C08 掉电与跨域注入、SIG-D01 地址/复用/装配状态），
-不再按功能电路重复生成一套。有限串阻各段保留节点做关联分析，有源器件两侧另查传输条件。
+计划：每状态、每连接区域新增 1 项连接覆盖检查（SIG-T02），并逐区域展开 I²C 功能电路的电气判据（规则总表里 I2C 电路类型的全部规则，现为 SIG-C01
+灌电流/上升时间、SIG-C07 电平与驱动、SIG-C08 掉电与跨域注入、SIG-D01 地址/复用/装配状态，以及 SIG-C13、SIG-C15、SIG-C18，按产品基线过滤），
+不再按功能电路重复生成一套；只有一颗 IC 加测试点的夹具侧区域只出 SIG-T02。有限串阻各段保留节点做关联分析，有源器件两侧另查传输条件。
 不能由"有一只上拉"生成 PASS。本清单与 SIG-E01 的直接连接/直接并联计算并存，不扩大后者模型，
 也不自动把清单或 state population 注入保证值核对；不同装配变体需各自的 db。
 
@@ -140,9 +140,9 @@ python3 scripts/decoupling.py db.json --intent intent.json --json decoupling-inv
 
 - `intent.devices`：准确 MPN/封装、身份解释、完整官方物理脚表及出处。脚表取手册引脚定义的编号或名称；手册只用名称标注时
   名称即脚号（与符号脚号一致），不另要焊盘编号图。`pins` 含全部物理脚，角色为
-  `power/return/nc/other`，脚号是字符串，支持 BGA/EP。`pinout_complete=false` 保持缺口。这是有出处的
+  `power/return/nc/other/absent`（`absent` 是封装跳过的脚号，脚差集和脚处置都不算它），脚号是字符串，支持 BGA/EP。`pinout_complete=false` 保持缺口。这是有出处的
   审查者声明，脚本不读 PDF 验证真实性，也不因字段齐全自动判通过。器件类型另写在 `intent.device_kinds`，
-  由手册审计核验原文，见上文“器件类型以原厂手册为准，由工具核验原文”。声明后计划项 DEV-D02 附双向差集、
+  由手册审计核验原文，见[检查器共用约定](checker-conventions.md)“器件类型以原厂手册为准，由工具核验原文”。声明后计划项 DEV-D02 附双向差集、
   DEV-D05 附未接网脚与"标 nc 却接了网"的脚，仍由审查者逐脚定判。
 - 官方脚表与符号/网表脚表做双向差集，各自记录多出的脚（`official_only_nodes/symbol_only_nodes` 保留完整差集）；去耦缺口只对电源/地角色的差异脚计入，其他功能脚的差异由 DEV-D02 逐脚处置。
   不得为消除缺口把缺失电源脚改成 `other`。
@@ -263,7 +263,7 @@ HV 启动/检测或端口储能等角色须按实际器件条款确认，不能�
 
 ```json
 {
-  "input_sha256": "填写当前 db_fingerprint(db) 的 64 位哈希",
+  "input_sha256": "填写候选清单输出的 input_sha256（见检查器共用约定“指纹绑定”）",
   "assemblies": [{"id": "run", "citation": "装配 BOM Rev.B 选项 A",
                   "population": {"K1": true, "D1": true, "Q1": true, "L1": true}}],
   "inductive_loads": {
@@ -375,7 +375,7 @@ C<sub>bulk,min</sub>/C<sub>in,max</sub> ≥ 项目规定比值。**这是一阶�
 识别要求器件同时具备使能脚与输出/开关/反馈脚；反馈脚只用于认出稳压器，不计入输出轨。
 
 自动扫描：`RST-A02` 器件的使能/复位输入与其自身供电脚同网（稳压器自身的直连由 RST-A03 覆盖，不重复
-登记）；`RST-A03` 稳压器使能直连输入网且无分压/RC（CANDIDATE）；`RST-A04` 使能网上既无驱动源也无
+登记）；`RST-A03` 稳压器使能直连输入网且无分压/RC（开关型稳压器记 CANDIDATE，线性稳压器是标准接法，记 INFO）；`RST-A04` 使能网上既无驱动源也无
 分压/RC/上下拉——悬空或来源不明（CANDIDATE；器件内部上/下拉需资料证据）。悬空使能脚的开路状态有手册条款
 （开路电压最小值高于上升门限最大值）或 `intent.open_pins` 登记时记 INFO。
 
