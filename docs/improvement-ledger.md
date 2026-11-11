@@ -15,6 +15,15 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+## 资料文件补版本常量；阅读量棘轮改固定上限（2026-11-11）
+
+用户：“这两项应该怎么做？不要考虑现在的固有规则，只考虑SR技能的宗旨”；方案确认：“按照上面的方向改”。两处都是上一条里迁就现有测试留下的。其一，`datasheet-audit.json` 与 `datasheet-resolution.json` 一直带格式版本、读入时也校验，只是版本写成散落的字面数字，架构说明的文件表因此写“—”；现在 `audit_datasheets.py` 有 `AUDIT_SCHEMA_VERSION`、`RESOLUTION_SCHEMA_VERSION`，表里写 1（资料请求与解析记录拆成两行），`test_architecture.py` 一并核对。其二，各步骤参考文档的字节数原来是“只许减”的棘轮：补全一处列举比让它继续不全更难通过，而上一条查出的 35 条里 9 条正是列举不全。改为每步一个留有余量的固定上限（① 190000、② 170000、③ 240000、④ 132000、⑤ 40000，实测 179596/161859/228703/125191/38175），超过才失败，抬上限仍写台账；测试里那段逐次记账的注释删去，历史在本台账与 git。没做的：把手写的列举改成由代码生成或指向计划输出，另起一轮。
+
+- Event: user:2026-11-11（按照上面的方向改）
+- Causes: rule_not_enforced 1, judgment 1
+- Changed: scripts/audit_datasheets.py, references/architecture.md, scripts/tests/test_architecture.py, scripts/tests/test_reading_path.py, SKILL.md, docs/improvement-ledger.md
+- Gates: pytest 3097 passed, 6 skipped；mutation --changed 单元层全部 KILLED（退出码 0）
+
 ## 通读参考文档改过时文字（2026-11-11）
 
 用户：“SR的文档进行通读”“改这 35 条”。25 份手写参考文档逐行读过（四组并行，每条对照代码核实），确定过时 35 条，按性质：照着写会被工具拒收的（示例里意图格式版本写 4、示例让填 `db_fingerprint`、`bound.basis`、开放项的 `spec`/`deliverable`、`BEFORE_FREEZE/BLOCKING`）；提到的名字已不存在的（`parent_check_id`、`requirement_clarification_summary`、`ANCHOR_KINDS`、datasheet-facts 流程、`revision-impact-coverage`/`revision-removed-check`、“开放项的三种”、“待办固定五行”、`ADJACENT_TEST_POINT`）；行为描述与代码不符的（多处说 `derive_rows.py` 写出检查项，实际读取时派生不落盘；“G09 尚未进入运行包”；RST-A03 对线性稳压器只记 INFO；SIG-A03 的串阻判法；单位表）；列举不全的（连接器与 IC 生成的检查项、I²C 展开的规则、轨名写法、引脚角色 `absent`、VENDOR_DATUM 不挡 PWR-C16、寿命检查项覆盖的电容种类、文档类 FAIL 也派生待办、用户暂缓的 NA）；指向别处而落空的“见上文/下文”三处。一处是代码缺陷而不是文档过时：`reviewed-declarations.md` 的流程把带 `reviewed_declarations` 的意图交给冷扫，`validate_intent` 自从未知字段检查（SR 自查 2.8）起把这个键当未知字段拒收，计划生成和去耦清单本来都认它；现把它登记进 `INTENT_FIELDS` 并加测试。上一条里“评测集目录已移到归档”写错了（当天已删除），一并改正。各步骤文档字节数上限随之上调（见 `test_reading_path.py` 的注记）。没改的：存疑的 13 条待用户过目；`requirement_bindings.py` 报错文案里同源的“用 derive_rows.py 写出”；`migrate_results.py` 把 `ADJACENT_TEST_POINT` 映到 G2 而定界表的斜率界是 G3。

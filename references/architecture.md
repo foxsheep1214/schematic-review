@@ -15,10 +15,11 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 |---|---|---|---|---|
 | `db.json` | 工具 | ① 读入 | — | 网表、BOM 列、页、符号脚：图上实际是什么；KiCad 自定义字段、原始 Value、Val 优先的电气值及解码出处；同板 R 前缀歧义保留候选并阻止数值推断 |
 | `requirement_source`（需求原文抄录） | 工具 | ① 读入 | 1 | 需求文档逐字抄录与 sha256 |
-| `datasheet-audit.json` | 工具 | ① 读入 | — | 每颗物料的资料是否找到、是否核实 |
+| `datasheet-audit.json` | 工具 | ① 读入 | 1 | 每颗物料的资料是否找到、是否核实 |
 | `record/requirements.json` | 工具 | ① 读入 | — | `requirement_source` 的抄录输出，打包留档 |
 | `review-plan-cold.json`、`lint-cold.json` | 工具 | ①② 冷扫 | — | 冷扫的中间计划与扫描输出；`lint-cold.json` 交 ④ 校验与 ⑤ 打包 |
-| `资料请求.md`、`datasheet-resolution.json` | 工具 / 审查员 | ② 出计划 | — | 资料请求清单；补齐资料后的解析记录，供重审计 |
+| `资料请求.md` | 工具 | ② 出计划 | — | 资料请求清单 |
+| `datasheet-resolution.json` | 审查员 | ② 出计划 | 1 | 补齐资料后的解析记录，供重审计 |
 | `intent.json` | 审查员 | ①② 的输入 | 5 | 需求理解、需求澄清（问用户的问题与答复）、任务剖面、电源轨、器件类别与配置组、电路取舍、装配状态、规则缺口、产品基线（`guideline_baseline`） |
 | `record/circuit-candidates.json` | 工具 | ② 出计划 | 2 | 候选及带物理网的成员、按角色持有/唯一所属、隔离侧别证据；接口附默认工作态（计划标“默认状态，未经需求确认”） |
 | `review-plan.json` | 工具 | ② 出计划 | 8 | 功能树、每个检查项检查、功能框架、各检查器清单、接口；设计准则库有规则时另有 `guidelines`（适用的共用设计准则与覆盖） |

@@ -49,6 +49,7 @@ class ArchitectureTests(unittest.TestCase):
         self.assertEqual(not_entry, [], 'SKILL.md calls scripts that are not entry scripts')
 
     def test_format_versions_are_the_codes(self):
+        import audit_datasheets
         import circuit_candidates
         import electrical_contract
         import plan_review
@@ -61,6 +62,8 @@ class ArchitectureTests(unittest.TestCase):
                 files[cells[0]] = int(cells[3])
         self.assertEqual(files, {
             '`requirement_source`（需求原文抄录）': requirements_extract.SCHEMA_VERSION,
+            '`datasheet-audit.json`': audit_datasheets.AUDIT_SCHEMA_VERSION,
+            '`datasheet-resolution.json`': audit_datasheets.RESOLUTION_SCHEMA_VERSION,
             '`intent.json`': plan_review.INTENT_SCHEMA_VERSION,
             '`record/circuit-candidates.json`': circuit_candidates.SCHEMA_VERSION,
             '`review-plan.json`': electrical_contract.PLAN_SCHEMA_VERSION,

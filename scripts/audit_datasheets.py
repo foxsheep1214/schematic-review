@@ -28,6 +28,9 @@ from collections import Counter
 from electrical_contract import load_json, squeeze
 
 
+# Format versions of the two files this script exchanges with the agent (references/architecture.md, file table).
+AUDIT_SCHEMA_VERSION = 1
+RESOLUTION_SCHEMA_VERSION = 1
 AUDIT_STATUSES = ('AVAILABLE', 'NEEDS_VERIFICATION', 'MISSING', 'NOT_FOUND')
 RESOLUTION_STATUSES = ('FOUND', 'NOT_FOUND')
 SOURCE_KINDS = ('package', 'network')
@@ -167,8 +170,8 @@ def validate_resolution(resolution, base_dir=None, check_paths=True):
     if not isinstance(resolution, dict):
         return ['resolution 根对象必须为 object']
     errors = []
-    if resolution.get('schema_version') != 1:
-        errors.append('resolution.schema_version 必须为 1')
+    if resolution.get('schema_version') != RESOLUTION_SCHEMA_VERSION:
+        errors.append('resolution.schema_version 必须为 %d' % RESOLUTION_SCHEMA_VERSION)
     entries = resolution.get('entries')
     if not isinstance(entries, list):
         return errors + ['resolution.entries 必须为数组']
@@ -227,8 +230,8 @@ def validate_datasheet_audit(audit, db=None):
     if not isinstance(audit, dict):
         return ['datasheet audit 根对象必须为 object']
     errors = []
-    if audit.get('schema_version') != 1:
-        errors.append('datasheet audit schema_version 必须为 1')
+    if audit.get('schema_version') != AUDIT_SCHEMA_VERSION:
+        errors.append('datasheet audit schema_version 必须为 %d' % AUDIT_SCHEMA_VERSION)
     materials = audit.get('materials')
     if not isinstance(materials, list):
         return errors + ['datasheet audit materials 必须为数组']
@@ -654,7 +657,7 @@ def build_datasheet_audit(db, datasheet_dirs=None, resolution=None,
         'device_kinds': kinds,
         'device_kind_summary': dict(Counter(item['status'] for item in kinds.values())),
         'kind_conflicts': datasheet_kinds.kind_conflicts(materials, heuristic),
-        'schema_version': 1,
+        'schema_version': AUDIT_SCHEMA_VERSION,
         'generated_by': 'scripts/audit_datasheets.py',
         'network_access': 'agent-only',
         'required_refs': required_refs,

@@ -1,8 +1,7 @@
 """Item 5 of the 2026-10-26 SR review: the reviewer's reading path. Every reference names its readers on its third line
 (审查员 / SR 维护者 / 审查员与 SR 维护者), SKILL.md's 参考文件 table carries the same reader for every reference, the
-execution flow (①–⑤) links no maintainer-only reference, and — since the split of 2026-10-26 — each step's linked
-references do not grow past the recorded size (a ratchet per step: lower it when a document shrinks, never raise it
-without saying why in the ledger). The step budget is what a reviewer loads at that step besides SKILL.md itself.
+execution flow (①–⑤) links no maintainer-only reference, and each step's linked references stay within a fixed byte
+budget (the step budget is what a reviewer loads at that step besides SKILL.md itself).
 """
 import re
 import sys
@@ -22,38 +21,12 @@ def rel(path):
 SKILL = (ROOT / 'SKILL.md').read_text(encoding='utf-8')
 READERS = ('审查员与 SR 维护者', 'SR 维护者', '审查员')
 READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审查员)(?:（[^）\n]*）)?。$', re.M)
-# Bytes of the references each step of the execution flow links, measured 2026-10-26 after the split (see the ledger):
-# ① 192321, ② 184974, ③ 220670, ④ 117517, ⑤ 54796. Before the split every step carried the whole 117 KB ledger
-# document and the 131 KB rule table (685 KB in all); ① also carried the 70 KB checkers' document for its conventions.
-# ③ +4.3 KB 2026-10-27: margin-verdicts.md gathers the verdict rules five documents held (ledger: margin verdicts).
-# ① −23 KB, ② −20 KB 2026-10-27: the calculation models moved from evidence-proportionality to wca-formulas.
-# ④ +1.6 KB 2026-10-27: the pre-delivery necessity check moved to verdicts-and-release (①–③ lost 2–6 KB with it).
-# ④ +1.9 KB 2026-10-27: the BOM-constraint grading moved from commodity-floors to verdicts-and-release (② −1.8 KB).
-# ① +0.4 KB, ⑤ −17 KB 2026-10-27: netlist and PDF parsing split from inputs-and-coverage into input-parsing.md.
-# ② +0.4 KB, ③ +0.3 KB 2026-10-27: a resistor whose power matters must have its power rating written in the BOM.
-# ③ +0.4 KB, ④ +0.3 KB 2026-10-28: Codex review SR-FIX-07 (zener and typical-value wording, risk vs BOM-constraint freeze).
-# ③ +0.6 KB, ④ +0.3 KB 2026-10-28: SR-FIX-02 constraint-vs-rating judgement and SR-FIX-05 rule-fit checks written down.
-# ② +0.1 KB 2026-10-28: the optocoupler life row passes at a retention ratio ≤ 85 % (derating R10).
-# ① +0.1 KB 2026-10-28: the start-pin precondition names DIS/UVLO and the rescue-channel precondition is its own.
-# ④ +0.5 KB 2026-10-28: standby power goes to the product test, and the bound-recorded-as-unboundable hint.
-# ① +1.3 KB 2026-11-01: the vocabulary names the 23 checks of rule library 1.2.0 (G04, G05 active).
-# ① +50 B 2026-11-02: the regenerated vocabulary lists the new DC_24V circuit type (rule library 1.5.0).
-# ① +10 B 2026-11-02: the vocabulary's DC_24V row names the new check PWR-C27 (rule library 1.6.0).
-# ① +266 B 2026-11-02: three physical-mechanism qualification rows (USB CC, passive crystal, RTC backup); ledger merge2B.
-# ① +9 B 2026-11-02 boards-merge6 F18: the vocabulary's load_switch title cues add highsidesmartpower (ST IPS4140HQ).
-# ① +141 B 2026-11-02 boards-merge6 F19: checker-conventions says which connector pins an input candidate keeps, and EN on its own supply is no chain (② +123 B, the same document).
-# ① +279 B 2026-11-02 boards-merge6 F20: the vocabulary lists two subject preconditions (INTEGRATED_SWITCH for PRO-C07, MULTI_SOURCE for PWR-C23).
-# ① +177 B, ② +177 B 2026-11-02 boards-merge6 M01/M03/F21: checker-conventions names the CLOCK crystal, DC_24V entry and boot-strap candidate rules.
-# ① +1 B 2026-11-02 boards-merge6 M02: the INDUSTRIAL_DI name pattern takes '/' as a word boundary.
-# ① +391 B 2026-11-03 boards-merge7: the vocabulary lists the HOLD_UP and SIGNAL_PROTECTION circuit types and the FUSE_PART precondition (rule library 1.7.2).
-# ① +136 B, ② +415 B 2026-11-03 boards-merge7: checker-conventions names the HOLD_UP and SIGNAL_PROTECTION candidate rules; the vocabulary drops the two F20 preconditions.
-# ① +161 B, ② +161 B 2026-11-03 boards-merge7 F11: checker-conventions says PRO-E02 walks through forward diodes and one resistor/PTC to the protected pin.
-# ① +336 B 2026-11-03 boards-merge7: the vocabulary prints the name-cue patterns with the hierarchical-net leaf boundary.
-# ① +538 B 2026-11-04 p24 (Matrix R2 plan objects): the vocabulary lists SECOND_SOURCE and TEMP_SENSOR and the protection-controller cue; intent-format says a chain merges into its own circuit, add's default via and the pasteable own; checker-conventions names the Circuit-field cue (② +297 B, the same two documents).
-# 2026-11-05 sr-order: ① +3511 B，订货状态、已登记去重和库内待核替换流程（datasheets.md）。
-# 2026-11-06 sr-polymer: ② +335 B，commodity-floors.md 区分 G08-038/G08-040、聚合物钽及 CAP-POLY-LIFE。
-# 2026-11-10 接入知识包：① +511（datasheets.md 器件参数与原件勘误两句、inputs-and-coverage.md 需求要素与失效两句），③ +114（wca-formulas.md 计算方法一段），⑤ +199（inputs-and-coverage.md 同两句）。
-STEP_MAX_BYTES = {'①': 179596, '②': 161859, '③': 228_703, '④': 125_191, '⑤': 38_175}   # 2026-11-11 通读改过时文字：① +551、② +351、③ +665、④ +504、⑤ +176（列举补全：连接器与 IC 生成的检查项、I²C 展开的规则、轨名写法、引脚角色 absent、寿命检查项覆盖的电容种类；改名后的字段写全称）。 2026-11-04 设计准则覆盖方式：① +89、② +89（intent-format.md 的 materials.handoff_list），③ +476（plan-format.md 的 REQ-Q09 一条、results-format.md 的 batch_answers），④ +257（results-format.md 的 batch_answers）。 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。 2026-11-02 合并步 5：④ +430（verdicts-and-release.md 文档/订货一致性按有无电气后果定级）。 2026-11-04 Matrix R2 扫描：① +276（intent-format.md 可选 open_pins/boundary_nets 两行），② +803（同两行加 automation.md 的开路使能、复位穿缓冲、PG 监测说明），③ +569（scans-and-tools.md 的 NET-A08、DEV-D01 行与 PWR-A03/NET-A02 例外）。 2026-11-04 SR 不足 4.1：① +826、② +723（intent-format.md 的 interfaces 暴露等级与 load_capacitance，词表多一个参数），③ +512（scans-and-tools.md 加 PRO-A06、PWR-A08 两行）；两支合并后 ③ 按实测再 +6。 2026-11-04 设计准则扫描覆盖：③ +1181（scans-and-tools.md 加 guideline_scans.py 的五行：判据、依据准则、误报边界）。  [sr-tools] # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。 2026-11-02 合并步 5：④ +430（verdicts-and-release.md 文档/订货一致性按有无电气后果定级）。 2026-11-04 R2 工具：① +587（datasheets.md 资料链接自动解析、intent-format.md 多文档与 …ID 表头、input-parsing.md ASG 规格列），② +95（intent-format.md），③ +214（scans-and-tools.md 批注告警带位号）。
+# Budget of the references each step of the execution flow links, in bytes: what a reviewer loads at that step besides
+# SKILL.md. A fixed ceiling with headroom (2026-11-11, user: 按照上面的方向改): the former only-decrease ratchet made a
+# correction that completes a list harder to land than leaving the list short, and nine of the 35 stale statements
+# found that day were lists left short. Measured 2026-11-11: ① 179596, ② 161859, ③ 228703, ④ 125191, ⑤ 38175.
+# Raising a budget is said in the ledger; the history of the old record is in the ledger and in git.
+STEP_MAX_BYTES = {'①': 190_000, '②': 170_000, '③': 240_000, '④': 132_000, '⑤': 40_000}
 
 
 def section(text, title):
@@ -115,12 +88,12 @@ class ReadingPathTests(unittest.TestCase):
             self.assertTrue(docs, mark)
             self.assertEqual(sorted(set(docs) - names), [], mark)
 
-    def test_no_step_grows_past_its_record(self):
+    def test_no_step_exceeds_its_budget(self):
         for mark, docs in step_links().items():
             size = sum((ROOT / 'references' / d).stat().st_size for d in docs)
             self.assertLessEqual(size, STEP_MAX_BYTES[mark],
                                  'step %s links %d bytes over %d documents (%s); shrink a document, link a smaller one, or '
-                                 'say in the ledger why the record moves' % (mark, size, len(docs), ', '.join(docs)))
+                                 'raise the budget and say why in the ledger' % (mark, size, len(docs), ', '.join(docs)))
 
 
 if __name__ == '__main__':
