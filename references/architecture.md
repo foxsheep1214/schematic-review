@@ -170,6 +170,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
   登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在计划生成的对应层（电路与器件 `plan_circuits.py`、接口 `interfaces.py`、
   系统功能 `plan_system.py`、全板与覆盖 `plan_board.py`；`plan_review.py` 只做汇总）、`lint.py` 或对应检查器里实现展开/扫描。新增或调整规则先回答 [审查要点中的三个问题](review-charter.md#用审查要点指导进化)。
 - 共用层（`references/shared/` 全部文件与 `scripts/guideline_criteria.py`、`scripts/stress_check.py`）由硬件设计规范的 `工具/guideline_criteria.py` 统一发布，选定的 ASG/SR worktree 从同一正式包核清单后安装，技能内不得编辑或互相复制；`python3 scripts/guideline_criteria.py shared` 核各自已装指纹；哪些文件、各管什么、谁读、哪条测试守见[共用层](shared/shared-layer.md)，设计准则库的更新步骤见[共用设计准则库](shared/guideline-criteria.md#六更新设计准则库)。新增或调整 SR 规则时，若它核对某条设计准则，在 `catalog.BASIS` 登记映射；报告里“适用但还没有检查的共用设计准则”就是这里的待办。`test_guideline_criteria.py` 核对设计准则库词表与 `CIRCUIT_TYPES`、`device_kinds.KINDS` 一致，名字与标题由本地词表读取，分类线索及检查器归属在 SR 维护；本地安装包完整性由 test_installed_release.py 核对，配对字节验收由规范显式发布检查承担。
+- 知识包（`references/knowledge/`，清单 `knowledge-release.json`）由硬件设计知识框架发布后整包安装，技能内不改、运行时不读框架目录；`test_knowledge_package.py` 核包与清单一致，计划 `guidelines` 段记它的版本与指纹（2026-11-10）。
 - **门禁只有一条**（2026-10-27，用户：门禁合成一条 pytest）：每次改动跑 `python3 -m pytest scripts/tests -q`。它已经包含
   [规则合同](../evals/rule_contracts/README.md)（每条自动规则一块触发板、一块近似板）、[KiCad 原生交付回放](../evals/kicad_replay_bench/README.md)
   和 [典型电路基准](../evals/typical_circuits/README.md)（每条报出都要已归类，新出现的须逐条审读），不再单独跑、不再分行记。

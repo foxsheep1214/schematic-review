@@ -11,7 +11,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
-REFERENCES = sorted((ROOT / 'references').rglob('*.md'))   # shared/ included (2026-11-02)
+# shared/ included (2026-11-02); the installed knowledge package is not (2026-11-10): its files are the framework's, not
+# edited here, and SKILL.md's 参考文件 table names its reader once on knowledge/README.md
+REFERENCES = sorted(p for p in (ROOT / 'references').rglob('*.md') if 'knowledge' not in p.relative_to(ROOT / 'references').parts)
 
 
 def rel(path):
@@ -50,7 +52,8 @@ READER_RE = re.compile(r'^> 读者：(审查员与 SR 维护者|SR 维护者|审
 # ① +538 B 2026-11-04 p24 (Matrix R2 plan objects): the vocabulary lists SECOND_SOURCE and TEMP_SENSOR and the protection-controller cue; intent-format says a chain merges into its own circuit, add's default via and the pasteable own; checker-conventions names the Circuit-field cue (② +297 B, the same two documents).
 # 2026-11-05 sr-order: ① +3511 B，订货状态、已登记去重和库内待核替换流程（datasheets.md）。
 # 2026-11-06 sr-polymer: ② +335 B，commodity-floors.md 区分 G08-038/G08-040、聚合物钽及 CAP-POLY-LIFE。
-STEP_MAX_BYTES = {'①': 178534, '②': 161508, '③': 227_924, '④': 124_687, '⑤': 37_800}   # 2026-11-04 设计准则覆盖方式：① +89、② +89（intent-format.md 的 materials.handoff_list），③ +476（plan-format.md 的 REQ-Q09 一条、results-format.md 的 batch_answers），④ +257（results-format.md 的 batch_answers）。 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。 2026-11-02 合并步 5：④ +430（verdicts-and-release.md 文档/订货一致性按有无电气后果定级）。 2026-11-04 Matrix R2 扫描：① +276（intent-format.md 可选 open_pins/boundary_nets 两行），② +803（同两行加 automation.md 的开路使能、复位穿缓冲、PG 监测说明），③ +569（scans-and-tools.md 的 NET-A08、DEV-D01 行与 PWR-A03/NET-A02 例外）。 2026-11-04 SR 不足 4.1：① +826、② +723（intent-format.md 的 interfaces 暴露等级与 load_capacitance，词表多一个参数），③ +512（scans-and-tools.md 加 PRO-A06、PWR-A08 两行）；两支合并后 ③ 按实测再 +6。 2026-11-04 设计准则扫描覆盖：③ +1181（scans-and-tools.md 加 guideline_scans.py 的五行：判据、依据准则、误报边界）。  [sr-tools] # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。 2026-11-02 合并步 5：④ +430（verdicts-and-release.md 文档/订货一致性按有无电气后果定级）。 2026-11-04 R2 工具：① +587（datasheets.md 资料链接自动解析、intent-format.md 多文档与 …ID 表头、input-parsing.md ASG 规格列），② +95（intent-format.md），③ +214（scans-and-tools.md 批注告警带位号）。
+# 2026-11-10 接入知识包：① +511（datasheets.md 器件参数与原件勘误两句、inputs-and-coverage.md 需求要素与失效两句），③ +114（wca-formulas.md 计算方法一段），⑤ +199（inputs-and-coverage.md 同两句）。
+STEP_MAX_BYTES = {'①': 179045, '②': 161508, '③': 228_038, '④': 124_687, '⑤': 37_999}   # 2026-11-04 设计准则覆盖方式：① +89、② +89（intent-format.md 的 materials.handoff_list），③ +476（plan-format.md 的 REQ-Q09 一条、results-format.md 的 batch_answers），④ +257（results-format.md 的 batch_answers）。 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。 2026-11-02 合并步 5：④ +430（verdicts-and-release.md 文档/订货一致性按有无电气后果定级）。 2026-11-04 Matrix R2 扫描：① +276（intent-format.md 可选 open_pins/boundary_nets 两行），② +803（同两行加 automation.md 的开路使能、复位穿缓冲、PG 监测说明），③ +569（scans-and-tools.md 的 NET-A08、DEV-D01 行与 PWR-A03/NET-A02 例外）。 2026-11-04 SR 不足 4.1：① +826、② +723（intent-format.md 的 interfaces 暴露等级与 load_capacitance，词表多一个参数），③ +512（scans-and-tools.md 加 PRO-A06、PWR-A08 两行）；两支合并后 ③ 按实测再 +6。 2026-11-04 设计准则扫描覆盖：③ +1181（scans-and-tools.md 加 guideline_scans.py 的五行：判据、依据准则、误报边界）。  [sr-tools] # 2026-11-02: ② +380 (shared/ in link paths; commodity-floors.md points its three tables at commodity-floors.json), ③ +40 (shared/ in link paths) 2026-11-02 正式用语：③ +20（bounding-table.md 的“规则库”改“设计准则库”）。 2026-11-02 合并步 5：④ +430（verdicts-and-release.md 文档/订货一致性按有无电气后果定级）。 2026-11-04 R2 工具：① +587（datasheets.md 资料链接自动解析、intent-format.md 多文档与 …ID 表头、input-parsing.md ASG 规格列），② +95（intent-format.md），③ +214（scans-and-tools.md 批注告警带位号）。
 
 
 def section(text, title):

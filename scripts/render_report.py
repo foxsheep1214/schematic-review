@@ -799,6 +799,8 @@ def render_guidelines(plan):
               len(section.get('uncovered') or [])), '',
            '“内容”列是准则库条款标题的原文引文，照录不改写。', '',
            '| 设计准则 | 内容（准则库原文） | 出处 | 本次由哪些检查核对 | 关闭阶段 |', '|---|---|---|---|---|']
+    if section.get('knowledge_version'):   # 知识包与共用层版本并列记录（2026-11-10 接入知识包）
+        out[4:4] = ['知识包 %s，指纹 %s。' % (section['knowledge_version'], section['knowledge_fingerprint'][:12]), '']
     if not section.get('external_interfaces'):   # 2026-11-01 (user decision 1): the interface rules never rest on a net name alone
         out[2:2] = ['未声明对外接口：网名没有识别到、intent 也没有声明 %s，这些接口的设计准则没有选中。板上有的话写进 `intent.circuits` 后重新生成计划。'
                     % '、'.join(t.title for t in catalog.CIRCUIT_TYPES if t.name in catalog.EXTERNAL_INTERFACE_TYPES), '']

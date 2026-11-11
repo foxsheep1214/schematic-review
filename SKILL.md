@@ -129,6 +129,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | 输入版本、覆盖与留档 | [inputs-and-coverage.md](references/inputs-and-coverage.md) |
 | 审查员 | 跑解析器、各 EDA 字段映射、解析自检、PDF 提取与读图 | [input-parsing.md](references/input-parsing.md) |
 | 审查员 | 资料补取、保证值核对 | [datasheets.md](references/datasheets.md) |
+| 审查员 | 知识包（固定安装，不在这里改）：需求要素、接口约定、计算方法、器件参数、失效与异常工况、典型电路的已知坑；判一条准则该要什么证据、怎样复算、保证值多少、器件怎样失效 | [knowledge/README.md](references/knowledge/README.md) |
 | 审查员 | 复用上次核对过的器件角色与供电分组 | [reviewed-declarations.md](references/reviewed-declarations.md) |
 | 审查员 | 工程计算公式；修改建议的计算预检查 | [wca-formulas.md](references/wca-formulas.md)、[calculation-preflight.md](references/calculation-preflight.md) |
 | 审查员 | 需要有界 R/C 工作点或瞬态的仿真证据 | [simulation-evidence.md](references/simulation-evidence.md) |
@@ -158,6 +159,8 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 方式字母只是标签，说明结论怎么得出；一条规则在哪次运行执行（冷扫、专家审查、改版复审），由它在总表里声明的输入和执行者推出（`catalog.stage_of`），不由字母决定。
 计划里没有、审查员认为该查的项不直接加检查项（直接加的被拒），登记到 `intent.rule_gaps`，写法和去向见 [intent 字段](references/intent-format.md#一intentjsonschema_version-5)。
 共用设计准则来自硬件设计规范的固定发布包，SR 记录本次审查采用的版本与指纹，独立取证和复算（机制见 [共用层说明](references/shared/shared-layer.md)）。
+需求要素、接口约定、计算方法、器件参数、失效与异常工况等来自硬件设计知识框架的固定知识包（`references/knowledge/`，清单 `knowledge-release.json`），计划 `guidelines` 段同样记它的版本与指纹。
+知识包告诉审查员判一条准则该要什么证据、怎样复算、器件保证值多少、器件怎样失效；判据仍是设计准则，数值出处仍写原件与页码。
 共用设计准则（编号 `G0x-nnn`，如 `G03-005`）是判据层，规则总表是执行层：`catalog.BASIS` 把 SR 规则映射到它核对的本地设计准则，
 计划的 `guidelines` 段列出本板适用的设计准则、由哪些检查覆盖、哪些检查这次没展开（本板没有对象或电路未声明）、哪些还没有检查（SR 待补，不是设计缺陷），见 [共用设计准则库](references/shared/guideline-criteria.md)。
 共用规范 G01–G10 中 G01–G09 是设计准则（编号 `G0x-nnn`），G10 是降额与应力规范（规则编号如 `RES-SMD-P`，见 [降额规范](references/shared/derating-rules.md)）；它们与审查要点 要点1–7、定界推法 G1–G11 不是一回事，不要混写。
@@ -182,6 +185,7 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 把问题清单交给用户。②、③ 中途发现新的需求问题同样当场问。
 录入前按 [需求原文到审查要求](references/requirement-clarifications.md#需求原文到审查要求) 分清确实待用户决定的、
 客观设计要求、明确排除和下游工作；不能把源文件的 OPEN 标题机械变成问题。
+核需求是否给全时，对照知识包 [需求要素](references/knowledge/需求要素/README.md)：按本板的端口和负载找条目，条目列的条件缺了而判断要靠它的，照上面当场问。
 按 [输入与覆盖](references/inputs-and-coverage.md) 记录输入版本/哈希；PDF 与网表须核修订号证明同版。
 仅有 PDF 时逐页读图并声明范围，不能声称网表/ERC/逐脚全量通过。缺工具先盘点现有能力，安装须另获授权。
 
@@ -239,6 +243,7 @@ PDF 与网表核过同版；页码映射建好；冷扫跑过，阻值读不出�
   核心器件和它生成的电路类型，计划顶层 `domains` 据此列出参考地分区、跨域器件与截止网络（[检查器共用约定](references/checker-conventions.md)）。
 - AI 已逐端核对的器件角色和电源/返回分组按 [可复用声明](references/reviewed-declarations.md) 保存来源与输入指纹；
   下次先验证声明，输入变化则重新核对，不能只刷新摘要。`manual_*` 兼容字段不代表人员确认，核对者身份须如实记录。
+- 器件保证值先查知识包 `器件参数/`（带手册页码），没有条目或版本不符再读手册；引 [原件勘误](references/knowledge/原件勘误.md) 列出的原件的数，看页面图像（[器件资料](references/datasheets.md#二保证值核对方式-e)）。
 - 资料缺失时按 [器件资料](references/datasheets.md) 补取（先 LCSC/立创，再原厂），仍取不到按逐参数补证；
   PDF 提取的关键数值对照渲染页核单位。
 
@@ -354,11 +359,14 @@ SR 只用“不变的决定”第 1 条的四类输入：设计方的报告、�
 - **工程计算**：按 [WCA 公式](references/wca-formulas.md) 先确认模型，再代入实际串并联、输入/温度/负载和公差角点；
   原厂已覆盖工况的 Min/Max 直接使用。区分设定目标与物理可达输出（FB 公式不代表升压能力、RC 不等于复位脉宽、
   有 TVS 不等于防护通过）。阈值型保护（门限脚、门限链与基准齐纳、跨开关节点的能量钳位）两侧都算（PRO-C02）；跨网与地的防护钳位（电源轨 TVS、芯片脚对地齐纳、连接器信号线 ESD）逐器件核工作电压（只比持续最高电压）、能到达本节点的瞬态下钳位电压对同网最低耐受和脉冲能量（PRO-E02）。一次只取一个瞬态或故障事件，叠加在持续最坏工况上；瞬态比瞬态额定，持续比持续额定（[单一瞬态](references/wca-formulas.md#假设上界与实际故障的证据门槛)），连接器只核挂线与泄放（PRO-D03）；传感器开短路按控制器实际偏置档与环境全范围判别（ANA-C04）。连续可调输出在全范围扫描应力。判“缺保护”前计入 IC 自带保护（寄存器设定的门限归固件任务）；改频率/阻值/保护管时连带复算。
+  某条准则要复算时，用知识包 [准则支撑表](references/knowledge/准则支撑表.md) 从准则编号找到 `计算方法/` 的条目，按它的取值步骤和输入取端复算；WCA 已有的公式不重抄（[关系](references/wca-formulas.md#公式与验收依据)）。
 - **自己算关键数值**：决定结论的数值由 SR 按原理图、需求和原厂资料自己算，`circuit_bounds.*`（分压、RC 跨阈、线性稳压热、逻辑电平裕量、电容纹波折算、电阻功耗、串阻电流）与 `model_bounds.*` 自行枚举公差角点。不复算设计文档所称的数值，也不拿它当判据。
 - **核对模型和原表**：CrM Boost 输出电容用 `model_bounds.crm_boost_capacitor_ripple` 独立核二极管导通相位，并按控制器实际母线模式分别算；不沿用设计脚本的公式证明自身。厂家参数引用用 `audit_parameter_claims.py` 对比独立摘录的原表，给料号/材料、文档哈希、页码、温度/激励条件、典型或保证值口径；工程设计限值另核裕量，不能当厂家额定值引用。工具不代替原表摘录核实，详见 [自动扫描与计算工具](references/scans-and-tools.md#厂家参数引用核对)。
 - **动态数值证据**：需要有界 R/C 工作点或瞬态时按 [仿真证据](references/simulation-evidence.md)；样本在窗口内不直接等于规则 PASS。
 - **条款核对**：每颗 IC/模组核推荐工作条件（DEV-C05）和逐脚处置（DEV-D05）；连接器核对端定义（DEV-D03）和对外防护（PRO-D03）；
   主控引脚复用对照平台约束与固件配置（SIG-D13）。由参考设计派生的电路列出全部偏离并按本设计条件复核。
+- **知识包对照**：跨块接口两端是否交代全、总线电气条件对照 `接口约定/`；器件失效方式、单故障与故障模式分析的步骤对照 `失效与异常工况/`；
+  `典型电路/` 各实现方案的“已知坑”只作找问题的线索，发现仍落到具体准则和证据上，不因没用某种典型电路判缺陷。
 
 做完的标志：`review-results.json` 的 `functions[]` 与计划的 `functions[]` 一一对应，每个功能有 verdict 与 evidence；
 开放项、失败项每条有 `key`、`kind`、`decides`，每条边只挡这类开放项能挡的检查项（[每类开放项能挡哪些检查项](references/results-format.md#功能判定functions)）；要算数的功能有计算记录，不用算的写 `no_calculation_reason`；比较过的每个量在 `margin` 或条款 `limit` 里（`calculation.result` 只是结论句，单位按 `scripts/units.py` 的拼法；4.1 的 RESULT_NARRATIVE / UNIT_UNKNOWN / QUANTITY_IMPLAUSIBLE 零提示）；手册和 BOM 来源的条款都有 `refs`（门禁无 “refs names the part” 错误）；

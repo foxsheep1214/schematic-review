@@ -14,6 +14,16 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+
+## 接入知识包（2026-11-10）
+
+用户：“做完这个知识体系建设以后，请将ASG和SR重新接入到这个知识体系里面来”；接入方式选“固定包安装”，流程文字改动选“直接按推荐做完”。知识框架的七个组件已打成知识包装在 `references/knowledge/`（清单 `knowledge-release.json`，1.0.0），本次只把它接进审查流程，不改包、不改共用层：1.1 核需求是否给全对照 `需求要素/`；1.3 与资料一页的保证值核对先查 `器件参数/`（带页码），引 `原件勘误.md` 名单里原件的数看页面图像；③ 复算某条准则时由 `准则支撑表.md` 找 `计算方法/` 条目，按它的取值步骤和取端算，WCA 已有的公式不重抄；接口对照 `接口约定/`，失效方式和单故障对照 `失效与异常工况/`，`典型电路/` 的已知坑只作线索，不因没用某种典型电路判缺陷。判据仍是设计准则，数值出处仍写原件与页码，不新增门禁。计划 `guidelines` 段与共用层版本并列记 `knowledge_version`、`knowledge_fingerprint`（可选字段，按 `derating` 的先例不升计划格式版本），报告“共用设计准则覆盖”一节印一行“知识包 <版本>，指纹 <前 12 位>”。新增 `test_knowledge_package.py` 照框架 `verify-installed` 的算法在本仓库自带核对包与清单（逐文件哈希、多出缺少、清单指纹）。`test_reading_path.py` 的读者核对不再扫描知识包（包内文件不改，读者在参考文件表 knowledge/README.md 一行写明）；步骤读量记录 ① +511、③ +114、⑤ +199 B。
+
+- Event: user:2026-11-10（做完这个知识体系建设以后，请将ASG和SR重新接入到这个知识体系里面来）
+- Causes: knowledge_missing 1
+- Changed: SKILL.md, references/datasheets.md, references/wca-formulas.md, references/inputs-and-coverage.md, references/architecture.md, scripts/plan_review.py, scripts/render_report.py, scripts/tests/test_knowledge_package.py, scripts/tests/test_reading_path.py, docs/improvement-ledger.md
+- Gates: pytest 3092 passed；mutation --changed 单元层全部 KILLED（退出码 0）
+
 ## 门禁重建计划漏掉 REQ-Q09 行（2026-11-07）
 
 PoE 传感节点首审（ASG 整板评测基线）：536 条检查写完，门禁仍报 `REQ-Q09.HANDOFF.BOARD`、`REQ-Q09.PROJECT-INPUT.BOARD` 不是计划工具写的。原因是 `plan_guideline_batches()` 在 `build()` 里、`generate()` 之后才写这两行，而门禁重建计划只调 `generate()`，于是把它们当成审查员手加的行；intent 不变时重建也复现，与台账内容无关。改为在 `generate()` 末尾写这两行，出计划与门禁重建走同一组步骤，门禁也因此逐字核对这两行没被改过。准则范围取计划行上的电路类型，`build()` 后段加的自动扫描行和系统框架行不带电路类型，所以行的内容不变。PoE 产物按新版重出冷、热计划（536 条逐条相同，只有 `review_engine` 变），结果的 `plan_digest` 改指新计划后门禁 valid。门禁过了才第一次走到打包，又暴露报告模板自己的用词：REQ-Q09 交接类那张表的标题写“进下游交接清单的设计准则”，`pack_review` 按写法要求拒收“下游”；改为“要列进交接清单的设计准则”，测试核对两张批量表的标题与说明不含禁用词。改后 PoE 报告打包 PASS。

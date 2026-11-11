@@ -8,6 +8,8 @@
 它是库：出计划的命令只有 lint.py（`--plan-json`），见 SKILL.md 2.1（SR 自查 2.9）。
 """
 import difflib
+import json
+from pathlib import Path
 from copy import deepcopy
 import board_intent
 import catalog
@@ -362,6 +364,15 @@ def guideline_scope_of(checks, db, kind_intent, intent, library):
     return intent.get('guideline_baseline') or library['default_baseline'], circuits, kinds
 
 
+def knowledge_identity(root=Path(__file__).resolve().parents[1]):
+    """知识包（references/knowledge/）的版本与指纹，照技能根目录 knowledge-release.json 记进计划，与共用层版本并列；没装包时为空。"""
+    path = root / 'knowledge-release.json'
+    if not path.is_file():
+        return {}
+    manifest = json.loads(path.read_text(encoding='utf-8'))
+    return {'knowledge_version': manifest['knowledge_version'], 'knowledge_fingerprint': manifest['fingerprint']}
+
+
 def guideline_section(checks, db, kind_intent, intent, library):
     """共用设计准则的适用与覆盖（references/shared/guideline-criteria.md）：范围见 guideline_scope_of；计划里出现的 SR 规则按
     catalog.BASIS 覆盖它映射的设计准则；映射的 SR 规则这次没有展开的记 not_triggered（本板没有它的对象，或电路还没声明），
@@ -382,7 +393,7 @@ def guideline_section(checks, db, kind_intent, intent, library):
     batch = set(classes.get('project_input') or ()) | set(classes.get('handoff') or ())
     open_items = [gid for gid in found['uncovered'] if gid not in batch]
     section = {'library_version': found['library_version'], 'content_sha256': found['content_sha256'],
-               **guideline_criteria.shared_versions(bundle=library),
+               **guideline_criteria.shared_versions(bundle=library), **knowledge_identity(),
                'baseline': baseline, 'circuit_types': circuits, 'device_kinds': kinds,
                'external_interfaces': sorted(set(circuits) & set(catalog.EXTERNAL_INTERFACE_TYPES)),
                'applicable': found['applicable'], 'covered': {g: v for g, v in found['covered'].items() if g not in batch},
