@@ -67,7 +67,6 @@ DIODE_VF = (
      'onsemi BAS21H p3 Figure 2（典型曲线，25 °C 与 155 °C）'),
 )
 STATUS_PIN_RE = re.compile(r'^(?:P(?:OWER)?_?G(?:OOD|D)?|PWRGD|FLT|FAULT|IMON)$', re.I)
-ASYNC_PIN_RE = re.compile(r'^(\d*)(PRE|CLR|SD|RD|S|R)$', re.I)
 EXAMPLE_LOAD_F = (10e-6, 47e-6, 100e-6)
 
 

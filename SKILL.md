@@ -56,7 +56,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 1. 只认四类输入：需求、设计结果、原厂与标准资料、SR 自己的计算。
 2. 规则只在 `scripts/catalog.py` 登记；查什么由工具生成的计划决定，审查员不手加检查项。
 3. 判断的单位是功能：缺口和失败只在功能判定里写一次，检查项由功能派生；计划电路的缺口写在计划功能里，不另建功能装它。
-4. 每个决定结论的数值由审查员自己算；工具只定对象、提供公式和对账，不替审查员下电气结论。器件参数能不能定界、推不出记哪一档，按工作点定界表执行，门禁按表重算核对（2026-10-23）。
+4. 每个决定结论的数值由审查员自己算；工具只定对象、提供公式和对账，不替审查员下电气结论。器件参数能不能定界、推不出记哪一档，按工作点定界表执行，门禁按表重算核对。
 5. 校验只证明记录一致，不证明审查正确。
 6. 报告只从台账生成（打包时按台账重新渲染比对，门禁须 valid）；交付只有报告两份和 `record/`。
 
@@ -138,7 +138,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | 自动扫描怎么跑、扫描提示怎么读、计算与厂家参数核对工具 | [scans-and-tools.md](references/scans-and-tools.md) |
 | 审查员 | 检查器共同的识别与声明规则：轨身份、识别依据、器件类型核验、电路候选、装配状态、指纹绑定、缺口 | [checker-conventions.md](references/checker-conventions.md) |
 | 审查员与 SR 维护者 | 各检查器查什么、intent 里怎么声明它 | [automation.md](references/automation.md)（检查器实现细节给维护者） |
-| 审查员与 SR 维护者 | 参与 ASG/SR 薄控制器流程时的交接 | [workflow-handoff.md](references/workflow-handoff.md) |
+| 审查员与 SR 维护者 | 由外部流程派发任务、与 ASG 交接时 | [workflow-handoff.md](references/workflow-handoff.md) |
 | SR 维护者 | 架构明细：步骤间文件、格式版本、脚本归属、历次架构决定、规则维护步骤 | [architecture.md](references/architecture.md) |
 | SR 维护者 | 规则编号总表、判据、每项检查的盲区与常见误报（审查员用的名称表另出） | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
 | SR 维护者 | 改规则时：七项审查要点（要点1–7）、规则取舍的三问 | [review-charter.md](references/review-charter.md) |
@@ -147,8 +147,8 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 
 ## 与 ASG 的有状态工作流交接
 
-参与 ASG/SR 薄控制器流程时，读 [工作流交接约定 v1](references/workflow-handoff.md)：只读 ASG 交付包里的原理图、网表、PDF、BOM 和需求，独立取证、复算和审查，不迁移设计侧的通过结论。
-独立使用 SR（包括受限 PDF 审查）不依赖控制器；不得伪造网表来满足完整 ASG 交接约定。
+由外部流程派发任务、与 ASG 交接时，读 [工作流交接约定 v1](references/workflow-handoff.md)：只读 ASG 交付包里的原理图、网表、PDF、BOM 和需求，独立取证、复算和审查，不迁移设计侧的通过结论。
+独立使用 SR（包括受限 PDF 审查）不依赖外部流程；不得伪造网表来满足完整 ASG 交接约定。
 
 ## 规则编号
 
@@ -334,12 +334,12 @@ SR 只用“不变的决定”第 1 条的四类输入：设计方的报告、�
   都在这个功能里判，同一方面的几颗器件一条 judgement 可以合答，差别用 `check_ids` 分开。一个电路的缺口和失败写在它自己的功能里；
   跨电路的缺口只写一次，影响条目用 `check_ids` 点名另一电路的检查项。自建功能只装不属于任何框架的检查项；文档检查（DOC-*）在检查项上判，不包成功能。
 - 先从器件关键参数判断：每颗器件在本板用到的关键参数就是[工作点定界表](references/bounding-table.md)里它那一类的格，逐个参数比本板工作点和保证值，
-  比完再下功能结论；功能结论只有三档——合格、不合格（给改法）、合格但有风险（检查项状态仍是 PASS/FAIL/INSUFFICIENT/NA，INSUFFICIENT 只剩缺厂家资料；2026-10-26，用户：三档结论加四类风险标签，只靠估算过关的角点标风险，风险不限制定稿只单列，关键参数表在定界表上扩）。
+  比完再下功能结论；功能结论只有三档——合格、不合格（给改法）、合格但有风险（检查项状态仍是 PASS/FAIL/INSUFFICIENT/NA，INSUFFICIENT 只剩缺厂家资料；只靠估算过关的角点标风险）。
 - 余量按 `margin.basis.kind` 下结论（GUARANTEED_BOUND 满足才 PASS、REACHABLE_CASE 不满足才 FAIL、EXACT_ENVELOPE 两头都判、ESTIMATE 不判），器件参数按[工作点定界表](references/bounding-table.md)定界，门禁重算。
   典型值估算能否判 PASS 由那一格的[判决边界](references/bounding-table.md#判决边界)按后果类定，字段写法见[余量的依据](references/results-format.md#功能判定functions)；
   一条余量判合格、合格但有风险（含估算过关与额定内超降额的应力风险）还是不合格按[余量判定规则](references/margin-verdicts.md)。风险不限制定稿，报告单列“风险清单”。
 - 缺口先按[判“证据不足”之前先定界](references/evidence-proportionality.md#判证据不足之前先定界)走完公开资料界限，真缺厂家数据的记 VENDOR_DATUM；
-  设计没定不开项（2026-10-26，用户：按甲乙分开改：甲判不合格并给改法，乙判合格并附设计约束）：原理图或 BOM 该写明而没写的值记失败项，改法写反推出的值；
+  设计没定不开项：原理图或 BOM 该写明而没写的值记失败项，改法写反推出的值；
   归另一份设计文件（磁件、固件、PCB）的值，以及另一环节欠的交付物（定制件图纸、固件能力），写 DESIGN_CONSTRAINT 条件（没有单一数值的写条款），按约束判 PASS 并移交给负责方；
   检查项只在本方面本状态有证明通过的余量或判断时 PASS，没人判过的方面不默认通过。
 
@@ -375,7 +375,7 @@ SR 只用“不变的决定”第 1 条的四类输入：设计方的报告、�
 #### 3.2 检查项派生
 
 绑定了功能的检查项由功能派生（结论、open_ref/fail_ref、rationale 都从功能来），不手填；绑定了树上检查的需求检查项（`bound_checks`）取绑定检查项中最差的结论，也不手填。
-派生的检查项**不写进台账**（2026-10-26 定）：`review-results.json` 只装功能判定和手填的检查项，门禁、报告、打包、对比读取时从计划和功能派生（`results_model.materialize`），
+派生的检查项**不写进台账**：`review-results.json` 只装功能判定和手填的检查项，门禁、报告、打包、对比读取时从计划和功能派生（`results_model.materialize`），
 所以台账里不可能有一份和功能判定不一致的副本。审查员自己把检查项绑到功能时只写 `{id, function_id, aspect}`；要给派生检查项补注记（`manual_verification`、`notes`、`settings`、`bom_constraint`、`requirement_clauses`）时只写 `{id, 注记}`，结论仍由功能派生。
 功能判定写完后跑一次检查，看功能派生出什么、哪些方面没判、哪条手填检查项和功能不一致（它不写文件）：
 
@@ -446,7 +446,7 @@ REVIEW_INCOMPLETE 为 0，只剩工具限制的写了 `manual_verification`。
 - 合格但有风险的检查由门禁的 `risks` 渲染成附录里折叠的“风险清单”，按风险类型分组（功能、格、只靠估算的角点、怎么估、余量、怎么改进、样机要测、涉及检查），
   结论段和数字一览各带一句；风险不限制定稿。寿命检查项凭估算判通过的不列风险，只列它的 BOM 约束和热设计移交；
   器件类别词表或定界表没覆盖的（`sr_improvements` 的 NEW_DEVICE_KIND / NEW_BOUND_CELL）渲染在“对 SR 的反馈”下“器件类别与定界表要扩的”，只告诉 SR 维护者要扩表。
-- 按设计约束判合格的检查项由门禁 `design_constraints` 汇总，结论段带一句，约束本身列在“交给后续环节的要求”；不限制定稿（2026-10-26，用户：并入乙）。
+- 按设计约束判合格的检查项由门禁 `design_constraints` 汇总，结论段带一句，约束本身列在“交给后续环节的要求”；不限制定稿。
 
 - 渲染取舍（只写决定性余量、长 result 只取第一句等）由 `render_report.py` 实现，见 [报告与修改说明](references/report-and-remediation.md)；待办标题超过 60 字出 TASK_TITLE_LONG 提示，summary 不复述检查计数。
 做完的标志：`notes.json` 的 summary、items、sr_feedback 用白话且都进了报告（summary 不带检查计数）；报告里的相对链接都能打开；
@@ -461,7 +461,7 @@ TASK_TITLE_LONG 提示每条处置过；报告里没有"每只、每只"串接�
 
   `pack_review.py` 拒绝打包的情形：重新渲染的报告与 `审查报告.md` 不同（手改过或台账改了没重出；渲染用了 `--title`、`--detail` 的打包时同样传）、门禁不 valid、门禁之后计划/结果/db/lint 又改过、结果声明了 `review_scope`、顶层有其他文件、引用的证据找不到或越界（`..`、符号链接）。它只复制结论引用的证据，原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`；本轮证据用 `--evidence-root` 内的相对路径。不另写 README 或说明文档。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
   公开仓库只放脱敏合成用例。
-- 证据只放摘录（5.2 审核 2026-10-26）：引用台账文件的证据指向 `record/`，不复制；引用 SR 自己的 references 按 `skill_version` 解析，不声明为输入；
+- 证据只放摘录：引用台账文件的证据指向 `record/`，不复制；引用 SR 自己的 references 按 `skill_version` 解析，不声明为输入；
   手册和标准声明为输入（`--input datasheets=<原厂资料目录>`）按路径加页码引用，引用了 `ds/*.txt` 抽取而没有含 PDF 的输入打包失败；
   单个证据超过 300 KB 打包给 NOTE，处置是改为按输入引用或裁成摘录。
 

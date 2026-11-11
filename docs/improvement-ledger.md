@@ -15,6 +15,15 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+## 清理过时文字并加防漏测试（2026-11-11）
+
+用户：“类似的，也检查修改SR技能，让SR的技能也简洁清晰明确”。按在 ASG 上用过的办法查了一遍：找无人引用的函数与模块、文档里提到而不存在的脚本和链接、通读 SKILL.md。代码只有一个无人引用的常量（`latch_criteria.ASYNC_PIN_RE`，删）。文档改了这些：`workflow-handoff.md` 提到的 `contract.py`、`adapters.py` 本技能里没有，改为写明控制器是派发任务的外部程序；SKILL.md 的“薄控制器流程”改叫“由外部流程派发任务”，执行流程里六处带日期的括注（记的是当时的用户决定，架构说明“历次架构决定”和本台账已有）删去，条文不变；README 的“七项审查纲要”改回“七项审查要点”；架构说明“电路评测集”一条补上 2026-11-09 停用和归档位置；公开板流水线的提示词标明停用。新增 `test_single_source.py`：文档提到的脚本都存在、相对链接都能打开、每个脚本有人导入或文档提到、每个顶层名字有人用。没动的：`evals/eval_set.py` 的默认路径（评测体系重建后再定）、`evals/mutation/README.md` 里按批记的历史行。
+
+- Event: user:2026-11-11（类似的，也检查修改SR技能，让SR的技能也简洁清晰明确）
+- Causes: knowledge_wrong 1
+- Changed: SKILL.md, README.md, references/workflow-handoff.md, references/architecture.md, evals/boards_tools/board-prompt.md, scripts/latch_criteria.py, scripts/tests/test_single_source.py, docs/improvement-ledger.md
+- Gates: pytest 3096 passed, 6 skipped；mutation --changed 单元层全部 KILLED（退出码 0）
+
 ## 接入知识包（2026-11-10）
 
 用户：“做完这个知识体系建设以后，请将ASG和SR重新接入到这个知识体系里面来”；接入方式选“固定包安装”，流程文字改动选“直接按推荐做完”。知识框架的七个组件已打成知识包装在 `references/knowledge/`（清单 `knowledge-release.json`，1.0.0），本次只把它接进审查流程，不改包、不改共用层：1.1 核需求是否给全对照 `需求要素/`；1.3 与资料一页的保证值核对先查 `器件参数/`（带页码），引 `原件勘误.md` 名单里原件的数看页面图像；③ 复算某条准则时由 `准则支撑表.md` 找 `计算方法/` 条目，按它的取值步骤和取端算，WCA 已有的公式不重抄；接口对照 `接口约定/`，失效方式和单故障对照 `失效与异常工况/`，`典型电路/` 的已知坑只作线索，不因没用某种典型电路判缺陷。判据仍是设计准则，数值出处仍写原件与页码，不新增门禁。计划 `guidelines` 段与共用层版本并列记 `knowledge_version`、`knowledge_fingerprint`（可选字段，按 `derating` 的先例不升计划格式版本），报告“共用设计准则覆盖”一节印一行“知识包 <版本>，指纹 <前 12 位>”。新增 `test_knowledge_package.py` 照框架 `verify-installed` 的算法在本仓库自带核对包与清单（逐文件哈希、多出缺少、清单指纹）。`test_reading_path.py` 的读者核对不再扫描知识包（包内文件不改，读者在参考文件表 knowledge/README.md 一行写明）；步骤读量记录 ① +511、③ +114、⑤ +199 B。

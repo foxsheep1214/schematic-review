@@ -3,7 +3,7 @@
 面向硬件原理图首审、冻结前检查和改版复审的 Agent skill。按需求、电路和工况逐项检查，
 交付有证据的 P0–P3 缺陷、可执行的修改步骤与复验条件；待核项给出具体补证或设计路径。
 
-- 目的与取舍：[七项审查纲要](references/review-charter.md)。
+- 目的与取舍：[七项审查要点](references/review-charter.md)。
 - 全部检查按 [规则总表](references/check-catalog.md) 编号（`内容域-方式序号`，如 `PWR-E01`），11 个内容域、8 种检查方式；
   DDR、USB、电源保护等功能以“功能电路”组织，确认实际用途后逐电路、逐工况展开。
 - 判“证据不足”前先用已有参数定界，规则见 [最小充分证据](references/evidence-proportionality.md)。
