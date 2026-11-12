@@ -15,6 +15,15 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+## 知识包和共用层改为从知识框架同步（2026-11-11）
+
+知识框架 2026-11-11 取消了发布包，技能里装的是没法再更新的旧副本（知识 1.0.2、准则库 1.9.10）。用户确认接入方案“技能侧同步快照”：技能自带一份知识，由技能主动从框架取，运行时不读框架目录。新增 `scripts/knowledge_package.py`（与 ASG 同一份字节）：`sync <知识框架目录>` 换掉 `references/knowledge/` 和共用层，写 `knowledge-sync.json`（依据的框架版本、日期、逐文件哈希，取代 `knowledge-release.json`）和 `shared-release.json`，把与上一次的差异写进 `docs/knowledge-sync/<框架版本>.md`；`verify-installed` 只读本技能核对。本次同步到框架 3.3.0：准则 534 条内容未变（版本号由 1.9.10 改记 3.3.0），知识条目目录随框架改名（`失效与异常工况/`→`失效与故障分析/`，典型电路、计算方法按知识域分子目录，索引进 `索引/`），SKILL.md 和三份参考文档的路径跟着改。设计实例不同步。计划记录的知识版本改从新清单读。
+
+- Event: user:2026-11-11（请制定方案，将ASG和SR接入知识框架；按方案做）
+- Causes: judgment 1
+- Changed: scripts/knowledge_package.py, scripts/plan_review.py, scripts/tests/test_knowledge_package.py, knowledge-sync.json, shared-release.json, SKILL.md, README.md, references/architecture.md, references/wca-formulas.md, references/inputs-and-coverage.md, docs/knowledge-sync/3.3.0.md, docs/improvement-ledger.md
+- Gates: pytest 3070 passed；mutation --changed 单元层全部 KILLED（退出码 0）
+
 ## 删旧评测集运行器；交接文档只留审查 ASG 交付；文档列举对照代码（2026-11-11）
 
 用户对四个遗留问题的决定：评测运行器“删除”，外部控制器“已放弃，精简文档”，列举改生成“现在做”；其余“自行决策”。其一，旧电路评测集 2026-11-11 已删，读它的运行器没有数据可跑：删 `evals/eval_set.py`、`evals/circuit_cases/`、`evals/boards_tools/`、`evals/detection/`（汇总也要评测集的发布绑定和已知缺陷，单独跑不了）和四个测试文件，变异清单删对应的 M1659–M1664；架构说明的评测一条改写。其二，外部控制器已放弃：`workflow-handoff.md` 从任务与结果封装、控制器命令和恢复流程缩成一页“审查 ASG 交付的设计”（读哪些文件、哪些不读、独立性），SKILL.md 对应章节同名，`skill_identity.INTERFACE_SECTIONS` 跟着改名。其三，文档里抄代码常量的列举有两处已经漏项（SKILL.md 派生检查项可补的注记少三个字段；intent-format 的无供电脚类别改写成代码里的类别名），补齐后在 `test_single_source.py` 加一条测试：登记的 15 处列举必须与代码常量相等，代码加词而文档没跟就失败。其四，上一条留下的存疑条目查实三处并改：架构表“配置组”改“输出档位”，需求项整项阶段 NA 的例外（`DOWNSTREAM_HANDOFF`）写进 verdicts-and-release，`manual_*` 不是旧格式字段；`requirement_bindings.py` 的报错不再叫人“用 derive_rows.py 写出”。`migrate_results.METHOD_OF` 把 `ADJACENT_TEST_POINT` 映到 G2 不动：旧词的原义查不到依据，改成 G3 同样没有依据。

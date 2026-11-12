@@ -41,4 +41,14 @@ MIT License，见 [LICENSE](LICENSE)。
 
 ## 共用层更新入口
 
-共用判据（共用规范 G01–G10：G01–G09 设计准则、G10 降额与应力规范）由硬件设计规范发布、按固定版本安装，技能内不得编辑共用文件。技能里有哪些共用文件、谁读、指纹怎么算见 [共用层说明](references/shared/shared-layer.md)；维护源（规范 `准则登记/`、`规范正文/G10_元器件降额与应力规范/`、`工具/`（含 `包说明/`））与发布、安装流程见硬件设计规范 `README.md`。
+共用判据（共用规范 G01–G10：G01–G09 设计准则、G10 降额与应力规范）在硬件设计知识框架的 `设计准则/` 维护，和知识包（`references/knowledge/`）一起由本技能同步进来，技能内不得编辑这些文件。技能里有哪些共用文件、谁读、指纹怎么算见 [共用层说明](references/shared/shared-layer.md)；维护源（规范 `准则登记/`、`规范正文/G10_元器件降额与应力规范/`、`工具/`（含 `包说明/`））在知识框架的 `设计准则/README.md`。
+
+框架更新后重新同步（只有这一步读框架目录，技能运行时只读自己这一份）：
+
+```bash
+python3 scripts/knowledge_package.py sync <硬件设计知识框架目录>      # 加 --dry-run 只看差异
+python3 scripts/knowledge_package.py verify-installed
+python3 scripts/guideline_criteria.py verify-installed
+```
+
+同步把与上一次的差异写进 `docs/knowledge-sync/<框架版本>.md`（新增、改了、删除、搬了位置的条目和准则）。新增的准则没有对应规则、删除的准则还被规则引用时，`test_guideline_criteria.py` 等测试会失败；改了判据的准则，在 `scripts/catalog.py` 的 `BASIS` 里按编号找依据它的规则逐条看。按它补规则和触发板，再跑全量测试与变异测试。

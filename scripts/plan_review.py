@@ -365,8 +365,8 @@ def guideline_scope_of(checks, db, kind_intent, intent, library):
 
 
 def knowledge_identity(root=Path(__file__).resolve().parents[1]):
-    """知识包（references/knowledge/）的版本与指纹，照技能根目录 knowledge-release.json 记进计划，与共用层版本并列；没装包时为空。"""
-    path = root / 'knowledge-release.json'
+    """知识包（references/knowledge/，从知识框架同步）依据的框架版本与指纹，照技能根目录 knowledge-sync.json 记进计划，与共用层版本并列；没同步过时为空。"""
+    path = root / 'knowledge-sync.json'
     if not path.is_file():
         return {}
     manifest = json.loads(path.read_text(encoding='utf-8'))
