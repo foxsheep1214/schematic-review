@@ -25,6 +25,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 | `review-plan.json` | 工具 | ② 出计划 | 8 | 功能树、每个检查项检查、功能框架、各检查器清单、接口；设计准则库有规则时另有 `guidelines`（适用的共用设计准则与覆盖） |
 | `lint-hot.json` | 工具 | ② 合并扫描 | — | 合并扫描输出，交 ④ 校验与 ⑤ 打包 |
 | `review-results.json` | 审查员 | ③ 判断 | 15 | 功能判定（条件及其位号 `refs`、计算、余量及其推法与公差端、开放项及其单侧定界、失败项）和手填的检查项；绑定功能的检查项不落盘，门禁、报告、打包、对比读取时由功能派生（`results_model.materialize`），审查员的绑定或注记只留 `{id, function_id, aspect}` / `{id, 注记}` 残根 |
+| `knowledge-checklist.json` | 审查员 | ③ 判断 | 1 | 知识必答清单：计划里每块电路对上知识包典型电路的哪个实现方案（或 `none` 及理由），该方案的每条必算项、已知坑的处置（核过它的检查项或功能编号，或不适用及理由）；项由 `knowledge_checklist.py build` 从条目里抽 |
 | `review-gate.json` | 工具 | ④ 校验 | — | 对账结果、阻断项、待办 |
 | `notes.json` | 审查员 | ⑤ 出报告 | — | 报告里的白话说明 |
 | `审查报告.md` / `审查报告.html`、`record/` | 工具 | ⑤ 出报告 | — | 交付物：报告与留档 |
@@ -46,7 +47,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 |---|---|---|---|
 | ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py`、`knowledge_package.py`（从知识框架同步知识包和共用层、核对装的内容；审查流程不调用） | `page_inventory.py`、`ordering_status.py`（订货表状态线索、库内候选筛选；不作电气判定）、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`guideline_criteria.py`（同步进来的词表与设计准则读取、校验、选用和覆盖）、`device_kinds.py`（器件类别登记表）、`part_words.py`（器件身份、PCB 铜与有出处的精确型号脚方向）、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
 | ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`latch_criteria.py`（外部锁存判据：状态脚驱动的锁存树逐动作代入）、`guideline_scans.py`（把能由网表、BOM 字段和入表数据判定的设计准则做成冷扫描候选）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`（原生事实不变，给 NetGraph 附完整有出处脚表的缺名解析与冲突）、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`stress_check.py`（共用应力核对：降额限值、应力判法、挑规则）（共用设计准则库：校验、选用、覆盖；与 ASG 同字节）、`checkers/` |
-| ③ 判断 | `derive_rows.py` | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
+| ③ 判断 | `derive_rows.py`、`knowledge_checklist.py`（知识必答清单：检索典型电路、按计划的电路列项、核对处置；校验和打包两步导入它核对） | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
 | ④ 校验 | `validate_review.py` | `migrate_results.py` | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`validate_remediation.py`、`review_engine.py` |
 | ⑤ 出报告 | `render_report.py`、`pack_review.py` | — | `report_html.py` |
 | 复审 | `diff_netlists.py` | — | `revision_impact.py` |
@@ -61,6 +62,7 @@ SKILL.md 的“架构”一节是总图：五个步骤的流水线、每步谁�
 
 | 日期 | 决定 | 台账位置 |
 |---|---|---|
+| 2026-11-11 | 知识必答清单：新增审查员文件 `knowledge-checklist.json` 和 ③ 的入口 `knowledge_checklist.py`，校验与打包核对每块电路对上典型电路实现方案、必算项和已知坑逐项有处置；知识包和共用层改为技能自己从知识框架同步 | 台账“知识必答清单”“知识包和共用层改为从知识框架同步” |
 | 2026-11-07 | 删除待核清单 `design_checklist.py`；ASG→SR 交接只留 SR 实际读取的角色；审查要点改名要点1–7；应力超幅在风险清单单列；本表压成一句话 | 台账 2026-11-07“ASG/SR/规范源矛盾清理”条目 |
 | 2026-11-06 | M4：计划格式 7→8，`guidelines` 记录共用层版本、`shared_sha256`、`fingerprint_format` | 台账“架构决定原文”第 1 行 |
 | 2026-11-06 | M3：共用设计准则来自硬件设计规范发布包 | 台账“架构决定原文”第 2 行 |

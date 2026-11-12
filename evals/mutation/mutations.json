@@ -8692,5 +8692,47 @@
   "file": "evals/kicad_replay_bench/run.py",
   "old": "CONTRACT_REVISION = 'installed-guidelines-v1'",
   "new": "CONTRACT_REVISION = 'guideline-scans-v1'"
+ },
+ {
+  "id": "M1667",
+  "name": "a circuit without a typical-circuit declaration passes",
+  "file": "scripts/knowledge_checklist.py",
+  "old": "        if not text(typical):\n            found.append(",
+  "new": "        if False:\n            found.append("
+ },
+ {
+  "id": "M1668",
+  "name": "a none declaration needs no reason",
+  "file": "scripts/knowledge_checklist.py",
+  "old": "            if not text(declared[cid].get('reason')):",
+  "new": "            if False:"
+ },
+ {
+  "id": "M1669",
+  "name": "an item missing from the checklist is not counted",
+  "file": "scripts/knowledge_checklist.py",
+  "old": "            if answer is None:\n                missing += 1",
+  "new": "            if answer is None:\n                missing += 0"
+ },
+ {
+  "id": "M1670",
+  "name": "a where that names no plan row is accepted",
+  "file": "scripts/knowledge_checklist.py",
+  "old": "                elif [w for w in where if w not in known]:",
+  "new": "                elif False:"
+ },
+ {
+  "id": "M1671",
+  "name": "an unanswered item passes",
+  "file": "scripts/knowledge_checklist.py",
+  "old": "            else:\n                found.append('必答清单 %s：还没有写处置",
+  "new": "            else:\n                [].append('必答清单 %s：还没有写处置"
+ },
+ {
+  "id": "M1672",
+  "name": "pitfalls are not listed",
+  "file": "scripts/knowledge_checklist.py",
+  "old": "KINDS = ('必算项', '已知坑')",
+  "new": "KINDS = ('必算项',)"
  }
 ]

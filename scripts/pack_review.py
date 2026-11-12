@@ -6,7 +6,7 @@
       record/
         manifest.json      inputs by path + SHA-256, SR version, packed files
         review-plan.json  review-results.json  review-gate.json  db.json  intent.json  lint-cold/hot.json
-        circuit-candidates.json  notes.json   when the intent declares circuits / the report has notes
+        circuit-candidates.json  knowledge-checklist.json  notes.json   when the intent declares circuits / the report has notes
         evidence/          only files that a check's evidence actually cites
 
 The report is rendered again from the packed plan, results, gate and notes (with the title and
@@ -33,12 +33,14 @@ from render_report import (COUNTS_TITLE, SR_SECTION, UnfinishedReview, guideline
                            sr_feedback_errors, without_quotes)
 from report_html import to_html
 import circuit_decisions
+import knowledge_checklist
 import results_model
 from validate_review import validated_files
 
 LEDGER = ('review-plan.json', 'review-results.json', 'review-gate.json', 'db.json', 'intent.json',
           'lint-cold.json', 'lint-hot.json')
 OPTIONAL_LEDGER = ('circuit-candidates.json',       # required as soon as the intent declares circuits
+                   'knowledge-checklist.json',      # required as soon as the plan has circuits (knowledge_checklist.py)
                    'notes.json')                    # the plain-language notes the report was rendered with
 SKILL_ROOT = Path(__file__).resolve().parents[1]    # SR's own documents are pinned by skill_version, never inputs
 EVIDENCE_NOTE_BYTES = 300 * 1024                    # a cited file this large is a document, not an excerpt (5.2 audit)
@@ -343,6 +345,8 @@ def pack(out, ledger, evidence_root, inputs, title=None, detail='compact'):
                                         json.loads((record / 'review-results.json').read_text(encoding='utf-8')))[0]
     errors += rendered_errors(out, record, title, detail)
     errors += candidate_errors(record)
+    errors += knowledge_checklist.problems(json.loads((record / 'review-plan.json').read_text(encoding='utf-8')),
+                                           knowledge_checklist.load(record / knowledge_checklist.FILE))
     unresolved, skill_cited, datasheet_texts, pdfs = [], False, [], input_pdfs(declared.values())
     for source in sorted(cited_sources(results)):
         if source.startswith(('http://', 'https://')):
@@ -414,6 +418,7 @@ def main(argv=None):
     for name in LEDGER:
         parser.add_argument('--' + name.split('.')[0], required=True, metavar='PATH')
     parser.add_argument('--circuit-candidates', metavar='PATH', help='required when intent.json declares circuits')
+    parser.add_argument('--knowledge-checklist', metavar='PATH', help='required when the plan has circuits')
     parser.add_argument('--notes', metavar='PATH', help='the notes.json the report was rendered with')
     parser.add_argument('--title', help='the --title the report was rendered with')
     parser.add_argument('--detail', choices=('compact', 'full'), default='compact',

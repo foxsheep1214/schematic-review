@@ -50,6 +50,7 @@ class ArchitectureTests(unittest.TestCase):
 
     def test_format_versions_are_the_codes(self):
         import audit_datasheets
+        import knowledge_checklist
         import circuit_candidates
         import electrical_contract
         import plan_review
@@ -67,7 +68,8 @@ class ArchitectureTests(unittest.TestCase):
             '`intent.json`': plan_review.INTENT_SCHEMA_VERSION,
             '`record/circuit-candidates.json`': circuit_candidates.SCHEMA_VERSION,
             '`review-plan.json`': electrical_contract.PLAN_SCHEMA_VERSION,
-            '`review-results.json`': results_model.SCHEMA_VERSION})
+            '`review-results.json`': results_model.SCHEMA_VERSION,
+            '`knowledge-checklist.json`': knowledge_checklist.SCHEMA_VERSION})
 
     def test_skill_opens_with_the_architecture_and_the_change_rule(self):
         self.assertLess(SKILL.index('## 架构'), SKILL.index('## 审查纪律'))

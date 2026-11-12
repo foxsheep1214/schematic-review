@@ -367,6 +367,15 @@ SR 只用“不变的决定”第 1 条的四类输入：设计方的报告、�
   主控引脚复用对照平台约束与固件配置（SIG-D13）。由参考设计派生的电路列出全部偏离并按本设计条件复核。
 - **知识包对照**：跨块接口两端是否交代全、总线电气条件对照 `接口约定/`；器件失效方式、单故障与故障模式分析的步骤对照 `失效与故障分析/`；
   `典型电路/` 各实现方案的“已知坑”只作找问题的线索，发现仍落到具体准则和证据上，不因没用某种典型电路判缺陷。
+- **知识必答清单**：计划里的每块电路对上知识包典型电路的一个实现方案，该方案的必算项和已知坑逐项要有审查结论，记在 `review-results.json` 旁边的 `knowledge-checklist.json`：
+
+      python3 scripts/knowledge_checklist.py find <关键词 ...>                                 # 检索典型电路与实现方案
+      python3 scripts/knowledge_checklist.py build review-plan.json knowledge-checklist.json   # 按计划的电路列项，已写的保留
+      python3 scripts/knowledge_checklist.py check review-plan.json knowledge-checklist.json
+
+  `circuits` 每块电路写 `typical`（`<典型电路文件名>#<实现方案名>`；知识包里没有对应的写 `none`，并在 `reason` 写查过哪些、为什么都不对应），写完重跑 build 列出各项。
+  `items` 每项只填处置：`checked` 在 `where` 列出核过它的检查项或功能编号（计划里的编号），`not_applicable` 在 `reason` 写本电路为什么没有这种情况。
+  清单只规定这些项都要看过，不是判据：结论仍写在功能判定和检查项里。条目文字变了，对应项作废，重跑 build 后补写。
 
 做完的标志：`review-results.json` 的 `functions[]` 与计划的 `functions[]` 一一对应，每个功能有 verdict 与 evidence；
 开放项、失败项每条有 `key`、`kind`、`decides`，每条边只挡这类开放项能挡的检查项（[每类开放项能挡哪些检查项](references/results-format.md#功能判定functions)）；要算数的功能有计算记录，不用算的写 `no_calculation_reason`；比较过的每个量在 `margin` 或条款 `limit` 里（`calculation.result` 只是结论句，单位按 `scripts/units.py` 的拼法；4.1 的 RESULT_NARRATIVE / UNIT_UNKNOWN / QUANTITY_IMPLAUSIBLE 零提示）；手册和 BOM 来源的条款都有 `refs`（门禁无 “refs names the part” 错误）；
@@ -391,7 +400,7 @@ SR 只用“不变的决定”第 1 条的四类输入：设计方的报告、�
 所有页面留目检记录（DOC-V01），新页和变更区细读；极性、pin1/视图、选项表、同名端、NC 标记以图形为证据。
 注释、遗留命名和图框版本按 DOC-V02，装配选项互斥与完整性按 DOC-T01。
 
-做完的标志：计划里没有 `function_id` 的 APPLICABLE 检查项每条有结论与证据；每页有 DOC-V01 目检记录；需求检查项的条款逐条有判断或链接的阶段 NA 检查项。
+做完的标志：计划里没有 `function_id` 的 APPLICABLE 检查项每条有结论与证据；每页有 DOC-V01 目检记录；需求检查项的条款逐条有判断或链接的阶段 NA 检查项；`knowledge_checklist.py check` 通过（每块电路对上了实现方案或写明没有，必算项和已知坑逐项有处置）。
 
 ### ④ 校验
 
@@ -457,7 +466,7 @@ TASK_TITLE_LONG 提示每条处置过；报告里没有"每只、每只"串接�
 - **交付只有三样**：项目审查目录顶层只放 `审查报告.md`、`审查报告.html`（同一内容，图直接显示）和 `record/`，其余中间文件留在工作目录。
 
       python3 scripts/pack_review.py <审查目录> --review-plan … --review-results … --review-gate … --db … --intent … \
-        --circuit-candidates record/circuit-candidates.json --notes notes.json --lint-cold … --lint-hot … --evidence-root <工作目录> --input schematic=<工程> --input requirements=<需求> …
+        --circuit-candidates record/circuit-candidates.json --knowledge-checklist knowledge-checklist.json --notes notes.json --lint-cold … --lint-hot … --evidence-root <工作目录> --input schematic=<工程> --input requirements=<需求> …
 
   `pack_review.py` 拒绝打包的情形：重新渲染的报告与 `审查报告.md` 不同（手改过或台账改了没重出；渲染用了 `--title`、`--detail` 的打包时同样传）、门禁不 valid、门禁之后计划/结果/db/lint 又改过、结果声明了 `review_scope`、顶层有其他文件、引用的证据找不到或越界（`..`、符号链接）。它只复制结论引用的证据，原理图工程、手册、需求、旧审查按路径和 SHA-256 记入 `record/manifest.json`；本轮证据用 `--evidence-root` 内的相对路径。不另写 README 或说明文档。冻结与后续补充按 [留档](references/inputs-and-coverage.md#留档)。
   公开仓库只放脱敏合成用例。

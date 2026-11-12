@@ -15,6 +15,15 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+## 知识必答清单：典型电路的必算项和已知坑逐项要结论（2026-11-11）
+
+知识包的条目此前只是审查员的参考，没有任何关卡知道它用没用上。用户决定把知识变成技能自己的规则，形式选“工具抽取成必答清单”，范围选“ASG 三类 + SR 两类”。SR 这两类是典型电路实现方案的必算项和已知坑：计划里每块电路（`plan.owners`）由审查员对上知识包典型电路的一个实现方案，或写 `none` 及查过什么；`knowledge_checklist.py build` 从该方案的条目里抽出每条必算项、已知坑，审查员逐项写 `checked`（`where` 是计划里核过它的检查项或功能编号）或 `not_applicable`（理由）。清单是 `review-results.json` 旁边的 `knowledge-checklist.json`（格式版本 1），`validate_review.py` 命令和 `pack_review.py` 都核对：有电路而没有清单、电路没对上、项没处置、编号不在计划里，都不通过。条目文字变了，项的编号跟着变，原处置作废。清单只规定这些项都要看过，不是判据，结论仍在功能判定和检查项里。没有按原设想把这些项写进 `review-plan.json`：那要升计划格式并改派生逻辑，这一轮先用独立文件接到同样的两道关卡上。知识包里有 4 个实现方案既没有必算项也没有已知坑（poe-pd-front-end 第 5、llc-resonant-converter 第 5、qr-flyback 的参考方案、zcd-sensing 的内部检测），对上它们时没有项可答，待反馈给知识框架。接口参数模板、器件失效方式没有做。
+
+- Event: user:2026-11-11（现在执行一遍，把知识体系中的知识总结成ASG和SR自己的规则并接入；规则形式：工具抽取成必答清单；范围：ASG 三类 + SR 两类）
+- Causes: rule_not_enforced 1
+- Changed: scripts/knowledge_checklist.py, scripts/validate_review.py, scripts/pack_review.py, scripts/tests/test_knowledge_checklist.py, scripts/tests/test_architecture.py, evals/mutation/mutations.json, SKILL.md, references/architecture.md, docs/improvement-ledger.md
+- Gates: pytest 3076 passed；mutation --changed 单元层 53 个全部 KILLED（退出码 0）
+
 ## 知识包和共用层改为从知识框架同步（2026-11-11）
 
 知识框架 2026-11-11 取消了发布包，技能里装的是没法再更新的旧副本（知识 1.0.2、准则库 1.9.10）。用户确认接入方案“技能侧同步快照”：技能自带一份知识，由技能主动从框架取，运行时不读框架目录。新增 `scripts/knowledge_package.py`（与 ASG 同一份字节）：`sync <知识框架目录>` 换掉 `references/knowledge/` 和共用层，写 `knowledge-sync.json`（依据的框架版本、日期、逐文件哈希，取代 `knowledge-release.json`）和 `shared-release.json`，把与上一次的差异写进 `docs/knowledge-sync/<框架版本>.md`；`verify-installed` 只读本技能核对。本次同步到框架 3.3.0：准则 534 条内容未变（版本号由 1.9.10 改记 3.3.0），知识条目目录随框架改名（`失效与异常工况/`→`失效与故障分析/`，典型电路、计算方法按知识域分子目录，索引进 `索引/`），SKILL.md 和三份参考文档的路径跟着改。设计实例不同步。计划记录的知识版本改从新清单读。

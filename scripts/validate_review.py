@@ -11,6 +11,7 @@ import sys
 import catalog
 import function_reading
 import guideline_criteria
+import knowledge_checklist
 import results_model
 from review_workflow import workflow, decision
 from review_quality import FREEZE_BLOCKING_CODES, refs_named, screen_quality
@@ -872,6 +873,13 @@ def main():
                                  require_current_engine=True,
                                  base_dir=str(Path(args.results).resolve().parent))   # resolves conditions' sources
         result["validated_files"] = validated_files(args.plan, args.results, args.db, args.lint)
+        # The knowledge checklist sits beside the results: every circuit is matched to a typical-circuit scheme and
+        # each of its must-calculate items and pitfalls is answered (knowledge_checklist.py).
+        unanswered = knowledge_checklist.problems(read(args.plan), knowledge_checklist.load(
+            Path(args.results).resolve().parent / knowledge_checklist.FILE))
+        if unanswered:
+            result["errors"] = list(result.get("errors") or []) + unanswered
+            result["valid"] = False
     except (ValueError, OSError, TypeError) as exc:
         result = {"quality_screening": screen_quality(None, None),
                   "valid": False, "release": "NO_GO", "errors": [str(exc)]}
