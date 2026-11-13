@@ -21,7 +21,7 @@ import render_report
 import requirement_bindings
 import requirements_extract
 import validate_review
-from framework_fixtures import real_library
+from framework_fixtures import real_library, small_framework
 from checkers.passive_stress import bom_ratings
 
 
@@ -97,10 +97,12 @@ def test_the_design_datasheet_link_resolves_a_material_whose_document_names_it(m
     with tempfile.TemporaryDirectory() as folder:
         doc = Path(folder) / 'TI - TPS2663.txt'
         doc.write_text('Ordering: TPS26630RGER, TPS26631RGER\n', encoding='utf-8')
-        wiki = Path(folder) / 'wiki'
-        (wiki / 'raw' / 'Datasheet').mkdir(parents=True)
-        (wiki / 'raw' / 'Datasheet' / 'ipt.txt').write_text('IPT015N10N5 OptiMOS 5\n', encoding='utf-8')
-        monkeypatch.setattr(audit_datasheets, 'WIKI_ROOT', str(wiki))
+        # 原件总库经知识框架找：小框架里的 原件/ 就是总库；BOM 里带 raw/ 前缀的 raw/Datasheet/… 照旧能解析
+        framework = small_framework(Path(folder) / 'framework')
+        (framework / '原件' / 'Datasheet').mkdir(parents=True)
+        (framework / '原件' / 'Datasheet' / 'ipt.txt').write_text('IPT015N10N5 OptiMOS 5\n', encoding='utf-8')
+        monkeypatch.setenv('HARDWARE_KNOWLEDGE_FRAMEWORK', str(framework))
+        assert audit_datasheets.raw_library() == str((framework / '原件').resolve())
         db = linked_db(doc)
         audit = audit_datasheets.build_datasheet_audit(db, required_refs=['Q1'])
         materials = {m['identity']: m for m in audit['materials']}
@@ -111,6 +113,8 @@ def test_the_design_datasheet_link_resolves_a_material_whose_document_names_it(m
         assert ipt['document']['document_model'] == 'IPT015N10N5'
         assert [d['identity'] for d in audit['diagnostics'] if d['code'] == 'DATASHEET_ORDERING_SUFFIX'] == ['IPT015N10N5ATMA1']
         assert audit_datasheets.validate_datasheet_audit(audit, db) == []
+        assert audit_datasheets.linked_path({'parts': {'Q1': {'datasheet': 'Datasheet/ipt.txt'}}}, ['Q1']) == \
+            str((framework / '原件' / 'Datasheet' / 'ipt.txt').resolve())
         # a hand-written resolution comes first
         resolution = {'schema_version': 1, 'entries': [{'identity': 'TPS26630RGER', 'status': 'NOT_FOUND',
                       'searched_sources': ['LCSC 立创', 'TI 原厂官网'], 'searched_at': '2026-11-04'}]}

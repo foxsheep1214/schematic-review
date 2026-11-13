@@ -26,7 +26,7 @@ Obsolete、Discontinued、Last Time Buy/EOL；同一订货行的 Material type �
 可用 `ordering_status.notice(scan, acceptance)` 去重，acceptance 只含 `identity`、`accepted_by`、`action`、`source`，
 四项都须与本器件对应；不能以空接受人或另一料号的记录关闭风险。资料不足不因接受记录消失。
 
-发现风险必须找替换方案：读取 raw/Datasheet/catalog.json 的同 category + subcategory，以及 selection.json
+发现风险必须找替换方案：读取原件总库（知识框架里的 `原件/`，它指向 HardwareWiki/raw）的 Datasheet/catalog.json 的同 category + subcategory，以及 selection.json
 本角色被淘汰或 alternate 的候选；selection 只提供型号线索，参数/淘汰理由由 SR 从原厂资料独立复核。
 用 `ordering_status.candidate_pool(identity, catalog_path, selection)` 列出库内真实文件和各自订货状态；
 找不到原器件的二级类时先人工定位，不扩大到全库猜测。每个候选按本器件决定性参数核功能、输入/输出电压、
@@ -70,7 +70,7 @@ datasheet-audit.json 和 datasheet-resolution.json 闭环。
      文件格式标记不证明原厂身份或内容有效，不能把文本改名为 PDF 来冒充原件；图形、曲线、极性/封装视图
      的结论仍需可定位的原始图形证据，文本 AVAILABLE 不支持这些结论。
 
-   - Datasheet 字段或 BOM 列给了文件（绝对路径或 `HARDWARE_WIKI` 相对路径）、各位号同一份、正文写出该型号的，审计直接记
+   - Datasheet 字段或 BOM 列给了文件（绝对路径，或相对原件总库的路径：原件总库是知识框架里的 `原件/`，它指向 HardwareWiki/raw）、各位号同一份、正文写出该型号的，审计直接记
      AVAILABLE（`resolved_by: design_link`），不用手写；只差字母开头的短后缀出 `DATASHEET_ORDERING_SUFFIX`，核是包装后缀；
      正文没有型号的只作候选。手写 resolution 优先。
 

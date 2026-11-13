@@ -393,6 +393,7 @@ def guideline_section(checks, db, kind_intent, intent, library):
                **guideline_criteria.shared_versions(bundle=library), **knowledge_identity(),
                'baseline': baseline, 'circuit_types': circuits, 'device_kinds': kinds,
                'external_interfaces': sorted(set(circuits) & set(catalog.EXTERNAL_INTERFACE_TYPES)),
+               'vocabulary_without_checks': catalog.vocabulary_without_behavior(),
                'applicable': found['applicable'], 'covered': {g: v for g, v in found['covered'].items() if g not in batch},
                'not_triggered': {gid: sorted(mapped[gid]) for gid in open_items if gid in mapped},
                'uncovered': [gid for gid in open_items if gid not in mapped],
@@ -803,6 +804,9 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
         if isinstance(self.intent.get('derating'), dict):   # the level the stress margins are checked at (stress spec)
             plan['derating'] = dict(self.intent['derating'])
         library = guideline_criteria.load()
+        _, circuits, kinds = guideline_scope_of(self.checks, self.db, self.kind_intent, self.intent, library)
+        # 本板的电路类型和器件类别，有没有准则都记：knowledge_checklist.py 的 entries 和提示按它列框架条目
+        plan['knowledge_scope'] = {'circuit_types': circuits, 'device_kinds': kinds}
         if library['criteria']:   # the shared guideline rules this board triggers and which planned rules cover them
             plan['guidelines'] = guideline_section(self.checks, self.db, self.kind_intent, self.intent, library)
         deferred = [r['id'] for r in self.intent.get('requirements') or [] if r.get('status') == 'DEFERRED']

@@ -116,7 +116,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | 判 NA/INSUFFICIENT、索取资料前 | [evidence-proportionality.md](references/evidence-proportionality.md) |
 | 审查员 | 工作点和保证条件对不上时定界；估算判通过的边界 | [bounding-table.md](references/bounding-table.md)（由 `scripts/catalog.py` 生成） |
 | 审查员 | 一条余量怎么判：合格、合格但有风险、不合格；无料号常规件的判定表 | [margin-verdicts.md](references/margin-verdicts.md) |
-| 审查员 | BOM 缺具体料号、要给通用件额定定界时 | [commodity-floors.md](references/commodity-floors.md) |
+| 审查员 | BOM 缺具体料号、要给通用件额定定界时 | 方法见 [commodity-floors.md](references/commodity-floors.md)；最弱档的数值和依据见知识框架 `知识/设计准则/规范正文/G10_元器件降额与应力规范/常规件最弱档.md` |
 | 审查员 | 器件应力降额（规范 G10）：I/II/III 级降额值、等级从哪来、取值规则 | 知识框架 `知识/设计准则/规范正文/G10_元器件降额与应力规范/降额规范.md` |
 | 审查员 | 器件应力怎么判（规范 G10）：超额定不成立、超降额未超额定是应力风险、应力超幅单列、只审写出的应力余量 | 知识框架 `知识/设计准则/规范正文/G10_元器件降额与应力规范/应力判法.md` |
 | 审查员 | 结果、P0–P3（含 BOM 约束定级）、阶段、HANDOFF、准出 | [verdicts-and-release.md](references/verdicts-and-release.md) |
@@ -159,7 +159,7 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 方式字母只是标签，说明结论怎么得出；一条规则在哪次运行执行（冷扫、专家审查、改版复审），由它在总表里声明的输入和执行者推出（`catalog.stage_of`），不由字母决定。
 计划里没有、审查员认为该查的项不直接加检查项（直接加的被拒），登记到 `intent.rule_gaps`，写法和去向见 [intent 字段](references/intent-format.md#一intentjsonschema_version-5)。
 设计准则直接读硬件设计知识框架里的准则登记，SR 记录本次审查读到的设计准则身份与读取日期，独立取证和复算（字段说明见 知识框架 `知识/设计准则/工具/包说明/shared-layer.md`）。
-需求要素、接口约定、计算方法、器件参数、失效与故障分析等知识条目直接读硬件设计知识框架（`知识/<组件>/`）；框架目录由环境变量 `HARDWARE_KNOWLEDGE_FRAMEWORK` 或技能根目录的 `.knowledge-framework` 文件（一行，框架目录的绝对路径）指定，脚本都经 `scripts/knowledge_source.py` 取路径。计划 `guidelines` 段记读到的设计准则身份与知识框架的指纹、读取日期。
+需求要素、接口约定、计算方法、器件参数、失效与故障分析等知识条目直接读硬件设计知识框架（`知识/<组件>/`）；框架目录由环境变量 `HARDWARE_KNOWLEDGE_FRAMEWORK` 或技能根目录的 `.knowledge-framework` 文件（一行，框架目录的绝对路径）指定，脚本都经 `scripts/knowledge_source.py` 取路径。原件总库：知识框架里的 `原件/`（它指向 HardwareWiki/raw），设计链接的资料相对它解析。计划 `guidelines` 段记读到的设计准则身份与知识框架的指纹、读取日期，以及框架词表里本技能还没有专门识别或检查的电路类型、器件类别（报告照此说明）。
 知识框架告诉审查员判一条准则该要什么证据、怎样复算、器件保证值多少、器件怎样失效；判据仍是设计准则，数值出处仍写原件与页码。
 设计准则（编号 `G0x-nnn`，如 `G03-005`）是判据层，规则总表是执行层：`catalog.BASIS` 把 SR 规则映射到它核对的设计准则，
 计划的 `guidelines` 段列出本板适用的设计准则、由哪些检查覆盖、哪些检查这次没展开（本板没有对象或电路未声明）、哪些还没有检查（SR 待补，不是设计缺陷），说明见 知识框架 `知识/设计准则/工具/包说明/guideline-criteria.md`。
@@ -365,16 +365,19 @@ SR 只用“不变的决定”第 1 条的四类输入：设计方的报告、�
 - **动态数值证据**：需要有界 R/C 工作点或瞬态时按 [仿真证据](references/simulation-evidence.md)；样本在窗口内不直接等于规则 PASS。
 - **条款核对**：每颗 IC/模组核推荐工作条件（DEV-C05）和逐脚处置（DEV-D05）；连接器核对端定义（DEV-D03）和对外防护（PRO-D03）；
   主控引脚复用对照平台约束与固件配置（SIG-D13）。由参考设计派生的电路列出全部偏离并按本设计条件复核。
-- **知识框架对照**：跨块接口两端是否交代全、总线电气条件对照 `接口约定/`；器件失效方式、单故障与故障模式分析的步骤对照 `失效与故障分析/`；
+- **知识框架对照**：查阅时先用 `python3 scripts/knowledge_checklist.py entries review-plan.json`（或 `entries <电路类型或器件类别名称 ...>`）按本板的电路类型、器件类别列出框架里头部声明了它们的条目（按组件分组），再按需读。
+  跨块接口两端是否交代全、总线电气条件对照 `接口约定/`；器件失效方式、单故障与故障模式分析的步骤对照 `失效与故障分析/`；
   `典型电路/` 各实现方案的“已知坑”只作找问题的线索，发现仍落到具体准则和证据上，不因没用某种典型电路判缺陷。
 - **知识必答清单**：计划里的每块电路对上知识框架典型电路的一个实现方案，该方案的必算项和已知坑逐项要有审查结论，记在 `review-results.json` 旁边的 `knowledge-checklist.json`：
 
       python3 scripts/knowledge_checklist.py find <关键词 ...>                                 # 检索典型电路与实现方案
       python3 scripts/knowledge_checklist.py build review-plan.json knowledge-checklist.json   # 按计划的电路列项，已写的保留
       python3 scripts/knowledge_checklist.py check review-plan.json knowledge-checklist.json
+      python3 scripts/knowledge_checklist.py entries review-plan.json                          # 按本板电路类型、器件类别列出声明了它们的条目
 
   `circuits` 每块电路写 `typical`（`<典型电路文件名>#<实现方案名>`；知识框架里没有对应的写 `none`，并在 `reason` 写查过哪些、为什么都不对应），写完重跑 build 列出各项。
   `items` 每项只填处置：`checked` 在 `where` 列出核过它的检查项或功能编号（计划里的编号），`not_applicable` 在 `reason` 写本电路为什么没有这种情况。
+  `entries` 记查阅过的其他条目：`entry` 写相对 `知识/` 的路径，`disposition` 写 `read`，或 `not_applicable` 并在 `reason` 写理由。本板的电路类型、器件类别记在计划 `knowledge_scope` 段；build、check 和 `validate_review.py`（输出的 `knowledge_hints`）对框架里声明了它们、却既不是所写典型电路也不在 `entries` 里的条目给“提示”，不判失败：查阅后补记，或写明不适用。
   清单只规定这些项都要看过，不是判据：结论仍写在功能判定和检查项里。条目文字变了，对应项作废，重跑 build 后补写。
 
 做完的标志：`review-results.json` 的 `functions[]` 与计划的 `functions[]` 一一对应，每个功能有 verdict 与 evidence；

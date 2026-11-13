@@ -3,7 +3,7 @@
 """通用阻容应力预判检查器（DEV-C01 逐颗检查项）。
 
 对已装配的两端片式电阻与贴片 MLCC，用 intent.power_rails 声明的轨压窗口给两端电压定保守上界，
-按 references/commodity-floors.md 的最弱档表与可订购档表给出建议结论。只在上界能算出且明显满足时
+按知识框架常规件最弱档（知识/设计准则/规范正文/G10_元器件降额与应力规范/常规件最弱档.md，数据读同目录的 json）的片式电阻最弱档与 MLCC 可订购档给出建议结论。只在上界能算出且明显满足时
 建议 PASS；否则只给计算事实，不给建议，由审查者判定。审查者把建议 PASS 改判为 FAIL/INSUFFICIENT 时，
 须给出 OVERRIDE_CODES 中的理由（validate_review 校验），“采购范围/料号未定”不是改判理由——
 该项由 DEV-D04 汇总。建议不替代审查：脉冲、精密检流、安规等用途仍由审查者按改判码排除。
@@ -21,7 +21,7 @@ import part_words as pw
 import read_bom
 from .base import Checker
 
-# 常规件最弱档从知识框架读（G10 的 常规件最弱档.json，2026-11-02；commodity-floors.md 的表与它逐项对应）：
+# 常规件最弱档从知识框架读（G10 的 常规件最弱档.json，2026-11-02）：
 # 封装 -> (70 ℃ 最弱档功率 W, 最弱档最高工作电压 V)
 _FLOORS = guideline_criteria.commodity_floors()
 RESISTOR_FLOORS = {p: (v['power_w_70c'], v['voltage_v']) for p, v in _FLOORS['chip_resistor']['packages'].items()}
@@ -35,7 +35,7 @@ WEAKEST_SHARE = guideline_criteria.engineering_value('weakest_share')   # G02 en
 SMD_POWER_RULE, SMD_VOLTAGE_RULE = 'RES-SMD-P', 'RES-SMD-V'
 WATTS_RE = re.compile(r'(\d+(?:\.\d+)?)\s*(m?)W(?![A-Za-z])')
 DEFAULT_TOL = 0.05
-# commodity-floors「陶瓷电容」可订购档：(封装, 最大容值 F, 耐压 V, 依据料号)。
+# 知识框架常规件最弱档的 MLCC 可订购档（mlcc_orderable）：(封装, 最大容值 F, 耐压 V, 依据料号)。
 # 同封装同耐压下更小容值视为同样可订购。
 MLCC_ORDERABLE = tuple((r['package'], r['max_f'], r['voltage_v'], r['part']) for r in _FLOORS['mlcc_orderable']['rows'])
 OVERRIDE_CODES = {
@@ -44,7 +44,7 @@ OVERRIDE_CODES = {
     'SELECTED_PART_RATING': 'BOM 已给具体料号，其手册额定低于预判所用档位',
     'TEMPERATURE_ABOVE_ASSUMPTION': '环境或局部温度超出预判假设',
 }
-CRITERION = ('按 intent.power_rails 声明的轨压给两端电压定上界，对照 commodity-floors 最弱档/可订购档；'
+CRITERION = ('按 intent.power_rails 声明的轨压给两端电压定上界，对照知识框架常规件最弱档/可订购档；'
              '建议 PASS 时改判须给 proposal_override（封闭理由码），采购字段未定由 DEV-D04 汇总，不作改判理由')
 PIN_CRITERION = ('源轨最高电压经串联电阻最小阻值流入该 IC 脚的电流不超过手册对该脚的电流上限（放电、泄放、启动、检测等经电阻'
                  '接到高于本 IC 最低供电的轨的脚），该脚电压在手册绝对最大额定内，串联电阻承受的功耗与脉冲在额定内')

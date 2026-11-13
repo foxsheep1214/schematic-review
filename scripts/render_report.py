@@ -806,6 +806,15 @@ def render_guidelines(plan):
     if not section.get('external_interfaces'):   # 2026-11-01 (user decision 1): the interface rules never rest on a net name alone
         out[2:2] = ['未声明对外接口：网名没有识别到、intent 也没有声明 %s，这些接口的设计准则没有选中。板上有的话写进 `intent.circuits` 后重新生成计划。'
                     % '、'.join(t.title for t in catalog.CIRCUIT_TYPES if t.name in catalog.EXTERNAL_INTERFACE_TYPES), '']
+    missing = section.get('vocabulary_without_checks') or {}
+    if any(missing.values()):   # framework names this skill has no recognition or checks for yet
+        words = []
+        for group, label in (('circuit_types', '电路类型'), ('device_kinds', '器件类别')):
+            titles = guideline_criteria.vocabulary_titles(group)
+            if missing.get(group):
+                words.append(label + ' ' + '、'.join('%s（%s）' % (n, titles.get(n, n)) for n in missing[group]))
+        out[2:2] = ['本技能对这些类型还没有专门的识别或检查：%s。板上有的，相关设计准则不会经它们选中，审查员用 `knowledge_checklist.py entries <名称>` 列出框架里声明了它们的条目查阅。'
+                    % '；'.join(words), '']
     for card in applicable:
         if card['id'] in batched:
             continue

@@ -43,6 +43,8 @@ _KIND_TITLES = guideline_criteria.vocabulary_titles('device_kinds')
 _LOCAL_KIND_TITLES = {'unknown': '未知'}
 
 def _kind(name, *args, **kwargs):
+    if name not in _LOCAL_KIND_TITLES and name not in _KIND_TITLES:
+        raise ValueError('技能里的器件类别 %s 不在知识框架词表（准则登记/词表.json）里：拼错了，或框架删了这个名称' % name)
     title = _LOCAL_KIND_TITLES[name] if name in _LOCAL_KIND_TITLES else _KIND_TITLES[name]
     return name, DeviceKind(title, *args, **kwargs)
 

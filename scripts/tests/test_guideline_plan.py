@@ -136,7 +136,12 @@ class GuidelinePlanTests(unittest.TestCase):
         self.assertEqual(section['external_interfaces'], ['AC_MAINS'])
 
     def test_an_empty_library_adds_nothing(self):
-        self.assertNotIn('guidelines', plan_for())
+        plan = plan_for()
+        self.assertNotIn('guidelines', plan)
+        # the board scope is recorded with or without rules: knowledge_checklist.py lists the framework entries by it
+        self.assertIn('capacitor', plan['knowledge_scope']['device_kinds'])
+        self.assertEqual(plan['knowledge_scope']['circuit_types'], sorted({c['circuit_type'] for c in plan['checks']
+                                                                           if c.get('circuit_type')}))
 
     def test_the_baseline_is_one_of_the_librarys(self):
         intent = {'schema_version': plan_review.INTENT_SCHEMA_VERSION, 'guideline_baseline': 'space'}

@@ -1030,6 +1030,8 @@ _LEAF = r'(^|[:_-]|^NET:.*/(?=[^/]*$))'
 _CIRCUIT_TITLES = guideline_criteria.vocabulary_titles('circuit_types')
 
 def _circuit_type(name, *args):
+    if name not in _CIRCUIT_TITLES:
+        raise ValueError('技能里的电路类型 %s 不在知识框架词表（准则登记/词表.json）里：拼错了，或框架删了这个名称' % name)
     return CircuitType(name, _CIRCUIT_TITLES[name], *args)
 
 CIRCUIT_TYPES = (
@@ -1766,8 +1768,8 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           'GUARANTEED', (), ('DAMAGE_OR_HAZARD',), _T, '不估算：需求浪涌等级与次数对降额曲线取保证值；寿命走 DEV-C06 VARISTOR'),
     # 3.7 无源件
     Bound('RES-POWER', ('resistor',), '电阻功率、脉冲、TCR 与耐压', 'UPPER', '温度与脉宽', None, (('G1', ()), ('G5', ())),
-          'VENDOR_DATUM', 'commodity-floors.md 片式电阻',
-          'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M, '不估算：额定、降额与脉冲曲线按保证；商品地板见 commodity-floors.md'),
+          'VENDOR_DATUM', '知识/设计准则/规范正文/G10_元器件降额与应力规范/常规件最弱档.md 片式电阻',
+          'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M, '不估算：额定、降额与脉冲曲线按保证；常规件最弱档见知识框架 知识/设计准则/规范正文/G10_元器件降额与应力规范/常规件最弱档.md'),
     Bound('MLCC-EFFECTIVE-C', ('capacitor',), 'MLCC 有效容量（偏压、温度、老化）', 'LOWER', '直流偏压与温度', 'DECREASING',
           (('G1', ()), ('G2', ()), ('G5', ('table_interpolate',)), ('G8', ())), 'VENDOR_DATUM', 'commodity-floors.md MLCC；wca-formulas.md',
           'TYPICAL_BY_DEFINITION', (_e('est_mlcc_effective_c', FUNCTIONAL, '典型偏压曲线 × (1 − 公差) × 老化 {est_mlcc_aging}，再 ÷{est_mlcc_effective_c}；补偿网络 ÷{est_mlcc_effective_c_comp}'),),
@@ -2715,6 +2717,14 @@ def circuit_type(name):
 
 def circuit_types_of(rule_id):
     return [p.name for p in CIRCUIT_TYPES if rule_id in p.subjects]
+
+
+def vocabulary_without_behavior():
+    """框架词表里本技能还没有专门识别或检查的名称：{'circuit_types': [...], 'device_kinds': [...]}，顺序同词表，
+    每次调用重读词表。框架先加名称、技能后跟上是允许的，不报错；计划的 guidelines 段记下，报告照此说明。"""
+    import device_kinds   # device_kinds imports this module
+    known = {'circuit_types': set(CIRCUIT_TYPE_BY_NAME), 'device_kinds': set(device_kinds.KINDS)}
+    return {group: [n for n in guideline_criteria.vocabulary_titles(group) if n not in known[group]] for group in known}
 
 
 def circuit_type_criterion(name):

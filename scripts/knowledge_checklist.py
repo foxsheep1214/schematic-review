@@ -5,13 +5,18 @@
   python3 knowledge_checklist.py find <关键词 ...>                               在典型电路里按文件名、标题、功能、方案名检索
   python3 knowledge_checklist.py build review-plan.json knowledge-checklist.json  按计划里的电路重写清单，保留已写的内容
   python3 knowledge_checklist.py check review-plan.json knowledge-checklist.json
+  python3 knowledge_checklist.py entries review-plan.json | <电路类型或器件类别名称 ...>
+                                                                              按条目头部的词表声明列出相关条目，按组件分组
 
 清单是审查员在“判断”一步写的文件，放在 review-results.json 旁边：
   circuits  计划里每块电路（plan.owners）一条：`typical` 写 `<典型电路文件名>#<实现方案名>`，知识框架里没有对应的写 `none` 并在 `reason` 写查过什么
   items     由 build 从所写方案里抽出，不手抄：该方案的每条必算项、每条已知坑。每项写 `disposition`：
             `checked`（`where` 列出核过它的检查项或功能的编号，必须是计划里的）或 `not_applicable`（`reason` 写理由）
+  entries   查阅记录（可选）：`entry` 写相对 知识/ 的条目路径，`disposition` 写 `read`（读过）或 `not_applicable`（`reason` 写理由）
 必算项和已知坑只是该查什么的清单，不是判据：发现仍落到具体准则和证据上，不因没用某种典型电路判缺陷。
 validate_review.py 和 pack_review.py 核对清单：电路都对上了、每项有处置、编号存在。
+build、check 和 validate_review.py 另给提示（不判失败）：本板有的电路类型、器件类别（计划 knowledge_scope 段记的），
+知识框架里声明了它的条目既不是所写的典型电路、也不在 entries 里的，逐条列出，提示查阅或写明不适用。
 """
 import argparse
 import hashlib
@@ -150,7 +155,50 @@ def build(plan, old):
                 answer = written.get(key(item), {})
                 items.append(dict(item, disposition=answer.get('disposition', ''), where=answer.get('where', []),
                                   reason=answer.get('reason', '')))
-    return {'schema_version': SCHEMA_VERSION, 'circuits': circuits, 'items': items}
+    return {'schema_version': SCHEMA_VERSION, 'circuits': circuits, 'items': items, 'entries': old.get('entries') or []}
+
+
+def board_scope(plan):
+    """(电路类型, 器件类别)：计划 knowledge_scope 段记的本板范围（旧计划没有它时取 guidelines 段的）；
+    两段都没有时电路类型取检查项上的，器件类别为空。"""
+    section = next((plan[k] for k in ('knowledge_scope', 'guidelines') if isinstance((plan or {}).get(k), dict)), None)
+    if section is not None:
+        return list(section.get('circuit_types') or []), list(section.get('device_kinds') or [])
+    return sorted({c['circuit_type'] for c in (plan or {}).get('checks') or []
+                   if isinstance(c, dict) and text(c.get('circuit_type'))}), []
+
+
+def entries_by_component(circuit_types=(), device_kinds=()):
+    """{组件: [(相对 知识/ 的条目路径, [命中的名称…])]}：头部声明了这些电路类型或器件类别中任一个的条目。"""
+    grouped = {}
+    for path, names in knowledge_source.entries_for(circuit_types, device_kinds).items():
+        grouped.setdefault(path.split('/', 1)[0], []).append((path, names))
+    return {name: grouped[name] for name in knowledge_source.COMPONENTS if name in grouped}
+
+
+def consulted(data):
+    """查阅记录里的条目：各电路所写典型电路的文件，和 entries 里读过或写明不适用的条目。"""
+    data = data if isinstance(data, dict) else {}
+    seen = set()
+    for row in data.get('circuits') or []:
+        stem = str((row or {}).get('typical') or '').partition('#')[0] if isinstance(row, dict) else ''
+        md = circuit_file(stem) if text(stem) and stem != NONE and '/' not in stem else None
+        if md:
+            seen.add(md.relative_to(knowledge_source.knowledge_dir()).as_posix())
+    for row in data.get('entries') or []:
+        if isinstance(row, dict) and text(row.get('entry')) and (
+                row.get('disposition') == 'read' or (row.get('disposition') == 'not_applicable' and text(row.get('reason')))):
+            seen.add(row['entry'])
+    return seen
+
+
+def hints(plan, data):
+    """提示（不判失败）：本板有的电路类型、器件类别，框架里声明了它的条目却不在查阅记录里的，每条一句。"""
+    circuits, kinds = board_scope(plan)
+    seen = consulted(data)
+    return ['%s 声明了本板的 %s，查阅记录里没有：查阅后在 %s 的 entries 记 read，或记 not_applicable 写明理由'
+            % (path, '、'.join(names), FILE)
+            for rows in entries_by_component(circuits, kinds).values() for path, names in rows if path not in seen]
 
 
 def search(terms):
@@ -175,12 +223,34 @@ def load(path):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('command', choices=('find', 'build', 'check'))
+    ap.add_argument('command', choices=('find', 'build', 'check', 'entries'))
     ap.add_argument('args', nargs='+')
     args = ap.parse_args(argv)
     if args.command == 'find':
         for stem, names in search(args.args):
             print('\n'.join(['%s#%s' % (stem, n) for n in names] or [stem + '（只有指路，没有实现方案）']))
+        return 0
+    if args.command == 'entries':
+        if len(args.args) == 1 and args.args[0].endswith('.json'):
+            plan = load(args.args[0])
+            if not isinstance(plan, dict):
+                print('读不出计划：%s' % args.args[0])
+                return 1
+            circuits, kinds = board_scope(plan)
+        else:
+            vocab = knowledge_source.vocabulary()
+            unknown = [n for n in args.args if n not in vocab['circuit_types'] and n not in vocab['device_kinds']]
+            if unknown:
+                print('不在知识框架词表里：%s' % '、'.join(unknown))
+                return 1
+            circuits = [n for n in args.args if n in vocab['circuit_types']]
+            kinds = [n for n in args.args if n in vocab['device_kinds']]
+        grouped = entries_by_component(circuits, kinds)
+        for component, rows in grouped.items():
+            print(component)
+            print('\n'.join('  %s  %s' % (path, '、'.join(names)) for path, names in rows))
+        if not grouped:
+            print('知识框架里没有条目声明 %s' % '、'.join(circuits + kinds or ['（本板没有电路类型和器件类别）']))
         return 0
     if len(args.args) != 2:
         ap.error('%s 要 review-plan.json 和 knowledge-checklist.json 两个路径' % args.command)
@@ -193,7 +263,9 @@ def main(argv=None):
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         print('电路 %d 块，其中 %d 块还没有写 typical；清单 %d 项' % (
             len(data['circuits']), sum(not text(c['typical']) for c in data['circuits']), len(data['items'])))
-    found = problems(plan, load(path))
+    found, notices = problems(plan, load(path)), hints(plan, load(path))
+    if notices:   # 提示，不判失败
+        print('提示:\n  - ' + '\n  - '.join(notices))
     print('\n'.join(found + ['FAIL' if found else 'PASS']))
     return 1 if found else 0
 

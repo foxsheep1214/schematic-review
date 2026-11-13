@@ -76,14 +76,18 @@ class DeratingSpecTests(unittest.TestCase):
 
     def test_the_micro_stress_contact_thresholds_are_the_spec_values(self):
         # 2026-10-29 (user: 类似这种单一的规则，都先不要，全都并入到降额规范里面去): the weakest contact rating
-        # (Omron B3U 50 mA / 12 VDC) times the smaller of CONN and SW at each level
+        # times the smaller of CONN and SW at each level. The rating is the framework's lowest contact row that states a
+        # voltage (常规件最弱档.json contacts); the method doc names that rule and the rules, never the numbers.
         rules = {r['id']: r['values'] for r in SPEC['rules']}
         text = (REFS / 'commodity-floors.md').read_text(encoding='utf-8')
-        switch = next(r for r in guideline_criteria.commodity_floors()['contacts']['rows'] if 'B3U' in r['category'])   # shared floor, 2026-11-02
-        for level in LEVELS:
-            amps = switch['current_a'] * 1000 * min(rules['CONN-I'][level], rules['SW-R'][level])
-            volts = switch['voltage_v'] * min(rules['CONN-V'][level], rules['SW-V'][level])
-            self.assertIn('%s 级 %g mA、%g V' % (level, round(amps, 3), round(volts, 3)), text)
+        rows = [r for r in guideline_criteria.commodity_floors()['contacts']['rows'] if r.get('voltage_v')]
+        weakest = min(rows, key=lambda r: r['current_a'])
+        self.assertEqual(weakest['current_a'], min(r['current_a'] for r in guideline_criteria.commodity_floors()['contacts']['rows']))
+        self.assertIn('`contacts` 中电流最低、同时写了电压的那一行的电流和电压', text)
+        for rule in ('CONN-I', 'SW-R', 'CONN-V', 'SW-V'):
+            self.assertIn(rule, text)
+            self.assertTrue(all(0 < rules[rule][level] <= 1 for level in LEVELS))
+        self.assertNotIn('%g mA' % (weakest['current_a'] * 1000), text)
 
 
 

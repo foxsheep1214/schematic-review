@@ -8533,13 +8533,6 @@
   "new": "return CircuitType(name, '变换器与稳压器' if name == 'POWER_CONVERTER' else _CIRCUIT_TITLES[name], *args)"
  },
  {
-  "id": "M1642",
-  "name": "generated resistor table drops a JSON row",
-  "file": "scripts/render_commodity_floors.py",
-  "old": "for package, row in packages.items():",
-  "new": "for package, row in list(packages.items())[1:]:"
- },
- {
   "id": "M1643",
   "name": "metadata reader returns fixed relay title",
   "file": "scripts/guideline_criteria.py",

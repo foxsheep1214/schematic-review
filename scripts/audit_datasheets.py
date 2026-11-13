@@ -15,6 +15,7 @@ Typical flow::
         --resolution datasheet-resolution.json --json datasheet-audit.json
 """
 import datasheet_kinds
+import knowledge_source
 import ordering_status
 import part_words
 import argparse
@@ -469,15 +470,24 @@ def _material_groups(db, required_refs=None, heuristic=None):
     return [groups[key] for key in sorted(groups)], diagnostics
 
 
-WIKI_ROOT = os.environ.get('HARDWARE_WIKI') or os.path.join(os.path.expanduser('~'), 'Documents', '知识库', 'HardwareWiki')
 ORDERING_SUFFIX_MAX = 5   # IPT015N10N5 + ATMA1, PSMN1R4-100ASE + J: a reel or packing code the datasheet need not list
 
 
-def linked_path(db, refs, base_dir=None, wiki_root=None):
+def raw_library():
+    """原件总库：知识框架里的 原件/（它指向 HardwareWiki/raw）；框架没配或没有 原件 时为 None。"""
+    try:
+        return str(knowledge_source.raw_root())
+    except knowledge_source.KnowledgeFrameworkNotFound:
+        return None
+
+
+def linked_path(db, refs, base_dir=None, raw_dir=None):
     """The one datasheet file the design links to every part of a material: the part's Datasheet field (KiCad) or the
-    BOM's Datasheet column, an absolute path or one relative to the HardwareWiki root (or to base_dir). None when a part
+    BOM's Datasheet column, an absolute path or one relative to the raw library (raw_dir, by default the framework's
+    原件/, which points to HardwareWiki/raw; a link written with a leading raw/ still resolves) or to base_dir. None when a part
     links none, two parts link different files, or the file is not there (Matrix R2 3.3/6.2, 2026-11-04)."""
     found = set()
+    raw_dir = raw_dir or raw_library()
     for ref in refs:
         part = (db.get('parts') or {}).get(ref) or {}
         bom = ((db.get('bom') or {}).get('parts') or {}).get(ref) or {}
@@ -488,8 +498,9 @@ def linked_path(db, refs, base_dir=None, wiki_root=None):
         if os.path.isabs(link):
             path = link
         else:
-            path = next((os.path.join(root, link) for root in (wiki_root or WIKI_ROOT, base_dir) if root
-                         and os.path.isfile(os.path.join(root, link))), None)
+            tries = [(raw_dir, link)] + ([(raw_dir, link[4:])] if link.startswith('raw/') else []) + [(base_dir, link)]
+            path = next((os.path.join(root, rel) for root, rel in tries if root
+                         and os.path.isfile(os.path.join(root, rel))), None)
         if not path or not os.path.isfile(path):
             return None
         found.add(os.path.abspath(path))

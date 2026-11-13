@@ -1,5 +1,5 @@
-"""The guideline rule library (G01–G09): the bundle assembled from the framework's registries is valid, its vocabulary is
-SR's circuit types and device kinds, rules are selected by baseline and triggers, coverage sorts applicable rules,
+"""The guideline rule library (G01–G09): the bundle assembled from the framework's registries is valid, SR's circuit types
+and device kinds are names from its vocabulary, rules are selected by baseline and triggers, coverage sorts applicable rules,
 and the identity names the framework files it was read from.
 """
 import copy
@@ -64,18 +64,47 @@ class GuidelineRulesTests(unittest.TestCase):
         self.assertEqual(g.bundle_errors(g.load()), [])
 
     def test_srs_circuit_types_and_device_kinds_are_the_shared_vocabulary(self):
-        # 词表.json is the one place the names and titles live; the catalog and
-        # the device-kind registry are checked against it, and the bundle carries a copy build() takes from it
+        # 词表.json is the one place the names and titles live: every name the catalog and the device-kind registry use is
+        # in it and takes its title from it; names the framework has and SR has no behavior for yet are allowed and listed.
+        # The bundle carries a copy build() takes from it.
+        shared = knowledge_source.vocabulary()
+        self.assertEqual([(c.name, c.title) for c in catalog.CIRCUIT_TYPES],
+                         [(c.name, shared['circuit_types'][c.name]) for c in catalog.CIRCUIT_TYPES if c.name in shared['circuit_types']])
+        used = [(k, v.title) for k, v in device_kinds.KINDS.items() if k != 'unknown']
+        self.assertEqual(used, [(k, shared['device_kinds'][k]) for k, _ in used if k in shared['device_kinds']])
+        missing = catalog.vocabulary_without_behavior()
+        self.assertEqual(missing['circuit_types'], [n for n in shared['circuit_types'] if n not in catalog.CIRCUIT_TYPE_BY_NAME])
+        self.assertEqual(missing['device_kinds'], [n for n in shared['device_kinds'] if n not in device_kinds.KINDS])
         shared = json.loads(knowledge_source.vocabulary_path().read_text(encoding='utf-8'))
-        self.assertEqual([(x['name'], x['title']) for x in shared['circuit_types']], [(c.name, c.title) for c in catalog.CIRCUIT_TYPES])
-        self.assertEqual([(x['name'], x['title']) for x in shared['device_kinds']],
-                         [(k, v.title) for k, v in device_kinds.KINDS.items() if k != 'unknown'])
         self.assertEqual(shared['default_baseline'], 'industrial_telecom')
         self.assertEqual(g.load()['vocabulary'], g.vocabulary()['vocabulary'])
         self.assertEqual(g.load()['default_baseline'], g.vocabulary()['default_baseline'])
         stale = copy.deepcopy(g.load())
         stale['vocabulary']['circuit_types'] = stale['vocabulary']['circuit_types'][1:]
         self.assertTrue(any('词表.json' in e for e in g.bundle_errors(stale)))
+
+    def test_a_framework_name_sr_has_no_behavior_for_is_allowed_and_a_misspelt_one_is_refused(self):
+        import subprocess
+        from framework_fixtures import small_framework
+        with tempfile.TemporaryDirectory() as folder:
+            framework = small_framework(folder)
+            path = framework / knowledge_source.vocabulary_path().relative_to(knowledge_source.framework_root())
+            vocab = json.loads(path.read_text(encoding='utf-8'))
+            vocab['circuit_types'].append({'name': 'NEW_CIRCUIT', 'title': '新电路'})
+            vocab['device_kinds'].append({'name': 'new_kind', 'title': '新器件'})
+            path.write_text(json.dumps(vocab, ensure_ascii=False), encoding='utf-8')
+            env = dict(__import__('os').environ, HARDWARE_KNOWLEDGE_FRAMEWORK=str(framework))
+            run = lambda code: subprocess.run([sys.executable, '-c', code], cwd=ROOT / 'scripts', env=env,
+                                              capture_output=True, text=True)
+            done = run('import catalog, device_kinds, plan_review, render_report; '
+                       'm = catalog.vocabulary_without_behavior(); '
+                       'print(m["circuit_types"][-1], m["device_kinds"][-1], catalog.circuit_type("RS485").title)')
+            self.assertEqual(done.returncode, 0, done.stderr)
+            self.assertEqual(done.stdout.split(), ['NEW_CIRCUIT', 'new_kind', 'RS485'])
+        with self.assertRaisesRegex(ValueError, '电路类型 RS-485 不在知识框架词表'):
+            catalog._circuit_type('RS-485', 'SIG', r'RS-485', (), ())
+        with self.assertRaisesRegex(ValueError, '器件类别 thyristor 不在知识框架词表'):
+            device_kinds._kind('thyristor')
 
     def test_select_by_baseline_and_triggers(self):
         lib = bundle(rule('G04-001'),

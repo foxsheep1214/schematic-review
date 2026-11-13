@@ -875,8 +875,11 @@ def main():
         result["validated_files"] = validated_files(args.plan, args.results, args.db, args.lint)
         # The knowledge checklist sits beside the results: every circuit is matched to a typical-circuit scheme and
         # each of its must-calculate items and pitfalls is answered (knowledge_checklist.py).
-        unanswered = knowledge_checklist.problems(read(args.plan), knowledge_checklist.load(
-            Path(args.results).resolve().parent / knowledge_checklist.FILE))
+        checklist = knowledge_checklist.load(Path(args.results).resolve().parent / knowledge_checklist.FILE)
+        unanswered = knowledge_checklist.problems(read(args.plan), checklist)
+        notices = knowledge_checklist.hints(read(args.plan), checklist)
+        if notices:   # 提示，不判失败：本板电路类型、器件类别在框架里声明了的条目，查阅记录里没有
+            result["knowledge_hints"] = notices
         if unanswered:
             result["errors"] = list(result.get("errors") or []) + unanswered
             result["valid"] = False

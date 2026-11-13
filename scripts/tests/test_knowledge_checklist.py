@@ -120,3 +120,80 @@ def test_every_framework_scheme_yields_items_and_the_gates_read_the_checklist():
         assert not found or any(found.values()), md.name     # a scheme may list neither kind; a whole entry that does lost its format
     for script in ('validate_review.py', 'pack_review.py'):
         assert 'knowledge_checklist.problems(' in (ROOT / 'scripts' / script).read_text(encoding='utf-8')
+
+
+DECLARED = {'典型电路/电源变换/buck.md': ('POWER_CONVERTER', '通用'),
+            '器件参数/mosfet.md': ('通用', 'mosfet'),
+            '失效与故障分析/tvs.md': ('POWER_PROTECTION（输入端）', 'tvs、fuse'),
+            '接口约定/rs485.md': ('RS485', '通用')}
+
+
+@pytest.fixture
+def declared(tmp_path, monkeypatch):
+    """临时小框架：几个带词表声明的条目，环境变量指过去。"""
+    from framework_fixtures import small_framework
+    framework = small_framework(tmp_path / 'framework')
+    for path, (circuits, kinds) in DECLARED.items():
+        md = framework / '知识' / path
+        md.parent.mkdir(parents=True, exist_ok=True)
+        md.write_text('# %s\n\n电路类型：%s\n器件类别：%s\n\n## 内容\n\n电路类型：ANALOG\n' % (md.stem, circuits, kinds), encoding='utf-8')
+    monkeypatch.setenv('HARDWARE_KNOWLEDGE_FRAMEWORK', str(framework))
+    return framework
+
+
+def test_entries_are_listed_by_component_from_their_declarations(declared, tmp_path, capsys):
+    found = k.entries_by_component(['POWER_CONVERTER', 'POWER_PROTECTION', 'ANALOG'], ['mosfet'])
+    assert list(found) == ['典型电路', '器件参数', '失效与故障分析']          # component order, ANALOG below 二级标题 is not a declaration
+    assert found['典型电路'] == [('典型电路/电源变换/buck.md', ['POWER_CONVERTER'])]
+    assert found['失效与故障分析'] == [('失效与故障分析/tvs.md', ['POWER_PROTECTION'])]
+    assert k.main(['entries', 'mosfet', 'RS485']) == 0
+    out = capsys.readouterr().out
+    assert '器件参数\n  器件参数/mosfet.md  mosfet' in out and '接口约定/rs485.md  RS485' in out and 'buck' not in out
+    assert k.main(['entries', 'RS-485']) == 1 and '不在知识框架词表里：RS-485' in capsys.readouterr().out
+    plan = tmp_path / 'review-plan.json'
+    plan.write_text(json.dumps({'guidelines': {'circuit_types': ['POWER_CONVERTER'], 'device_kinds': ['fuse']}}), encoding='utf-8')
+    assert k.main(['entries', str(plan)]) == 0
+    out = capsys.readouterr().out
+    assert 'buck.md  POWER_CONVERTER' in out and 'tvs.md  fuse' in out and 'mosfet' not in out
+
+
+def test_declared_entries_missing_from_the_record_are_hints_not_failures(declared, tmp_path, capsys):
+    plan = {'owners': [], 'guidelines': {'circuit_types': ['POWER_CONVERTER'], 'device_kinds': ['mosfet', 'tvs']}}
+    assert k.problems(plan, None) == []
+    assert [h.split(' ')[0] for h in k.hints(plan, None)] == ['典型电路/电源变换/buck.md', '器件参数/mosfet.md', '失效与故障分析/tvs.md']
+    data = {'circuits': [{'circuit': 'c1', 'typical': 'buck#方案甲'}],
+            'entries': [{'entry': '器件参数/mosfet.md', 'disposition': 'read'},
+                        {'entry': '失效与故障分析/tvs.md', 'disposition': 'not_applicable', 'reason': ''}]}
+    assert [h.split(' ')[0] for h in k.hints(plan, data)] == ['失效与故障分析/tvs.md']   # 不适用要写理由
+    data['entries'][1]['reason'] = '本板 TVS 只在信号口，输入端没有'
+    assert k.hints(plan, data) == []
+    # without a guidelines section the circuit types come from the checks
+    assert [h.split(' ')[0] for h in k.hints({'checks': [{'id': 'x', 'circuit_type': 'RS485'}]}, None)] == ['接口约定/rs485.md']
+    del data['entries'][1]
+    paths = tmp_path / 'review-plan.json', tmp_path / k.FILE
+    paths[0].write_text(json.dumps(plan), encoding='utf-8')
+    paths[1].write_text(json.dumps(dict(data, schema_version=k.SCHEMA_VERSION), ensure_ascii=False), encoding='utf-8')
+    assert k.main(['check', str(paths[0]), str(paths[1])]) == 0
+    out = capsys.readouterr().out
+    assert out.startswith('提示:\n  - 失效与故障分析/tvs.md 声明了本板的 tvs') and out.endswith('PASS\n')
+    assert k.build(plan, data)['entries'] == data['entries']                    # build keeps the record
+
+
+def test_the_plan_records_the_board_scope_and_the_gate_shows_the_hints(declared, tmp_path):
+    plan = {'owners': [], 'knowledge_scope': {'circuit_types': ['RS485'], 'device_kinds': ['mosfet']},
+            'guidelines': {'circuit_types': ['POWER_CONVERTER'], 'device_kinds': []}}
+    assert k.board_scope(plan) == (['RS485'], ['mosfet'])                    # knowledge_scope first, rules or not
+    from test_validate_review import fixture
+    p, r, db = fixture()
+    p['knowledge_scope'] = {'circuit_types': [], 'device_kinds': ['mosfet']}
+    paths = []
+    for name, data in (('plan', p), ('results', r), ('db', db)):
+        paths.append(tmp_path / (name + '.json'))
+        paths[-1].write_text(json.dumps(data), encoding='utf-8')
+    import os
+    env = dict(os.environ, HARDWARE_KNOWLEDGE_FRAMEWORK=str(declared))
+    proc = subprocess.run([sys.executable, '-B', str(ROOT / 'scripts' / 'validate_review.py'), *map(str, paths[:2]),
+                           '--db', str(paths[2]), '--json', str(tmp_path / 'gate.json')], capture_output=True, text=True, env=env)
+    gate = json.loads((tmp_path / 'gate.json').read_text(encoding='utf-8'))
+    assert [h.split(' ')[0] for h in gate.get('knowledge_hints', [])] == ['器件参数/mosfet.md'], proc.stderr
+    assert not any('mosfet.md' in e for e in gate['errors'])                  # a hint, never an error

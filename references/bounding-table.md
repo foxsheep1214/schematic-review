@@ -94,7 +94,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `VAR-UC` | varistor | 最大持续工作电压 Uc | LOWER | 环境温度（额定温度以上降额） / DECREASING | G1；G2 | `VENDOR_DATUM` | 定界表扩表决定（architecture.md 2026-10-26） |
 | `VAR-VC` | varistor | 钳位（残）电压上界 | UPPER | 浪涌电流（8/20 µs 同一波形） / INCREASING | G1；G2 | `VENDOR_DATUM` | 定界表扩表决定（architecture.md 2026-10-26） |
 | `VAR-SURGE` | varistor | 最大浪涌电流 / 能量（按次数降额） | LOWER | 脉冲次数与波形 / DECREASING | G1；G2 | `VENDOR_DATUM` | 定界表扩表决定（architecture.md 2026-10-26） |
-| `RES-POWER` | resistor | 电阻功率、脉冲、TCR 与耐压 | UPPER | 温度与脉宽 / — | G1；G5 | `VENDOR_DATUM` | commodity-floors.md 片式电阻 |
+| `RES-POWER` | resistor | 电阻功率、脉冲、TCR 与耐压 | UPPER | 温度与脉宽 / — | G1；G5 | `VENDOR_DATUM` | 知识/设计准则/规范正文/G10_元器件降额与应力规范/常规件最弱档.md 片式电阻 |
 | `MLCC-EFFECTIVE-C` | capacitor | MLCC 有效容量（偏压、温度、老化） | LOWER | 直流偏压与温度 / DECREASING | G1；G2；G5（`table_interpolate`）；G8 | `VENDOR_DATUM` | commodity-floors.md MLCC；wca-formulas.md |
 | `ECAP-ESR-RIPPLE` | electrolytic | 电解 ESR 与纹波电流（温度、频率系数表） | — | 温度与频率 / NONMONOTONIC | G1；G5（`table_interpolate`）；G9 | `VENDOR_DATUM` | commodity-floors.md 电解 |
 | `IND-ISAT` | inductor、transformer、coupled_inductor、common_mode_choke | 电感 Isat（按资料定义取温度最坏值） | LOWER | 温度 / DECREASING | G1；G2；G5（`table_interpolate`）；G9（`typical_band`） | `VENDOR_DATUM` | commodity-floors.md 电感 |
@@ -144,7 +144,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `VAR-UC` | `GUARANTEED` | 不估算 | — | 安全 | 可测 | 不估算：母线最高持续电压（含容差、过压）不超过 Uc 保证值，超额定温度按降额曲线；长期超 Uc 是热失控的安全后果 |
 | `VAR-VC` | `TEST_POINT` | 不估算 | — | 损坏 | 型式试验 | 不估算；缺本板浪涌电流对应的保证值时按额定电流处 Vc max 判下游耐受 |
 | `VAR-SURGE` | `GUARANTEED` | 不估算 | — | 安全 | 型式试验 | 不估算：需求浪涌等级与次数对降额曲线取保证值；寿命走 DEV-C06 VARISTOR |
-| `RES-POWER` | `GUARANTEED` | 不估算 | — | 损坏 | 可测 | 不估算：额定、降额与脉冲曲线按保证；商品地板见 commodity-floors.md |
+| `RES-POWER` | `GUARANTEED` | 不估算 | — | 损坏 | 可测 | 不估算：额定、降额与脉冲曲线按保证；常规件最弱档见知识框架 知识/设计准则/规范正文/G10_元器件降额与应力规范/常规件最弱档.md |
 | `MLCC-EFFECTIVE-C` | `TYPICAL_BY_DEFINITION` | ×1.25 · 功能/性能/寿命：典型偏压曲线 × (1 − 公差) × 老化 0.9，再 ÷1.25；补偿网络 ÷1.4 | 一致性、环境适应性、寿命 | 功能/性能/寿命 | 可测 | 允许估算判 PASS（÷1.25） |
 | `ECAP-ESR-RIPPLE` | `TEST_POINT` | ×1.3 · 功能/性能/寿命：系数表外的频率：ESR ×1.3<br>×1.3 · 损坏 · 余量 ≥ 10 °C：同上，芯温余量 ≥ 10 °C | 环境适应性、一致性 | 性能/寿命/损坏 | 可测 | 表内按 G5（保证）；表外允许估算（×1.3），判纹波发热（损坏）另要芯温余量 ≥ 10 °C，记应力风险；寿命走 DEV-C02。“资料已读只剩折算”不是厂家数据缺口 |
 | `IND-ISAT` | `TYPICAL_BY_DEFINITION` | ×1.3 · 功能/性能/寿命/损坏：典型 Isat 热态值 ÷1.3（峰流 ≤ Isat/1.3） | 环境适应性 | 损坏 | 可测 | 允许估算判 PASS（÷1.3）：损坏类但行业别无他法；不满足 1.3 倍就开放或失败 |
