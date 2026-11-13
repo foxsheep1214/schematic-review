@@ -1,5 +1,5 @@
 """The plan lists the shared guideline rules this board triggers and which planned SR rules cover them
-(references/shared/guideline-criteria.md; user 2026-10-31: 请开始执行这个方案). An empty rule library leaves the plan as it was.
+(知识/设计准则/工具/包说明/guideline-criteria.md; user 2026-10-31: 请开始执行这个方案). An empty rule library leaves the plan as it was.
 """
 import sys
 import os
@@ -15,6 +15,7 @@ import guideline_criteria
 import independence
 import plan_review
 import render_report
+from framework_fixtures import real_library
 from test_guideline_criteria import bundle, rule
 from test_interface_rows import fx, plan_for
 from test_validate_review import fixture
@@ -22,7 +23,7 @@ import validate_review as validate_review_module
 from validate_review import fingerprint, validate_review
 
 STALE = 'plan guidelines were built on another shared rule library'
-STALE_LAYER = 'plan guidelines were built on another shared layer'
+STALE_LAYER = 'plan guidelines were built on other design guidelines'
 
 
 def identity(library):
@@ -46,7 +47,7 @@ class GuidelinePlanTests(unittest.TestCase):
     def test_the_plan_lists_applicable_rules_and_their_coverage(self):
         plan = self.plan({'DOC-Q01': ('G01-001',)})
         section = plan['guidelines']
-        self.assertEqual(section['fingerprint_format'], 'shared-paths-sha256-v2')
+        self.assertEqual(section['fingerprint_format'], 'framework-paths-sha256-v1')
         self.assertEqual(section['shared_sha256'], identity(self.library())['shared_sha256'])
         self.assertEqual(section['baseline'], 'industrial_telecom')
         self.assertIn('capacitor', section['device_kinds'])
@@ -144,7 +145,7 @@ class GuidelinePlanTests(unittest.TestCase):
         self.assertFalse(any('guideline_baseline' in e for e in plan_review.validate_intent(intent)))
 
     def test_basis_names_registered_rules_and_library_rules(self):
-        library = guideline_criteria.load(guideline_criteria.BUNDLE_PATH)
+        library = real_library()
         self.assertEqual(catalog.basis_errors({r['id'] for r in library['criteria']}), [])
         self.assertEqual(len(catalog.basis_errors({'G01-001'}, {'NO-X01': ('G01-001',), 'DOC-Q01': ('G09-001',)})), 2)
 

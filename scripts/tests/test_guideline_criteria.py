@@ -1,6 +1,6 @@
-"""The shared guideline rule library (G01–G09): the installed bundle is valid, its vocabulary is SR's circuit types
-and device kinds, rules are selected by baseline and triggers, coverage sorts applicable rules, and the installed
-release matches its own manifest (user 2026-10-31: 请开始执行这个方案; 2026-11-02: 目录制).
+"""The guideline rule library (G01–G09): the bundle assembled from the framework's registries is valid, its vocabulary is
+SR's circuit types and device kinds, rules are selected by baseline and triggers, coverage sorts applicable rules,
+and the identity names the framework files it was read from.
 """
 import copy
 import json
@@ -15,8 +15,7 @@ sys.path.insert(0, str(ROOT / 'scripts'))
 import catalog
 import device_kinds
 import guideline_criteria as g
-
-SHARED = g.SHARED_FILES
+import knowledge_source
 
 
 def rule(rid='G04-001', **changes):
@@ -61,13 +60,13 @@ def unreachable_rules(library):
 
 
 class GuidelineRulesTests(unittest.TestCase):
-    def test_installed_bundle_is_valid(self):
+    def test_framework_bundle_is_valid(self):
         self.assertEqual(g.bundle_errors(g.load()), [])
 
     def test_srs_circuit_types_and_device_kinds_are_the_shared_vocabulary(self):
-        # 2026-11-02 (user: 词表进共用层): vocabulary.json is the one place the names and titles live; the catalog and
+        # 词表.json is the one place the names and titles live; the catalog and
         # the device-kind registry are checked against it, and the bundle carries a copy build() takes from it
-        shared = json.loads(g.VOCABULARY_PATH.read_text(encoding='utf-8'))
+        shared = json.loads(knowledge_source.vocabulary_path().read_text(encoding='utf-8'))
         self.assertEqual([(x['name'], x['title']) for x in shared['circuit_types']], [(c.name, c.title) for c in catalog.CIRCUIT_TYPES])
         self.assertEqual([(x['name'], x['title']) for x in shared['device_kinds']],
                          [(k, v.title) for k, v in device_kinds.KINDS.items() if k != 'unknown'])
@@ -76,7 +75,7 @@ class GuidelineRulesTests(unittest.TestCase):
         self.assertEqual(g.load()['default_baseline'], g.vocabulary()['default_baseline'])
         stale = copy.deepcopy(g.load())
         stale['vocabulary']['circuit_types'] = stale['vocabulary']['circuit_types'][1:]
-        self.assertTrue(any('vocabulary.json' in e for e in g.bundle_errors(stale)))
+        self.assertTrue(any('词表.json' in e for e in g.bundle_errors(stale)))
 
     def test_select_by_baseline_and_triggers(self):
         lib = bundle(rule('G04-001'),
@@ -203,23 +202,23 @@ class GuidelineRulesTests(unittest.TestCase):
         self.assertEqual(found['covered']['G04-002'], ['baseline:R1'])
         self.assertEqual(found['uncovered'], ['G04-003'])
 
-    def test_the_library_is_part_of_the_engineering_identity(self):
-        # a new library version reopens designs and reviews like any rule change (architecture.md 规则维护)
+    def test_the_engine_identity_holds_no_knowledge_copy(self):
+        # the framework is read in place: nothing of it sits under references/, so the engine fingerprint covers only the skill's own files
         import skill_identity
         files = skill_identity.engineering_identity(ROOT)['files']
-        self.assertTrue(set(g.ENGINEERING_FILES) <= set(files), sorted(set(g.ENGINEERING_FILES) - set(files)))
-        self.assertNotIn('references/shared/shared-layer.md', files)
-        self.assertNotIn('references/shared/guideline-criteria.md', files)
+        self.assertFalse([n for n in files if n.startswith(('references/knowledge', 'references/shared'))])
         self.assertNotIn('guideline-criteria.json', skill_identity.NON_RULE_REFS)
 
-    def test_the_shared_directory_holds_exactly_the_shared_files(self):
-        # 2026-11-02 (user: 目录制): references/shared/ is the shared layer; a file there is shared or does not belong
-        listed = {Path(n).name for n in SHARED if n.startswith('references/shared/')}
-        self.assertEqual(sorted(p.name for p in g.SHARED_DIR.iterdir() if p.name != '__pycache__'), sorted(listed))
-        self.assertIn('scripts/guideline_criteria.py', SHARED)
+    def test_the_identity_names_the_framework_files_it_was_read_from(self):
+        files = g.shared_files()
+        self.assertIn('scripts/guideline_criteria.py', files)
+        self.assertIn('scripts/stress_check.py', files)
+        for name in g.FRAMEWORK_FILES:
+            self.assertIn(name, files)
+        self.assertTrue([n for n in files if n.endswith('_准则登记.json')])
         self.assertEqual(len(g.shared_digest()), 64)
         self.assertEqual(g.shared_versions()['library_version'], g.load()['library_version'])
-        self.assertRegex(g.shared_label(), r'^共用层 [0-9a-f]{12} \[shared-paths-sha256-v2\]，设计准则库 \S+，降额 v\d+$')
+        self.assertRegex(g.shared_label(), r'^设计准则 [0-9a-f]{12}（\d{4}-\d{2}-\d{2} 读取），降额 v\S+$')
 
     def test_dc_24v_checks_its_declared_window_not_the_telecom_48v_one(self):
         subjects = {t.name: t.subjects for t in catalog.CIRCUIT_TYPES}['DC_24V']
@@ -228,11 +227,6 @@ class GuidelineRulesTests(unittest.TestCase):
         self.assertIn('DC_24V', catalog.EXTERNAL_INTERFACE_TYPES)
         mapped = {gid for rule in subjects for gid in catalog.BASIS[rule]}
         self.assertTrue({'G01-051', 'G01-052', 'G01-053', 'G01-054'} <= mapped)
-
-    def test_local_installed_release_matches_its_manifest(self):
-        manifest = g.verify_installed(ROOT)
-        self.assertEqual(manifest['payload'], g.shared_files(ROOT))
-        self.assertEqual(manifest['fingerprint'], g.shared_digest(ROOT))
 
 
 if __name__ == '__main__':

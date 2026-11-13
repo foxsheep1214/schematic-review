@@ -8,16 +8,20 @@ import catalog
 import guideline_criteria as g
 import plan_review
 import render_report
+from framework_fixtures import real_library
 
 
-def test_output_and_field_surge_reach_plan_and_report():
+def test_output_and_field_surge_reach_plan_and_report(tmp_path):
     checks = [{'rule': 'PRO-D03', 'circuit_type': 'DC_24V'},
               {'rule': 'PRO-D04', 'circuit_type': 'POWER_PROTECTION'}]
     with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}):
-        section = plan_review.guideline_section(checks, {'parts': {'R1': {'value': '10k', 'part': 'Device:R'}}}, {}, {}, g.load(g.BUNDLE_PATH))
+        library = real_library()
+        section = plan_review.guideline_section(checks, {'parts': {'R1': {'value': '10k', 'part': 'Device:R'}}}, {}, {}, library)
+    path = tmp_path / 'criteria.json'
+    path.write_text(g.dump(library), encoding='utf-8')
     for rid in ('G07-004', 'G07-022', 'G07-023', 'G07-024', 'G07-032'):
         assert rid in section['covered'], rid
-    with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': str(g.BUNDLE_PATH)}):
+    with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': str(path)}):
         report = '\n'.join(render_report.render_guidelines({'guidelines': section}))
     assert 'G07-023' in report
     assert 'G07-032' in report
@@ -43,3 +47,13 @@ def test_generated_interface_questions_carry_surge_requirements():
             assert '直流电源口' in check['question']
             assert '串联元件' in check['question']
     assert {'PRO-D03', 'PRO-D04'} <= {c['rule'] for c in plan['checks']}
+
+
+def test_the_plan_and_report_record_the_knowledge_framework_identity():
+    import knowledge_source
+    with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}):
+        section = plan_review.guideline_section([], {'parts': {}}, {}, {}, real_library())
+        report = '\n'.join(render_report.render_guidelines({'guidelines': section}))
+    ident = knowledge_source.identity()
+    assert section['knowledge_fingerprint'] == ident['fingerprint'] and section['knowledge_read_date'] == ident['read_date']
+    assert '知识框架 %s（%s 读取）' % (ident['fingerprint'][:12], ident['read_date']) in report

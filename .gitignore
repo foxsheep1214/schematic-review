@@ -7,3 +7,4 @@ evals/workflow_bench/
 .DS_Store
 __pycache__/
 *.pyc
+/.knowledge-framework

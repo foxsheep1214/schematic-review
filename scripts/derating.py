@@ -3,20 +3,19 @@
 
 The level (I/II/III) is part of the requirements: `intent.derating{level, source}`, where source is `req:<requirement
 id>` or `clarification:<answered clarification id>`; the planner copies it into the plan. A margin that names
-`basis.derating_rule` is checked against the rule's value at that level (references/shared/derating-rules.json, shared with
+`basis.derating_rule` is checked against the rule's value at that level (知识/设计准则/规范正文/G10_元器件降额与应力规范/降额值.json, shared with
 ASG): over the rating it fails as any margin does; within the rating but over the derated value it passes with the
-stress risk (`basis.risk.types` holds STRESS), listed in the risk list and not blocking (references/shared/stress-spec.md,
+stress risk (`basis.risk.types` holds STRESS), listed in the risk list and not blocking (同目录 应力判法.md,
 user 2026-10-27: 将共用规范R6和ASG统一到现在的“应力”规范下来). Only margins the reviewer writes are checked; a stress
 margin of a part whose kind has rules but names none is a hint (user: 统一到余量审核规则上来).
 """
 import json
-from pathlib import Path
 import re
 
 from electrical_contract import text
+import knowledge_source
 import stress_check
 
-RULES_PATH = Path(__file__).resolve().parent.parent / 'references' / 'shared' / 'derating-rules.json'
 LEVELS = stress_check.LEVELS
 SOURCE_RE = re.compile(r'^(req|clarification):(\S+)$')
 RECOMPUTED = stress_check.RECOMPUTED   # stress / rating ≤ value: the gate redoes these from the margin and its limit
@@ -40,7 +39,7 @@ def rules():
     """{rule id: rule} of the shared spec."""
     global _RULES
     if _RULES is None:
-        _RULES = {r['id']: r for r in json.loads(RULES_PATH.read_text(encoding='utf-8'))['rules']}
+        _RULES = {r['id']: r for r in json.loads(knowledge_source.derating_path().read_text(encoding='utf-8'))['rules']}
     return _RULES
 
 
@@ -82,7 +81,7 @@ def margin_errors(label, margin, conditions, level, kinds_of, identity_of=None):
         return []
     rule = rules().get(rid)
     if rule is None:
-        return ['%s: basis.derating_rule %s is not in references/shared/derating-rules.json' % (label, rid)]
+        return ['%s: basis.derating_rule %s is not in the framework derating-rules (降额值.json)' % (label, rid)]
     limit = conditions.get(basis.get('limit')) or {}
     kinds = kinds_of(limit.get('refs') or [])
     errors = []
@@ -208,7 +207,7 @@ def rule_hint(margin, conditions, kinds_of):
 
 
 # 应力超幅（2026-11-07，用户：逐条裁决 D1–D8，按推荐执行；共用器件应力规范判定表第四行）：一条应力风险满足任一条时
-# 不只是降额偏离，风险清单单列，结论档位不变、不挡冻结。阈值只取共用层：降额表的 III 级取值、设计准则库工程取值。
+# 不只是降额偏离，风险清单单列，结论档位不变、不挡冻结。阈值只取知识框架的设计准则：降额表的 III 级取值、设计准则库工程取值。
 TEMPERATURE_MEASURES = ('max_c', 'tj_percent', 'margin_c')
 
 

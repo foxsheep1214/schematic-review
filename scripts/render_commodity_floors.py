@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""从本地发布包渲染最弱档数值表；解释、非数值行及 MLCC 介质注释仍人工维护。"""
+"""从知识框架的常规件最弱档.json 渲染最弱档数值表；解释、非数值行及 MLCC 介质注释仍人工维护。"""
 import argparse
 from fractions import Fraction
 from pathlib import Path
@@ -73,7 +73,7 @@ def main():
     rendered = render_doc(text)
     if args.check:
         if text != rendered:
-            raise SystemExit('最弱档表与本地发布包不一致')
+            raise SystemExit('最弱档表与知识框架的常规件最弱档.json 不一致')
         print('PASS')
     else:
         args.document.write_text(rendered, encoding='utf-8')

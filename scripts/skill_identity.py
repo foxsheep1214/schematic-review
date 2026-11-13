@@ -123,9 +123,7 @@ def engineering_identity(root):
     paths = [root / "SKILL.md"]
     for directory in ("scripts", "references"):
         paths.extend(p for p in (root / directory).rglob("*") if p.is_file() and _usable(p.relative_to(root))
-                     and not (directory == "references" and (p.name in NON_RULE_REFS or
-                         p.relative_to(root).as_posix() in {'references/shared/shared-layer.md',
-                                                         'references/shared/guideline-criteria.md'})))
+                     and not (directory == "references" and p.name in NON_RULE_REFS))
     files = {p.relative_to(root).as_posix(): _normalized_hash(p.read_bytes(), p.suffix, p.name == "SKILL.md") for p in sorted(paths)}
     return {"schema_version": 2, "digest": _digest(files), "files": files}
 

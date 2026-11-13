@@ -3010,13 +3010,6 @@
   "new": "    return found['r_min_ohm'] if _side(side) == 'UPPER' else found['r_max_ohm']"
  },
  {
-  "id": "M475",
-  "name": "the thermal-instability segment keeps the full derated curve",
-  "file": "references/shared/derating-rules.json",
-  "old": "\"THERMAL_INSTABILITY\": 0.8",
-  "new": "\"THERMAL_INSTABILITY\": 1.0"
- },
- {
   "id": "M476",
   "name": "the SOA curve is not derated to the starting case temperature",
   "file": "scripts/bound_formulas.py",
@@ -3029,20 +3022,6 @@
   "file": "scripts/bound_formulas.py",
   "old": "    return (_n(tc_allowed_c, 'tc_allowed_c') - _n(ta_max_c, 'ta_max_c')) / _n(p_w, 'p_w', True)",
   "new": "    return (_n(tc_allowed_c, 'tc_allowed_c') - _n(ta_max_c, 'ta_max_c')) * _n(p_w, 'p_w', True)"
- },
- {
-  "id": "M478",
-  "name": "a saturated BJT is driven at hFE min",
-  "file": "references/shared/guideline-criteria.json",
-  "old": "\"forced_beta_k\": {\n      \"value\": 2,",
-  "new": "\"forced_beta_k\": {\n      \"value\": 1,"
- },
- {
-  "id": "M479",
-  "name": "a typical value is taken ±20 %",
-  "file": "references/shared/guideline-criteria.json",
-  "old": "\"typical_band\": {\n      \"value\": 0.3,",
-  "new": "\"typical_band\": {\n      \"value\": 0.2,"
  },
  {
   "id": "M480",
@@ -8519,34 +8498,6 @@
   "new": "if False and registry['spec'] in specs:"
  },
  {
-  "id": "M1633",
-  "name": "release input hash is not verified",
-  "file": "scripts/guideline_criteria.py",
-  "old": "if _sha(_safe_file(release, name)) != digest:",
-  "new": "if False and _sha(_safe_file(release, name)) != digest:"
- },
- {
-  "id": "M1634",
-  "name": "published version accepts different bytes",
-  "file": "scripts/guideline_criteria.py",
-  "old": "if _inventory(target) != _inventory(candidate):",
-  "new": "if False and _inventory(target) != _inventory(candidate):"
- },
- {
-  "id": "M1635",
-  "name": "installation skips staged release verification",
-  "file": "scripts/guideline_criteria.py",
-  "old": "manifest = verify_release(staged)  # 所有验证发生在目标第一次写入之前",
-  "new": "manifest = json.loads((staged / 'manifest.json').read_text())  # skipped verification"
- },
- {
-  "id": "M1636",
-  "name": "failed installation does not roll back",
-  "file": "scripts/guideline_criteria.py",
-  "old": "for name in reversed(changed):",
-  "new": "for name in []:"
- },
- {
   "id": "M1637",
   "name": "build ignores the explicit vocabulary input",
   "file": "scripts/guideline_criteria.py",
@@ -8596,48 +8547,6 @@
   "new": "return {item['name']: '继电器' if item['name'] == 'relay' else item['title'] for item in raw[group]}"
  },
  {
-  "id": "M1645",
-  "name": "installed fingerprint is ignored",
-  "file": "scripts/guideline_criteria.py",
-  "old": "if shared_digest(root, manifest['fingerprint_format']) != manifest['fingerprint']:",
-  "new": "if False:"
- },
- {
-  "id": "M1646",
-  "name": "installed bundle semantics are not checked",
-  "file": "scripts/guideline_criteria.py",
-  "old": "errors = bundle_errors(bundle, root / 'references/shared/vocabulary.json')",
-  "new": "errors = []"
- },
- {
-  "id": "M1647",
-  "name": "installed version mismatch is accepted",
-  "file": "scripts/guideline_criteria.py",
-  "old": "if errors or bundle['library_version'] != manifest['library_version']:\n        raise ValueError('invalid installed bundle: %s' % errors)",
-  "new": "if errors:\n        raise ValueError('invalid installed bundle: %s' % errors)"
- },
- {
-  "id": "M1648",
-  "name": "local verification CLI prints digest without validating",
-  "file": "scripts/guideline_criteria.py",
-  "old": "result = verify_installed()['fingerprint']",
-  "new": "result = shared_digest()"
- },
- {
-  "id": "M1649",
-  "name": "maintenance prose leaks into engineering fingerprint",
-  "file": "scripts/guideline_criteria.py",
-  "old": "controlled = {name: files[name] for name in sorted(ENGINEERING_FILES)}",
-  "new": "controlled = {name: files[name] for name in sorted(SHARED_FILES)}"
- },
- {
-  "id": "M1650",
-  "name": "normative stress specification is omitted",
-  "file": "scripts/guideline_criteria.py",
-  "old": "if name not in (\n    'references/shared/shared-layer.md', 'references/shared/guideline-criteria.md')",
-  "new": "if name not in (\n    'references/shared/shared-layer.md', 'references/shared/guideline-criteria.md', 'references/shared/stress-spec.md')"
- },
- {
   "id": "M1652",
   "name": "version change bypasses shared record validation",
   "file": "scripts/guideline_criteria.py",
@@ -8648,8 +8557,8 @@
   "id": "M1653",
   "name": "alternate data borrows the installed engineering hash",
   "file": "scripts/guideline_criteria.py",
-  "old": "digest = _engineering_digest(files)",
-  "new": "digest = shared_digest(root, fmt)"
+  "old": "files['guideline_input'] = input_identity['sha256']",
+  "new": "pass"
  },
  {
   "id": "M1654",
@@ -8664,13 +8573,6 @@
   "file": "scripts/validate_review.py",
   "old": "for problem in guideline_criteria.identity_errors(guidelines, bundle=library):",
   "new": "for problem in []:"
- },
- {
-  "id": "M1656",
-  "name": "pure shared explanation re-enters SR engineering identity",
-  "file": "scripts/skill_identity.py",
-  "old": "p.relative_to(root).as_posix() in {'references/shared/shared-layer.md',\n                                                         'references/shared/guideline-criteria.md'}",
-  "new": "p.relative_to(root).as_posix() in set()"
  },
  {
   "id": "M1658",

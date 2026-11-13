@@ -10,13 +10,31 @@ not `wording`.
 
 Every test except test_guideline_criteria.py (which checks the installed bundle itself) sees the shared guideline library
 without its rules, engineering values kept, so the rules G01–G09 do not change what the other tests expect; a test
-that needs rules patches guideline_criteria.load with its own library or reads guideline_criteria.BUNDLE_PATH.
+that needs rules patches guideline_criteria.load with its own library or takes framework_fixtures.real_library().
 """
 import ast
 import re
+import sys
 from pathlib import Path
 
 import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import knowledge_source
+
+# Tests read the real knowledge framework (HARDWARE_KNOWLEDGE_FRAMEWORK or the skill's .knowledge-framework file). Without
+# it none of the test modules can even be imported, so they are left out and the report header says why.
+try:
+    knowledge_source.framework_root()
+    FRAMEWORK_MISSING = None
+except knowledge_source.KnowledgeFrameworkNotFound as exc:
+    FRAMEWORK_MISSING = str(exc)
+    collect_ignore_glob = ['test_*.py']
+
+
+def pytest_report_header(config):
+    if FRAMEWORK_MISSING:
+        return '未配置知识框架，需要它的测试全部跳过（没有收集）：' + FRAMEWORK_MISSING
 
 CONTRACT_FILES = {
     # rule contracts
@@ -56,7 +74,8 @@ def _wording_tests(path):
 @pytest.fixture(scope='session')
 def _ruleless_guideline_file(tmp_path_factory):
     import guideline_criteria   # scripts/ is on sys.path once the test modules are collected
-    library = guideline_criteria.load(guideline_criteria.BUNDLE_PATH)
+    from framework_fixtures import real_library
+    library = real_library()
     library.update(library_version='0.0.0', specs={}, criteria=[],
                    content_sha256=guideline_criteria.content_sha256([], library.get('engineering_values')))
     path = tmp_path_factory.mktemp('guidelines') / 'guideline-criteria.json'

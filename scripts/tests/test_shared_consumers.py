@@ -1,29 +1,38 @@
 """受控修改本地数据，证明消费者读取；默认分类字段与原行为另由原有回归覆盖。"""
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / 'scripts'))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import guideline_criteria
+import knowledge_source
+from framework_fixtures import small_framework
 
 
-def run(code):
-    subprocess.run([sys.executable, '-B', '-c', code], cwd=ROOT, check=True, capture_output=True, text=True)
+def run(code, framework=None):
+    env = dict(os.environ)
+    if framework:
+        env[knowledge_source.ENV_VAR] = str(framework)
+    subprocess.run([sys.executable, '-B', '-c', code], cwd=ROOT, check=True, capture_output=True, text=True, env=env)
 
 
-def test_titles_are_consumed_from_local_vocabulary(tmp_path):
-    vocabulary = json.loads((ROOT / 'references/shared/vocabulary.json').read_text())
+def test_titles_are_consumed_from_framework_vocabulary(tmp_path):
+    framework = small_framework(tmp_path / 'framework')
+    path = framework / knowledge_source.vocabulary_path().relative_to(knowledge_source.framework_root())
+    vocabulary = json.loads(path.read_text())
     vocabulary['device_kinds'][0]['title'] = '受控继电器标题'
     vocabulary['circuit_types'][0]['title'] = '受控变换器标题'
-    path = tmp_path / 'vocabulary.json'
     path.write_text(json.dumps(vocabulary))
-    run("import sys; sys.path.insert(0, 'scripts'); import guideline_criteria as g; "
-        + "g.VOCABULARY_PATH = __import__('pathlib').Path(%r); " % str(path)
-        + "import device_kinds as dk, catalog; assert dk.KINDS['relay'].title == '受控继电器标题'; assert catalog.CIRCUIT_TYPES[0].title == '受控变换器标题'; assert dk.KINDS['relay'].wearout == 'RELAY'; assert catalog.CIRCUIT_TYPES[0].subjects[0] == 'PWR-C02'")
+    run("import sys; sys.path.insert(0, 'scripts'); "
+        + "import device_kinds as dk, catalog; assert dk.KINDS['relay'].title == '受控继电器标题'; assert catalog.CIRCUIT_TYPES[0].title == '受控变换器标题'; assert dk.KINDS['relay'].wearout == 'RELAY'; assert catalog.CIRCUIT_TYPES[0].subjects[0] == 'PWR-C02'", framework)
 
 
 def test_assumed_package_changes_real_proposal(tmp_path):
-    data = json.loads((ROOT / 'references/shared/guideline-criteria.json').read_text())
+    data = guideline_criteria.load()
     data['engineering_values']['assumed_resistor_package']['value'] = '0201'
     path = tmp_path / 'criteria.json'
     path.write_text(json.dumps(data))

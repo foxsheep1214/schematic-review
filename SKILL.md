@@ -117,8 +117,8 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | 工作点和保证条件对不上时定界；估算判通过的边界 | [bounding-table.md](references/bounding-table.md)（由 `scripts/catalog.py` 生成） |
 | 审查员 | 一条余量怎么判：合格、合格但有风险、不合格；无料号常规件的判定表 | [margin-verdicts.md](references/margin-verdicts.md) |
 | 审查员 | BOM 缺具体料号、要给通用件额定定界时 | [commodity-floors.md](references/commodity-floors.md) |
-| 审查员 | 器件应力降额（共用规范 G10）：I/II/III 级降额值、等级从哪来、取值规则（共用层，见 shared-layer.md） | [derating-rules.md](references/shared/derating-rules.md) |
-| 审查员 | 器件应力怎么判（共用规范 G10）：超额定不成立、超降额未超额定是应力风险、应力超幅单列、只审写出的应力余量（共用层，见 shared-layer.md） | [stress-spec.md](references/shared/stress-spec.md) |
+| 审查员 | 器件应力降额（规范 G10）：I/II/III 级降额值、等级从哪来、取值规则 | 知识框架 `知识/设计准则/规范正文/G10_元器件降额与应力规范/降额规范.md` |
+| 审查员 | 器件应力怎么判（规范 G10）：超额定不成立、超降额未超额定是应力风险、应力超幅单列、只审写出的应力余量 | 知识框架 `知识/设计准则/规范正文/G10_元器件降额与应力规范/应力判法.md` |
 | 审查员 | 结果、P0–P3（含 BOM 约束定级）、阶段、HANDOFF、准出 | [verdicts-and-release.md](references/verdicts-and-release.md) |
 | 审查员 | 需求缺失/含糊/冲突：当场问用户，答复写进需求清单 | [requirement-clarifications.md](references/requirement-clarifications.md) |
 | 审查员 | ① 写 intent.json：字段、输入声明、电路决定、需求参数 | [intent-format.md](references/intent-format.md) |
@@ -129,7 +129,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | 输入版本、覆盖与留档 | [inputs-and-coverage.md](references/inputs-and-coverage.md) |
 | 审查员 | 跑解析器、各 EDA 字段映射、解析自检、PDF 提取与读图 | [input-parsing.md](references/input-parsing.md) |
 | 审查员 | 资料补取、保证值核对 | [datasheets.md](references/datasheets.md) |
-| 审查员 | 知识包（从知识框架同步，不在这里改）：需求要素、接口约定、计算方法、器件参数、失效与故障分析、典型电路的已知坑；判一条准则该要什么证据、怎样复算、保证值多少、器件怎样失效 | [knowledge/README.md](references/knowledge/README.md) |
+| 审查员 | 知识框架（运行时直接读，不在这里改）：需求要素、接口约定、计算方法、器件参数、失效与故障分析、典型电路的已知坑；判一条准则该要什么证据、怎样复算、保证值多少、器件怎样失效 | 框架 `知识/<组件>/`，位置见 [架构说明](references/architecture.md#四规则维护) |
 | 审查员 | 复用上次核对过的器件角色与供电分组 | [reviewed-declarations.md](references/reviewed-declarations.md) |
 | 审查员 | 工程计算公式；修改建议的计算预检查 | [wca-formulas.md](references/wca-formulas.md)、[calculation-preflight.md](references/calculation-preflight.md) |
 | 审查员 | 需要有界 R/C 工作点或瞬态的仿真证据 | [simulation-evidence.md](references/simulation-evidence.md) |
@@ -142,8 +142,8 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | SR 维护者 | 架构明细：步骤间文件、格式版本、脚本归属、历次架构决定、规则维护步骤 | [architecture.md](references/architecture.md) |
 | SR 维护者 | 规则编号总表、判据、每项检查的盲区与常见误报（审查员用的名称表另出） | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
 | SR 维护者 | 改规则时：七项审查要点（要点1–7）、规则取舍的三问 | [review-charter.md](references/review-charter.md) |
-| SR 维护者 | 共用设计准则库（共用规范 G01–G09；G10 见上面两行）：设计准则、适用条件、覆盖、`catalog.BASIS`、更新步骤（共用层，见 shared-layer.md） | [guideline-criteria.md](references/shared/guideline-criteria.md) |
-| SR 维护者 | 共用层：哪些文件与 ASG 同字节、各自的角色、谁读、哪条测试守、怎么改 | [shared-layer.md](references/shared/shared-layer.md) |
+| SR 维护者 | 设计准则库（规范 G01–G09；G10 见上面两行）：设计准则、适用条件、覆盖、`catalog.BASIS`、更新步骤 | 知识框架 `知识/设计准则/工具/包说明/guideline-criteria.md` |
+| SR 维护者 | 设计准则、降额数据和词表在框架里的位置、各文件的字段、身份指纹覆盖哪些文件 | 知识框架 `知识/设计准则/工具/包说明/shared-layer.md` |
 
 ## 审查 ASG 交付的设计
 
@@ -158,12 +158,12 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 方式：A 自动扫描、E 保证值核对、T 连接追踪、C 工程计算、D 条款核对、V 图面目检、Q 覆盖审计、H 版本比对。
 方式字母只是标签，说明结论怎么得出；一条规则在哪次运行执行（冷扫、专家审查、改版复审），由它在总表里声明的输入和执行者推出（`catalog.stage_of`），不由字母决定。
 计划里没有、审查员认为该查的项不直接加检查项（直接加的被拒），登记到 `intent.rule_gaps`，写法和去向见 [intent 字段](references/intent-format.md#一intentjsonschema_version-5)。
-共用设计准则来自硬件设计规范的固定发布包，SR 记录本次审查采用的版本与指纹，独立取证和复算（机制见 [共用层说明](references/shared/shared-layer.md)）。
-需求要素、接口约定、计算方法、器件参数、失效与故障分析等是从硬件设计知识框架同步进本技能的知识包（`references/knowledge/`，清单 `knowledge-sync.json` 记依据的框架版本），计划 `guidelines` 段同样记它的版本与指纹；运行不读知识框架目录，框架更新后用 `scripts/knowledge_package.py sync <知识框架目录>` 重新同步。
-知识包告诉审查员判一条准则该要什么证据、怎样复算、器件保证值多少、器件怎样失效；判据仍是设计准则，数值出处仍写原件与页码。
-共用设计准则（编号 `G0x-nnn`，如 `G03-005`）是判据层，规则总表是执行层：`catalog.BASIS` 把 SR 规则映射到它核对的本地设计准则，
-计划的 `guidelines` 段列出本板适用的设计准则、由哪些检查覆盖、哪些检查这次没展开（本板没有对象或电路未声明）、哪些还没有检查（SR 待补，不是设计缺陷），见 [共用设计准则库](references/shared/guideline-criteria.md)。
-共用规范 G01–G10 中 G01–G09 是设计准则（编号 `G0x-nnn`），G10 是降额与应力规范（规则编号如 `RES-SMD-P`，见 [降额规范](references/shared/derating-rules.md)）；它们与审查要点 要点1–7、定界推法 G1–G11 不是一回事，不要混写。
+设计准则直接读硬件设计知识框架里的准则登记，SR 记录本次审查读到的设计准则身份与读取日期，独立取证和复算（字段说明见 知识框架 `知识/设计准则/工具/包说明/shared-layer.md`）。
+需求要素、接口约定、计算方法、器件参数、失效与故障分析等知识条目直接读硬件设计知识框架（`知识/<组件>/`）；框架目录由环境变量 `HARDWARE_KNOWLEDGE_FRAMEWORK` 或技能根目录的 `.knowledge-framework` 文件（一行，框架目录的绝对路径）指定，脚本都经 `scripts/knowledge_source.py` 取路径。计划 `guidelines` 段记读到的设计准则身份与知识框架的指纹、读取日期。
+知识框架告诉审查员判一条准则该要什么证据、怎样复算、器件保证值多少、器件怎样失效；判据仍是设计准则，数值出处仍写原件与页码。
+设计准则（编号 `G0x-nnn`，如 `G03-005`）是判据层，规则总表是执行层：`catalog.BASIS` 把 SR 规则映射到它核对的设计准则，
+计划的 `guidelines` 段列出本板适用的设计准则、由哪些检查覆盖、哪些检查这次没展开（本板没有对象或电路未声明）、哪些还没有检查（SR 待补，不是设计缺陷），说明见 知识框架 `知识/设计准则/工具/包说明/guideline-criteria.md`。
+规范 G01–G10 中 G01–G09 是设计准则（编号 `G0x-nnn`），G10 是降额与应力规范（规则编号如 `RES-SMD-P`，见 知识框架 `知识/设计准则/规范正文/G10_元器件降额与应力规范/降额规范.md`）；它们与审查要点 要点1–7、定界推法 G1–G11 不是一回事，不要混写。
 
 功能电路（DDR、USB、电源保护等）按 `intent.circuits` 逐电路×工况展开电路检查项；电路由候选文件与 `intent.circuit_decisions` 推出，不手画（2.1）；答案不随工作态变化的电路检查项（`catalog.STATE_INVARIANT`）每电路只问一次。REQ-Q07 只汇总覆盖、由工具按同类电路各检查项写出，不能代替电路检查项；未检出也未声明的功能电路由 REQ-Q08 逐个确认。
 
@@ -185,7 +185,7 @@ SIG 接口与信号、ANA 模拟与监测、PRO 防护与隔离、DRV 功率驱�
 把问题清单交给用户。②、③ 中途发现新的需求问题同样当场问。
 录入前按 [需求原文到审查要求](references/requirement-clarifications.md#需求原文到审查要求) 分清确实待用户决定的、
 客观设计要求、明确排除和下游工作；不能把源文件的 OPEN 标题机械变成问题。
-核需求是否给全时，对照知识包 [需求要素](references/knowledge/需求要素/README.md)：按本板的端口和负载找条目，条目列的条件缺了而判断要靠它的，照上面当场问。
+核需求是否给全时，对照知识框架 `知识/需求要素/`：按本板的端口和负载找条目，条目列的条件缺了而判断要靠它的，照上面当场问。
 按 [输入与覆盖](references/inputs-and-coverage.md) 记录输入版本/哈希；PDF 与网表须核修订号证明同版。
 仅有 PDF 时逐页读图并声明范围，不能声称网表/ERC/逐脚全量通过。缺工具先盘点现有能力，安装须另获授权。
 
@@ -243,7 +243,7 @@ PDF 与网表核过同版；页码映射建好；冷扫跑过，阻值读不出�
   核心器件和它生成的电路类型，计划顶层 `domains` 据此列出参考地分区、跨域器件与截止网络（[检查器共用约定](references/checker-conventions.md)）。
 - AI 已逐端核对的器件角色和电源/返回分组按 [可复用声明](references/reviewed-declarations.md) 保存来源与输入指纹；
   下次先验证声明，输入变化则重新核对，不能只刷新摘要。`manual_*` 兼容字段不代表人员确认，核对者身份须如实记录。
-- 器件保证值先查知识包 `器件参数/`（带手册页码），没有条目或版本不符再读手册；引 [原件勘误](references/knowledge/原件勘误.md) 列出的原件的数，看页面图像（[器件资料](references/datasheets.md#二保证值核对方式-e)）。
+- 器件保证值先查知识框架 `知识/器件参数/`（带手册页码），没有条目或版本不符再读手册；引框架 `原件勘误.md` 列出的原件的数，看页面图像（[器件资料](references/datasheets.md#二保证值核对方式-e)）。
 - 资料缺失时按 [器件资料](references/datasheets.md) 补取（先 LCSC/立创，再原厂），仍取不到按逐参数补证；
   PDF 提取的关键数值对照渲染页核单位。
 
@@ -359,21 +359,21 @@ SR 只用“不变的决定”第 1 条的四类输入：设计方的报告、�
 - **工程计算**：按 [WCA 公式](references/wca-formulas.md) 先确认模型，再代入实际串并联、输入/温度/负载和公差角点；
   原厂已覆盖工况的 Min/Max 直接使用。区分设定目标与物理可达输出（FB 公式不代表升压能力、RC 不等于复位脉宽、
   有 TVS 不等于防护通过）。阈值型保护（门限脚、门限链与基准齐纳、跨开关节点的能量钳位）两侧都算（PRO-C02）；跨网与地的防护钳位（电源轨 TVS、芯片脚对地齐纳、连接器信号线 ESD）逐器件核工作电压（只比持续最高电压）、能到达本节点的瞬态下钳位电压对同网最低耐受和脉冲能量（PRO-E02）。一次只取一个瞬态或故障事件，叠加在持续最坏工况上；瞬态比瞬态额定，持续比持续额定（[单一瞬态](references/wca-formulas.md#假设上界与实际故障的证据门槛)），连接器只核挂线与泄放（PRO-D03）；传感器开短路按控制器实际偏置档与环境全范围判别（ANA-C04）。连续可调输出在全范围扫描应力。判“缺保护”前计入 IC 自带保护（寄存器设定的门限归固件任务）；改频率/阻值/保护管时连带复算。
-  某条准则要复算时，用知识包 [准则支撑表](references/knowledge/索引/准则支撑表.md) 从准则编号找到 `计算方法/<知识域>/` 的条目，按它的取值步骤和输入取端复算；WCA 已有的公式不重抄（[关系](references/wca-formulas.md#公式与验收依据)）。
+  某条准则要复算时，用知识框架的 `索引/准则支撑表.md` 从准则编号找到 `知识/计算方法/<知识域>/` 的条目，按它的取值步骤和输入取端复算；WCA 已有的公式不重抄（[关系](references/wca-formulas.md#公式与验收依据)）。
 - **自己算关键数值**：决定结论的数值由 SR 按原理图、需求和原厂资料自己算，`circuit_bounds.*`（分压、RC 跨阈、线性稳压热、逻辑电平裕量、电容纹波折算、电阻功耗、串阻电流）与 `model_bounds.*` 自行枚举公差角点。不复算设计文档所称的数值，也不拿它当判据。
 - **核对模型和原表**：CrM Boost 输出电容用 `model_bounds.crm_boost_capacitor_ripple` 独立核二极管导通相位，并按控制器实际母线模式分别算；不沿用设计脚本的公式证明自身。厂家参数引用用 `audit_parameter_claims.py` 对比独立摘录的原表，给料号/材料、文档哈希、页码、温度/激励条件、典型或保证值口径；工程设计限值另核裕量，不能当厂家额定值引用。工具不代替原表摘录核实，详见 [自动扫描与计算工具](references/scans-and-tools.md#厂家参数引用核对)。
 - **动态数值证据**：需要有界 R/C 工作点或瞬态时按 [仿真证据](references/simulation-evidence.md)；样本在窗口内不直接等于规则 PASS。
 - **条款核对**：每颗 IC/模组核推荐工作条件（DEV-C05）和逐脚处置（DEV-D05）；连接器核对端定义（DEV-D03）和对外防护（PRO-D03）；
   主控引脚复用对照平台约束与固件配置（SIG-D13）。由参考设计派生的电路列出全部偏离并按本设计条件复核。
-- **知识包对照**：跨块接口两端是否交代全、总线电气条件对照 `接口约定/`；器件失效方式、单故障与故障模式分析的步骤对照 `失效与故障分析/`；
+- **知识框架对照**：跨块接口两端是否交代全、总线电气条件对照 `接口约定/`；器件失效方式、单故障与故障模式分析的步骤对照 `失效与故障分析/`；
   `典型电路/` 各实现方案的“已知坑”只作找问题的线索，发现仍落到具体准则和证据上，不因没用某种典型电路判缺陷。
-- **知识必答清单**：计划里的每块电路对上知识包典型电路的一个实现方案，该方案的必算项和已知坑逐项要有审查结论，记在 `review-results.json` 旁边的 `knowledge-checklist.json`：
+- **知识必答清单**：计划里的每块电路对上知识框架典型电路的一个实现方案，该方案的必算项和已知坑逐项要有审查结论，记在 `review-results.json` 旁边的 `knowledge-checklist.json`：
 
       python3 scripts/knowledge_checklist.py find <关键词 ...>                                 # 检索典型电路与实现方案
       python3 scripts/knowledge_checklist.py build review-plan.json knowledge-checklist.json   # 按计划的电路列项，已写的保留
       python3 scripts/knowledge_checklist.py check review-plan.json knowledge-checklist.json
 
-  `circuits` 每块电路写 `typical`（`<典型电路文件名>#<实现方案名>`；知识包里没有对应的写 `none`，并在 `reason` 写查过哪些、为什么都不对应），写完重跑 build 列出各项。
+  `circuits` 每块电路写 `typical`（`<典型电路文件名>#<实现方案名>`；知识框架里没有对应的写 `none`，并在 `reason` 写查过哪些、为什么都不对应），写完重跑 build 列出各项。
   `items` 每项只填处置：`checked` 在 `where` 列出核过它的检查项或功能编号（计划里的编号），`not_applicable` 在 `reason` 写本电路为什么没有这种情况。
   清单只规定这些项都要看过，不是判据：结论仍写在功能判定和检查项里。条目文字变了，对应项作废，重跑 build 后补写。
 

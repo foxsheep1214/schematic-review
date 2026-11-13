@@ -1,6 +1,6 @@
-"""The commodity floors (chip-resistor floors, orderable MLCC rows, contact floors) live once, in the shared layer's
-commodity-floors.json, which passive_stress reads; references/commodity-floors.md shows the same numbers and this test
-keeps the tables and the file equal (user 2026-11-02: 最弱档收进共用层)."""
+"""The commodity floors (chip-resistor floors, orderable MLCC rows, contact floors) live once, in the framework's
+常规件最弱档.json, which passive_stress reads; references/commodity-floors.md shows the same numbers and this test
+keeps the tables and the file equal."""
 import re
 import sys
 import unittest

@@ -23,6 +23,7 @@ from pathlib import Path
 import catalog
 import function_reading
 import guideline_criteria
+import knowledge_source
 import units
 from electrical_contract import text
 from review_functions import RESULT_MAX_CHARS, circuit_functions
@@ -786,7 +787,7 @@ def guideline_cards(plan):
 
 
 def render_guidelines(plan):
-    """共用设计准则覆盖（references/shared/guideline-criteria.md）：本板适用的设计准则、出处、由哪些检查核对、在哪个阶段关闭。"""
+    """共用设计准则覆盖（知识/设计准则/工具/包说明/guideline-criteria.md）：本板适用的设计准则、出处、由哪些检查核对、在哪个阶段关闭。"""
     section, applicable = guideline_cards(plan)
     if not applicable:
         return []
@@ -799,8 +800,9 @@ def render_guidelines(plan):
               len(section.get('uncovered') or [])), '',
            '“内容”列是准则库条款标题的原文引文，照录不改写。', '',
            '| 设计准则 | 内容（准则库原文） | 出处 | 本次由哪些检查核对 | 关闭阶段 |', '|---|---|---|---|---|']
-    if section.get('knowledge_version'):   # 知识包与共用层版本并列记录（2026-11-10 接入知识包）
-        out[4:4] = ['知识包 %s，指纹 %s。' % (section['knowledge_version'], section['knowledge_fingerprint'][:12]), '']
+    if section.get('knowledge_fingerprint'):   # 知识框架的指纹与设计准则身份并列记录
+        out[4:4] = [knowledge_source.label({'read_date': section['knowledge_read_date'],
+                                            'fingerprint': section['knowledge_fingerprint']}) + '。', '']
     if not section.get('external_interfaces'):   # 2026-11-01 (user decision 1): the interface rules never rest on a net name alone
         out[2:2] = ['未声明对外接口：网名没有识别到、intent 也没有声明 %s，这些接口的设计准则没有选中。板上有的话写进 `intent.circuits` 后重新生成计划。'
                     % '、'.join(t.title for t in catalog.CIRCUIT_TYPES if t.name in catalog.EXTERNAL_INTERFACE_TYPES), '']

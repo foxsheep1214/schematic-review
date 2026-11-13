@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""知识必答清单：每块电路对上知识包里的典型电路实现方案，方案的必算项和已知坑逐项要有审查结论。
+"""知识必答清单：每块电路对上知识框架里的典型电路实现方案，方案的必算项和已知坑逐项要有审查结论。
 
   python3 knowledge_checklist.py find <关键词 ...>                               在典型电路里按文件名、标题、功能、方案名检索
   python3 knowledge_checklist.py build review-plan.json knowledge-checklist.json  按计划里的电路重写清单，保留已写的内容
   python3 knowledge_checklist.py check review-plan.json knowledge-checklist.json
 
 清单是审查员在“判断”一步写的文件，放在 review-results.json 旁边：
-  circuits  计划里每块电路（plan.owners）一条：`typical` 写 `<典型电路文件名>#<实现方案名>`，知识包里没有对应的写 `none` 并在 `reason` 写查过什么
+  circuits  计划里每块电路（plan.owners）一条：`typical` 写 `<典型电路文件名>#<实现方案名>`，知识框架里没有对应的写 `none` 并在 `reason` 写查过什么
   items     由 build 从所写方案里抽出，不手抄：该方案的每条必算项、每条已知坑。每项写 `disposition`：
             `checked`（`where` 列出核过它的检查项或功能的编号，必须是计划里的）或 `not_applicable`（`reason` 写理由）
 必算项和已知坑只是该查什么的清单，不是判据：发现仍落到具体准则和证据上，不因没用某种典型电路判缺陷。
@@ -20,7 +20,8 @@ import re
 import sys
 from pathlib import Path
 
-KNOWLEDGE = Path(__file__).resolve().parents[1] / 'references' / 'knowledge'
+import knowledge_source
+
 FILE = 'knowledge-checklist.json'
 SCHEMA_VERSION = 1
 KINDS = ('必算项', '已知坑')
@@ -58,7 +59,7 @@ def implementations(body):
 
 
 def circuit_file(stem):
-    hits = sorted((KNOWLEDGE / '典型电路').rglob(stem + '.md'))
+    hits = sorted((knowledge_source.knowledge_dir() / '典型电路').rglob(stem + '.md'))
     return hits[0] if len(hits) == 1 else None
 
 
@@ -73,7 +74,7 @@ def scheme_rows(circuit, typical):
     for kind, words in pairs:
         digest = hashlib.sha256(('%s\n%s' % (kind, words)).encode('utf-8')).hexdigest()[:10]
         seen[digest] = seen.get(digest, 0) + 1
-        rows.append({'circuit': circuit, 'entry': md.relative_to(KNOWLEDGE).as_posix(), 'scheme': name, 'kind': kind,
+        rows.append({'circuit': circuit, 'entry': md.relative_to(knowledge_source.knowledge_dir()).as_posix(), 'scheme': name, 'kind': kind,
                      'id': digest if seen[digest] == 1 else '%s-%d' % (digest, seen[digest]), 'text': words})
     return rows
 
@@ -104,7 +105,7 @@ def problems(plan, data):
     for cid in circuits:
         typical = (declared.get(cid) or {}).get('typical')
         if not text(typical):
-            found.append('必答清单 电路 %s：typical 写 <典型电路文件名>#<实现方案名>，知识包里没有对应的写 none' % cid)
+            found.append('必答清单 电路 %s：typical 写 <典型电路文件名>#<实现方案名>，知识框架里没有对应的写 none' % cid)
             continue
         if typical == NONE:
             if not text(declared[cid].get('reason')):
@@ -112,7 +113,7 @@ def problems(plan, data):
             continue
         rows = scheme_rows(cid, typical)
         if rows is None:
-            found.append('必答清单 电路 %s：%s 在知识包的典型电路里找不到（knowledge_checklist.py find 检索）' % (cid, typical))
+            found.append('必答清单 电路 %s：%s 在知识框架的典型电路里找不到（knowledge_checklist.py find 检索）' % (cid, typical))
             continue
         for row in rows:
             answer = written.get(key(row))
@@ -154,7 +155,7 @@ def build(plan, old):
 
 def search(terms):
     hits = []
-    for md in sorted((KNOWLEDGE / '典型电路').rglob('*.md')):
+    for md in sorted((knowledge_source.knowledge_dir() / '典型电路').rglob('*.md')):
         if md.name == 'README.md':
             continue
         body = md.read_text(encoding='utf-8')

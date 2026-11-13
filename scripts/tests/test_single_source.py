@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 SCRIPTS = ROOT / 'scripts'
 # Installed read-only from the design guidelines and the knowledge framework; not the skill's to edit.
-SHARED = {'guideline_criteria.py', 'stress_check.py'}
+SHARED = {'guideline_criteria.py', 'stress_check.py', 'knowledge_source.py'}   # byte-identical with ASG; the framework path helpers are the file's API
 INSTALLED = (ROOT / 'references' / 'knowledge', ROOT / 'references' / 'shared')
 SCRIPT_NAME = re.compile(r'(?<![\w/.-])([a-z][a-z0-9_]*\.py)\b')
 LINK = re.compile(r'\]\(([^)#\s]+)')

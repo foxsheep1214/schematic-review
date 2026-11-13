@@ -21,6 +21,7 @@ import render_report
 import requirement_bindings
 import requirements_extract
 import validate_review
+from framework_fixtures import real_library
 from checkers.passive_stress import bom_ratings
 
 
@@ -172,7 +173,7 @@ def test_errors_rows_share_through_one_open_item_are_said_once():
 
 # 3.8 quotations of the rule library
 def test_a_quoted_rule_library_title_is_not_the_reports_wording(monkeypatch):
-    library = guideline_criteria.load(guideline_criteria.BUNDLE_PATH)
+    library = real_library()
     monkeypatch.setattr(guideline_criteria, 'load', lambda *a, **k: library)
     card = next(c for c in library['criteria'] if '下游' in c['title'])
     report = '# 报告\n| %s | %s |\n这一行说下游。\n' % (card['id'], render_report.cell(card['title']))

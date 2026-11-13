@@ -84,7 +84,7 @@ class MarginTests(unittest.TestCase):
         self.assertEqual(derating.margin_errors('FN-X', m, {'c-rated': gate_min}, 'II', kinds), [])
 
     def test_the_rule_exists_fits_the_part_and_needs_a_level(self):
-        self.assertIn('not in references/shared/derating-rules.json', gate('II', margin(10, rule='NO-SUCH'))[0])
+        self.assertIn('not in the framework derating-rules (降额值.json)', gate('II', margin(10, rule='NO-SUCH'))[0])
         self.assertIn('is for mosfet', gate('II', margin(10, rule='MOS-VDS-S'))[0])
         self.assertIn('no derating level', gate(None, margin(10))[0])
         self.assertEqual(gate(None, margin(10, rule=None)), [])

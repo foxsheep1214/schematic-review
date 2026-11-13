@@ -21,7 +21,7 @@ import part_words as pw
 import read_bom
 from .base import Checker
 
-# 常规件最弱档从共用层读（references/shared/commodity-floors.json，2026-11-02；commodity-floors.md 的表与它逐项对应）：
+# 常规件最弱档从知识框架读（G10 的 常规件最弱档.json，2026-11-02；commodity-floors.md 的表与它逐项对应）：
 # 封装 -> (70 ℃ 最弱档功率 W, 最弱档最高工作电压 V)
 _FLOORS = guideline_criteria.commodity_floors()
 RESISTOR_FLOORS = {p: (v['power_w_70c'], v['voltage_v']) for p, v in _FLOORS['chip_resistor']['packages'].items()}

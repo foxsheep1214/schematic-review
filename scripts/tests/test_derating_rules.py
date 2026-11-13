@@ -1,5 +1,5 @@
 """The derating spec (I/II/III levels from T/CPSS 1013, GJB/Z 35 and T/CPSS 1006) is one file shared with
-autonomous-schematic-generation (references/shared, validated locally by test_installed_release): every rule names
+autonomous-schematic-generation (the framework's G10 data): every rule names
 a device kind, a measure, a condition and a cited page, and the levels run from most to least derating (user 2026-10-27).
 """
 import json
@@ -13,9 +13,10 @@ sys.path.insert(0, str(ROOT / 'scripts'))
 
 import device_kinds
 import guideline_criteria
+import knowledge_source
 
 REFS = ROOT / 'references'
-SPEC = json.loads((REFS / 'shared' / 'derating-rules.json').read_text(encoding='utf-8'))
+SPEC = json.loads(knowledge_source.derating_path().read_text(encoding='utf-8'))
 LEVELS = ('I', 'II', 'III')
 RISING = {'ratio', 'pulse_ratio', 'tj_percent', 'max_c', 'max_rise_k', 'max_v'}
 FALLING = {'margin_c', 'min_hours', 'min_years'}
@@ -53,7 +54,7 @@ class DeratingSpecTests(unittest.TestCase):
                 self.assertEqual(len(set(map(str, v))), 1, rule['id'])
 
     def test_the_document_lists_every_rule(self):
-        text = (REFS / 'shared' / 'derating-rules.md').read_text(encoding='utf-8')
+        text = knowledge_source.derating_doc_path().read_text(encoding='utf-8')
         listed = re.findall(r'^\| ([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+) \|', text, flags=re.M)
         self.assertEqual(sorted(listed), sorted(r['id'] for r in SPEC['rules']))
 

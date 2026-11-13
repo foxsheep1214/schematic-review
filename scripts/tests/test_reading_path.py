@@ -10,13 +10,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
-# shared/ included (2026-11-02); the installed knowledge package is not (2026-11-10): its files are the framework's, not
-# edited here, and SKILL.md's 参考文件 table names its reader once on knowledge/README.md
-REFERENCES = sorted(p for p in (ROOT / 'references').rglob('*.md') if 'knowledge' not in p.relative_to(ROOT / 'references').parts)
+# The framework's files are not under references/: SKILL.md's 参考文件 table names them by their framework path, not as links
+REFERENCES = sorted((ROOT / 'references').rglob('*.md'))
 
 
 def rel(path):
-    """A reference's path as SKILL.md links it: 'intent-format.md', 'shared/stress-spec.md'."""
+    """A reference's path as SKILL.md links it: 'intent-format.md'."""
     return str(path.relative_to(ROOT / 'references'))
 SKILL = (ROOT / 'SKILL.md').read_text(encoding='utf-8')
 READERS = ('审查员与 SR 维护者', 'SR 维护者', '审查员')
@@ -48,7 +47,7 @@ def skill_table():
         cells = [c.strip() for c in line.strip().strip('|').split('|')]
         if len(cells) != 3 or cells[0] in ('读者',) or set(cells[0]) <= set('-'):
             continue
-        for name in re.findall(r'\(references/((?:shared/)?[a-z0-9-]+\.md)\)', cells[2]):
+        for name in re.findall(r'\(references/([a-z0-9-]+\.md)\)', cells[2]):
             out[name] = cells[0]
     return out
 
@@ -59,7 +58,7 @@ def step_links():
     for part in re.split(r'\n(?=### )', section(SKILL, '## 执行流程'))[1:]:
         mark = part[4:5]
         if mark in STEP_MAX_BYTES:
-            out[mark] = sorted(set(re.findall(r'references/((?:shared/)?[a-z0-9-]+\.md)', part)))
+            out[mark] = sorted(set(re.findall(r'references/([a-z0-9-]+\.md)', part)))
     return out
 
 
@@ -77,7 +76,7 @@ class ReadingPathTests(unittest.TestCase):
     def test_the_execution_flow_links_no_maintainer_only_reference(self):
         maintainer_only = {rel(p) for p in REFERENCES if reader_of(p) == 'SR 维护者'}
         self.assertTrue(maintainer_only)
-        linked = set(re.findall(r'references/((?:shared/)?[a-z0-9-]+\.md)', section(SKILL, '## 执行流程')))
+        linked = set(re.findall(r'references/([a-z0-9-]+\.md)', section(SKILL, '## 执行流程')))
         self.assertEqual(sorted(linked & maintainer_only), [])
 
     def test_every_step_links_something_and_the_links_resolve(self):

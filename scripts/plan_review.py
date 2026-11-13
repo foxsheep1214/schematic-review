@@ -9,12 +9,12 @@
 """
 import difflib
 import json
-from pathlib import Path
 from copy import deepcopy
 import board_intent
 import catalog
 import derating
 import guideline_criteria
+import knowledge_source
 import protective_clamps
 from electrical_contract import (LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, PLAN_SCHEMA_VERSION, db_fingerprint, bounded, engine_identity, finite,
                                  squeeze_words)
@@ -364,17 +364,14 @@ def guideline_scope_of(checks, db, kind_intent, intent, library):
     return intent.get('guideline_baseline') or library['default_baseline'], circuits, kinds
 
 
-def knowledge_identity(root=Path(__file__).resolve().parents[1]):
-    """知识包（references/knowledge/，从知识框架同步）依据的框架版本与指纹，照技能根目录 knowledge-sync.json 记进计划，与共用层版本并列；没同步过时为空。"""
-    path = root / 'knowledge-sync.json'
-    if not path.is_file():
-        return {}
-    manifest = json.loads(path.read_text(encoding='utf-8'))
-    return {'knowledge_version': manifest['knowledge_version'], 'knowledge_fingerprint': manifest['fingerprint']}
+def knowledge_identity():
+    """读到的知识框架的读取日期与指纹（知识条目的指纹，见 knowledge_source.identity），记进计划，与设计准则身份并列。"""
+    ident = knowledge_source.identity()
+    return {'knowledge_read_date': ident['read_date'], 'knowledge_fingerprint': ident['fingerprint']}
 
 
 def guideline_section(checks, db, kind_intent, intent, library):
-    """共用设计准则的适用与覆盖（references/shared/guideline-criteria.md）：范围见 guideline_scope_of；计划里出现的 SR 规则按
+    """共用设计准则的适用与覆盖（知识/设计准则/工具/包说明/guideline-criteria.md）：范围见 guideline_scope_of；计划里出现的 SR 规则按
     catalog.BASIS 覆盖它映射的设计准则；映射的 SR 规则这次没有展开的记 not_triggered（本板没有它的对象，或电路还没声明），
     根本没有映射的才是 uncovered。coverage 不是 item 的准则单列 project_input、handoff，由 REQ-Q09 核，不算这几类。"""
     baseline, circuits, kinds = guideline_scope_of(checks, db, kind_intent, intent, library)
