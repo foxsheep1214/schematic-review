@@ -6,9 +6,11 @@ ASG 的交付目录里，SR 只读下面这些文件，其余都是设计方记�
 
 | 文件 | 用途 |
 |---|---|
-| `原理图/` 下唯一的根 `.kicad_sch` 和其他图页 | 被审原理图 |
-| `原理图/netlist.xml`、`原理图/schematic.pdf`、`原理图/BOM.csv` | KiCad 原生网表、图面、BOM |
+| `设计方案/` 下唯一的根 `.kicad_sch` 和其他图页 | 被审原理图 |
+| `设计方案/netlist.xml`、`设计方案/schematic.pdf`、`设计方案/BOM.csv` | KiCad 原生网表、图面、BOM |
 | 需求文件 | 需求基线，全部登记为 `intent.review_sources`（绝对路径与定位说明） |
+
+`设计方案/` 是一个 KiCad 工程，里面还可能有 PCB 环节的 `.kicad_pcb`、`.kicad_dru` 和它自己的文件，这些不属于原理图审查，不读。早先交付的目录里这个文件夹叫 `原理图/`，内容相同，照样读。
 
 `设计报告.md` 和 `record/` 下的设计网表、需求清单、计算、自检与图面审阅记录都不读、不引用：SR 从原理图、需求和原厂资料独立建立审查意图、
 取证和复算（引用设计方记录时 `independence.py` 拒收）。ASG 的 `electrical-intent.json` 不能改名当作 SR 的 `intent.json`，
