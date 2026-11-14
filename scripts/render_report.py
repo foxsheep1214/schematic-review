@@ -813,7 +813,7 @@ def render_guidelines(plan):
             titles = guideline_criteria.vocabulary_titles(group)
             if missing.get(group):
                 words.append(label + ' ' + '、'.join('%s（%s）' % (n, titles.get(n, n)) for n in missing[group]))
-        out[2:2] = ['本技能对这些类型还没有专门的识别或检查：%s。板上有的，相关设计准则不会经它们选中，审查员用 `knowledge_checklist.py entries <名称>` 列出框架里声明了它们的条目查阅。'
+        out[2:2] = ['本审查工具对这些类型还没有专门的识别或检查：%s。板上有的，相关设计准则不会经它们选中，审查员用 `knowledge_checklist.py entries <名称>` 列出框架里声明了它们的条目查阅。'
                     % '；'.join(words), '']
     for card in applicable:
         if card['id'] in batched:
