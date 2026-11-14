@@ -13,7 +13,7 @@
 - 计划项 ID 为 `规则编号[.实例键].锚点`，例如 `RST-T02.U3.SYS-RST-N`。审查员要补的检查登记在 `intent.rule_gaps`，
   计划工具写成 `REVIEWER_ADDED` 检查项，ID 为 `规则编号.GAP-<缺口编号>.锚点`，如 `PWR-T05.GAP-Q7-REVERSE.Q7`。每个计划项带 `rule`、`method`、`domain`，合并计划和校验结果时逐项核对。
 - 格式版本（`schema_version`）以[架构说明](architecture.md)的文件表为准（测试核对代码）；版本不符的文件按当前总表重新生成，只是改名的结果先跑 `scripts/migrate_results.py`。
-- 内容域和方式只是编号的拼法，不是审查的顺序：审查流程（五个步骤）和审查员沿着走的功能树见 [SKILL.md 架构](../SKILL.md#架构)，
+- 内容域和方式只是编号的拼法，不是审查的顺序：审查流程（五个步骤）和审查员沿着走的功能树见 [SKILL.md 架构](../SKILL.md#架构) 与 [流水线总览](pipeline-overview.md#判断链)，
   步骤间文件和脚本归属见 [架构说明](architecture.md)。
 
 ## 方式要点

@@ -5,7 +5,7 @@
 不提前给 PASS/FAIL。每个计划项带规则编号、检查方式与内容域，检查 ID 以
 规则编号开头。HANDOFF 是独立下游动作，可以与后续 PASS/FAIL/INSUFFICIENT 并存。
 
-它是库：出计划的命令只有 lint.py（`--plan-json`），见 SKILL.md 2.1（SR 自查 2.9）。
+它是库：出计划的命令只有 lint.py（`--plan-json`），见 references/step-2-plan.md 2.1（SR 自查 2.9）。
 """
 import difflib
 import json

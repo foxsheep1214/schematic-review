@@ -18,7 +18,7 @@
 
     git clone https://github.com/foxsheep1214/schematic-review.git <你的skills目录>/schematic-review
 
-执行步骤和命令见 [SKILL.md](SKILL.md)。Python 脚本只用标准库；读取 PDF 需要现有的提取/渲染工具（例如 Poppler）。
+执行步骤见 [SKILL.md](SKILL.md)，各步命令见 `references/step-*.md`。Python 脚本只用标准库；读取 PDF 需要现有的提取/渲染工具（例如 Poppler）。
 
 ## 输入与边界
 

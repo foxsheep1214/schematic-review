@@ -11,6 +11,8 @@ SCRIPTS = ROOT / 'scripts'
 DOC = (ROOT / 'references' / 'architecture.md').read_text(encoding='utf-8')
 SKILL = (ROOT / 'SKILL.md').read_text(encoding='utf-8')
 NAME = re.compile(r'`(\w+\.py|checkers/)`')
+# The review flow: SKILL.md's step table, the five step files, and the revision section of revision-review.md.
+STEP_FILES = ('step-1-intake.md', 'step-2-plan.md', 'step-3-judge.md', 'step-4-validate.md', 'step-5-report.md')
 
 
 def section(text, title):
@@ -43,7 +45,10 @@ class ArchitectureTests(unittest.TestCase):
 
     def test_the_review_flow_calls_only_entry_scripts(self):
         table = script_table()
-        called = set(re.findall(r'python3 scripts/(\w+\.py)', section(SKILL, '## 执行流程')))
+        revision = (ROOT / 'references' / 'revision-review.md').read_text(encoding='utf-8')
+        flow = [section(SKILL, '## 执行流程'), section(revision, '## 改版复审（H）')]
+        flow += [(ROOT / 'references' / name).read_text(encoding='utf-8') for name in STEP_FILES]
+        called = set(re.findall(r'python3 scripts/(\w+\.py)', '\n'.join(flow)))
         self.assertTrue(called)
         not_entry = sorted(n for n in called if table.get(n, [(None, None)])[0][1] != 'entry')
         self.assertEqual(not_entry, [], 'SKILL.md calls scripts that are not entry scripts')
@@ -78,6 +83,12 @@ class ArchitectureTests(unittest.TestCase):
             self.assertIn(ring, arch)
         self.assertIn('**改架构先问人**', arch)
         self.assertIn('references/architecture.md', arch)
+        self.assertIn('references/pipeline-overview.md', arch)
+        rule = section(DOC, '## 零、')    # the change rule's list is the maintainer's, in the architecture page
+        self.assertIn('**改架构先问人**：修改 SR 本身时，下面任何一项都算架构调整', rule)
+        overview = (ROOT / 'references' / 'pipeline-overview.md').read_text(encoding='utf-8')
+        self.assertIn('**不变的决定**', section(overview, '## 不变的决定'))   # the reviewer reads them every review
+        self.assertNotIn('**不变的决定**', DOC)
 
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ Writes db['bom'] = {source, sha256, columns, uniform_columns, parts{ref: {column
 A part keeps its non-empty columns except the reference and value; a column written the same on every line (a status
 note) says nothing about any part and is listed in uniform_columns instead. A line may name several parts
 ("R1, R2"). The text is kept as written: what it states about the part (ratings, tolerances, limits the part must meet)
-is a design result; a calculation written there is the designer's and is not used (SKILL.md, independent review).
+is a design result; a calculation written there is the designer's and is not used (references/step-1-intake.md 1.2, independent review).
 """
 import argparse
 import csv
@@ -57,7 +57,7 @@ def bom_fields(columns):
 
 # ASG's BOM states what a part bought by specification must meet, one requirement per `|`-separated item:
 # `rated_voltage要求: rated_voltage>=50 V @ 温度=85 ℃ 额定` (RequirementSpec), and what the selection gives (SelectedSpec).
-# These are design results (SKILL.md: a rating the BOM states is used); the values are minimums or maximums the part
+# These are design results (references/step-1-intake.md: a rating the BOM states is used); the values are minimums or maximums the part
 # must meet, so the weakest compliant part sits on the bound (Matrix R2 6.1, 2026-11-04).
 SPEC_COLUMNS = ('requirementspec', 'selectedspec')
 SPEC_ITEM_RE = re.compile(r'^(?:[^:：|]*[:：])?\s*(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*(?P<op>>=|<=|≥|≤|=)\s*'

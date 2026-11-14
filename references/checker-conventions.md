@@ -91,7 +91,7 @@ HVEN/HV_EN 是使能，均不算轨。这些规则来自公开反激板回放（
 - 截止网为地、可信输出轨、被多个核心器件一跳到达的声明轨/实际供电轨；经地/伪网的一跳不算。未完成供电声明也不穿共享 VIN；开关节点不作直流轨。候选从截止网起步同样停止，直接供电电容单独引用。
 - 驱动源和等势分开：`signal_source_peers` 沿总阻值 ≤10 kΩ、最多三段的信号串阻保存路径，包含实板 4.7 kΩ（含容差）；不跨电源/地收集别的输出。此阈值只发现来源，电平、漏电、默认态、时序仍核；每段 <1 MΩ 的更高阻栅极链只提示候选。低阻供电追溯仍用原 ≤1 Ω 规则。
 
-**电路候选**（`circuit_candidates.py`，调用见 SKILL.md ②，schema 2）：绑定 `db_sha256/input_sha256`，带 `rules_version`，由网表、已核角色和库存生成；审查员只决定取舍（[决定格式](intent-format.md#一intentjsonschema_version-5)）。
+**电路候选**（`circuit_candidates.py`，调用见 [② 出计划](step-2-plan.md)，schema 2）：绑定 `db_sha256/input_sha256`，带 `rules_version`，由网表、已核角色和库存生成；审查员只决定取舍（[决定格式](intent-format.md#一intentjsonschema_version-5)）。
 - 候选 = 类型 + 核心器件，编号 `<类型>-<核心器件>`（链为 `<类型>-<核心器件>.<脚>`），工作态取 `catalog.CANDIDATE_STATES` 固定表，默认态未经需求确认。
   成员各带 `role`、`via`（走到它的路径，是归属关系，不是导通主张）和 `hops`；页码只作显示，不决定归属。
   例外：符号 `Circuit` 字段（ASG 典型电路 ID）标成另一颗核心器件所在电路的器件，电路候选的走线不收不穿；跨电路链不受限。

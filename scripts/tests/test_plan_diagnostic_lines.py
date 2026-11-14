@@ -1,6 +1,6 @@
 """The planning entry prints what the plan asks the reviewer to fix (SR self-check of 2026-10-24, item 1.2).
 
-SKILL.md tells the reviewer to read the plan's prompts after a scan (a circuit type that asks almost nothing, rails
+references/step-2-plan.md tells the reviewer to read the plan's prompts after a scan (a circuit type that asks almost nothing, rails
 without a voltage, unbounded nodes, unread resistor values); `lint.py` is the entry that makes the plan, so it prints
 them, from the same lines `plan_review.diagnostic_lines` gives.
 """

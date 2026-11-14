@@ -39,7 +39,7 @@ def python_files():
 # one list equal to the constant, so a word added in the code fails here until the document follows.
 ENUMERATION = re.compile(r'`[A-Za-z_][\w-]*(?:\s*/\s*[A-Za-z_][\w-]*){2,}`|(?:`[A-Za-z_][\w-]*`[、/，, ]+){2,}`[A-Za-z_][\w-]*`')
 COPIED = (
-    ('SKILL.md', 'results_model', 'DERIVED_ROW_KEPT'),
+    ('references/step-3-judge.md', 'results_model', 'DERIVED_ROW_KEPT'),
     ('references/intent-format.md', 'plan_review', 'NO_SUPPLY_KINDS'),
     ('references/automation.md', 'i2c_topology', 'KINDS'),
     ('references/automation.md', 'board_intent', 'PIN_ROLES'),
