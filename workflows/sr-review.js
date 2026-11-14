@@ -27,7 +27,8 @@ const STEPS = [
 const WORK = {
   type: 'object', required: ['status', 'summary'],
   properties: {
-    status: { type: 'string', enum: ['done', 'partial', 'needs_input'] },
+    status: { type: 'string', enum: ['done', 'partial', 'needs_input', 'upstream'] },
+    upstream_step: { type: 'integer' },
     summary: { type: 'string' },
     questions: { type: 'array', items: { type: 'string' } },
   },
@@ -40,14 +41,14 @@ const common = `全程中文。技能目录 ${SKILL}（只读，不改其中任�
 输入：${a.inputs}${a.revision ? `\n这是改版复审，上一轮的审查工作目录是 ${a.revision}；按 references/revision-review.md 在②和④加旧网表和旧计划。` : ''}
 若输入是设计工作流的交付目录，先读 references/workflow-handoff.md：只读其中的原理图、网表、PDF、BOM 和需求，设计方的报告和 record/ 不读不引用。`
 
-function workPrompt(s, feedback) {
+function workPrompt(s, feedback, fromDown) {
   return `${common}
 
 你是审查员，只做审查流水线的第 ${s.n} 步（${s.title}）。先读 ${SKILL}/SKILL.md、references/pipeline-overview.md 和本步细则 references/${s.file}，再读本步细则指到的参考文件。前面各步的产物已在工作目录里；先看工作目录里已有什么，接着做，不重做已完成且有效的部分。
-只做本步：不做后面步骤的事，不改前面步骤的产物（发现前一步的产物有错，在 summary 里写明并返回 needs_input）。
+只做本步：不做后面步骤的事，不改前面步骤的产物。发现前面某一步的产物有错或不够（例如要在 intent 里补声明并重新生成计划），返回 upstream，在 upstream_step 写该回到第几步，summary 逐条写清要那一步补什么、补完后本步哪一项能关闭。
 本步做完的标志以细则里的关卡命令为准，自己先跑到通过。
-${feedback ? `上一轮关卡没过，原因：\n${feedback}\n先处置这些再继续。\n` : ''}
-返回：status 为 done（本步全部做完且自查关卡通过）、partial（工作量大，本轮做了一部分，进度已写进工作目录，下一轮接着做）或 needs_input（缺了只有人能给的东西：资料、需求澄清、设计未定项的决定；写进 questions，每条写清要什么、为什么、给了之后哪一项能关闭）。summary 写本轮做了什么、还剩什么。`
+${fromDown ? `后面的步骤做不下去，指出本步的产物有错或不够（本步自己的关卡通过不等于后面够用）：\n${fromDown}\n本轮先按这些改本步的产物，改完重跑本步关卡。认为某条不该由本步改的，在 summary 里逐条写明理由。\n` : ''}${feedback ? `上一轮关卡没过，原因：\n${feedback}\n先处置这些再继续。\n` : ''}
+返回：status 为 done（本步全部做完且自查关卡通过）、partial（工作量大，本轮做了一部分，进度已写进工作目录，下一轮接着做）、upstream 或 needs_input（缺了只有人能给的东西：资料、需求澄清、设计未定项的决定；写进 questions，每条写清要什么、为什么、给了之后哪一项能关闭）。summary 写本轮做了什么、还剩什么。`
 }
 function gatePrompt(s) {
   return `${common}
@@ -58,19 +59,30 @@ function gatePrompt(s) {
 }
 
 const done = []
-for (const s of STEPS) {
-  if (a.start && s.n < a.start) continue
+let backtracks = 0, carry = ''
+for (let i = Math.max((a.start || 1) - 1, 0); i < STEPS.length; i++) {
+  const s = STEPS[i]
   phase(s.title)
-  let feedback = '', passed = false
+  let feedback = '', passed = false, back = 0
+  const fromDown = carry
+  carry = ''
   for (let round = 1; round <= s.rounds; round++) {
-    const w = await agent(workPrompt(s, feedback), { label: `${s.title} 第${round}轮`, phase: s.title, schema: WORK })
+    const w = await agent(workPrompt(s, feedback, fromDown), { label: `${s.title}${fromDown ? ' 回改' : ''} 第${round}轮`, phase: s.title, schema: WORK })
     if (!w) return { status: 'stopped', step: s.n, done }
     if (w.status === 'needs_input') return { status: 'needs_input', step: s.n, questions: w.questions || [], summary: w.summary, done }
+    if (w.status === 'upstream') { back = w.upstream_step || s.n - 1; feedback = w.summary; break }
     if (w.status === 'partial') { log(`${s.title} 未完，继续：${w.summary}`); feedback = ''; continue }
     const g = await agent(gatePrompt(s), { label: `${s.title} 关卡`, phase: s.title, schema: GATE, effort: 'low' })
     if (g && g.passed) { passed = true; done.push({ step: s.n, summary: w.summary }); break }
     feedback = g ? g.details : '关卡检查没有返回结果'
     log(`${s.title} 关卡未过，返回本步处置`)
+  }
+  if (back) {
+    if (back < 1 || back >= s.n || ++backtracks > 3) return { status: 'blocked', step: s.n, reason: `需要回到前面的步骤但无法继续：${feedback}`, done }
+    log(`${s.title} 发现前面步骤的问题，回到第 ${back} 步：${feedback}`)
+    carry = feedback
+    i = back - 2
+    continue
   }
   if (!passed) return { status: 'blocked', step: s.n, reason: feedback || '本步在限定轮数内没有做完', done }
 }
