@@ -15,6 +15,15 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+## 温度等级高于使用条件记可选优化（2026-11-15）
+
+AD9361 板（ASG 实测）环境 0～45 ℃、贮存 −40～+85 ℃，53 颗 MLCC 全用 X7R：照准则 G03-036 的示例“C0G、X7R 类”取的，没有用环境条件推导，X5R 已够。用户问这算不算过度设计，随后要求三项都改。知识框架一侧：G03-036 改为按温度范围选够用的 Class II 代码，G08-006 的设计做法加“等级按推导选，高出一档写理由”、审查做法加“高出所需一档以上、有代价且没写理由的记可选优化（P3），不判不成立”（SR 运行时直接读准则登记）。本技能一侧：`verdicts-and-release.md` 严重度一节加这类情形的定级（`kind=IMPROVEMENT`、P3 `OPTIMIZATION`，检查项 DEV-C05），并给出例子；同日按 G10 新增的 R13（额定取够用的一档），电压、功率等额定高出够用一档两档及以上又有代价的同样记 P3（检查项 DEV-C01）。没有加自动扫描：器件处温升和价格供货要审查员判断。
+
+- Event: user:2026-11-15（1、2、3都进行改动）
+- Causes: rule_missing 1
+- Changed: references/verdicts-and-release.md, docs/improvement-ledger.md
+- Gates: pytest 3027 passed（5 条既有 warnings）；只改定级文档，没有跑 mutation；准则登记一侧知识框架的校验、渲染、rule_support、check_sources 全过
+
 ## 取消参考文件的阅读量上限（2026-11-12）
 
 用户：“现在ASG和SR里面都有个skill文档总量上限的限制，是我之前为了保持skill简洁做的。为了保证skill的能力不断得到提升，请取消这个定量的限制，但是在以后还是要保证skill逻辑清晰”。`test_reading_path.py` 删去各步的字节上限（`STEP_MAX_BYTES` 和 `test_no_step_exceeds_its_budget`），读者标记、参考文件表与读者一致、执行流程不引维护者文件、各步链接可解析这四项照旧。SKILL.md“参考文件”一节把“不超过该步的上限”改为不设上限、保持逻辑清晰的三条要求（一件事只写一处；读者和所用步骤明确；按执行流程读下来不用来回找）。
