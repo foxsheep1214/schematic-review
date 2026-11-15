@@ -15,6 +15,15 @@ circuits) and the `mutation/run.py --changed` result (since 2026-10-27).
 
 
 
+## 取消参考文件的阅读量上限（2026-11-12）
+
+用户：“现在ASG和SR里面都有个skill文档总量上限的限制，是我之前为了保持skill简洁做的。为了保证skill的能力不断得到提升，请取消这个定量的限制，但是在以后还是要保证skill逻辑清晰”。`test_reading_path.py` 删去各步的字节上限（`STEP_MAX_BYTES` 和 `test_no_step_exceeds_its_budget`），读者标记、参考文件表与读者一致、执行流程不引维护者文件、各步链接可解析这四项照旧。SKILL.md“参考文件”一节把“不超过该步的上限”改为不设上限、保持逻辑清晰的三条要求（一件事只写一处；读者和所用步骤明确；按执行流程读下来不用来回找）。
+
+- Event: user:2026-11-12（取消这个定量的限制，但是在以后还是要保证skill逻辑清晰）
+- Causes: judgment 1
+- Changed: scripts/tests/test_reading_path.py, SKILL.md, docs/improvement-ledger.md
+- Gates: pytest 3075 passed（5 条既有 warnings）；只删测试里的上限并改文档，没有跑 mutation
+
 ## 知识必答清单：典型电路的必算项和已知坑逐项要结论（2026-11-11）
 
 知识包的条目此前只是审查员的参考，没有任何关卡知道它用没用上。用户决定把知识变成技能自己的规则，形式选“工具抽取成必答清单”，范围选“ASG 三类 + SR 两类”。SR 这两类是典型电路实现方案的必算项和已知坑：计划里每块电路（`plan.owners`）由审查员对上知识包典型电路的一个实现方案，或写 `none` 及查过什么；`knowledge_checklist.py build` 从该方案的条目里抽出每条必算项、已知坑，审查员逐项写 `checked`（`where` 是计划里核过它的检查项或功能编号）或 `not_applicable`（理由）。清单是 `review-results.json` 旁边的 `knowledge-checklist.json`（格式版本 1），`validate_review.py` 命令和 `pack_review.py` 都核对：有电路而没有清单、电路没对上、项没处置、编号不在计划里，都不通过。条目文字变了，项的编号跟着变，原处置作废。清单只规定这些项都要看过，不是判据，结论仍在功能判定和检查项里。没有按原设想把这些项写进 `review-plan.json`：那要升计划格式并改派生逻辑，这一轮先用独立文件接到同样的两道关卡上。知识包里有 4 个实现方案既没有必算项也没有已知坑（poe-pd-front-end 第 5、llc-resonant-converter 第 5、qr-flyback 的参考方案、zcd-sensing 的内部检测），对上它们时没有项可答，待反馈给知识框架。接口参数模板、器件失效方式没有做。
