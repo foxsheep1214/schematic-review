@@ -39,7 +39,7 @@ const GATE = {
 }
 const common = `全程中文。技能目录 ${SKILL}（只读，不改其中任何文件）。审查工作目录 ${a.workdir}，全部产物写在这里。
 输入：${a.inputs}${a.revision ? `\n这是改版复审，上一轮的审查工作目录是 ${a.revision}；按 references/revision-review.md 在②和④加旧网表和旧计划。` : ''}
-若输入是设计工作流的交付目录，先读 references/workflow-handoff.md：只读其中的原理图、网表、PDF、BOM 和需求，设计方的报告和 record/ 不读不引用。`
+若输入是设计工作流的交付目录，先读 references/workflow-handoff.md：只读其中的原理图、网表、PDF、BOM 和需求基线（设计资料/需求基线.md，已定的澄清照它审、不重问），设计方的报告和 record/ 不读不引用。`
 
 function workPrompt(s, feedback, fromDown) {
   return `${common}
