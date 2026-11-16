@@ -10,7 +10,7 @@ import json
 import os
 
 import catalog
-from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint, engine_identity
+from electrical_contract import PLAN_SCHEMA_VERSION, db_fingerprint
 from diff_netlists import diff_databases
 from i2c_topology import validate_db_shape
 
@@ -341,7 +341,7 @@ def _verify_frozen_inputs(inputs, db):
 def build_impact(plan, db, old_db=None, old_plan=None):
     gaps, old_inputs, old_dependencies = _baseline(old_db, old_plan)
     inputs, dependencies = plan['review_inputs'], plan['check_dependencies']
-    fresh = old_plan is None or old_plan.get('review_engine') != plan.get('review_engine')
+    fresh = old_plan is None
     old_checks = index_checks(old_plan) if old_plan is not None else {}
     checks = index_checks(plan)
     changes = collect_changes(old_db, db, old_inputs, inputs) if old_db is not None else []
@@ -493,7 +493,6 @@ def attach_metadata(plan, db, intent=None, audit=None, old_db=None, old_plan=Non
                 append_history(removed)
         plan['checks'].append(_review_check(COVERAGE_ID, COVERAGE_RULE, {'feature': 'revision-impact'}))
     plan['checks'].sort(key=lambda c: c['id'])
-    plan['review_engine'] = engine_identity()
     plan['dependency_version'] = VERSION
     plan['review_inputs'] = input_snapshot(db, intent, audit)
     plan['check_dependencies'] = dependency_catalog(plan, db, plan['review_inputs'])
@@ -527,7 +526,7 @@ def validate_metadata(plan, db, old_db=None, old_plan=None, require_revision=Fal
         if revision and plan.get('review_mode') != 'revision':
             raise ValueError('revision impact requires revision review_mode')
         expected = attach_metadata(deepcopy(plan), db, inputs['intent'], inputs['datasheet_audit'], old_db, old_plan)
-        for key in ('review_engine', 'review_inputs', 'check_dependencies', 'dependency_unmatched'):
+        for key in ('review_inputs', 'check_dependencies', 'dependency_unmatched'):
             if plan.get(key) != expected[key]:
                 errors.append(key + ': stale or modified dependency/input snapshot')
         if revision:
@@ -573,9 +572,8 @@ def validate_reverification(plan, report, impact):
         if any(record.get(k) != v for k, v in wanted.items()):
             errors.append(key + ': stale re-verification binding')
         if impact.get('fresh_review_required'):
-            if (record.get('evaluation_origin') != 'CURRENT_REVIEW'
-                    or record.get('engine_digest') != plan.get('review_engine', {}).get('digest')):
-                errors.append(key + ': changed SR requires CURRENT_REVIEW with current engine_digest; old verdicts are history only')
+            if record.get('evaluation_origin') != 'CURRENT_REVIEW':
+                errors.append(key + ': no old plan, so CURRENT_REVIEW is required; old verdicts are history only')
         sources = record.get('evidence')
         if not text(record.get('method')) or not (isinstance(sources, list) and sources and all(
                 isinstance(x, dict) and text(x.get('source')) and text(x.get('locator')) for x in sources)):

@@ -152,7 +152,7 @@ class GuidelineRulesTests(unittest.TestCase):
                  'circuit_types': ['RS485'], 'device_kinds': ['fuse'], 'not_applicable': []}
         self.assertEqual(g.scope_errors(scope, lib), [])
         self.assertTrue(g.scope_errors(dict(scope, circuit_types=['RS-485']), lib))
-        self.assertTrue(g.scope_errors(dict(scope, library_version='9.9'), lib))
+        self.assertEqual(g.scope_errors(dict(scope, library_version='9.9'), lib), [])
         self.assertTrue(g.scope_errors(dict(scope, not_applicable=[{'id': 'G04-001'}]), lib))
 
     def test_build_gathers_registries(self):
@@ -230,24 +230,6 @@ class GuidelineRulesTests(unittest.TestCase):
         found = g.coverage(library, rules, {'G04-001': ['calc:C1']}, answered={'G04-002': 'R1'})
         self.assertEqual(found['covered']['G04-002'], ['baseline:R1'])
         self.assertEqual(found['uncovered'], ['G04-003'])
-
-    def test_the_engine_identity_holds_no_knowledge_copy(self):
-        # the framework is read in place: nothing of it sits under references/, so the engine fingerprint covers only the skill's own files
-        import skill_identity
-        files = skill_identity.engineering_identity(ROOT)['files']
-        self.assertFalse([n for n in files if n.startswith(('references/knowledge', 'references/shared'))])
-        self.assertNotIn('guideline-criteria.json', skill_identity.NON_RULE_REFS)
-
-    def test_the_identity_names_the_framework_files_it_was_read_from(self):
-        files = g.shared_files()
-        self.assertIn('scripts/guideline_criteria.py', files)
-        self.assertIn('scripts/stress_check.py', files)
-        for name in g.FRAMEWORK_FILES:
-            self.assertIn(name, files)
-        self.assertTrue([n for n in files if n.endswith('_准则登记.json')])
-        self.assertEqual(len(g.shared_digest()), 64)
-        self.assertEqual(g.shared_versions()['library_version'], g.load()['library_version'])
-        self.assertRegex(g.shared_label(), r'^设计准则 [0-9a-f]{12}（\d{4}-\d{2}-\d{2} 读取），降额 v\S+$')
 
     def test_dc_24v_checks_its_declared_window_not_the_telecom_48v_one(self):
         subjects = {t.name: t.subjects for t in catalog.CIRCUIT_TYPES}['DC_24V']

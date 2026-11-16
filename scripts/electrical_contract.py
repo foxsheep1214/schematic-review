@@ -12,7 +12,6 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
-from skill_identity import engineering_identity
 
 
 def db_fingerprint(db):
@@ -90,7 +89,7 @@ def bounded(value, positive=False):
             and (not positive or value['min'] > 0))
 
 
-PLAN_SCHEMA_VERSION = 8  # 8 版起 guidelines 明确记录 fingerprint_format，旧计划须重生成； 7 版起电路检查项只在网表有其机制时派（catalog.SUBJECT_REQUIRES），检查项带 requires，框架带 not_asked；检查项带 owner 与 check_key（电路检查项按 circuit_key），计划带 owners 所属表与 interfaces 接口（功能树）；5 版起检查项与框架带 circuit_type、question/function_id/aspect，计划带 functions
+PLAN_SCHEMA_VERSION = 8  # 7 版起电路检查项只在网表有其机制时派（catalog.SUBJECT_REQUIRES），检查项带 requires，框架带 not_asked；检查项带 owner 与 check_key（电路检查项按 circuit_key），计划带 owners 所属表与 interfaces 接口（功能树）；5 版起检查项与框架带 circuit_type、question/function_id/aspect，计划带 functions
 
 
 if __name__ == '__main__':
@@ -106,7 +105,7 @@ if __name__ == '__main__':
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 # Format agreements every ring reads (SR self-check 5.8, user: 并进 contract): the review phases, a non-empty text,
-# what locates a condition, the consequence classes and the SR rule fingerprint. They lived in the gate's modules and
+# what locates a condition and the consequence classes. They lived in the gate's modules and
 # the plan and the row derivation imported them from there.
 PHASES = ('design_iteration', 'schematic_freeze', 'prototype_verification')
 
@@ -137,9 +136,3 @@ IMPACT_CLASSES = {'DAMAGE_OR_HAZARD': 'P0', 'CORE_LINK_LOSS': 'P0',
                   'REQUIRED_FUNCTION': 'P1', 'PERFORMANCE_OR_LIFE': 'P1',
                   'LOCAL_OR_DATA': 'P2', 'OPTIMIZATION': 'P3'}
 HAZARD_PATHS = ('FIRE', 'SHOCK', 'INSULATION', 'HAZARDOUS_ENERGY', 'PORT_OVERVOLTAGE', 'PROTECTION_LOSS')
-
-
-def engine_identity(root=None):
-    """The SR rule fingerprint the plan records and the gate compares (skill_identity.engineering_identity)."""
-    root = Path(root) if root else Path(__file__).resolve().parents[1]
-    return engineering_identity(root)

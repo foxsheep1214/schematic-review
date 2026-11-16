@@ -16,7 +16,7 @@
 - intent 声明电路时两次扫描都带 `--candidates record/circuit-candidates.json`；计划顶层 `circuit_candidates` 记候选文件的 `db_sha256`、`rules_version`、候选编号、决定和未归属器件，
   功能框架的 objects 直接取电路（即候选经决定后的）成员；候选文件随计划一起打包（`pack_review.py --circuit-candidates`）。
 - 合并扫描 `--merge-plan review-plan-cold.json --plan-json review-plan.json` 产生**唯一最终计划**。
-  合并要求 `db_sha256` 与当前输入一致且规则指纹相同；相同 ID 的对象/判据冲突时拒绝自动覆盖。
+  合并要求 `db_sha256` 与当前输入一致；相同 ID 的对象/判据冲突时拒绝自动覆盖。
 - 计划合并不读取或迁移结果；后续补查先更新计划，再更新 digest 和逐项结果。
 - 补查项按 `intent.rule_gaps` 生成，`id` 为 `规则编号.GAP-<缺口编号>.锚点`，`rule`/`method`/`domain` 随总表。
 - **拆分实例的命名**：一条规则需要逐对象或逐判据给出不同结果时，逐个登记规则缺口，缺口编号写成

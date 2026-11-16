@@ -23,7 +23,6 @@ from pathlib import Path
 import catalog
 import function_reading
 import guideline_criteria
-import knowledge_source
 import units
 from electrical_contract import text
 from review_functions import RESULT_MAX_CHARS, circuit_functions
@@ -779,8 +778,7 @@ BATCH_TABLES = {'project_input': ('由需求基线回答的设计准则', '本�
 
 
 def guideline_cards(plan):
-    """The applicable shared guideline rules of the plan, read from the installed library (the gate checked that the
-    plan was built on it); empty when the plan has none."""
+    """The applicable shared guideline rules of the plan, read from the framework; empty when the plan has none."""
     section = plan.get('guidelines') if isinstance(plan.get('guidelines'), dict) else {}
     cards = {r['id']: r for r in guideline_criteria.load()['criteria']}
     return section, [cards[i] for i in section.get('applicable') or [] if i in cards]
@@ -800,9 +798,6 @@ def render_guidelines(plan):
               len(section.get('uncovered') or [])), '',
            '“内容”列是准则库条款标题的原文引文，照录不改写。', '',
            '| 设计准则 | 内容（准则库原文） | 出处 | 本次由哪些检查核对 | 关闭阶段 |', '|---|---|---|---|---|']
-    if section.get('knowledge_fingerprint'):   # 知识框架的指纹与设计准则身份并列记录
-        out[4:4] = [knowledge_source.label({'read_date': section['knowledge_read_date'],
-                                            'fingerprint': section['knowledge_fingerprint']}) + '。', '']
     if not section.get('external_interfaces'):   # 2026-11-01 (user decision 1): the interface rules never rest on a net name alone
         out[2:2] = ['未声明对外接口：网名没有识别到、intent 也没有声明 %s，这些接口的设计准则没有选中。板上有的话写进 `intent.circuits` 后重新生成计划。'
                     % '、'.join(t.title for t in catalog.CIRCUIT_TYPES if t.name in catalog.EXTERNAL_INTERFACE_TYPES), '']

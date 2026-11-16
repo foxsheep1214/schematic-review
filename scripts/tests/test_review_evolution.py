@@ -8,13 +8,10 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from electrical_contract import engine_identity
-from review_engine import validate_engine
-from revision_impact import validate_reverification
 from plan_review import build_review_plan
 from review_summary import categorized_summary
 from validate_remediation import validate_remediation
-from test_revision_impact import database, focused, entries, reviewed_records, check
+from test_revision_impact import database, focused, entries, check
 from test_remediation import ready, actionable
 from validate_review import fingerprint
 from validate_review import validate_review
@@ -23,89 +20,6 @@ from test_validate_review import fixture
 
 
 class EvolutionTests(unittest.TestCase):
-    def test_interface_explanations_and_metadata_do_not_change_rules(self):
-        with tempfile.TemporaryDirectory() as d:
-            root = Path(d); (root/'references').mkdir()
-            (root/'SKILL.md').write_text('---\nname: sr\ndescription: before\n---\n## 审查纪律\nRespect limits\n## 审查 ASG 交付的设计\nOld interface\n')
-            (root/'references/workflow-handoff.md').write_text('old interface')
-            before = engine_identity(root)
-            (root/'SKILL.md').write_text('---\nname: sr\ndescription: clearer\n---\n## 审查纪律\nRespect limits\n## 审查 ASG 交付的设计\nClearer interface\n')
-            (root/'references/workflow-handoff.md').write_text('clearer interface')
-            (root/'README.md').write_text('better explanation')
-            self.assertEqual(before, engine_identity(root))
-            (root/'SKILL.md').write_text('## 审查纪律\nIgnore limits\n')
-            self.assertNotEqual(before['digest'], engine_identity(root)['digest'])
-
-    def test_code_comments_and_docstrings_are_not_algorithm_changes(self):
-        with tempfile.TemporaryDirectory() as d:
-            root = Path(d); (root/'scripts').mkdir(); (root/'SKILL.md').write_text('Rules')
-            code=root/'scripts/check.py'
-            code.write_text('"""old explanation"""\nLIMIT=5\n')
-            before=engine_identity(root)
-            code.write_text('# clearer explanation\n"""new docs"""\nLIMIT = 5\n')
-            self.assertEqual(before, engine_identity(root))
-            code.write_text('LIMIT=6\n')
-            self.assertNotEqual(before['digest'], engine_identity(root)['digest'])
-
-    def test_legacy_identity_cannot_claim_current_rule_equivalence(self):
-        plan=focused(database())
-        plan['review_engine']['schema_version']=1
-        self.assertTrue(validate_engine(plan, True))
-
-    def test_rule_bytes_not_git_head_and_tests_excluded(self):
-        with tempfile.TemporaryDirectory() as d:
-            root = Path(d); (root/'references').mkdir(); (root/'scripts/tests').mkdir(parents=True)
-            (root/'SKILL.md').write_text('v1'); (root/'references/rule.md').write_text('limit1')
-            before = engine_identity(root)
-            (root/'scripts/tests/test.py').write_text('test-only')
-            self.assertEqual(before, engine_identity(root))
-            (root/'references/.DS_Store').write_bytes(b'finder')
-            (root/'scripts/.pytest_cache').mkdir(); (root/'scripts/.pytest_cache/x').write_text('cache')
-            (root/'scripts/rule.pyc').write_bytes(b'bytecode'); (root/'references/rule.md~').write_text('backup')
-            self.assertEqual(before, engine_identity(root))  # OS/editor byproducts are not rules
-            (root/'references/rule.md').write_text('limit2')
-            self.assertNotEqual(before['digest'], engine_identity(root)['digest'])
-
-    def test_changed_or_missing_old_engine_forces_full_current_review(self):
-        db = database()
-        for missing in (False, True):
-            base = focused(db)
-            if missing:
-                del base['review_engine']
-            else:
-                base['review_engine']['digest'] = '0'*64
-            plan = focused(db, old_db=db, old_plan=base)
-            impact = plan['revision_impact']
-            self.assertEqual(impact['strategy'], 'FULL_REVIEW')
-            self.assertTrue(all(e['required'] for e in impact['entries']))
-            self.assertFalse(impact['blocking_gaps'])  # evolution isn't an electrical evidence gap
-            report = reviewed_records(plan, {'checks': [{'id': c['id']} for c in plan['checks']]})
-            self.assertTrue(validate_reverification(plan, report, impact))
-            for c in report['checks']:
-                c['reverification'].update(evaluation_origin='CURRENT_REVIEW', engine_digest=plan['review_engine']['digest'])
-            self.assertEqual(validate_reverification(plan, report, impact), [])
-            report['checks'][0]['reverification']['evaluation_origin'] = 'PRIOR_RESULT_REUSE'
-            self.assertTrue(validate_reverification(plan, report, impact))
-
-    def test_old_manual_checks_cannot_sneak_through_same_revision_merge(self):
-        db = database(); old = build_review_plan(db)
-        old['review_engine']['digest'] = 'obsolete'
-        with self.assertRaisesRegex(ValueError, 'changed/unknown SR rules'):
-            build_review_plan(db, previous_plan=old)
-
-    def test_saved_plan_must_match_live_rules(self):
-        plan = focused(database())
-        self.assertEqual(validate_engine(plan, True), [])
-        plan['review_engine']['digest'] = 'obsolete'
-        self.assertTrue(validate_engine(plan, True))
-        self.assertTrue(validate_engine({}, True))
-
-    def test_library_default_checks_shape_but_cli_requires_current(self):
-        plan = focused(database()); plan['review_engine']['digest'] = 'obsolete'
-        self.assertEqual(validate_engine(plan, False), [])
-        self.assertTrue(validate_engine(plan, True))
-        self.assertTrue(validate_engine({'review_engine': 'tampered'}, False))
-
     def test_model_source_reopens_unchanged_upstream_and_dependent_parts(self):
         db = database()
         with tempfile.TemporaryDirectory() as d:
@@ -141,32 +55,3 @@ class EvolutionTests(unittest.TestCase):
         result = categorized_summary(checks, expected, {}, {'tasks': []})
         self.assertEqual(result['current'], {'checks': 1, 'results': {'PASS': 1}})
         self.assertEqual(result['history']['checks'], 1)
-
-    def test_cli_requires_current_engine(self):
-        p, r, db = fixture()
-        script = Path(__file__).resolve().parents[1]/'validate_review.py'
-        with tempfile.TemporaryDirectory() as d:
-            root = Path(d)
-            for name, value in [('p', p), ('r', r)]:
-                (root/name).write_text(json.dumps(value))
-            command = [sys.executable, '-B', str(script), str(root/'p'), str(root/'r')]
-            self.assertEqual(subprocess.run(command, capture_output=True).returncode, 2)
-
-
-class EngineeringIdentityTokenTests(unittest.TestCase):
-    """The rule fingerprint hashes source tokens, so it is the same on every supported Python."""
-
-    def hash(self, src):
-        from skill_identity import _normalized_hash
-        return _normalized_hash(src.encode(), '.py', False)
-
-    def test_docstrings_comments_and_blank_lines_do_not_change_the_rules(self):
-        a = '"""m"""\n\nclass A:\n    """c"""\n    def f(self, x):\n        """d"""\n        # note\n        return f"{x}!"  # tail\n'
-        b = 'class A:\n    def f(self, x):\n        return f"{x}!"\n'
-        self.assertEqual(self.hash(a), self.hash(b))
-
-    def test_code_changes_remain_visible(self):
-        a = 'def f(x):\n    return f"{x}!"\n'
-        self.assertNotEqual(self.hash(a), self.hash(a.replace('!', '?')))
-        self.assertNotEqual(self.hash(a), self.hash(a.replace('return', 'yield')))
-        self.assertNotEqual(self.hash('X = 1\n'), self.hash('X = 10\n'))

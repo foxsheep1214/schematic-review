@@ -94,7 +94,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | ① 写 intent.json：字段、输入声明、电路决定、需求参数 | [intent-format.md](references/intent-format.md) |
 | 审查员 | ② 计划字段、展开规则、功能电路依赖与状态核对（含电平转换） | [plan-format.md](references/plan-format.md) |
 | 审查员 | ③④ 结果字段：功能判定、条款、余量依据、开放项、单条检查、功能复核 | [results-format.md](references/results-format.md) |
-| 审查员 | ④ 门禁输出怎么读；规则指纹变化后怎样重审 | [gate-and-rerun.md](references/gate-and-rerun.md) |
+| 审查员 | ④ 门禁输出怎么读 | [gate-and-rerun.md](references/gate-and-rerun.md) |
 | 审查员 | 跨状态计算、局部/整体主张、父项与任务依赖 | [execution-consistency.md](references/execution-consistency.md) |
 | 审查员 | 输入版本、覆盖与留档 | [inputs-and-coverage.md](references/inputs-and-coverage.md) |
 | 审查员 | 跑解析器、各 EDA 字段映射、解析自检、PDF 提取与读图 | [input-parsing.md](references/input-parsing.md) |
@@ -113,7 +113,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | SR 维护者 | 规则编号总表、判据、每项检查的盲区与常见误报（审查员用的名称表另出） | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
 | SR 维护者 | 改规则时：七项审查要点（要点1–7）、规则取舍的三问 | [review-charter.md](references/review-charter.md) |
 | SR 维护者 | 设计准则库（规范 G01–G09；G10 见上面两行）：设计准则、适用条件、覆盖、`catalog.BASIS`、更新步骤 | 知识框架 `知识/设计准则/工具/包说明/guideline-criteria.md` |
-| SR 维护者 | 设计准则、降额数据和词表在框架里的位置、各文件的字段、身份指纹覆盖哪些文件 | 知识框架 `知识/设计准则/工具/包说明/shared-layer.md` |
+| SR 维护者 | 设计准则、降额数据和词表在框架里的位置、各文件的字段 | 知识框架 `知识/设计准则/工具/包说明/shared-layer.md` |
 
 ## 审查 ASG 交付的设计
 

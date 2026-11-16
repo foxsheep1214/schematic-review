@@ -9,7 +9,6 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from test_validate_review import bind, fixture, fail, E
 from test_calculation_preflight import calculation
-from electrical_contract import engine_identity
 from validate_review import fingerprint, validate_review
 
 
@@ -114,7 +113,7 @@ class RemediationTests(unittest.TestCase):
     def test_cli_requires_details_and_keeps_no_go_semantics(self):
         p, r, db = actionable()
         bind(p, r)   # the command line asks for bindings; without --db it does not re-derive the automatic checks
-        p['review_engine'] = engine_identity(); r['plan_digest'] = fingerprint(p)
+        r['plan_digest'] = fingerprint(p)
         script = pathlib.Path(__file__).resolve().parents[1] / 'validate_review.py'
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)

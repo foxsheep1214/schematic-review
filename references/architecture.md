@@ -59,10 +59,10 @@ SKILL.md 的“架构”一节与 [流水线总览](pipeline-overview.md) 是总
 
 | 步骤 | 入口 | 工具 | 库 |
 |---|---|---|---|
-| ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`ordering_status.py`（订货表状态线索、库内候选筛选；不作电气判定）、`datasheet_kinds.py`、`electrical_contract.py`、`skill_identity.py`、`knowledge_source.py`（定位知识框架目录，给出框架里的路径、读取日期与知识指纹）、`guideline_criteria.py`（知识框架里词表与设计准则的读取、汇编、校验、选用和覆盖）、`device_kinds.py`（器件类别登记表）、`part_words.py`（器件身份、PCB 铜与有出处的精确型号脚方向）、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
+| ① 读入 | `parse_netlist.py`、`parse_kicad.py`、`read_bom.py`、`requirements_extract.py`、`audit_datasheets.py` | `install_kicad_cli.py` | `page_inventory.py`、`ordering_status.py`（订货表状态线索、库内候选筛选；不作电气判定）、`datasheet_kinds.py`、`electrical_contract.py`、`knowledge_source.py`（定位知识框架目录，给出框架里的路径和读取日期）、`guideline_criteria.py`（知识框架里词表与设计准则的读取、汇编、校验、选用和覆盖）、`device_kinds.py`（器件类别登记表）、`part_words.py`（器件身份、PCB 铜与有出处的精确型号脚方向）、`solve_dividers.py`（电阻值解析）、`requirement_clarifications.py`（需求澄清：问题、答复、定下的需求） |
 | ② 出计划 | `lint.py`、`circuit_candidates.py`、`circuit_decisions.py`、`gap_inventory.py` | `decoupling.py`、`i2c_topology.py`、`reviewed_declarations.py` | `plan_review.py`、`catalog.py`、`check_key.py`、`plan_circuits.py`、`protective_clamps.py`（防护钳位的共用判定）、`latch_criteria.py`（外部锁存判据：状态脚驱动的锁存树逐动作代入）、`guideline_scans.py`（把能由网表、BOM 字段和入表数据判定的设计准则做成冷扫描候选）、`plan_system.py`、`plan_board.py`、`interfaces.py`、`row_owner.py`、`board_intent.py`（原生事实不变，给 NetGraph 附完整有出处脚表的缺名解析与冲突）、`board_scans.py`、`requirement_parameters.py`、`requirement_bindings.py`、`rule_gaps.py`、`independence.py`、`derating.py`（降额等级与应力余量核对）、`stress_check.py`（应力核对：降额限值、应力判法、挑规则）、`checkers/` |
 | ③ 判断 | `derive_rows.py`、`knowledge_checklist.py`（知识必答清单：检索典型电路、按计划的电路列项、核对处置；按本板电路类型、器件类别列出框架里声明了它们的条目，没查阅的给提示；校验和打包两步导入它核对） | `calc.py`、`simulate_rc.py`、`audit_parameter_claims.py` | `function_reading.py`、`circuit_bounds.py`、`model_bounds.py`、`bound_formulas.py`、`boost_switch_loss.py`、`flyback_stop.py`、`fault_energy.py`、`zener_fault.py`、`bom_constraints.py`、`design_preflight.py`、`units.py` |
-| ④ 校验 | `validate_review.py` | `migrate_results.py` | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`validate_remediation.py`、`review_engine.py` |
+| ④ 校验 | `validate_review.py` | `migrate_results.py` | `results_model.py`、`review_functions.py`、`review_quality.py`、`review_stage_scope.py`、`review_summary.py`、`review_workflow.py`、`task_scope.py`、`validate_remediation.py` |
 | ⑤ 出报告 | `render_report.py`、`pack_review.py` | — | `report_html.py` |
 | 复审 | `diff_netlists.py` | — | `revision_impact.py` |
 | 维护 SR | `catalog.py --write-doc` | `compare_reviews.py`、`check_ledger.py` | — |
@@ -181,14 +181,13 @@ SKILL.md 的“架构”一节与 [流水线总览](pipeline-overview.md) 是总
   “逐器件参数引用”一节按位号、参数词、单位对齐两边带 `refs` 的数值限值条款，列出限值不同的和只有一边读了的。
   差异里反复出现的写法先找现有校验为什么放过，再加机器能数的护栏，不加措辞要求。
 - 新脚本先在 [架构说明](#二每个脚本属于哪一步) 归到一步并分类：入口（执行流程里直接调用）、工具（特定情形手动调用）、库（只被导入）。只有入口写进执行流程；新增入口属于架构调整。
-- 工程规则身份由 `scripts/electrical_contract.py`（`engine_identity`）与 `scripts/skill_identity.py` 计算：算法、常量、受控正文和规范判据变化要求按当前规则重新验证；说明/接口页、入口元数据、测试及 Python 注释变化只做兼容检查。未知规范文件仍按规则处理，不能自行把判据降为说明。
 - 规则编号、判据、审查要点归属和功能电路只在 `scripts/catalog.py` 登记，改后运行
   `python3 scripts/catalog.py --write-doc references/check-catalog.md` 和 `--write-doc references/review-vocabulary.md`（审查员的三张名称表）。来源为“全板通用”“电路检查项”的新规则
   登记后即自动展开；来源为“计划逐对象生成”“Lint 内置”或检查器的规则，还要在计划生成的对应层（电路与器件 `plan_circuits.py`、接口 `interfaces.py`、
   系统功能 `plan_system.py`、全板与覆盖 `plan_board.py`；`plan_review.py` 只做汇总）、`lint.py` 或对应检查器里实现展开/扫描。新增或调整规则先回答 [审查要点中的三个问题](review-charter.md#用审查要点指导进化)。
 - 知识和设计准则不在技能里放拷贝，运行时直接读本机的硬件设计知识框架：目录由环境变量 `HARDWARE_KNOWLEDGE_FRAMEWORK` 或技能根目录的本机文件 `.knowledge-framework`（一行，写框架目录的绝对路径）指定，所有脚本只经 `scripts/knowledge_source.py` 取框架里的路径，找不到时报 `KnowledgeFrameworkNotFound` 并写明设置办法；测试读真实框架，找不到时跳过需要它的测试。知识组件的条目在框架 `知识/<组件>/`，索引、原件勘误、条目规范在框架 `索引/` 和根目录。原件总库：知识框架里的 `原件/`（它指向 HardwareWiki/raw），脚本经 `knowledge_source.raw_root()` 取，不另设位置。
 - 设计准则（`知识/设计准则/准则登记/G0*_准则登记.json` 加 `词表.json`）由 `scripts/guideline_criteria.py` 在内存里汇编，降额值、常规件最弱档、降额规范、应力判法在 `知识/设计准则/规范正文/G10_元器件降额与应力规范/`；`scripts/guideline_criteria.py`、`scripts/stress_check.py`、`scripts/knowledge_source.py` 与 ASG 同字节，是本技能自己的代码。字段与更新步骤见框架 `知识/设计准则/工具/包说明/` 下的 `guideline-criteria.md`、`shared-layer.md`。新增或调整 SR 规则时，若它核对某条设计准则，在 `catalog.BASIS` 登记映射；报告里“适用但还没有检查的设计准则”就是这里的待办。名字与标题由框架词表读取，分类线索及检查器归属在 SR 维护：`CIRCUIT_TYPES`、`device_kinds.KINDS` 用到的名称必须在词表里（不在时导入即报错，`test_guideline_criteria.py` 也核对）；框架有而 SR 还没有专门识别或检查的名称允许存在，`catalog.vocabulary_without_behavior()` 列出，计划 `guidelines.vocabulary_without_checks` 记下，报告“共用设计准则覆盖”里说明。
-- 计划 `guidelines` 段记设计准则身份（`shared_sha256`、`fingerprint_format`、`library_version`、读取日期）和知识框架指纹与读取日期（`knowledge_source.identity()`）；设计准则身份与计划不一致要重新生成计划，读取日期不参与比较。框架内容变了，按它补规则。
+- 计划 `guidelines` 段记读取日期和降额数据版本。框架内容变了，按它补规则。
 - **门禁只有一条**（2026-10-27，用户：门禁合成一条 pytest）：每次改动跑 `python3 -m pytest scripts/tests -q`。它已经包含
   [规则合同](../evals/rule_contracts/README.md)（每条自动规则一块触发板、一块近似板）、[KiCad 原生交付回放](../evals/kicad_replay_bench/README.md)
   和 [典型电路基准](../evals/typical_circuits/README.md)（每条报出都要已归类，新出现的须逐条审读），不再单独跑、不再分行记。

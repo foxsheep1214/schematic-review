@@ -48,12 +48,3 @@ def test_generated_interface_questions_carry_surge_requirements():
             assert '串联元件' in check['question']
     assert {'PRO-D03', 'PRO-D04'} <= {c['rule'] for c in plan['checks']}
 
-
-def test_the_plan_and_report_record_the_knowledge_framework_identity():
-    import knowledge_source
-    with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}):
-        section = plan_review.guideline_section([], {'parts': {}}, {}, {}, real_library())
-        report = '\n'.join(render_report.render_guidelines({'guidelines': section}))
-    ident = knowledge_source.identity()
-    assert section['knowledge_fingerprint'] == ident['fingerprint'] and section['knowledge_read_date'] == ident['read_date']
-    assert '知识框架 %s（%s 读取）' % (ident['fingerprint'][:12], ident['read_date']) in report

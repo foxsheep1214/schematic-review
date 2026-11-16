@@ -46,7 +46,7 @@ MIT License，见 [LICENSE](LICENSE)。
 ```bash
 export HARDWARE_KNOWLEDGE_FRAMEWORK=<硬件设计知识框架目录>      # 环境变量，优先
 echo <硬件设计知识框架目录> > .knowledge-framework            # 技能根目录的本机文件，已加进 .gitignore
-python3 scripts/knowledge_source.py                          # 打印框架目录、读取日期和知识指纹
+python3 scripts/knowledge_source.py                          # 打印框架目录和读取日期
 ```
 
 设计准则 G01–G09 在内存里由框架的 `知识/设计准则/准则登记/` 和 `词表.json` 汇编，降额值、常规件最弱档、降额规范、应力判法在 `知识/设计准则/规范正文/G10_元器件降额与应力规范/`；字段与维护说明在框架 `知识/设计准则/工具/包说明/`。`scripts/guideline_criteria.py`、`scripts/stress_check.py`、`scripts/knowledge_source.py` 是本技能自己的代码，与 ASG 同字节。框架内容变了：新增的准则没有对应规则、删除的准则还被规则引用时，`test_guideline_criteria.py` 等测试会失败；改了判据的准则，在 `scripts/catalog.py` 的 `BASIS` 里按编号找依据它的规则逐条看，按它补规则和触发板，再跑全量测试与变异测试。

@@ -22,13 +22,12 @@ from test_validate_review import fixture
 import validate_review as validate_review_module
 from validate_review import fingerprint, validate_review
 
-STALE = 'plan guidelines were built on another shared rule library'
-STALE_LAYER = 'plan guidelines were built on other design guidelines'
+NO_SECTION = 'plan has no guidelines section'
 
 
 def identity(library):
     with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}):
-        return guideline_criteria.shared_versions(bundle=library)
+        return guideline_criteria.shared_versions()
 
 
 class GuidelinePlanTests(unittest.TestCase):
@@ -47,8 +46,6 @@ class GuidelinePlanTests(unittest.TestCase):
     def test_the_plan_lists_applicable_rules_and_their_coverage(self):
         plan = self.plan({'DOC-Q01': ('G01-001',)})
         section = plan['guidelines']
-        self.assertEqual(section['fingerprint_format'], 'framework-paths-sha256-v1')
-        self.assertEqual(section['shared_sha256'], identity(self.library())['shared_sha256'])
         self.assertEqual(section['baseline'], 'industrial_telecom')
         self.assertIn('capacitor', section['device_kinds'])
         self.assertEqual(section['circuit_types'], sorted({c['circuit_type'] for c in plan['checks']
@@ -58,7 +55,6 @@ class GuidelinePlanTests(unittest.TestCase):
         self.assertEqual(section['covered'], {'G01-001': ['DOC-Q01']})
         self.assertIn('G02-001', section['uncovered'])
         self.assertEqual(section['downstream'], ['G02-001'])
-        self.assertEqual(section['content_sha256'], self.library()['content_sha256'])
 
     def test_a_mapped_check_with_no_row_is_not_triggered_rather_than_uncovered(self):
         section = self.plan({'DOC-Q01': ('G01-001',), 'REQ-Q05': ('G02-001',)})['guidelines']
@@ -171,21 +167,16 @@ class GuidelineGateAndReportTests(unittest.TestCase):
         with mock.patch.dict(os.environ, {'GUIDELINE_CRITERIA': ''}), mock.patch.object(guideline_criteria, 'load', lambda *args: self.library):
             return validate_review(plan, report, db)
 
-    def test_the_gate_wants_the_plan_built_on_the_installed_library(self):
-        self.assertFalse(any(STALE in e for e in self.gate(self.section)['errors']))
-        self.assertEqual(self.gate(self.section)['guideline_coverage'], self.section)
-        self.assertTrue(any(STALE in e for e in self.gate(None)['errors']))
-        self.assertTrue(any(STALE in e for e in self.gate(dict(self.section, content_sha256='0' * 64))['errors']))
-        # 2026-11-02 (user: 目录制): the whole shared layer is bound, not only the rule library
-        self.assertFalse(any(STALE_LAYER in e for e in self.gate(self.section)['errors']))
-        self.assertTrue(any(STALE_LAYER in e for e in self.gate(dict(self.section, shared_sha256='0' * 64))['errors']))
-        self.assertTrue(any(STALE_LAYER in e for e in self.gate({k: v for k, v in self.section.items() if k != 'shared_sha256'})['errors']))
+    def test_the_gate_wants_the_guidelines_section(self):
+        same = self.gate(self.section)
+        self.assertEqual(same['guideline_coverage'], self.section)
+        self.assertTrue(any(NO_SECTION in e for e in self.gate(None)['errors']))
 
     def batch_gate(self, row_changes=None, section_changes=None, rows=None):
         library = bundle(rule('G01-001', applies_when={'board': True}),
                          rule('G08-001', applies_when={'board': True}, coverage='project_input'),
                          rule('G07-001', applies_when={'board': True}, coverage='handoff', closing_stage='pcb'))
-        section = dict(self.section, content_sha256=library['content_sha256'], project_input=['G08-001'], handoff=['G07-001'])
+        section = dict(self.section, project_input=['G08-001'], handoff=['G07-001'])
         section.update(section_changes or {})
         expected = rows if rows is not None else {
             'REQ-Q09.PROJECT-INPUT.BOARD': {'rule': 'REQ-Q09', 'object': {'coverage': 'project_input', 'criteria': ['G08-001']}},
@@ -287,23 +278,6 @@ if __name__ == '__main__':
 class M4IdentityTests(unittest.TestCase):
     setUp = GuidelineGateAndReportTests.setUp
     gate = GuidelineGateAndReportTests.gate
-    def test_missing_or_unknown_format_does_not_promote_an_old_plan(self):
-        import copy
-        for value in (None, 'unknown', 'shared-files-sha256-lines-v1'):
-            section = copy.deepcopy(self.section)
-            if value is None:
-                section.pop('fingerprint_format')
-            else:
-                section['fingerprint_format'] = value
-            original = copy.deepcopy(section)
-            gate = self.gate(section)
-            self.assertTrue(any('fingerprint format' in e for e in gate['errors']), gate['errors'])
-            self.assertEqual(original, section)
-
-    def test_version_change_requires_reverification_even_with_same_digest(self):
-        gate = self.gate(dict(self.section, library_version='different-release'))
-        self.assertTrue(any('shared library_version changed' in e for e in gate['errors']), gate['errors'])
-
     def test_old_plan_schema_is_rejected_before_new_identity_is_accepted(self):
         plan, report, db = fixture()
         plan['schema_version'] = 7

@@ -14,9 +14,8 @@ import board_intent
 import catalog
 import derating
 import guideline_criteria
-import knowledge_source
 import protective_clamps
-from electrical_contract import (LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, PLAN_SCHEMA_VERSION, db_fingerprint, bounded, engine_identity, finite,
+from electrical_contract import (LOCATOR_IDS_RE, LOCATOR_WORDS_RE, PHASES, PLAN_SCHEMA_VERSION, db_fingerprint, bounded, finite,
                                  squeeze_words)
 from page_inventory import inventory as document_inventory
 import os
@@ -364,12 +363,6 @@ def guideline_scope_of(checks, db, kind_intent, intent, library):
     return intent.get('guideline_baseline') or library['default_baseline'], circuits, kinds
 
 
-def knowledge_identity():
-    """读到的知识框架的读取日期与指纹（知识条目的指纹，见 knowledge_source.identity），记进计划，与设计准则身份并列。"""
-    ident = knowledge_source.identity()
-    return {'knowledge_read_date': ident['read_date'], 'knowledge_fingerprint': ident['fingerprint']}
-
-
 def guideline_section(checks, db, kind_intent, intent, library):
     """共用设计准则的适用与覆盖（知识/设计准则/工具/包说明/guideline-criteria.md）：范围见 guideline_scope_of；计划里出现的 SR 规则按
     catalog.BASIS 覆盖它映射的设计准则；映射的 SR 规则这次没有展开的记 not_triggered（本板没有它的对象，或电路还没声明），
@@ -389,8 +382,7 @@ def guideline_section(checks, db, kind_intent, intent, library):
     classes = found.get('by_coverage') or {}
     batch = set(classes.get('project_input') or ()) | set(classes.get('handoff') or ())
     open_items = [gid for gid in found['uncovered'] if gid not in batch]
-    section = {'library_version': found['library_version'], 'content_sha256': found['content_sha256'],
-               **guideline_criteria.shared_versions(bundle=library), **knowledge_identity(),
+    section = {**guideline_criteria.shared_versions(),
                'baseline': baseline, 'circuit_types': circuits, 'device_kinds': kinds,
                'external_interfaces': sorted(set(circuits) & set(catalog.EXTERNAL_INTERFACE_TYPES)),
                'vocabulary_without_checks': catalog.vocabulary_without_behavior(),
@@ -587,10 +579,6 @@ class ReviewPlanner(plan_circuits.CircuitPlanning, interfaces.InterfacePlanning,
                              % PLAN_SCHEMA_VERSION)
         if previous.get('db_sha256') != self.db_sha256:
             raise ValueError('merge plan must be bound to the current db_sha256; regenerate/review stale plans')
-        if guideline_criteria.identity_errors(previous.get('guidelines')) and guideline_criteria.load()['criteria']:
-            raise ValueError('merge plan shared identity changed: regenerate the plan; old_plan is history only')
-        if previous.get('review_engine') != engine_identity():
-            raise ValueError('merge plan uses changed/unknown SR rules; regenerate current checks, use old_plan only for history')
         for checker in REGISTRY:
             key = checker.plan_key
             if key in previous and previous[key] != self.inventories.get(checker.id):

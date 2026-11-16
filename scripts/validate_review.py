@@ -15,7 +15,6 @@ import knowledge_checklist
 import results_model
 from review_workflow import workflow, decision
 from review_quality import FREEZE_BLOCKING_CODES, refs_named, screen_quality
-from review_engine import validate_engine
 from review_summary import categorized_summary, validate_impact
 import requirement_clarifications
 from checkers import REGISTRY, passive_stress, validate_inventories
@@ -267,7 +266,7 @@ def guideline_batch_errors(section, expected, checks, library):
 
 
 def validate_review(plan, report, db=None, lint_runs=None, require_actionable=False,
-                    require_bindings=False, old_db=None, old_plan=None, require_revision=False, require_current_engine=False,
+                    require_bindings=False, old_db=None, old_plan=None, require_revision=False,
                     require_dependencies=False, base_dir=None):
     errors, blockers = [], []
     def require(ok, message):
@@ -302,7 +301,6 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
         report, derive_errors = results_model.expand(report), []
     else:       # derived rows are not written (2026-10-26, item 4): the gate derives them from the plan and the functions
         report, derive_errors = results_model.materialize(plan, report)
-    errors.extend(validate_engine(plan, require_current_engine))
     clauses_required = True  # REQ-D01 always splits its requirement into clauses
     impact_classes = results_model.IMPACT_CLASS_VERSION
     require(plan.get("schema_version") == PLAN_SCHEMA_VERSION,
@@ -694,11 +692,8 @@ def validate_review(plan, report, db=None, lint_runs=None, require_actionable=Fa
     errors.extend(e for e in derive_errors if e not in errors)   # the function checks above report most of them already
     guidelines = plan.get("guidelines")
     library = guideline_criteria.load()
-    if library["criteria"] or guidelines is not None:   # the plan was built on the installed shared rule library
-        require(isinstance(guidelines, dict) and guidelines.get("content_sha256") == library["content_sha256"],
-                "plan guidelines were built on another shared rule library (or none): regenerate the plan")
-        for problem in guideline_criteria.identity_errors(guidelines, bundle=library):
-            require(False, "plan guidelines were built on other design guidelines than the framework now read: " + problem)
+    if library["criteria"] or guidelines is not None:
+        require(isinstance(guidelines, dict), "plan has no guidelines section: regenerate the plan")
     errors.extend(guideline_batch_errors(guidelines, expected, checks, library))
     errors[:] = collapse_open_cascade(errors, checks)   # same count of validity, one line per open item instead of per row
     release = release_for(errors, blockers, accepted)
@@ -870,7 +865,6 @@ def main():
                                  old_db=read(args.old_db) if args.old_db else None,
                                  old_plan=read(args.old_plan) if args.old_plan else None,
                                  require_revision=args.require_revision_impact,
-                                 require_current_engine=True,
                                  base_dir=str(Path(args.results).resolve().parent))   # resolves conditions' sources
         result["validated_files"] = validated_files(args.plan, args.results, args.db, args.lint)
         # The knowledge checklist sits beside the results: every circuit is matched to a typical-circuit scheme and

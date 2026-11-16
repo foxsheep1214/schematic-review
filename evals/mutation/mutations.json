@@ -8540,41 +8540,6 @@
   "new": "return {item['name']: '继电器' if item['name'] == 'relay' else item['title'] for item in raw[group]}"
  },
  {
-  "id": "M1652",
-  "name": "version change bypasses shared record validation",
-  "file": "scripts/guideline_criteria.py",
-  "old": "for key in ('library_version', 'shared_sha256'):",
-  "new": "for key in ('shared_sha256',):"
- },
- {
-  "id": "M1653",
-  "name": "alternate data borrows the installed engineering hash",
-  "file": "scripts/guideline_criteria.py",
-  "old": "files['guideline_input'] = input_identity['sha256']",
-  "new": "pass"
- },
- {
-  "id": "M1654",
-  "name": "real alternate JSON bytes replaced by normalized data",
-  "file": "scripts/guideline_criteria.py",
-  "old": "raw = alternate",
-  "new": "raw = dump(library).encode('utf-8')"
- },
- {
-  "id": "M1655",
-  "name": "plan shared identity check is removed",
-  "file": "scripts/validate_review.py",
-  "old": "for problem in guideline_criteria.identity_errors(guidelines, bundle=library):",
-  "new": "for problem in []:"
- },
- {
-  "id": "M1658",
-  "name": "new plan omits fingerprint format",
-  "file": "scripts/plan_review.py",
-  "old": "**guideline_criteria.shared_versions(bundle=library),",
-  "new": "**{k: v for k, v in guideline_criteria.shared_versions(bundle=library).items() if k != 'fingerprint_format'},"
- },
- {
   "id": "M1665",
   "name": "native replay inherits the test-only empty guideline input",
   "file": "evals/kicad_replay_bench/run.py",
