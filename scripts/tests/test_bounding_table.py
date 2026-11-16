@@ -108,7 +108,7 @@ class TableTests(unittest.TestCase):
             self.assertEqual((rule(cell, 'COMPONENT_DAMAGE').factor, rule(cell, 'COMPONENT_DAMAGE').floor), (factor, floor), cell)
         for cell in ('ZENER-VZ-UPPER', 'IC-THRESHOLD', 'IC-TIMING'):   # protection: unchanged
             self.assertIsNone(rule(cell, 'COMPONENT_DAMAGE'), cell)
-        self.assertEqual((rule('IC-QUIESCENT', 'REQUIRED_FUNCTION').factor, rule('IC-QUIESCENT', 'COMPONENT_DAMAGE').factor), (1.3, 1.5))
+        self.assertEqual((rule('IC-QUIESCENT', 'REQUIRED_FUNCTION').factor, rule('IC-QUIESCENT', 'COMPONENT_DAMAGE').factor), (2, 3))
         for cell in ('FUSE-I2T', 'TVS-VC', 'DIODE-SURGE', 'CAP-SURGE-V', 'MOS-DISCHARGE-I2T', 'REF-IKA-MIN'):
             self.assertIsNone(rule(cell, 'REQUIRED_FUNCTION'), cell)
         for cls in catalog.ESTIMATE_NEVER:

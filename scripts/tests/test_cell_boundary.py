@@ -64,8 +64,8 @@ class CellBoundaryTests(unittest.TestCase):
             self.assertTrue(any('estimate_factor: 1.2' in e for e in errors), (factor, errors))
 
     def test_the_margin_floor_is_the_cells(self):
-        # a diode's VF used for a heating (damage) judgement: ×1.15 and a junction margin of at least 20 °C
-        errors, (p, r, db) = gate(cell='DIODE-VF', method='G8', consequence_class='COMPONENT_DAMAGE', estimate_factor=1.15,
+        # a diode's VF used for a heating (damage) judgement: ×1.3 and a junction margin of at least 20 °C
+        errors, (p, r, db) = gate(cell='DIODE-VF', method='G8', consequence_class='COMPONENT_DAMAGE', estimate_factor=1.3,
                                   risk=dict(STRESS_RISK))
         self.assertTrue(any('express this margin in °C' in e for e in errors), errors)
         m = margin_of(r); m.update(unit='°C', value=25)
