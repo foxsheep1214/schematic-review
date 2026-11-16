@@ -240,6 +240,11 @@ class BoardPlanning:
             # were listed in every R6 record).
             unread = [] if item['id'] in profiled else requirement_parameters.unread_numbers(
                 requirements_extract.text(original), parameters)
+            # A number the reviewer's interpretation names is read: it says why no parameter takes it (intent-format.md).
+            # Without this the hint could only be closed by forcing the number into a parameter of another meaning
+            # (H-001 2026-11-16: "线缆 2 m" offered to altitude; steps 1 and 2 went back and forth three times).
+            said = str(item.get('interpretation') or '')
+            unread = [v for v in unread if not any(n in said for n in re.findall(r'\d+(?:\.\d+)?', v))]
             if unread:
                 homes = requirement_parameters.parameter_homes(unread, item.get('categories') or [])
                 self.diagnostics.append({'code': 'REQUIREMENT_NUMBERS_UNREAD', 'requirement': item['id'], 'values': unread,

@@ -45,7 +45,7 @@ function workPrompt(s, feedback, fromDown) {
   return `${common}
 
 你是审查员，只做审查流水线的第 ${s.n} 步（${s.title}）。先读 ${SKILL}/SKILL.md、references/pipeline-overview.md 和本步细则 references/${s.file}，再读本步细则指到的参考文件。前面各步的产物已在工作目录里；先看工作目录里已有什么，接着做，不重做已完成且有效的部分。
-只做本步：不做后面步骤的事，不改前面步骤的产物。发现前面某一步的产物有错或不够（例如要在 intent 里补声明并重新生成计划），返回 upstream，在 upstream_step 写该回到第几步，summary 逐条写清要那一步补什么、补完后本步哪一项能关闭。
+只做本步：不做后面步骤的事，不改前面步骤的产物；intent.json 例外，它是①②共写的声明：第 2 步缺 owners、assemblies、power_rails 这类声明时自己补进 intent.json 再重跑，不为它返回第 1 步。发现前面某一步的产物有错或不够（例如要在 intent 里补声明并重新生成计划），返回 upstream，在 upstream_step 写该回到第几步，summary 逐条写清要那一步补什么、补完后本步哪一项能关闭。
 本步做完的标志以细则里的关卡命令为准，自己先跑到通过。
 ${fromDown ? `后面的步骤做不下去，指出本步的产物有错或不够（本步自己的关卡通过不等于后面够用）：\n${fromDown}\n本轮先按这些改本步的产物，改完重跑本步关卡。认为某条不该由本步改的，在 summary 里逐条写明理由。\n` : ''}${feedback ? `上一轮关卡没过，原因：\n${feedback}\n先处置这些再继续。\n` : ''}
 返回：status 为 done（本步全部做完且自查关卡通过）、partial（工作量大，本轮做了一部分，进度已写进工作目录，下一轮接着做）、upstream 或 needs_input（缺了只有人能给的东西：资料、需求澄清、设计未定项的决定；写进 questions，每条写清要什么、为什么、给了之后哪一项能关闭）。summary 写本轮做了什么、还剩什么。`
