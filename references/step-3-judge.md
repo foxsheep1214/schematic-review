@@ -60,6 +60,8 @@
       python3 scripts/knowledge_checklist.py check review-plan.json knowledge-checklist.json
       python3 scripts/knowledge_checklist.py entries review-plan.json                          # 按本板电路类型、器件类别列出声明了它们的条目
 
+  审查中发现知识框架缺内容或条目有问题（与手册对不上、适用条件没覆盖本板、有两种读法、过严），当场在清单的 `issues` 里记一条：`component`（框架的组件，准则写 `设计准则`）、`target`（条目路径、准则编号，或要查而没有的内容）、`kind`（`缺`/`错`/`不够`/`歧义`/`过严`）、`detail`、`evidence`（手册页或本板上的实例）。只记有依据的；记了不改变本次判定，判定仍按框架现有内容和手册保证值。它和 `typical` 为 `none` 的电路一起列在报告的“对知识框架的反馈”，打包时写成 `record/knowledge-gaps.json`，由知识框架的 `工具/collect_feedback.py` 归集。
+
   `circuits` 每块电路写 `typical`（`<典型电路文件名>#<实现方案名>`；知识框架里没有对应的写 `none`，并在 `reason` 写查过哪些、为什么都不对应），写完重跑 build 列出各项。
   `items` 每项只填处置：`checked` 在 `where` 列出核过它的检查项或功能编号（计划里的编号），`not_applicable` 在 `reason` 写本电路为什么没有这种情况。
   `entries` 记查阅过的其他条目：`entry` 写相对 `知识/` 的路径，`disposition` 写 `read`，或 `not_applicable` 并在 `reason` 写理由。本板的电路类型、器件类别记在计划 `knowledge_scope` 段；build、check 和 `validate_review.py`（输出的 `knowledge_hints`）对框架里声明了它们、却既不是所写典型电路也不在 `entries` 里的条目给“提示”，不判失败：查阅后补记，或写明不适用。

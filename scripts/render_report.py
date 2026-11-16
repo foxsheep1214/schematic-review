@@ -23,6 +23,7 @@ from pathlib import Path
 import catalog
 import function_reading
 import guideline_criteria
+import knowledge_checklist
 import units
 from electrical_contract import text
 from review_functions import RESULT_MAX_CHARS, circuit_functions
@@ -1130,7 +1131,7 @@ class UnfinishedReview(ValueError):
     """The review is not done: there is no report yet, only the work list in the gate."""
 
 
-def render(plan, results, gate, notes=None, title=None, detail='compact'):
+def render(plan, results, gate, notes=None, title=None, detail='compact', knowledge=None):
     results = results_model.materialize(plan, results)[0]   # the ledger holds no derived rows; the gate reports derive errors
     unfinished = results_model.unfinished_checks(results, HISTORY_RULE)
     if unfinished:
@@ -1369,6 +1370,7 @@ def render(plan, results, gate, notes=None, title=None, detail='compact'):
                                          Counter(c.get('code') for c in screen if isinstance(c, dict)).most_common())), '']
     if sr:
         out += [SR_SECTION, '', '<details>', '<summary>展开（给 SR 维护者）</summary>', ''] + sr + ['</details>', '']
+    out += knowledge_checklist.render_gaps(knowledge)   # what the knowledge framework lacks or has wrong, from the checklist
 
     explanations = render_check_explanations(plan, results) if detail == 'full' else []
     if explanations:
@@ -1396,7 +1398,8 @@ def main(argv=None):
         print('notes.json: ' + '; '.join(problems), file=sys.stderr)
         return 2
     try:
-        text = render(load(args.plan), load(args.results), load(args.gate), notes, args.title, args.detail)
+        text = render(load(args.plan), load(args.results), load(args.gate), notes, args.title, args.detail,
+                      knowledge_checklist.load(Path(args.results).resolve().parent / knowledge_checklist.FILE))
     except UnfinishedReview as e:
         print(e, file=sys.stderr)
         return 2

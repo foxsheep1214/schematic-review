@@ -197,3 +197,29 @@ def test_the_plan_records_the_board_scope_and_the_gate_shows_the_hints(declared,
     gate = json.loads((tmp_path / 'gate.json').read_text(encoding='utf-8'))
     assert [h.split(' ')[0] for h in gate.get('knowledge_hints', [])] == ['器件参数/mosfet.md'], proc.stderr
     assert not any('mosfet.md' in e for e in gate['errors'])                  # a hint, never an error
+
+
+def test_what_the_review_feeds_back_to_the_framework(knowledge):
+    """A circuit no typical circuit matches and the reviewer's `issues` are the review's feedback to the knowledge
+    framework: a report section and the rows pack_review.py writes as record/knowledge-gaps.json."""
+    data = k.build(PLAN, None)
+    data['circuits'][1].update(typical='none', reason='查过 usb、type-c，没有 USB 2.0 设备口的条目')
+    assert k.gaps(data)['counts'] == {'no_typical_circuit': 1} and k.gaps(None)['gaps'] == [] and k.render_gaps(None) == []
+    issue = {'component': '器件参数', 'target': '器件参数/08_电源管理/x.md', 'kind': '错', 'detail': '压差写的是典型值',
+             'evidence': '手册 p7 表 6.5'}
+    data['issues'] = [dict(issue, kind='不对')]
+    assert any('kind 写' in p for p in k.problems(PLAN, data))
+    data['issues'] = [dict(issue, component='技能')]
+    assert any('component 写' in p for p in k.problems(PLAN, data))
+    data['issues'] = [{k2: v for k2, v in issue.items() if k2 != 'evidence'}]
+    assert any('都要写' in p for p in k.problems({'owners': []}, data))      # checked on a plan without circuits too
+    data['issues'] = [issue, dict(issue, component='设计准则', target='G04-017', kind='缺', detail='没有覆盖开漏输出')]
+    assert not [p for p in k.problems(PLAN, data) if 'issues' in p]
+    assert k.build(PLAN, data)['issues'] == data['issues'] and 'issues' not in k.build(PLAN, None)   # build keeps them
+    rows = k.gaps(data)['gaps']
+    assert [(r['signal'], r['component'], r['item']) for r in rows] == [
+        ('no_typical_circuit', '典型电路', 'usb'), ('knowledge_issue', '器件参数', '器件参数/08_电源管理/x.md'),
+        ('knowledge_missing', '设计准则', 'G04-017')]
+    assert rows[1]['detail'] == '错：压差写的是典型值（依据：手册 p7 表 6.5）'
+    text = '\n'.join(k.render_gaps(data))
+    assert text.startswith('## 对知识框架的反馈') and '共 3 条' in text and '| 设计准则 | 知识框架查不到 | G04-017 |' in text

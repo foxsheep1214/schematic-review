@@ -39,7 +39,7 @@ SKILL.md 的“架构”一节与 [流水线总览](pipeline-overview.md) 是总
 | `review-plan.json` | 工具 | ② 出计划 | 8 | 功能树、每个检查项检查、功能框架、各检查器清单、接口；设计准则库有规则时另有 `guidelines`（适用的共用设计准则与覆盖） |
 | `lint-hot.json` | 工具 | ② 合并扫描 | — | 合并扫描输出，交 ④ 校验与 ⑤ 打包 |
 | `review-results.json` | 审查员 | ③ 判断 | 15 | 功能判定（条件及其位号 `refs`、计算、余量及其推法与公差端、开放项及其单侧定界、失败项）和手填的检查项；绑定功能的检查项不落盘，门禁、报告、打包、对比读取时由功能派生（`results_model.materialize`），审查员的绑定或注记只留 `{id, function_id, aspect}` / `{id, 注记}` 残根 |
-| `knowledge-checklist.json` | 审查员 | ③ 判断 | 1 | 知识必答清单：计划里每块电路对上知识框架典型电路的哪个实现方案（或 `none` 及理由），该方案的每条必算项、已知坑的处置（核过它的检查项或功能编号，或不适用及理由）；项由 `knowledge_checklist.py build` 从条目里抽；`entries` 记查阅过的其他条目（读过，或不适用及理由） |
+| `knowledge-checklist.json` | 审查员 | ③ 判断 | 1 | 知识必答清单：计划里每块电路对上知识框架典型电路的哪个实现方案（或 `none` 及理由），该方案的每条必算项、已知坑的处置（核过它的检查项或功能编号，或不适用及理由）；项由 `knowledge_checklist.py build` 从条目里抽；`entries` 记查阅过的其他条目（读过，或不适用及理由）；`issues` 记对知识框架的反馈（缺什么、哪个条目有什么问题、依据），打包时连同 `none` 的电路写成 `knowledge-gaps.json` |
 | `review-gate.json` | 工具 | ④ 校验 | — | 对账结果、阻断项、待办 |
 | `notes.json` | 审查员 | ⑤ 出报告 | — | 报告里的白话说明 |
 | `审查报告.md` / `审查报告.html`、`record/` | 工具 | ⑤ 出报告 | — | 交付物：报告与留档 |

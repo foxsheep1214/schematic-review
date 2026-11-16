@@ -7,6 +7,7 @@
         manifest.json      inputs by path + SHA-256, SR version, packed files
         review-plan.json  review-results.json  review-gate.json  db.json  intent.json  lint-cold/hot.json
         circuit-candidates.json  knowledge-checklist.json  notes.json   when the intent declares circuits / the report has notes
+        knowledge-gaps.json  what the review feeds back to the knowledge framework, written here from the checklist
         evidence/          only files that a check's evidence actually cites
 
 The report is rendered again from the packed plan, results, gate and notes (with the title and
@@ -76,9 +77,9 @@ def input_pdfs(declared):
 
 def plain_language_errors(report):
     """Text written for the designer must be plain: everything except the folded count table (labels fixed by
-    render_report), what follows the SR section (SR feedback, index) and the shared rule library's own text the report
+    render_report), what follows the SR section (SR feedback, feedback to the knowledge framework, index) and the shared rule library's own text the report
     quotes (render_report.guideline_quotes)."""
-    body = report.split('\n' + SR_SECTION)[0].split('\n## 索引')[0]
+    body = report.split('\n' + SR_SECTION)[0].split('\n' + knowledge_checklist.SECTION)[0].split('\n## 索引')[0]
     counts = '<summary>%s</summary>' % COUNTS_TITLE
     if counts in body:
         head, rest = body.split(counts, 1)
@@ -236,7 +237,7 @@ def rendered_errors(out, record, title=None, detail='compact'):
     if problems:
         return errors + ['notes.json: ' + '; '.join(problems)]
     try:
-        text = render(plan, results, gate, notes, title, detail)
+        text = render(plan, results, gate, notes, title, detail, knowledge_checklist.load(record / knowledge_checklist.FILE))
     except UnfinishedReview as e:
         return errors + [str(e).replace('no report yet', 'nothing to deliver yet')]
     if (out / REPORT).read_text(encoding='utf-8') != text:
@@ -345,8 +346,14 @@ def pack(out, ledger, evidence_root, inputs, title=None, detail='compact'):
                                         json.loads((record / 'review-results.json').read_text(encoding='utf-8')))[0]
     errors += rendered_errors(out, record, title, detail)
     errors += candidate_errors(record)
-    errors += knowledge_checklist.problems(json.loads((record / 'review-plan.json').read_text(encoding='utf-8')),
-                                           knowledge_checklist.load(record / knowledge_checklist.FILE))
+    checklist = knowledge_checklist.load(record / knowledge_checklist.FILE)
+    errors += knowledge_checklist.problems(json.loads((record / 'review-plan.json').read_text(encoding='utf-8')), checklist)
+    feedback = knowledge_checklist.gaps(checklist)
+    if feedback['gaps']:    # what this review feeds back to the knowledge framework (工具/collect_feedback.py reads it)
+        (record / knowledge_checklist.GAPS_FILE).write_text(json.dumps(feedback, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        packed[RECORD + '/' + knowledge_checklist.GAPS_FILE] = sha256(record / knowledge_checklist.GAPS_FILE)
+    else:
+        (record / knowledge_checklist.GAPS_FILE).unlink(missing_ok=True)
     unresolved, skill_cited, datasheet_texts, pdfs = [], False, [], input_pdfs(declared.values())
     for source in sorted(cited_sources(results)):
         if source.startswith(('http://', 'https://')):

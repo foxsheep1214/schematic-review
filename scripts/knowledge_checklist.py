@@ -13,6 +13,10 @@
   items     由 build 从所写方案里抽出，不手抄：该方案的每条必算项、每条已知坑。每项写 `disposition`：
             `checked`（`where` 列出核过它的检查项或功能的编号，必须是计划里的）或 `not_applicable`（`reason` 写理由）
   entries   查阅记录（可选）：`entry` 写相对 知识/ 的条目路径，`disposition` 写 `read`（读过）或 `not_applicable`（`reason` 写理由）
+  issues    对知识框架的反馈（可选）：审查中发现框架缺什么、哪个条目有问题，当场记一条。`component` 写框架的组件，
+            `target` 写条目路径、准则编号或要查而没有的内容，`kind` 写 缺/错/不够/歧义/过严，`detail` 写问题是什么，
+            `evidence` 写依据（手册页或本板上的实例）。它和 typical 为 none 的电路一起列在报告的“对知识框架的反馈”，
+            打包时写成 record/knowledge-gaps.json，由框架的 工具/collect_feedback.py 归集；不影响审查结论
 必算项和已知坑只是该查什么的清单，不是判据：发现仍落到具体准则和证据上，不因没用某种典型电路判缺陷。
 validate_review.py 和 pack_review.py 核对清单：电路都对上了、每项有处置、编号存在。
 build、check 和 validate_review.py 另给提示（不判失败）：本板有的电路类型、器件类别（计划 knowledge_scope 段记的），
@@ -31,6 +35,10 @@ FILE = 'knowledge-checklist.json'
 SCHEMA_VERSION = 1
 KINDS = ('必算项', '已知坑')
 NONE = 'none'
+GAPS_FILE = 'knowledge-gaps.json'
+ISSUE_KINDS = ('缺', '错', '不够', '歧义', '过严')
+ISSUE_FIELDS = ('component', 'target', 'kind', 'detail', 'evidence')
+FEEDBACK_COMPONENTS = knowledge_source.COMPONENTS + ('设计准则',)
 LINK = re.compile(r'\[([^\]]*)\]\([^)]*\)')
 
 
@@ -96,17 +104,69 @@ def plan_ids(plan):
     return {r.get('id') for name in ('checks', 'functions') for r in (plan or {}).get(name) or [] if isinstance(r, dict)}
 
 
+def issue_problems(data):
+    """Problems of the `issues` rows: each names a framework component, what it is about, the kind, the problem and the evidence."""
+    rows = data.get('issues') if isinstance(data, dict) else None
+    if rows is None:
+        return []
+    if not isinstance(rows, list):
+        return ['必答清单 issues 是数组：每项写 %s' % '、'.join(ISSUE_FIELDS)]
+    found = []
+    for index, row in enumerate(rows):
+        label = '必答清单 issues[%d]' % index
+        if not isinstance(row, dict) or [f for f in ISSUE_FIELDS if not text(row.get(f))]:
+            found.append('%s：%s 都要写' % (label, '、'.join(ISSUE_FIELDS)))
+        elif row['component'] not in FEEDBACK_COMPONENTS:
+            found.append('%s：component 写知识框架的组件（%s）' % (label, '、'.join(FEEDBACK_COMPONENTS)))
+        elif row['kind'] not in ISSUE_KINDS:
+            found.append('%s：kind 写 %s 之一' % (label, '、'.join(ISSUE_KINDS)))
+    return found
+
+
+def gaps(data):
+    """What this review feeds back to the knowledge framework, in the shape of ASG's knowledge-gaps.json: the circuits no
+    typical circuit matches and the reviewer's `issues`."""
+    data = data if isinstance(data, dict) else {}
+    rows = [{'signal': 'no_typical_circuit', 'component': '典型电路', 'item': str(c.get('circuit')),
+             'detail': str(c.get('reason') or ''), 'source': FILE}
+            for c in data.get('circuits') or [] if isinstance(c, dict) and c.get('typical') == NONE]
+    if not issue_problems(data):
+        rows += [{'signal': 'knowledge_missing' if r['kind'] == '缺' else 'knowledge_issue', 'component': r['component'],
+                  'item': r['target'], 'detail': '%s：%s（依据：%s）' % (r['kind'], r['detail'], r['evidence']), 'source': FILE}
+                 for r in data.get('issues') or []]
+    counts = {}
+    for row in rows:
+        counts[row['signal']] = counts.get(row['signal'], 0) + 1
+    return {'schema_version': SCHEMA_VERSION, 'counts': counts, 'gaps': rows}
+
+
+SECTION = '## 对知识框架的反馈（设计者不用处理）'
+GAP_LABELS = {'no_typical_circuit': '典型电路没有对应方案', 'knowledge_missing': '知识框架查不到', 'knowledge_issue': '知识条目有问题'}
+
+
+def render_gaps(data):
+    """The report section 对知识框架的反馈; empty when the review has nothing to feed back."""
+    rows = gaps(data)['gaps']
+    if not rows:
+        return []
+    cell = lambda value: str(value).replace('|', '／').replace('\n', ' ')
+    return ([SECTION, '',
+             '审查中发现知识框架缺的内容和有问题的条目，共 %d 条，不影响审查结论；由知识框架的 `工具/collect_feedback.py` 归集后补进框架。'
+             % len(rows), '', '| 组件 | 类别 | 对象 | 说明 |', '|---|---|---|---|']
+            + ['| %s | %s | %s | %s |' % (r['component'], GAP_LABELS[r['signal']], cell(r['item']), cell(r['detail'])) for r in rows] + [''])
+
+
 def problems(plan, data):
     """What keeps the checklist from being answered; empty when the plan has no circuits or everything is answered."""
     circuits = plan_circuits(plan)
     if not circuits:
-        return []
+        return issue_problems(data)
     if not isinstance(data, dict) or data.get('schema_version') != SCHEMA_VERSION:
         return ['%s 缺失或不是 schema_version %d：计划里有 %d 块电路，每块要对上典型电路的实现方案（knowledge_checklist.py build）'
                 % (FILE, SCHEMA_VERSION, len(circuits))]
     declared = {c.get('circuit'): c for c in data.get('circuits') or [] if isinstance(c, dict)}
     written = {key(r): r for r in data.get('items') or [] if isinstance(r, dict)}
-    known, found, missing = plan_ids(plan), [], 0
+    known, found, missing = plan_ids(plan), issue_problems(data), 0
     for cid in circuits:
         typical = (declared.get(cid) or {}).get('typical')
         if not text(typical):
@@ -155,7 +215,8 @@ def build(plan, old):
                 answer = written.get(key(item), {})
                 items.append(dict(item, disposition=answer.get('disposition', ''), where=answer.get('where', []),
                                   reason=answer.get('reason', '')))
-    return {'schema_version': SCHEMA_VERSION, 'circuits': circuits, 'items': items, 'entries': old.get('entries') or []}
+    built = {'schema_version': SCHEMA_VERSION, 'circuits': circuits, 'items': items, 'entries': old.get('entries') or []}
+    return dict(built, issues=old['issues']) if old.get('issues') else built
 
 
 def board_scope(plan):
