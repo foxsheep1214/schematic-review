@@ -12,6 +12,8 @@ export const meta = {
 //   inputs: 一段话说明输入在哪里：需求文件、原理图/网表/BOM、资料目录；或“ASG 交付目录 <路径>”,
 //   revision: 可选，改版复审时旧审查工作目录的路径,
 //   start: 可选，从第几步开始（1–5，接着上次停下的地方做）,
+//   mode: 可选，auto（默认：器件不超过 quick_limit 个走快审，否则走五步流水线）、quick、full,
+//   quick_limit: 可选，快审的器件数上限，默认 40,
 //   skill: 可选，技能目录，默认 ~/.agents/skills/schematic-review
 // }
 const a = args || {}
@@ -56,6 +58,39 @@ function gatePrompt(s) {
 你是关卡检查员，不是审查员：不写、不改工作目录里的任何审查产物，不替审查员补内容。读 ${SKILL}/SKILL.md 的“执行流程”步骤表和 references/${s.file}，找出第 ${s.n} 步（${s.title}）做完的标志和关卡命令，在工作目录上实际运行这些命令，并核对本步应有的产出文件都在。
 步骤表的“过关”一栏是摘要，判定以细则里“做完的标志”的原文为准：细则允许“处置后保留”的提示（写了说明、登记了缺口或留给后面某一步的），核对处置确实写在产物里，不因工具仍然打印这条提示而判不过；细则没有允许保留的才算没过。
 返回 passed（关卡命令全部通过且产出齐全才为 true）和 details（跑了哪些命令、各自的结果；没过时逐条列出错误原文，够审查员照着改）。`
+}
+
+// 快审：器件不多的板不走五步流水线。一位审查员按工程判断直接审，知识框架作为查漏清单；另一位独立复核每条发现。
+// H-001 2026-11-16：11 个器件的板走五步流水线用了 92 分钟、149 项检查，只报出两条文档类 P3；
+// 同一份设计不带技能直接审 3 分钟，报出指示灯正向压降、热插拔过冲等 6 条。
+const FRAMEWORK = '知识框架目录见技能目录的 .knowledge-framework 文件（或环境变量 HARDWARE_KNOWLEDGE_FRAMEWORK）'
+let mode = a.mode || 'auto'
+if (mode === 'auto' && !a.start && !a.revision) {
+  const size = await agent(`${common}\n\n只做一件事：数出这份设计的 BOM（或网表）里有多少个器件位号，返回 count。不做别的，不写任何文件。`,
+    { label: '数器件', phase: '① 读入', schema: { type: 'object', required: ['count'], properties: { count: { type: 'integer' } } }, effort: 'low', model: 'haiku' })
+  mode = size && size.count <= (a.quick_limit || 40) ? 'quick' : 'full'
+  log(`器件 ${size ? size.count : '?'} 个，走${mode === 'quick' ? '快审' : '五步流水线'}`)
+} else if (mode === 'auto') mode = 'full'
+if (mode === 'quick') {
+  const QUICK = { type: 'object', required: ['status', 'summary'], properties: {
+    status: { type: 'string', enum: ['done', 'needs_input'] }, summary: { type: 'string' }, questions: { type: 'array', items: { type: 'string' } } } }
+  phase('③ 判断')
+  const r = await agent(`${common}
+
+你是资深硬件工程师，做这块板的快审：读 ${SKILL}/references/quick-review.md 并照它做（不走 SKILL.md 的五步流水线，不生成检查计划，不写 intent.json）。
+先凭工程判断把图审一遍，再用知识框架查漏。${FRAMEWORK}。报告写到 ${a.workdir}/审查报告.md。
+返回 status（done；缺了只有人能给的东西才 needs_input）和 summary（发现条数按严重度、每条一句话）。`,
+    { label: '快审', phase: '③ 判断', schema: QUICK })
+  if (!r) return { status: 'stopped', step: 3, done: [] }
+  if (r.status === 'needs_input') return { status: 'needs_input', step: 3, questions: r.questions || [], summary: r.summary, done: [] }
+  phase('④ 校验')
+  const v = await agent(`${common}
+
+你是复核人，没有参与上一位审查员的审查。读 ${SKILL}/references/quick-review.md 的“复核”一节并照它做：对 ${a.workdir}/审查报告.md 的每条发现，回到网表、BOM、PDF 和器件手册原文独立核一遍，
+站不住的删掉或降级，写错位号、页码、数值的改正；再按该节的漏查清单扫一遍有没有漏掉的问题。直接改 ${a.workdir}/审查报告.md，并在末尾“复核记录”里逐条写处置。
+返回 status 和 summary（改了哪几条、删了哪几条、补了哪几条）。`,
+    { label: '复核', phase: '④ 校验', schema: QUICK })
+  return { status: 'complete', mode: 'quick', workdir: a.workdir, report: `${a.workdir}/审查报告.md`, done: [{ step: 3, summary: r.summary }, { step: 4, summary: v ? v.summary : '复核没有返回结果' }] }
 }
 
 const done = []
