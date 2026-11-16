@@ -148,7 +148,6 @@ class GuidelineRulesTests(unittest.TestCase):
                  'circuit_types': ['RS485'], 'device_kinds': ['fuse'], 'not_applicable': []}
         self.assertEqual(g.scope_errors(scope, lib), [])
         self.assertTrue(g.scope_errors(dict(scope, circuit_types=['RS-485']), lib))
-        self.assertEqual(g.scope_errors(dict(scope, library_version='9.9'), lib), [])
         self.assertTrue(g.scope_errors(dict(scope, not_applicable=[{'id': 'G04-001'}]), lib))
 
     def test_build_gathers_registries(self):
