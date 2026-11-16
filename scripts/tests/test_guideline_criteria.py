@@ -19,7 +19,7 @@ import knowledge_source
 
 
 def rule(rid='G04-001', **changes):
-    out = {'id': rid, 'title': 'RS-485 共模范围', 'spec': rid[:3], 'version': '0.1', 'status': 'active',
+    out = {'id': rid, 'title': 'RS-485 共模范围', 'spec': rid[:3], 'status': 'active',
            'nature': 'shall', 'applies_when': {'circuit_types': ['RS485']}, 'inputs': [],
            'asg_action': '按共模范围选收发器', 'sr_check': '核对收发器共模范围覆盖工况',
            'source': [{'document': 'TI SLLA272', 'edition': 'C', 'clause': '§2', 'page': 3}],
@@ -154,11 +154,10 @@ class GuidelineRulesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             spec = Path(tmp)  # 构建只读直接子登记；历史子目录由发布测试验证不读
             (spec / 'G04_准则登记.json').write_text(json.dumps(
-                {'spec': 'G04', 'version': '0.1', 'criteria': [rule('G04-002'), rule('G04-001')]}), encoding='utf-8')
+                {'spec': 'G04', 'criteria': [rule('G04-002'), rule('G04-001')]}), encoding='utf-8')
             built = g.build(tmp)
         self.assertEqual(g.bundle_errors(built), [])
         self.assertEqual([r['id'] for r in built['criteria']], ['G04-001', 'G04-002'])
-        self.assertEqual(built['specs'], {'G04': '0.1'})
 
     def test_engineering_values_are_gathered_checked_and_read(self):
         value = {'value': 0.3, 'applies': '只有典型值时的估算范围', 'basis': '工程判断', 'confirmed': '2026-11-01'}
@@ -167,7 +166,7 @@ class GuidelineRulesTests(unittest.TestCase):
             for spec, values, rules in (('G02', {'typical_band': value}, [cites]),
                                         ('G03', {'g03_budget_margin': dict(value, value=0)}, [])):
                 (Path(tmp) / ('%s_准则登记.json' % spec)).write_text(json.dumps(
-                    {'spec': spec, 'version': '1.1', 'criteria': rules, 'engineering_values': values}), encoding='utf-8')
+                    {'spec': spec, 'criteria': rules, 'engineering_values': values}), encoding='utf-8')
             built = g.build(tmp)
             self.assertEqual(g.bundle_errors(built), [])
             self.assertEqual(built['engineering_values']['typical_band']['spec'], 'G02')
@@ -177,7 +176,7 @@ class GuidelineRulesTests(unittest.TestCase):
             del missing['engineering_values']['g03_budget_margin']
             self.assertTrue(any('g03_budget_margin' in e for e in g.bundle_errors(missing)))
             (Path(tmp) / 'G03_准则登记.json').write_text(json.dumps(
-                {'spec': 'G03', 'version': '1.1', 'criteria': [], 'engineering_values': {'typical_band': value}}),
+                {'spec': 'G03', 'criteria': [], 'engineering_values': {'typical_band': value}}),
                 encoding='utf-8')
             with self.assertRaises(ValueError):
                 g.build(tmp)
