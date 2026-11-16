@@ -31,7 +31,6 @@ def rule(rid='G04-001', **changes):
 def bundle(*rules):
     base = copy.deepcopy(g.load())
     base['criteria'] = sorted(rules, key=lambda r: r['id'])
-    base['content_sha256'] = g.content_sha256(base['criteria'])
     return base
 
 
@@ -132,9 +131,6 @@ class GuidelineRulesTests(unittest.TestCase):
         for words, card in cases.items():
             with self.subTest(words):
                 self.assertTrue(any(words in e for e in g.bundle_errors(bundle(card))), g.bundle_errors(bundle(card)))
-        stale = bundle(rule())
-        stale['criteria'][0]['title'] = '改了'
-        self.assertIn('content_sha256 does not match the rules', g.bundle_errors(stale))
 
     def test_coverage_sorts_applicable_rules(self):
         lib = bundle(rule('G04-001'), rule('G04-002', closing_stage='pcb'), rule('G04-003'))
@@ -148,7 +144,7 @@ class GuidelineRulesTests(unittest.TestCase):
 
     def test_scope_is_checked_against_the_vocabulary(self):
         lib = bundle(rule())
-        scope = {'library_version': lib['library_version'], 'baseline': 'industrial_telecom',
+        scope = {'baseline': 'industrial_telecom',
                  'circuit_types': ['RS485'], 'device_kinds': ['fuse'], 'not_applicable': []}
         self.assertEqual(g.scope_errors(scope, lib), [])
         self.assertTrue(g.scope_errors(dict(scope, circuit_types=['RS-485']), lib))
@@ -160,7 +156,7 @@ class GuidelineRulesTests(unittest.TestCase):
             spec = Path(tmp)  # 构建只读直接子登记；历史子目录由发布测试验证不读
             (spec / 'G04_准则登记.json').write_text(json.dumps(
                 {'spec': 'G04', 'version': '0.1', 'criteria': [rule('G04-002'), rule('G04-001')]}), encoding='utf-8')
-            built = g.build(tmp, '0.1.0')
+            built = g.build(tmp)
         self.assertEqual(g.bundle_errors(built), [])
         self.assertEqual([r['id'] for r in built['criteria']], ['G04-001', 'G04-002'])
         self.assertEqual(built['specs'], {'G04': '0.1'})
@@ -173,24 +169,19 @@ class GuidelineRulesTests(unittest.TestCase):
                                         ('G03', {'g03_budget_margin': dict(value, value=0)}, [])):
                 (Path(tmp) / ('%s_准则登记.json' % spec)).write_text(json.dumps(
                     {'spec': spec, 'version': '1.1', 'criteria': rules, 'engineering_values': values}), encoding='utf-8')
-            built = g.build(tmp, '1.0.0')
+            built = g.build(tmp)
             self.assertEqual(g.bundle_errors(built), [])
             self.assertEqual(built['engineering_values']['typical_band']['spec'], 'G02')
             self.assertEqual(g.engineering_value('g03_budget_margin', built), 0)
-            # the hash covers the values: changing one without rebuilding is caught
-            stale = copy.deepcopy(built)
-            stale['engineering_values']['typical_band']['value'] = 0.5
-            self.assertTrue(any('content_sha256' in e for e in g.bundle_errors(stale)))
             # a cited name the bundle does not hold, and one name defined by two specs
             missing = copy.deepcopy(built)
             del missing['engineering_values']['g03_budget_margin']
-            missing['content_sha256'] = g.content_sha256(missing['criteria'], missing['engineering_values'])
             self.assertTrue(any('g03_budget_margin' in e for e in g.bundle_errors(missing)))
             (Path(tmp) / 'G03_准则登记.json').write_text(json.dumps(
                 {'spec': 'G03', 'version': '1.1', 'criteria': [], 'engineering_values': {'typical_band': value}}),
                 encoding='utf-8')
             with self.assertRaises(ValueError):
-                g.build(tmp, '1.0.0')
+                g.build(tmp)
 
     def test_every_active_rule_has_an_sr_check_that_can_reach_it(self):
         # user 2026-11-01: 一次做全 — no rule waits for a check. A rule triggered by circuit types is held by a check of

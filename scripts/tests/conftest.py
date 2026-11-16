@@ -76,8 +76,7 @@ def _ruleless_guideline_file(tmp_path_factory):
     import guideline_criteria   # scripts/ is on sys.path once the test modules are collected
     from framework_fixtures import real_library
     library = real_library()
-    library.update(library_version='0.0.0', specs={}, criteria=[],
-                   content_sha256=guideline_criteria.content_sha256([], library.get('engineering_values')))
+    library.update(specs={}, criteria=[])
     path = tmp_path_factory.mktemp('guidelines') / 'guideline-criteria.json'
     path.write_text(guideline_criteria.dump(library), encoding='utf-8')
     return str(path)

@@ -27,4 +27,4 @@ def small_framework(dest):
 def real_library():
     """框架里准则登记汇编出的完整准则库（含全部准则），不受 conftest 的“无规则”替换影响。"""
     import guideline_criteria as g
-    return g.build(ks.registry_dir(), None, ks.vocabulary_path())
+    return g.build(ks.registry_dir(), ks.vocabulary_path())
