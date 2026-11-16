@@ -3,7 +3,7 @@
 
 The level (I/II/III) is part of the requirements: `intent.derating{level, source}`, where source is `req:<requirement
 id>` or `clarification:<answered clarification id>`; the planner copies it into the plan. A margin that names
-`basis.derating_rule` is checked against the rule's value at that level (知识/设计准则/规范正文/G10_元器件降额与应力规范/降额值.json, shared with
+`basis.derating_rule` is checked against the rule's value at that level (知识/设计准则/降额与应力/降额值.json, shared with
 ASG): over the rating it fails as any margin does; within the rating but over the derated value it passes with the
 stress risk (`basis.risk.types` holds STRESS), listed in the risk list and not blocking (同目录 应力判法.md,
 user 2026-10-27: 将共用规范R6和ASG统一到现在的“应力”规范下来). Only margins the reviewer writes are checked; a stress

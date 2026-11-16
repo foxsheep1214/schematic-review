@@ -3,7 +3,7 @@
 """通用阻容应力预判检查器（DEV-C01 逐颗检查项）。
 
 对已装配的两端片式电阻与贴片 MLCC，用 intent.power_rails 声明的轨压窗口给两端电压定保守上界，
-按知识框架常规件最弱档（知识/设计准则/规范正文/G10_元器件降额与应力规范/常规件最弱档.md，数据读同目录的 json）的片式电阻最弱档与 MLCC 可订购档给出建议结论。只在上界能算出且明显满足时
+按知识框架常规件最弱档（知识/设计准则/降额与应力/常规件最弱档.md，数据读同目录的 json）的片式电阻最弱档与 MLCC 可订购档给出建议结论。只在上界能算出且明显满足时
 建议 PASS；否则只给计算事实，不给建议，由审查者判定。审查者把建议 PASS 改判为 FAIL/INSUFFICIENT 时，
 须给出 OVERRIDE_CODES 中的理由（validate_review 校验），“采购范围/料号未定”不是改判理由——
 该项由 DEV-D04 汇总。建议不替代审查：脉冲、精密检流、安规等用途仍由审查者按改判码排除。
@@ -21,7 +21,7 @@ import part_words as pw
 import read_bom
 from .base import Checker
 
-# 常规件最弱档从知识框架读（G10 的 常规件最弱档.json，2026-11-02）：
+# 常规件最弱档从知识框架读（降额规范的 常规件最弱档.json，2026-11-02）：
 # 封装 -> (70 ℃ 最弱档功率 W, 最弱档最高工作电压 V)
 _FLOORS = guideline_criteria.commodity_floors()
 RESISTOR_FLOORS = {p: (v['power_w_70c'], v['voltage_v']) for p, v in _FLOORS['chip_resistor']['packages'].items()}

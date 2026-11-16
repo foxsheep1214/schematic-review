@@ -86,9 +86,9 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | 判 NA/INSUFFICIENT、索取资料前 | [evidence-proportionality.md](references/evidence-proportionality.md) |
 | 审查员 | 工作点和保证条件对不上时定界；估算判通过的边界 | [bounding-table.md](references/bounding-table.md)（由 `scripts/catalog.py` 生成） |
 | 审查员 | 一条余量怎么判：合格、合格但有风险、不合格；无料号常规件的判定表 | [margin-verdicts.md](references/margin-verdicts.md) |
-| 审查员 | BOM 缺具体料号、要给通用件额定定界时 | 方法见 [commodity-floors.md](references/commodity-floors.md)；最弱档的数值和依据见知识框架 `知识/设计准则/规范正文/G10_元器件降额与应力规范/常规件最弱档.md` |
-| 审查员 | 器件应力降额（规范 G10）：I/II/III 级降额值、等级从哪来、取值规则 | 知识框架 `知识/设计准则/规范正文/G10_元器件降额与应力规范/降额规范.md` |
-| 审查员 | 器件应力怎么判（规范 G10）：超额定不成立、超降额未超额定是应力风险、应力超幅单列、只审写出的应力余量 | 知识框架 `知识/设计准则/规范正文/G10_元器件降额与应力规范/应力判法.md` |
+| 审查员 | BOM 缺具体料号、要给通用件额定定界时 | 方法见 [commodity-floors.md](references/commodity-floors.md)；最弱档的数值和依据见知识框架 `知识/设计准则/降额与应力/常规件最弱档.md` |
+| 审查员 | 器件应力降额（降额规范）：I/II/III 级降额值、等级从哪来、取值规则 | 知识框架 `知识/设计准则/降额与应力/降额规范.md` |
+| 审查员 | 器件应力怎么判（降额规范）：超额定不成立、超降额未超额定是应力风险、应力超幅单列、只审写出的应力余量 | 知识框架 `知识/设计准则/降额与应力/应力判法.md` |
 | 审查员 | 结果、P0–P3（含 BOM 约束定级）、阶段、HANDOFF、准出 | [verdicts-and-release.md](references/verdicts-and-release.md) |
 | 审查员 | 需求缺失/含糊/冲突：当场问用户，答复写进需求清单 | [requirement-clarifications.md](references/requirement-clarifications.md) |
 | 审查员 | ① 写 intent.json：字段、输入声明、电路决定、需求参数 | [intent-format.md](references/intent-format.md) |
@@ -112,7 +112,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | SR 维护者 | 架构明细：步骤间文件、格式版本、脚本归属、历次架构决定、规则维护步骤 | [architecture.md](references/architecture.md) |
 | SR 维护者 | 规则编号总表、判据、每项检查的盲区与常见误报（审查员用的名称表另出） | [check-catalog.md](references/check-catalog.md)（由 `scripts/catalog.py` 生成） |
 | SR 维护者 | 改规则时：七项审查要点（要点1–7）、规则取舍的三问 | [review-charter.md](references/review-charter.md) |
-| SR 维护者 | 设计准则库（规范 G01–G09；G10 见上面两行）：设计准则、适用条件、覆盖、`catalog.BASIS`、更新步骤 | 知识框架 `知识/设计准则/工具/包说明/guideline-criteria.md` |
+| SR 维护者 | 设计准则库（规范 G01–G09；降额规范见上面两行）：设计准则、适用条件、覆盖、`catalog.BASIS`、更新步骤 | 知识框架 `知识/设计准则/工具/包说明/guideline-criteria.md` |
 | SR 维护者 | 设计准则、降额数据和词表在框架里的位置、各文件的字段 | 知识框架 `知识/设计准则/工具/包说明/shared-layer.md` |
 
 ## 审查 ASG 交付的设计

@@ -32,7 +32,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 ## 几条口径（2026-10-23 用户确认）
 
 - **齐纳管 VZ 下界**：两个测试点之间按较低电流一端的保证 rdif 最大值定界（1-A，“1A，可以”）；低于最低测试点时，典型曲线覆盖工作点就按曲线估算，估算在格的判决边界内可判“合格但有风险”，典型值本身已不够判失败（2-A，“2A，算”）；没有覆盖工作点的曲线是用在手册未规定的区间，记失败项，改法把工作电流提到最低测试点以上，不开缺厂家数据（2026-10-26 改，见本格边界）。
-- **MOS 高温 SOA**：按持续时间选 25 °C 曲线（连续工作用直流线；单次瞬态用不短于实际时长的单脉冲线；重复瞬态另用 Zth(tp, D) 算结温），按开始壳温降额 P_allowed = P_curve·(Tjmax − Tc_start)/(Tjmax − 25)，恒功率段、热不稳定段各自不超过降额后的允许比例（知识框架 `知识/设计准则/规范正文/G10_元器件降额与应力规范/降额规范.md`“工程取值”的 `soa_segment_share`）；本板可达工况下超出判失败项。允许壳温和所需壳到环境热阻 Rθca ≤ (Tc_allowed − Ta_max)/P 交热设计和 PCB 设计（“B 热不稳定段按修订写法定：按持续时间选曲线、按开始壳温降额、降额后留 80%。”；“这里也可以给出散热结构设计上的要求，交给下游的PCB设计”）。热不稳定段的比例是工程取值，不是厂家保证，报告照此写明。
+- **MOS 高温 SOA**：按持续时间选 25 °C 曲线（连续工作用直流线；单次瞬态用不短于实际时长的单脉冲线；重复瞬态另用 Zth(tp, D) 算结温），按开始壳温降额 P_allowed = P_curve·(Tjmax − Tc_start)/(Tjmax − 25)，恒功率段、热不稳定段各自不超过降额后的允许比例（知识框架 `知识/设计准则/降额与应力/降额规范.md`“工程取值”的 `soa_segment_share`）；本板可达工况下超出判失败项。允许壳温和所需壳到环境热阻 Rθca ≤ (Tc_allowed − Ta_max)/P 交热设计和 PCB 设计（“B 热不稳定段按修订写法定：按持续时间选曲线、按开始壳温降额、降额后留 80%。”；“这里也可以给出散热结构设计上的要求，交给下游的PCB设计”）。热不稳定段的比例是工程取值，不是厂家保证，报告照此写明。
 - **检测用 NTC**：能取到厂家逐度 R-T 表就按表插值（ln R 对 1/T）；取不到时按 B 值公式加 R25 和 B 的公差定界，算保证最坏值，不开项（“有表用表，没表外推算保证”）。
 - **BJT 饱和开关**：按强制 β 设计，IB ≥ IC /（hFE_min / k），k 取设计准则库 G02 工程取值 `forced_beta_k`（设计准则库）。
 - **浪涌限制 NTC 热态重新接入**：NTC 按 0 Ω 算桥堆和电容的浪涌，过了判通过，不过判失败；需求不要求热态重接时不问这一项（“按 0 Ω 定结论”）。
@@ -94,7 +94,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `VAR-UC` | varistor | 最大持续工作电压 Uc | LOWER | 环境温度（额定温度以上降额） / DECREASING | G1；G2 | `VENDOR_DATUM` | 定界表扩表决定（architecture.md 2026-10-26） |
 | `VAR-VC` | varistor | 钳位（残）电压上界 | UPPER | 浪涌电流（8/20 µs 同一波形） / INCREASING | G1；G2 | `VENDOR_DATUM` | 定界表扩表决定（architecture.md 2026-10-26） |
 | `VAR-SURGE` | varistor | 最大浪涌电流 / 能量（按次数降额） | LOWER | 脉冲次数与波形 / DECREASING | G1；G2 | `VENDOR_DATUM` | 定界表扩表决定（architecture.md 2026-10-26） |
-| `RES-POWER` | resistor | 电阻功率、脉冲、TCR 与耐压 | UPPER | 温度与脉宽 / — | G1；G5 | `VENDOR_DATUM` | 知识/设计准则/规范正文/G10_元器件降额与应力规范/常规件最弱档.md 片式电阻 |
+| `RES-POWER` | resistor | 电阻功率、脉冲、TCR 与耐压 | UPPER | 温度与脉宽 / — | G1；G5 | `VENDOR_DATUM` | 知识/设计准则/降额与应力/常规件最弱档.md 片式电阻 |
 | `MLCC-EFFECTIVE-C` | capacitor | MLCC 有效容量（偏压、温度、老化） | LOWER | 直流偏压与温度 / DECREASING | G1；G2；G5（`table_interpolate`）；G8 | `VENDOR_DATUM` | commodity-floors.md MLCC；wca-formulas.md |
 | `ECAP-ESR-RIPPLE` | electrolytic | 电解 ESR 与纹波电流（温度、频率系数表） | — | 温度与频率 / NONMONOTONIC | G1；G5（`table_interpolate`）；G9 | `VENDOR_DATUM` | commodity-floors.md 电解 |
 | `IND-ISAT` | inductor、transformer、coupled_inductor、common_mode_choke | 电感 Isat（按资料定义取温度最坏值） | LOWER | 温度 / DECREASING | G1；G2；G5（`table_interpolate`）；G9（`typical_band`） | `VENDOR_DATUM` | commodity-floors.md 电感 |
@@ -144,7 +144,7 @@ NTC 只给 B25/50），按这张表定界：每类器件的每个参数随什么
 | `VAR-UC` | `GUARANTEED` | 不估算 | — | 安全 | 可测 | 不估算：母线最高持续电压（含容差、过压）不超过 Uc 保证值，超额定温度按降额曲线；长期超 Uc 是热失控的安全后果 |
 | `VAR-VC` | `TEST_POINT` | 不估算 | — | 损坏 | 型式试验 | 不估算；缺本板浪涌电流对应的保证值时按额定电流处 Vc max 判下游耐受 |
 | `VAR-SURGE` | `GUARANTEED` | 不估算 | — | 安全 | 型式试验 | 不估算：需求浪涌等级与次数对降额曲线取保证值；寿命走 DEV-C06 VARISTOR |
-| `RES-POWER` | `GUARANTEED` | 不估算 | — | 损坏 | 可测 | 不估算：额定、降额与脉冲曲线按保证；常规件最弱档见知识框架 知识/设计准则/规范正文/G10_元器件降额与应力规范/常规件最弱档.md |
+| `RES-POWER` | `GUARANTEED` | 不估算 | — | 损坏 | 可测 | 不估算：额定、降额与脉冲曲线按保证；常规件最弱档见知识框架 知识/设计准则/降额与应力/常规件最弱档.md |
 | `MLCC-EFFECTIVE-C` | `TYPICAL_BY_DEFINITION` | ×1.25 · 功能/性能/寿命：典型偏压曲线 × (1 − 公差) × 老化 0.9，再 ÷1.25；补偿网络 ÷1.4 | 一致性、环境适应性、寿命 | 功能/性能/寿命 | 可测 | 允许估算判 PASS（÷1.25） |
 | `ECAP-ESR-RIPPLE` | `TEST_POINT` | ×1.3 · 功能/性能/寿命：系数表外的频率：ESR ×1.3<br>×1.3 · 损坏 · 余量 ≥ 10 °C：同上，芯温余量 ≥ 10 °C | 环境适应性、一致性 | 性能/寿命/损坏 | 可测 | 表内按 G5（保证）；表外允许估算（×1.3），判纹波发热（损坏）另要芯温余量 ≥ 10 °C，记应力风险；寿命走 DEV-C02。“资料已读只剩折算”不是厂家数据缺口 |
 | `IND-ISAT` | `TYPICAL_BY_DEFINITION` | ×1.3 · 功能/性能/寿命/损坏：典型 Isat 热态值 ÷1.3（峰流 ≤ Isat/1.3） | 环境适应性 | 损坏 | 可测 | 允许估算判 PASS（÷1.3）：损坏类但行业别无他法；不满足 1.3 倍就开放或失败 |

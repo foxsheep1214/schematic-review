@@ -1,5 +1,5 @@
 """The derating spec (I/II/III levels from T/CPSS 1013, GJB/Z 35 and T/CPSS 1006) is one file shared with
-autonomous-schematic-generation (the framework's G10 data): every rule names
+autonomous-schematic-generation (the framework's derating data): every rule names
 a device kind, a measure, a condition and a cited page, and the levels run from most to least derating (user 2026-10-27).
 """
 import json

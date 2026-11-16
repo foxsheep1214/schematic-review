@@ -24,7 +24,7 @@ class CommodityFloorsTests(unittest.TestCase):
         self.assertEqual(passive_stress.WEAKEST_SHARE, guideline_criteria.engineering_value('weakest_share'))
 
     def test_the_method_doc_points_to_the_framework_and_carries_no_floor_table(self):
-        self.assertIn('G10_元器件降额与应力规范/常规件最弱档.md', DOC)
+        self.assertIn('降额与应力/常规件最弱档.md', DOC)
         for key in ('chip_resistor', 'mlcc_orderable', 'contacts'):
             self.assertIn('`%s`' % key, DOC)
         self.assertNotRegex(DOC, r'(?m)^\| (?:0\d{3}|1\d{3}|2\d{3}) \|')          # no package rows

@@ -1768,8 +1768,8 @@ BOUNDS = OrderedDict((b.id, b) for b in (
           'GUARANTEED', (), ('DAMAGE_OR_HAZARD',), _T, '不估算：需求浪涌等级与次数对降额曲线取保证值；寿命走 DEV-C06 VARISTOR'),
     # 3.7 无源件
     Bound('RES-POWER', ('resistor',), '电阻功率、脉冲、TCR 与耐压', 'UPPER', '温度与脉宽', None, (('G1', ()), ('G5', ())),
-          'VENDOR_DATUM', '知识/设计准则/规范正文/G10_元器件降额与应力规范/常规件最弱档.md 片式电阻',
-          'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M, '不估算：额定、降额与脉冲曲线按保证；常规件最弱档见知识框架 知识/设计准则/规范正文/G10_元器件降额与应力规范/常规件最弱档.md'),
+          'VENDOR_DATUM', '知识/设计准则/降额与应力/常规件最弱档.md 片式电阻',
+          'GUARANTEED', (), ('COMPONENT_DAMAGE',), _M, '不估算：额定、降额与脉冲曲线按保证；常规件最弱档见知识框架 知识/设计准则/降额与应力/常规件最弱档.md'),
     Bound('MLCC-EFFECTIVE-C', ('capacitor',), 'MLCC 有效容量（偏压、温度、老化）', 'LOWER', '直流偏压与温度', 'DECREASING',
           (('G1', ()), ('G2', ()), ('G5', ('table_interpolate',)), ('G8', ())), 'VENDOR_DATUM', 'commodity-floors.md MLCC；wca-formulas.md',
           'TYPICAL_BY_DEFINITION', (_e('est_mlcc_effective_c', FUNCTIONAL, '典型偏压曲线 × (1 − 公差) × 老化 {est_mlcc_aging}，再 ÷{est_mlcc_effective_c}；补偿网络 ÷{est_mlcc_effective_c_comp}'),),
