@@ -81,6 +81,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | 做 ③ 时 | [step-3-judge.md](references/step-3-judge.md) |
 | 审查员 | 做 ④ 时 | [step-4-validate.md](references/step-4-validate.md) |
 | 审查员 | 做 ⑤ 时 | [step-5-report.md](references/step-5-report.md) |
+| 审查员 | 小板走快审时（不超过 40 个位号、设计中途的检查） | [quick-review.md](references/quick-review.md) |
 | 审查员 | 规则编号、`intent.rule_gaps`、设计准则 | [rule-ids.md](references/rule-ids.md) |
 | 审查员 | intent 里要写的名字：功能电路类型、器件角色、需求类别与参数名 | [review-vocabulary.md](references/review-vocabulary.md)（由 `scripts/catalog.py` 生成） |
 | 审查员 | 判 NA/INSUFFICIENT、索取资料前 | [evidence-proportionality.md](references/evidence-proportionality.md) |
