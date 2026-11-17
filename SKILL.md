@@ -81,7 +81,7 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 | 审查员 | 做 ③ 时 | [step-3-judge.md](references/step-3-judge.md) |
 | 审查员 | 做 ④ 时 | [step-4-validate.md](references/step-4-validate.md) |
 | 审查员 | 做 ⑤ 时 | [step-5-report.md](references/step-5-report.md) |
-| 审查员 | 小板走快审时（不超过 40 个位号、设计中途的检查） | [quick-review.md](references/quick-review.md) |
+| 审查员 | 走快审时（默认；器件多的板分区审） | [quick-review.md](references/quick-review.md) |
 | 审查员 | 规则编号、`intent.rule_gaps`、设计准则 | [rule-ids.md](references/rule-ids.md) |
 | 审查员 | intent 里要写的名字：功能电路类型、器件角色、需求类别与参数名 | [review-vocabulary.md](references/review-vocabulary.md)（由 `scripts/catalog.py` 生成） |
 | 审查员 | 判 NA/INSUFFICIENT、索取资料前 | [evidence-proportionality.md](references/evidence-proportionality.md) |
@@ -127,8 +127,9 @@ description: "审查硬件电路原理图的电气合理性和需求符合性，
 
 ## 执行流程
 
-器件不多的板（默认不超过 40 个位号）在设计中途的检查走 [快审](references/quick-review.md)：一位审查员凭工程判断直接审、用知识框架查漏，一位复核人独立复核，
-直接写报告，不走下面的五步。定稿前的审查、器件多的板和改版复审走五步；工作流 `workflows/sr-review.js` 按器件数自动选（`mode` 可指定）。
+默认走 [快审](references/quick-review.md)，不走下面的五步：审查员凭工程判断直接审、用知识框架查漏，复核人独立复核，直接写报告。
+器件不多的板（默认不超过 40 个位号）一位审查员审全板；器件多的板分区并行审，另有一位整板审查员按供电方式和工况走查。工作流 `workflows/sr-review.js` 按器件数自动选（`mode` 可指定）。
+下面的五步流水线只在用户点名要它时才走（`mode: full`）：H-001 小板上它 92 分钟只报出两条文档类问题，M-001 中型板上 79 分钟没有判完，同一份设计直接审 18 分钟报出 1 条 P0、4 条 P1。
 
 大工程分批推进并保留进度，不缩小覆盖范围；身份或图形疑点立即前置。
 

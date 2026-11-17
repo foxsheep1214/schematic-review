@@ -12,7 +12,7 @@ export const meta = {
 //   inputs: 一段话说明输入在哪里：需求文件、原理图/网表/BOM、资料目录；或“ASG 交付目录 <路径>”,
 //   revision: 可选，改版复审时旧审查工作目录的路径,
 //   start: 可选，从第几步开始（1–5，接着上次停下的地方做）,
-//   mode: 可选，auto（默认：器件不超过 quick_limit 个走快审，否则走五步流水线）、quick、full,
+//   mode: 可选，auto（默认：器件不超过 quick_limit 个走快审，否则走分区快审）、quick、zones、full（五步流水线，只在点名时走）,
 //   quick_limit: 可选，快审的器件数上限，默认 40,
 //   skill: 可选，技能目录，默认 ~/.agents/skills/schematic-review
 // }
@@ -68,8 +68,8 @@ let mode = a.mode || 'auto'
 if (mode === 'auto' && !a.start && !a.revision) {
   const size = await agent(`${common}\n\n只做一件事：数出这份设计的 BOM（或网表）里有多少个器件位号，返回 count。不做别的，不写任何文件。`,
     { label: '数器件', phase: '① 读入', schema: { type: 'object', required: ['count'], properties: { count: { type: 'integer' } } }, effort: 'low', model: 'haiku' })
-  mode = size && size.count <= (a.quick_limit || 40) ? 'quick' : 'full'
-  log(`器件 ${size ? size.count : '?'} 个，走${mode === 'quick' ? '快审' : '五步流水线'}`)
+  mode = size && size.count <= (a.quick_limit || 40) ? 'quick' : 'zones'
+  log(`器件 ${size ? size.count : '?'} 个，走${mode === 'quick' ? '快审' : '分区快审'}`)
 } else if (mode === 'auto') mode = 'full'
 if (mode === 'quick') {
   const QUICK = { type: 'object', required: ['status', 'summary'], properties: {
@@ -91,6 +91,47 @@ if (mode === 'quick') {
 返回 status 和 summary（改了哪几条、删了哪几条、补了哪几条）。`,
     { label: '复核', phase: '④ 校验', schema: QUICK })
   return { status: 'complete', mode: 'quick', workdir: a.workdir, report: `${a.workdir}/审查报告.md`, done: [{ step: 3, summary: r.summary }, { step: 4, summary: v ? v.summary : '复核没有返回结果' }] }
+}
+
+// 分区快审：器件多的板。分区后各区审查员并行审，一位整板审查员按供电方式和工况走查，复核人合成报告并独立复核。
+// M-001 2026-11-17：169 个器件的板走五步流水线 79 分钟、1386 项检查没有判完；直接审 18 分钟报出 1 条 P0、4 条 P1，P1 都是跨功能块的。
+if (mode === 'zones') {
+  const R = { type: 'object', required: ['status', 'summary'], properties: {
+    status: { type: 'string', enum: ['done', 'needs_input'] }, summary: { type: 'string' }, questions: { type: 'array', items: { type: 'string' } } } }
+  const QR = `${SKILL}/references/quick-review.md`
+  const base = `读 ${QR} 并照它做（不走 SKILL.md 的五步流水线，不生成检查计划，不写 intent.json）。${FRAMEWORK}。`
+  phase('② 出计划')
+  const z = await agent(`${common}
+
+只做 ${QR}“分区快审”一节的第 1 步（分区）：读网表和 BOM，把器件分成 3 到 6 个区，写 ${a.workdir}/分区.json（每区 id、name、refs、进出本区的网络）。不审查。
+返回 zones（每区的 id 和 name，id 用短的英文或拼音，能作文件名）。`,
+    { label: '分区', phase: '② 出计划', effort: 'low', model: 'sonnet',
+      schema: { type: 'object', required: ['zones'], properties: { zones: { type: 'array', items: { type: 'object', required: ['id', 'name'], properties: { id: { type: 'string' }, name: { type: 'string' } } } } } } })
+  if (!z || !(z.zones || []).length) return { status: 'blocked', step: 2, reason: '没有分出区', done: [] }
+  phase('③ 判断')
+  const jobs = z.zones.map(zone => () => agent(`${common}
+
+你是资深硬件工程师，做这块板的分区快审，只审“${zone.name}”这个区（${a.workdir}/分区.json 里 id 为 ${zone.id} 的那一区）。${base}
+照“分区快审”第 2 步做，写 ${a.workdir}/分区/${zone.id}.md。别的区同时有人在审，不写别的文件。
+返回 status 和 summary（本区发现条数按严重度、每条一句话、交给整板审查员的跨区疑点）。`,
+    { label: `审 ${zone.name}`, phase: '③ 判断', schema: R }).then(r => ({ zone: zone.name, r })))
+  jobs.push(() => agent(`${common}
+
+你是资深硬件工程师，做这块板的整板审查员。${base}
+照“分区快审”第 3 步做，写 ${a.workdir}/分区/整板.md。各区的器件有别的审查员在逐个核，你只做跨区的走查、预算、引脚分配和过度设计。
+返回 status 和 summary（发现条数按严重度、每条一句话、能省的器件数）。`,
+    { label: '审 整板', phase: '③ 判断', schema: R }).then(r => ({ zone: '整板', r })))
+  const parts = (await parallel(jobs)).filter(Boolean)
+  const zdone = parts.map(p => ({ step: 3, summary: `${p.zone}：${p.r ? p.r.summary : '没有返回结果'}` }))
+  phase('④ 校验')
+  const v = await agent(`${common}
+
+你是复核人，没有参与各区和整板的审查。读 ${QR} 的“报告”“复核”和“分区快审”第 4 步并照它做：把 ${a.workdir}/分区/ 下各份的发现合成 ${a.workdir}/审查报告.md，
+每条发现回到网表、BOM、PDF 和器件手册原文独立核一遍，站不住的删掉或降级，写错的改正，重复的并成一条；再按漏查清单扫一遍。末尾“复核记录”逐条写处置。
+返回 status 和 summary（最终发现条数按严重度、P0 和 P1 每条一句话、删了和补了哪几条）。`,
+    { label: '合成与复核', phase: '④ 校验', schema: R })
+  return { status: v && v.status === 'done' ? 'complete' : 'blocked', mode: 'zones', workdir: a.workdir, report: `${a.workdir}/审查报告.md`,
+    done: [...zdone, { step: 4, summary: v ? v.summary : '复核没有返回结果' }] }
 }
 
 const done = []
