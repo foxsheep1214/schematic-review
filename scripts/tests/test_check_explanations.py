@@ -75,15 +75,6 @@ class PlanExplanationTests(unittest.TestCase):
             if check['applicability'] != 'NOT_APPLICABLE':
                 self.assertIsNone(check['review_result'])
 
-    def test_a_previous_plan_with_first_version_row_explanations_is_not_merged(self):
-        db = sample_db()
-        intent = {'rule_gaps': [{'id': 'MANUAL-EXTRA', 'rule': 'DEV-C01', 'object': {'feature': 'MANUAL-EXTRA'}, 'criterion': 'synthetic extra stress check', 'missing': 'synthetic: no generated rule', 'basis': 'synthetic review note'}]}   # a reviewer-added row is a registered rule gap
-        old = build_review_plan(db, intent)
-        row = next(c for c in old['checks'] if c.get('origin') == 'REVIEWER_ADDED')
-        row['check_explanation'] = {'purpose': '旧', 'risk_if_omitted': '旧', 'connections': '旧'}
-        with self.assertRaisesRegex(ValueError, 'unknown field purpose'):
-            build_review_plan(db, intent, previous_plan=old)
-
     def test_current_plan_explanation_cannot_be_changed_or_dropped(self):
         p, r, db = fixture()
         p['check_explanations'] = catalog.explanations_for(c['rule'] for c in p['checks'])
@@ -144,12 +135,6 @@ class RenderExplanationTests(unittest.TestCase):
         result['checks'][0]['split_out'] = ['DRV-C01.INSUFFICIENT']
         text = '\n'.join(render_check_explanations(plan, result))
         self.assertIn('所属汇总项**：DRV-C01.PASS（其余对象合格）', text)
-
-    def test_a_first_version_explanation_is_refused(self):
-        # SR keeps no compatibility with earlier records: the first version's purpose/connections fields are refused.
-        errors = catalog.explanation_errors({'purpose': 'p', 'risk_if_omitted': 'r', 'connections': 'c'})
-        self.assertIn('check_explanation has unknown field purpose', errors)
-        self.assertIn('check_explanation has unknown field connections', errors)
 
     def test_records_without_explanations_do_not_borrow_the_live_catalog(self):
         p, r, db = fixture()

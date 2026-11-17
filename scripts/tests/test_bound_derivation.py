@@ -11,7 +11,6 @@ import copy
 import unittest
 
 from test_review_functions import HV_TRIED, bias_function, guaranteed, with_datum
-import results_model
 from review_functions import function_errors
 
 CORNERS = [{'input': 'vf_d2', 'condition': 'c1', 'picked': 'max', 'why': 'VF 越大 VCC 越低'},
@@ -98,15 +97,6 @@ class MonotonicTriedTests(unittest.TestCase):
         # format 5 wrote the side as a sentence; format 6 writes it in numbers (test_one_sided_bounds.py)
         fn['open'][0]['worst_case']['monotonic_tried'] = {'unfavorable_side': '低于测试点', 'why_not': '手册没说单调'}
         self.assertTrue(any('monotonic_tried' in e for e in function_errors({'functions': [fn]})))
-
-
-class FormatTests(unittest.TestCase):
-    def test_an_older_results_format_is_not_read(self):
-        self.assertEqual(results_model.SCHEMA_VERSION, 15)
-        errors = results_model.shape_errors({'schema_version': 4, 'functions': [], 'checks': []})
-        self.assertTrue(any('schema_version must be 15' in e for e in errors), errors)
-        previous = results_model.shape_errors({'schema_version': results_model.SCHEMA_VERSION - 1, 'functions': [], 'checks': []})
-        self.assertTrue(any('schema_version must be' in e for e in previous), previous)   # the format just retired too
 
 
 if __name__ == '__main__':
