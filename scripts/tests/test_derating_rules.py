@@ -70,7 +70,7 @@ class DeratingSpecTests(unittest.TestCase):
         # 2026-11-01 (user: 进设计准则库，本轮迁移): the G9 typical band and the forced-β k moved to G02 in the rule library
         self.assertEqual((bound_formulas.TYPICAL_BAND, bound_formulas.FORCED_BETA_K),
                          (guideline_criteria.engineering_value('typical_band'), guideline_criteria.engineering_value('forced_beta_k')))
-        self.assertEqual(values['unset_level']['value'], 'I')
+        self.assertEqual(values['unset_level']['value'], 'III')   # 2026-11-16, user: 默认改为 III 级
         source = (ROOT / 'scripts' / 'checkers' / 'passive_stress.py').read_text(encoding='utf-8')
         self.assertNotRegex(source, r'POWER_LIMIT|VOLTAGE_LIMIT|UNSET_POWER_SHARE')
 

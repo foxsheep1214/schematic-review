@@ -115,7 +115,7 @@ PWR-C10 等额定资格项若只缺普通无源采购范围：计划已给 `prop
   建议 PASS（B）（等级未定按 `unset_level`），超出不给建议，按[判定表](margin-verdicts.md#没有料号的常规件)由审查者判定。
   **功耗要考虑时 BOM 必须写明额定功率**（2026-10-27，用户：设计时考虑功耗，除阻值和精度外还要写上功率等级，作为给以后的约束）：
   BOM 没写功率、最坏功耗又超过按已写字段能买到的最弱件（封装最弱档 × 工程取值 `weakest_share`，理由是框架片式电阻一节的系列反例）的降额值时，预判附
-  `procurement_min_power_w`（应力 ÷ 项目降额等级的 RES-SMD-P 取值；等级未定按 I 级）。门禁要求这一行判 PASS 时写
+  `procurement_min_power_w`（应力 ÷ 项目降额等级的 RES-SMD-P 取值；等级未定按 `unset_level`）。门禁要求这一行判 PASS 时写
   `bom_constraint`（额定功率不低于该值、TO_WRITE），或判 FAIL；不记证据不足。
 - MLCC：所需耐压 ≤ 框架 MLCC 可订购档（`mlcc_orderable`）里同封装、容值不小于本颗的那一行的耐压时建议 PASS（B），耐压约束汇总到 DEV-D04。
 - PWR-C10 额定检查项（组内无器件额定条款）在组内全部电容都有 DEV-C01 预判 PASS 时同样带 `proposal: PASS`；
