@@ -149,38 +149,6 @@ def with_flag(flag, kinds=KINDS):
     return frozenset(name for name, kind in kinds.items() if getattr(kind, flag))
 
 
-def wearout_of(name, kinds=KINDS):
-    """The catalog.WEAROUT_CLASSES entry the kind alone decides, or None when the circuit or the words decide."""
-    kind = kinds.get(name)
-    return kind.wearout if kind is not None else None
-
-
-# Kinds the classifier may read off a single winding; with three or more pins only the datasheet tells what they are.
-SINGLE_WINDING = ('inductor', 'ferrite')
-
-
-def needs_datasheet(name, pin_count=None, kinds=KINDS):
-    """Whether only a verified datasheet declaration may settle a part of this kind (2026-10-27 A1): the semiconductors,
-    optocouplers, relays, transformers, protective parts, multi-winding magnetics and every IC role."""
-    if name in catalog.DEVICE_ROLES:
-        return True
-    if name in SINGLE_WINDING:
-        return pin_count is not None and pin_count >= 3
-    kind = kinds.get(name)
-    return bool(kind and kind.datasheet)
-
-
-def settlement(name, pin_count=None, net_count=None, kinds=KINDS):
-    """What settles a part's kind (2026-10-27 A2/A5): 'datasheet' when only a verified datasheet declaration may, 'classify'
-    for a part the classifier cannot read that sits on two or more nets (the reviewer places it; first of all an SR
-    capability gap), None otherwise. The refdes plays no part beyond the classifier's own reading."""
-    if needs_datasheet(name, pin_count, kinds):
-        return 'datasheet'
-    if name == 'unknown' and net_count is not None and net_count >= 2:
-        return 'classify'
-    return None
-
-
 def errors(kinds=KINDS):
     """Self-check of the registry: anchored prefixes, compiling words, squashed cues, known wearout classes, a series
     link is two-terminal, a datasheet kind has cues, the IC roles are not also discrete kinds."""

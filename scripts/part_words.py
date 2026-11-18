@@ -10,26 +10,8 @@ import device_kinds
 from device_kinds import JST_CONNECTOR_RE, SI_FET_WORDS, USB_CONNECTOR_RE   # noqa: F401  (classify checks these patterns by identity)
 
 
-# Part words read from a part's text (value, symbol, part number), one vocabulary for every module.
-# An electrolytic, solid or super capacitor by its words (an endurance rating "12000h@105°C" names one too; EEE/EEU are
-# aluminium part-number series); conventional tantalum is excluded from life rows, polymer tantalum is not.
-POLARIZED_SYMBOL_RE = re.compile(r'(^|[:\s])(C_Polarized|CP)(_|\b)', re.I)
-ELECTROLYTIC_RE = re.compile(r'电解|固态|铝|ELECTROLYTIC|\bELEC\b|\bALUM|\bE-?CAP\b|POLYMER|OS-?CON|SUPER ?CAP|EDLC|超级电容'
-                             r'|\bEE[EU]|\d\s*h\s*@\s*\d+\s*°?C', re.I)
-TANTALUM_RE = re.compile(r'TANTAL|钽|\bTPS[A-Z]', re.I)
-POLYMER_RE = re.compile(r'聚合物|POLYMER|OS-?CON', re.I)
 NTC_RE = re.compile(device_kinds.NTC_WORDS, re.I)
 VARISTOR_RE = re.compile(device_kinds.VARISTOR_WORDS, re.I)
-LED_RE = re.compile(r'(^|[^A-Z])LED(S|[^A-Z]|$)', re.I)
-# a controller's high-voltage start-up pin, fed from the bus through its start-up resistor by design
-STARTUP_PIN_RE = re.compile(r'^(HV|HVIN|HV_?IN|HV_?START\w*|VSTART\w*|VSTR|STARTUP)$', re.I)
-LED_VF_MAX_V = 4.0   # a forward-biased LED's drop, every colour included; a datasheet value replaces it in the review
-
-
-def is_polarized_capacitor(text):
-    """A capacitor whose polarity matters: a polarized symbol, an electrolytic or a tantalum."""
-    text = str(text or '')
-    return bool(POLARIZED_SYMBOL_RE.search(text) or ELECTROLYTIC_RE.search(text) or TANTALUM_RE.search(text))
 
 
 RESISTOR, CAPACITOR, INDUCTOR, FERRITE = 'resistor', 'capacitor', 'inductor', 'ferrite'
@@ -49,34 +31,13 @@ ANCHOR_ROLES = frozenset(name for name, role in catalog.DEVICE_ROLES.items() if 
 
 PREFIX_KINDS = device_kinds.prefix_table()   # refdes prefix → kind, the weakest evidence (registry order)
 
-# NC suppression needs complete physical-family tokens, not the broad
-# discovery keywords above. Unknown model suffixes retain a review candidate.
-CONNECTOR_CONTACT_RE = (
-    r'(?:[^\s:]+:)?(?:'
-    r'(?:MICRO|MINI)[-_](?:AB|A|B)[-_]USB|'
-    r'USB[_-](?:A|B|C)(?:_Receptacle_USB[23](?:\.[0-9])?(?:_MountingPin)?)?|'
-    r'CONN_\d+X\d+|PINHEADER[_-]\d+X\d+|'
-    r'HEADER_(?:MALE|FEMALE)[_-]\d+X\d+|HEADER[-_]\d+X\d+|'
-    r'JST[-_](?:SH|GH|ZH|PH|XH))')
 
 KEYWORD_KINDS = device_kinds.keyword_table()   # part/value/symbol words → kind, in registry precedence
 
 TWO_TERMINAL = set(device_kinds.with_flag('two_terminal'))
-# Magnetics whose windings are coupled but not joined (a winding net is a converter's output, the parts split domains),
-# and the one whose windings each pass the line through (a filter's series element) (2026-10-27 A1b).
-WINDING_PAIRS = frozenset({TRANSFORMER, COUPLED_INDUCTOR})
-SERIES_WINDINGS = frozenset({COMMON_MODE_CHOKE})
 PASSIVE_LINKS = set(device_kinds.with_flag('passive_link'))
 
 GATE_NAMES = {'G', 'GATE', 'GT'}
-# 斯拉夫语库（如 e-radionica/Soldered）写作 ANODA/KATODA/KOLEKTOR/EMITER/BAZA
-DRAIN_NAMES = {'D', 'DRAIN', 'C', 'COLLECTOR', 'COL', 'KOLEKTOR'}
-SOURCE_NAMES = {'S', 'SOURCE', 'SRC', 'E', 'EMITTER', 'EMIT', 'EMITER'}
-ANODE_NAMES = {'A', 'ANODE', 'AN', '+', 'P', 'ANODA'}
-CATHODE_NAMES = {'K', 'C', 'CATHODE', 'CATH', '-', 'N', 'KATODA'}
-COIL_NAMES = {'COIL', 'COIL1', 'COIL2', 'A1', 'A2', 'L1', 'L2', '+', '-'}
-LED_ANODE_NAMES = {'A', 'ANODE', 'LED+', 'LEDA', 'ANODA'}
-LED_CATHODE_NAMES = {'K', 'CATHODE', 'LED-', 'LEDK', 'KATODA'}
 
 
 def normalize(value):
@@ -89,63 +50,10 @@ def copper_tie(ref, part):
     return bool(re.match(r'^NT\d', ref, re.I) or re.search(r'(?:^|[:\s])NET[-_ ]?TIE(?:[-_\s]|$)', text, re.I))
 
 
-def board_copper(ref, part):
-    """Copper remains when excluded from procurement; a component test pin does not."""
-    return copper_tie(ref, part) or bool(re.search(r'(?:^|:)TestPoint_Pad(?:_|$)', str(part.get('jedec') or ''), re.I))
-
-
 def mechanical_part(part):
     """Native mechanical identities, never a word in a free-form description."""
     text = ' '.join(str(part.get(k) or '') for k in ('prim', 'jedec'))
     return bool(re.search(r'MOUNTINGHOLE|FIDUCIAL|(?:^|[:_\s])LOGO(?:_|\s|$)|DIN[-_ ]?965(?:_|\s|$)', text, re.I))
-
-
-def load_socket(part):
-    """A removable memory card consumes board power; its socket is not an input source."""
-    return any(str(part.get(k) or '').upper() == 'HYC77-TF09-200' for k in ('part', 'value'))
-
-
-def official_pin_types(part):
-    """Exact manufacturer's direction table, not a generic name-based override."""
-    model = str(part.get('part') or part.get('value') or '')
-    if re.fullmatch(r'MC14093B(?:(?:DT|D|F)(?:R2)?G?)?', model, re.I):
-        types = {str(p): 'output' if p in (3, 4, 10, 11) else 'power_in' if p in (7, 14) else 'input'
-                 for p in range(1, 15)}
-        return types, 'onsemi MC14093B/D Rev11 Aug2025 p1 Pin Assignment (14-pin D/DT/F)'
-    return None
-
-
-# Supply ports of multi-output PMICs and integrated off-line switches, from the exact family's pin table (boards-merge4):
-# the switch pins (to the storage inductor or the transformer), the output ports (each its own supply node) and the
-# feedback/control pins. Names compare through pin_aliases; an unknown family has no ports here.
-SUPPLY_PORT_RULES = (
-    (r'TPS6502[0-3][A-Z0-9]*',
-     {'switch': ('L1', 'L2', 'L3'), 'outputs': ('VDCDC1', 'VDCDC2', 'VDCDC3', 'VLDO1', 'VLDO2', 'VRTC'),
-      'feedback': ('VDCDC1', 'VDCDC2', 'VDCDC3')},
-     'TI TPS65023 SLVS670 Terminal Functions: L1/L2/L3 switch pins, VDCDC1-3 converter output sense, VLDO1/2 and VRTC '
-     'outputs'),
-    (r'TOP2(?:0[0-4]|1[0-4]|2[1-7])[A-Z0-9-]*',
-     {'switch': ('D', 'DRAIN'), 'outputs': (), 'feedback': ('C', 'CONTROL')},
-     'Power Integrations TOPSwitch-II TOP221-227 / TOPSwitch TOP200-204 Pin Functional Description: DRAIN = integrated '
-     'MOSFET drain, CONTROL = feedback and supply input, SOURCE = MOSFET source and return'),
-)
-
-
-def supply_ports(part):
-    """{'switch', 'outputs', 'feedback': names, 'citation'} for an exact PMIC/integrated-switch family, else None. The part
-    number or the value may name it (a TOP204 symbol valued TOP227 is still the family)."""
-    for key in ('part', 'value'):
-        model = str((part or {}).get(key) or '')
-        for pattern, ports, citation in SUPPLY_PORT_RULES:
-            if re.fullmatch(pattern, model, re.I):
-                return dict(ports, citation=citation)
-    return None
-
-
-def supply_port(part, name, pin, which):
-    """The pin plays the port `which` ('switch', 'outputs', 'feedback') in its family's table."""
-    ports = supply_ports(part)
-    return bool(ports) and any(alias in ports[which] for alias in pin_aliases(name, pin))
 
 
 OVERBAR_RE = re.compile(r'^~\{(.+)\}$')
@@ -193,44 +101,6 @@ def pin_aliases(name, pin=None):
         if match:
             add(match.group(1))                    # G1/VDD_1 的序号
     return tuple(found)
-
-
-def name_matches(pattern, name, pin=None):
-    """引脚名的任一等价写法命中即算命中。"""
-    return any(pattern.match(alias) for alias in pin_aliases(name, pin))
-
-
-HEURISTIC_BASES = ('pin-names', 'refdes-prefix')   # no datasheet or part-number evidence behind the kind
-
-
-def db_kinds(db):
-    """{ref: {kind, basis, settlement}} for every fitted part as the classifier reads the netlist alone, without any
-    declaration (the reading NetGraph.kind gives a db without device_kinds; step ① tools may not import the checkers).
-    settlement is what settles the kind (device_kinds.settlement, 2026-10-27 A2/A5)."""
-    pins = {}
-    for node, net in (db.get('pin2net') or {}).items():
-        ref, _, pin = node.partition('.')
-        pins.setdefault(ref, {})[pin] = net
-    names = db.get('pinname') or {}
-    out = {}
-    for ref, part in sorted((db.get('parts') or {}).items()):
-        if part.get('nc'):
-            continue
-        own = pins.get(ref, {})
-        kind, basis = classify(ref, part, len(own) or None, [(names.get(ref + '.' + pin), pin) for pin in own])
-        out[ref] = {'kind': kind, 'basis': basis,
-                    'settlement': device_kinds.settlement(kind, len(own), len(set(own.values())))}
-    return out
-
-
-def kind_gap(graph, ref):
-    """Gap text when a transistor/diode kind rests only on pin names or refdes prefix, or on part words for a kind only
-    a datasheet declaration settles (2026-10-27 B1: a keyword is a guess too)."""
-    basis = graph.basis(ref)
-    if basis in HEURISTIC_BASES or (basis == 'part-keyword' and device_kinds.needs_datasheet(
-            graph.kind(ref), len(graph.pins_of(ref)))):
-        return 'datasheet-kind:' + ref
-    return None
 
 
 def pin_signature(pin_names):
@@ -370,65 +240,3 @@ def classify(ref, part, pin_count=None, pin_names=(), declared=None):
     return UNKNOWN, 'no classification evidence'
 
 
-def unused_input_permission(db, node):
-    """A physically unused pin explicitly permitted open by an exact model's own pin table.
-
-    No permission propagates to connected nets, related families or unknown packages.
-    These citations are manufacturer clauses from the adjudicated board evidence.
-    """
-    ref, _, pin = node.partition('.')
-    part = (db.get('parts') or {}).get(ref, {})
-    model = str(part.get('part') or part.get('value') or '')
-    aliases = {a.rstrip('#') for a in pin_aliases((db.get('pinname') or {}).get(node), pin)}
-    net = (db.get('pin2net') or {}).get(node)
-    if net is not None and len((db.get('nets') or {}).get(net, [])) > 1:
-        return None
-    if re.fullmatch(r'CH340[CG]', model, re.I):
-        pins = {'3': 'RXD', '9': 'CTS', '10': 'DSR', '11': 'RI', '12': 'DCD', '15': 'R232'}
-        if pin in pins and pins[pin] in aliases:
-            return 'WCH CH340DS1 V3C pp3–4 pin table / p4 unused I/O note (CH340C/G)'
-    if re.fullmatch(r'TPS709(?:\d{2})?(?:DBV[RT])?', model, re.I) and pin == '3' and 'EN' in aliases:
-        return 'TI TPS709 SBVS186H p3 Table5-1 / p13 §7.4: EN may float, internal 300nA pull-up'
-    if re.fullmatch(r'TPS5430(?:DDA[RT]?)?', model, re.I) and pin == '5' and 'ENA' in aliases:
-        return 'TI TPS5430 SLVS632L p3 Table4-1 / p9 §6.3.3: ENA may float, internal 1.5Mohm pull-up'
-    # boards-merge5: the value names the regulator when the symbol was borrowed (klippertoolboard U3 TPS54308 symbol)
-    named = {str(part.get(k) or '') for k in ('part', 'value')}
-    if any(re.fullmatch(r'TPS54202(?:DDC[RT])?', n, re.I) for n in named) and pin == '5' and 'EN' in aliases:
-        return 'TI TPS54202 p3 Pin Functions / p9 §7.3: "Float the EN pin to enable", internal pull-up current source'
-    # boards-merge6 F13: debounce select is a three-way strap whose settings are written with the pins open
-    if re.fullmatch(r'SN65HVS883(?:PWPR?)?', model, re.I) and {'1': 'DB0', '2': 'DB1'}.get(pin) in aliases:
-        return 'TI SN65HVS883 SLASEE6 p3 Pin Functions (DB0, DB1 debounce select) / p5 tDB: DB0 or DB1 open selects 0/1/3 ms'
-    if re.fullmatch(r'TMC2209(?:-LA)?(?:-T)?', model, re.I) and pin == '17' and 'VREF' in aliases:
-        return 'Trinamic TMC2209 Rev1.08 p53 / p79 VVREFO: VREF open settles at 1.8 V (73 % current scale); unused when GCONF.i_scale_analog=0'
-    return None
-
-
-def usb_connector_type(part):
-    """Physical USB family from its own symbol/model, never from VBUS or a CC-less controller."""
-    text = ' '.join(str(part.get(k) or '') for k in ('part', 'prim', 'value'))
-    if re.fullmatch(r'U262-161N-4BVC11', str(part.get('part') or ''), re.I):
-        return 'Type-C'
-    if re.search(r'(?:USB[_ -]?C(?:_|\b)|TYPE[_ -]?C(?:_|\b))', text, re.I):
-        return 'Type-C'
-    if re.search(r'MICRO[_ -]?B[_ -]?USB|USB[_ -]?B[_ -]?MICRO', text, re.I):
-        return 'Micro-B'
-    if re.search(r'(?:^|[:\s])USB[_ -]?A(?:_|\b)', text, re.I):
-        return 'Type-A'
-    if re.search(r'(?:^|[:\s])USB[_ -]?B(?:_|\b)', text, re.I):
-        return 'Type-B'
-    return None
-
-
-def supply_pin_routes(part, pins):
-    """Backward source-search routes of exact multi-terminal identities; never short all terminals.
-
-    C_Feedthrough's placed symbol has through pins 1/2 and shunt pin 3. BAT54C (Nexperia 2022-07-01
-    p1 Table2, https://assets.nexperia.com/documents/data-sheet/BAT54C.pdf) is 1/2 anodes, 3 common cathode.
-    Caller still verifies population, grounds and the presence of each actual physical pin.
-    """
-    primitive = str(part.get('prim') or '').rsplit(':', 1)[-1]
-    if re.fullmatch(r'C_Feedthrough(?:_Small)?', primitive, re.I) and set(pins) == {'1', '2', '3'}:
-        return (('1', '2', 'feedthrough-symbol'), ('2', '1', 'feedthrough-symbol'))
-    if str(part.get('part') or '').upper() == 'BAT54C' and set(pins) == {'1', '2', '3'}:
-        return (('3', '1', 'BAT54C-p1-Table2'), ('3', '2', 'BAT54C-p1-Table2'))
-    return ()

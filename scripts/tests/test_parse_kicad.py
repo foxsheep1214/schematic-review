@@ -5,10 +5,8 @@ import unittest
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 
-from lint import Lint
 from parse_kicad import build, parse
 from parse_netlist import self_check
-from plan_review import build_review_plan
 
 LIBPARTS = """
   <libparts>
@@ -188,14 +186,6 @@ class NotConnectedTest(unittest.TestCase):
         self.assertEqual(db['pseudo_nets'], ['unconnected-(U1-NC-Pad5)'])
         self.assertEqual(db['no_connect_nodes'], ['U1.5'])
 
-    def test_dangling_pin_stays_a_real_single_node_net(self):
-        db = parse(board())
-        self.assertIn('unconnected-(R2-Pad1)', db['nets'])
-        self.assertNotIn('unconnected-(R2-Pad1)', db['pseudo_nets'])
-        db['parts']['R2']['nc'] = False  # this test concerns a fitted, truly dangling pin
-        hits = [f for f in Lint(db).run() if f['rule'] == 'NET-A01']
-        self.assertEqual([f['detail'].split(' <- ')[0] for f in hits],
-                         ['unconnected-(R2-Pad1)'])
 
     def test_stacked_unit_power_pin_keeps_its_real_net(self):
         # 典型电路基准：CMoy 运放 MC33178 的 A/B 单元都带 V+/V-，KiCad 把 4 脚同时列入 V- 与
@@ -288,19 +278,6 @@ class RobustnessTest(unittest.TestCase):
     def test_missing_file_is_reported(self):
         with self.assertRaises(RuntimeError):
             build(str(SCRIPTS / 'no-such-netlist.xml'))
-
-
-class PipelineTest(unittest.TestCase):
-    def test_plan_and_lint_run_on_kicad_input(self):
-        db = parse(board())
-        plan = build_review_plan(db)
-        self.assertTrue(plan['checks'])
-        self.assertEqual(plan['power_up_version'], 1)
-        regulators = [item for state in plan['power_up']['states']
-                      for item in state['regulators']]
-        self.assertEqual([item['ref'] for item in regulators], ['U1'])
-        self.assertEqual(regulators[0]['enable_source'], 'pulled')
-        self.assertTrue(Lint(db).run())
 
 
 if __name__ == '__main__':

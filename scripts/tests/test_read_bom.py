@@ -63,19 +63,5 @@ class ReadBomTests(unittest.TestCase):
             self.assertEqual(len(written['bom']['sha256']), 64)
 
 
-class PlanTests(unittest.TestCase):
-    def test_a_frame_and_a_device_row_carry_their_parts_bom_text(self):
-        from test_interface_rows import fx, plan_for
-        board = fx.board()
-        board['bom'] = {'parts': {'F1': {'Electrical specification': 'T2A 250Vac'}, 'U1': {'MPN': 'U1-EXACT'}}}
-        plan = plan_for(board)
-        frame = next(f for f in plan['functions'] if 'F1' in f['objects']['refs'])
-        self.assertEqual(frame['bom_specs'], {'F1': {'Electrical specification': 'T2A 250Vac'}})
-        row = next(c for c in plan['checks'] if c['id'] == 'DEV-D01.U1')
-        self.assertEqual(row['bom_fields'], {'MPN': 'U1-EXACT'})
-        self.assertNotIn('bom_specs', next(f for f in plan['functions'] if 'F1' not in f['objects']['refs']
-                                           and f.get('circuit')))
-
-
 if __name__ == '__main__':
     unittest.main()

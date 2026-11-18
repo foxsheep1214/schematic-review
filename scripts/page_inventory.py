@@ -71,28 +71,3 @@ def inventory(db):
     return deepcopy(checked)
 
 
-def validate_document_pages(plan, expected, db, require):
-    """A page ledger cannot substitute an unrelated electrical PASS for a view."""
-    checked = inventory(db)
-    if 'page_inventory' not in db:
-        if 'page_inventory' in plan:
-            require(plan['page_inventory'] == checked, 'plan.page_inventory mismatch; regenerate current plan')
-        return checked, {}  # Historical limited-format ledger remains bounded.
-    require(plan.get('page_inventory') == checked, 'plan.page_inventory mismatch; regenerate current plan')
-    docs = [x for x in expected.values() if x.get('rule') == 'DOC-V01']
-    by_page = {}
-    for row in checked['pages']:
-        key = str(row['page'])
-        matches = [x for x in docs if isinstance(x.get('object'), dict)
-                   and str(x['object'].get('page')) == key]
-        require(len(matches) == 1, 'DOC-V01 page ' + key + ': missing/duplicate native page view')
-        if len(matches) == 1:
-            check = matches[0]
-            obj = {'page': row['page']}
-            if 'sheet_path' in row:
-                obj['sheet_path'] = row['sheet_path']
-            require(check.get('object') == obj and check.get('applicability') == 'APPLICABLE',
-                    'DOC-V01 page ' + key + ': changed page identity/scope')
-            by_page[key] = check['id']
-    require(len(docs) == len(checked['pages']), 'DOC-V01 must contain exactly one view per inventory page')
-    return checked, by_page

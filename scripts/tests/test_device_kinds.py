@@ -9,10 +9,7 @@ from collections import OrderedDict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import board_intent
 import catalog
-import circuit_candidates
-import datasheet_kinds
 import device_kinds
 import part_words as pw
 
@@ -35,16 +32,6 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(pw.PASSIVE_LINKS, set(device_kinds.with_flag('passive_link')))
         self.assertTrue(pw.PASSIVE_LINKS < pw.TWO_TERMINAL)
 
-    def test_declared_kinds_cues_wearout_and_protective_parts_read_the_registry(self):
-        self.assertEqual(board_intent.DEVICE_KINDS, device_kinds.declarable() + board_intent.IC_KINDS)
-        self.assertNotIn('testpoint', board_intent.DEVICE_KINDS)
-        self.assertNotIn('unknown', board_intent.DEVICE_KINDS)
-        self.assertEqual(dict(datasheet_kinds.KIND_CUES)['varistor'], device_kinds.KINDS['varistor'].cues)
-        self.assertEqual(dict(datasheet_kinds.KIND_CUES)['load_switch'], catalog.DEVICE_ROLES['load_switch'].cues)
-        self.assertEqual(device_kinds.wearout_of('relay'), 'RELAY')
-        self.assertIsNone(device_kinds.wearout_of('ntc'))       # INRUSH_NTC only in the power path: the circuit decides
-        self.assertIsNone(device_kinds.wearout_of('nothing'))
-        self.assertEqual(circuit_candidates.PROTECTIVE_KINDS, frozenset({'fuse', 'tvs', 'bridge_rectifier', 'ntc', 'varistor'}))
 
     def test_a_new_kind_is_one_row(self):
         kinds = OrderedDict(device_kinds.KINDS)

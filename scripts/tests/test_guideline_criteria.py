@@ -62,48 +62,6 @@ class GuidelineRulesTests(unittest.TestCase):
     def test_framework_bundle_is_valid(self):
         self.assertEqual(g.bundle_errors(g.load()), [])
 
-    def test_srs_circuit_types_and_device_kinds_are_the_shared_vocabulary(self):
-        # 词表.json is the one place the names and titles live: every name the catalog and the device-kind registry use is
-        # in it and takes its title from it; names the framework has and SR has no behavior for yet are allowed and listed.
-        # The bundle carries a copy build() takes from it.
-        shared = knowledge_source.vocabulary()
-        self.assertEqual([(c.name, c.title) for c in catalog.CIRCUIT_TYPES],
-                         [(c.name, shared['circuit_types'][c.name]) for c in catalog.CIRCUIT_TYPES if c.name in shared['circuit_types']])
-        used = [(k, v.title) for k, v in device_kinds.KINDS.items() if k != 'unknown']
-        self.assertEqual(used, [(k, shared['device_kinds'][k]) for k, _ in used if k in shared['device_kinds']])
-        missing = catalog.vocabulary_without_behavior()
-        self.assertEqual(missing['circuit_types'], [n for n in shared['circuit_types'] if n not in catalog.CIRCUIT_TYPE_BY_NAME])
-        self.assertEqual(missing['device_kinds'], [n for n in shared['device_kinds'] if n not in device_kinds.KINDS])
-        shared = json.loads(knowledge_source.vocabulary_path().read_text(encoding='utf-8'))
-        self.assertEqual(shared['default_baseline'], 'industrial_telecom')
-        self.assertEqual(g.load()['vocabulary'], g.vocabulary()['vocabulary'])
-        self.assertEqual(g.load()['default_baseline'], g.vocabulary()['default_baseline'])
-        stale = copy.deepcopy(g.load())
-        stale['vocabulary']['circuit_types'] = stale['vocabulary']['circuit_types'][1:]
-        self.assertTrue(any('词表.json' in e for e in g.bundle_errors(stale)))
-
-    def test_a_framework_name_sr_has_no_behavior_for_is_allowed_and_a_misspelt_one_is_refused(self):
-        import subprocess
-        from framework_fixtures import small_framework
-        with tempfile.TemporaryDirectory() as folder:
-            framework = small_framework(folder)
-            path = framework / knowledge_source.vocabulary_path().relative_to(knowledge_source.framework_root())
-            vocab = json.loads(path.read_text(encoding='utf-8'))
-            vocab['circuit_types'].append({'name': 'NEW_CIRCUIT', 'title': '新电路'})
-            vocab['device_kinds'].append({'name': 'new_kind', 'title': '新器件'})
-            path.write_text(json.dumps(vocab, ensure_ascii=False), encoding='utf-8')
-            env = dict(__import__('os').environ, HARDWARE_KNOWLEDGE_FRAMEWORK=str(framework))
-            run = lambda code: subprocess.run([sys.executable, '-c', code], cwd=ROOT / 'scripts', env=env,
-                                              capture_output=True, text=True)
-            done = run('import catalog, device_kinds, plan_review, render_report; '
-                       'm = catalog.vocabulary_without_behavior(); '
-                       'print(m["circuit_types"][-1], m["device_kinds"][-1], catalog.circuit_type("RS485").title)')
-            self.assertEqual(done.returncode, 0, done.stderr)
-            self.assertEqual(done.stdout.split(), ['NEW_CIRCUIT', 'new_kind', 'RS485'])
-        with self.assertRaisesRegex(ValueError, '电路类型 RS-485 不在知识框架词表'):
-            catalog._circuit_type('RS-485', 'SIG', r'RS-485', (), ())
-        with self.assertRaisesRegex(ValueError, '器件类别 thyristor 不在知识框架词表'):
-            device_kinds._kind('thyristor')
 
     def test_select_by_baseline_and_triggers(self):
         lib = bundle(rule('G04-001'),
@@ -181,22 +139,6 @@ class GuidelineRulesTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 g.build(tmp)
 
-    def test_every_active_rule_has_an_sr_check_that_can_reach_it(self):
-        # user 2026-11-01: 一次做全 — no rule waits for a check. A rule triggered by circuit types is held by a check of
-        # one of those types, or by a check that is not tied to a circuit type.
-        library = g.load()
-        self.assertEqual(catalog.basis_errors({r['id'] for r in library['criteria']}), [])
-        self.assertEqual(unreachable_rules(library), [])
-
-    def test_a_batch_rule_is_held_by_req_q09_and_an_item_rule_still_needs_its_own_check(self):
-        # user 2026-11-04: project_input and handoff rules answer to the one REQ-Q09 row of their class; item stays strict
-        self.assertEqual(catalog.BY_ID[catalog.COVERAGE_BATCH_RULE].source, 'plan')
-        self.assertEqual(set(catalog.COVERAGE_BATCH_CRITERIA), set(g.COVERAGES) - {'item'})
-        library = bundle(rule('G08-901', applies_when={'board': True}, coverage='project_input'),
-                         rule('G08-902', applies_when={'board': True}, coverage='handoff', closing_stage='pcb'),
-                         rule('G08-903', applies_when={'board': True}),
-                         rule('G08-904', applies_when={'board': True}, coverage='item'))
-        self.assertEqual(unreachable_rules(library), ['G08-903', 'G08-904'])
 
     def test_the_coverage_field_is_checked_and_a_library_without_it_is_as_before(self):
         def field_errors(*rules):
@@ -219,14 +161,6 @@ class GuidelineRulesTests(unittest.TestCase):
         found = g.coverage(library, rules, {'G04-001': ['calc:C1']}, answered={'G04-002': 'R1'})
         self.assertEqual(found['covered']['G04-002'], ['baseline:R1'])
         self.assertEqual(found['uncovered'], ['G04-003'])
-
-    def test_dc_24v_checks_its_declared_window_not_the_telecom_48v_one(self):
-        subjects = {t.name: t.subjects for t in catalog.CIRCUIT_TYPES}['DC_24V']
-        self.assertIn('PWR-C27', subjects)
-        self.assertNotIn('PWR-C17', subjects)
-        self.assertIn('DC_24V', catalog.EXTERNAL_INTERFACE_TYPES)
-        mapped = {gid for rule in subjects for gid in catalog.BASIS[rule]}
-        self.assertTrue({'G01-051', 'G01-052', 'G01-053', 'G01-054'} <= mapped)
 
 
 if __name__ == '__main__':
